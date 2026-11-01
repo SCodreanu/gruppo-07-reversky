@@ -1,0 +1,11 @@
+.gradle/
+build/
+bin/
+out/
+.idea/
+.vscode/
+docs/
+*.md
+compose.yaml
+Dockerfile
+.dockerignore

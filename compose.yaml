@@ -1,0 +1,55 @@
+# Reversky — avvio di tutto il backend: database, engine e API.
+#   docker compose up --build
+# I valori si possono cambiare in un file .env (vedi .env.example).
+
+name: reversky
+
+services:
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reversky}
+      POSTGRES_USER: ${POSTGRES_USER:-reversky}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reversky}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"       # per collegarsi da DBeaver/pgAdmin
+    volumes:
+      - db-data:/var/lib/postgresql          # da Postgres 18 il volume va qui
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  engine:
+    build: ./reversky-engine
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8081
+    expose:
+      - "8081"                               # raggiungibile solo dall'API, non dall'esterno
+    # ports:
+    #   - "8081:8081"                        # scommentare per provarlo da Swagger/Postman
+
+  api:
+    build: ./reversky-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      engine:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-reversky}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-reversky}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reversky}
+      REVERSKY_ENGINE_BASEURL: http://engine:8081              # reversky.engine.base-url
+      REVERSKY_SECURITY_JWTSECRET: ${JWT_SECRET:-dev-only-secret-change-me-at-least-32-chars}  # reversky.security.jwt-secret
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+volumes:
+  db-data:

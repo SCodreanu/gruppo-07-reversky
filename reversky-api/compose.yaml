@@ -1,0 +1,12 @@
+# Database per lo sviluppo locale con ./gradlew bootRun.
+# Spring Boot (spring-boot-docker-compose) lo avvia da solo e si collega in automatico.
+# Per avviare tutto il backend (database + engine + API) usa il compose.yaml nella root del progetto.
+services:
+  postgres:
+    image: 'postgres:18'
+    environment:
+      - 'POSTGRES_DB=reversky'
+      - 'POSTGRES_USER=reversky'
+      - 'POSTGRES_PASSWORD=reversky'
+    ports:
+      - '5432'

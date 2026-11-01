@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Livello_9" data-name="Livello 9" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841.89 595.28">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: #1d1d1b;
+      }
+
+      .cls-2, .cls-3 {
+        font-family: AmericanTypewriter-Condensed, NJRZRS+AmericanTypewriter-Condensed;
+        font-size: 17.05px;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill: #be1622;
+      }
+    </style>
+  </defs>
+  <rect class="cls-4" width="302.69" height="595.28"/>
+  <text class="cls-3" transform="translate(67.95 316.09)"><tspan x="0" y="0">C=15 M=100 Y=90 K=10</tspan></text>
+  <text class="cls-3" transform="translate(400.13 316.31)"><tspan x="0" y="0">C=0 M=0 Y=0 K=100</tspan></text>
+  <text class="cls-2" transform="translate(673.86 316.09)"><tspan x="0" y="0">C=0 M=0 Y=0 K=0</tspan></text>
+  <rect class="cls-1" x="302.69" width="308.82" height="595.28"/>
+</svg>

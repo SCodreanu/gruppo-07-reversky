@@ -1,0 +1,597 @@
+////////////////////////////////////////////////////////////
+// REVERSKY — DATABASE SCHEMA (PostgreSQL)
+//
+// Changes compared to the previous version are marked:
+//   // NEW      → added column / table / enum
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
+// ENUMS
+////////////////////////////////////////////////////////////
+
+Enum CardType {
+  CREATURE
+  TERRAIN
+  SPELL
+  HIDDEN
+}
+
+Enum BattleInviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+Enum BattleResult {
+  CHALLENGER_WIN
+  OPPONENT_WIN
+  DRAW
+}
+
+Enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+Enum TradeStatus {
+  PENDING
+  REJECTED
+  ACCEPTED
+  WAITING_REQUESTER
+  WAITING_RECIPIENT
+}
+
+
+////////////////////////////////////////////////////////////
+// USERS AND AUTHENTICATION
+////////////////////////////////////////////////////////////
+
+Table roles {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+  authority_level int [not null, unique]
+
+  Note: 'Authority levels are unique to represent the role hierarchy.'
+}
+
+Table users {
+  id int [pk, increment]
+  role_id int [not null, ref: > roles.id]
+
+  username varchar(255) [not null, unique]
+  email varchar(255) [not null, unique]
+  password_hash varchar(255) [not null]
+
+  is_enabled boolean [not null, default: true]
+
+  email_verified_at timestamp                                  // NEW: null = email not verified yet
+  privacy_accepted_at timestamp
+  terms_accepted_at timestamp
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+
+  Indexes {
+    role_id
+  }
+}
+
+Table refresh_tokens {
+  id uuid [pk]
+  user_id int [not null, ref: > users.id]
+
+  token_hash varchar(255) [not null, unique]
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    user_id
+    expires_at
+  }
+
+  Note: 'Store token hashes, not raw refresh tokens.'
+}
+
+Table password_reset_tokens {
+  id uuid [pk]
+  user_id int [not null, ref: > users.id]
+
+  token_hash varchar(255) [not null, unique]
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    user_id
+    expires_at
+  }
+
+  Note: 'Used tokens can be deleted after successful password reset.'
+}
+
+Table email_verification_tokens {
+  id uuid [pk]
+  user_id int [not null, ref: > users.id]
+
+  token_hash varchar(255) [not null, unique]
+  expires_at timestamp [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    user_id
+    expires_at
+  }
+
+  Note: 'Used tokens can be deleted after successful verification. On success, set users.email_verified_at.'
+}
+
+
+////////////////////////////////////////////////////////////
+// CARD CATALOGUE
+////////////////////////////////////////////////////////////
+
+Table rarities {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+
+  // Maximum copies of an individual card of this rarity
+  // allowed in a deck, before considering a card-specific limit.
+  deck_limit smallint [not null]
+
+  sorting_order smallint [not null, unique]
+
+  Checks {
+    `deck_limit >= 1` [name: 'chk_rarities_deck_limit']
+  }
+
+  Note: 'The effective per-card deck limit is the minimum of deck_limit and catalog_cards.copy_limit.'
+}
+
+Table factions {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+}
+
+Table faction_bonus {
+  origin_faction_id int [not null, ref: > factions.id]
+  target_faction_id int [not null, ref: > factions.id]
+
+  atk_bonus int [not null, default: 0]
+  def_bonus int [not null, default: 0]
+
+  Indexes {
+    (origin_faction_id, target_faction_id) [pk]
+    target_faction_id
+  }
+
+  Checks {
+    `origin_faction_id != target_faction_id` [name: 'chk_faction_bonus_no_self_matchup']
+    `atk_bonus >= 0` [name: 'chk_faction_bonus_atk_nonnegative']
+    `def_bonus >= 0` [name: 'chk_faction_bonus_def_nonnegative']
+  }
+
+  Note: 'Defines bonuses applied by an origin faction against a target faction. Self-matchups are not allowed.'
+}
+
+Table catalog_cards {
+  id int [pk, increment]
+
+  rarity_id int [not null, ref: > rarities.id]
+  faction_id int [not null, ref: > factions.id]
+
+  name varchar(255) [not null]
+  type CardType [not null]
+
+  image_path text [not null]
+
+  effect_description text   // NEW: effect text shown to players (the effect itself is the EFFECT_* tag)
+  flavor_text text          // NEW: lore text
+
+  // Some card types may not have combat statistics.
+  atk int
+  def int
+
+  // Card-specific limit; must be at least 1.
+  // The effective deck limit is min(rarity limit, this limit).
+  copy_limit smallint [not null, default: 4]
+
+  is_active boolean [not null, default: true]
+
+  Indexes {
+    rarity_id
+    faction_id
+    (rarity_id, faction_id)
+    (is_active, rarity_id)
+  }
+
+  Checks {
+    `copy_limit >= 1` [name: 'chk_catalog_cards_copy_limit']
+    `atk IS NULL OR atk >= 0` [name: 'chk_catalog_cards_atk_nonnegative']
+    `def IS NULL OR def >= 0` [name: 'chk_catalog_cards_def_nonnegative']
+  }
+
+  Note: 'Tags are assigned through card_tags. Effects use EFFECT_<CODE> tags; Spell/Hidden subtypes use DAMAGE, SHIELD, BURN, SURVIVAL tags.'
+}
+
+Table collection_cards {
+  user_id int [not null, ref: > users.id]
+  card_id int [not null, ref: > catalog_cards.id]
+
+  quantity int [not null]
+
+  Indexes {
+    (user_id, card_id) [pk]
+    card_id
+  }
+
+  Checks {
+    `quantity > 0` [name: 'chk_collection_cards_quantity_positive']
+  }
+
+  Note: 'Remove the row when the user owns zero copies of a card.'
+}
+
+
+////////////////////////////////////////////////////////////
+// TAGS
+////////////////////////////////////////////////////////////
+
+Table tags {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+
+  Note: 'Examples: YOKAI, SPELL, HIDDEN, TERRAIN, DAMAGE, SHIELD, BURN, SURVIVAL, EFFECT_HIDEBEHIND.'
+}
+
+Table card_tags {
+  card_id int [not null, ref: > catalog_cards.id]
+  tag_id int [not null, ref: > tags.id]
+
+  Indexes {
+    (card_id, tag_id) [pk]
+    tag_id
+  }
+}
+
+Table faction_tags {
+  faction_id int [not null, ref: > factions.id]
+  tag_id int [not null, ref: > tags.id]
+
+  Indexes {
+    (faction_id, tag_id) [pk]
+    tag_id
+  }
+
+  Note: 'Faction tags contribute to the tags used when evaluating a card for pack eligibility.'
+}
+
+
+////////////////////////////////////////////////////////////
+// DECKS
+////////////////////////////////////////////////////////////
+
+Table decks {
+  id int [pk, increment]
+  user_id int [not null, ref: > users.id]
+
+  name varchar(255) [not null]
+
+  Indexes {
+    (user_id, name) [unique]
+    user_id
+  }
+
+  Note: 'Deck composition rules, card ownership, and effective copy limits are validated by the application.'
+}
+
+Table deck_cards {
+  deck_id int [not null, ref: > decks.id]
+  card_id int [not null, ref: > catalog_cards.id]
+
+  quantity int [not null]
+
+  Indexes {
+    (deck_id, card_id) [pk]
+    card_id
+  }
+
+  Checks {
+    `quantity > 0` [name: 'chk_deck_cards_quantity_positive']
+  }
+}
+
+
+////////////////////////////////////////////////////////////
+// BATTLE INVITATIONS AND BATTLES
+////////////////////////////////////////////////////////////
+
+Table battle_invites {
+  id uuid [pk]
+
+  challenger_id int [not null, ref: > users.id]
+  challenger_deck_id int [not null, ref: > decks.id]
+  opponent_id int [not null, ref: > users.id]
+
+  status BattleInviteStatus [not null, default: 'PENDING']
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+
+  Indexes {
+    challenger_id
+    opponent_id
+    challenger_deck_id
+    (opponent_id, status)
+  }
+
+  Checks {
+    `challenger_id != opponent_id` [name: 'chk_battle_invites_no_self_challenge']
+  }
+
+  Note: 'Direct challenges: the challenger picks the opponent. The challenger deck is stored here; the opponent selects a deck when accepting.'
+}
+
+Table battles {
+  id uuid [pk]
+
+  invite_id uuid [not null, unique, ref: - battle_invites.id]
+
+  challenger_id int [not null, ref: > users.id]
+  opponent_id int [not null, ref: > users.id]
+
+  result BattleResult
+
+  // Snapshots preserve the decks used in the completed battle.
+  challenger_deck jsonb [not null]
+  opponent_deck jsonb [not null]
+
+  // Serialized battle stats (seed, end reason, final life points...).
+  battle_stats jsonb [not null]
+
+  // Serialized battle events and round results.
+  rounds_log jsonb [not null]
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+
+  Indexes {
+    challenger_id
+    opponent_id
+    created_at                                                  // NEW: history ordering
+  }
+
+  Checks {
+    `challenger_id != opponent_id` [name: 'chk_battles_no_self_battle']
+  }
+
+  Note: 'One invitation can produce at most one battle. The result stays NULL until simulation and persistence are complete.'
+}
+
+
+////////////////////////////////////////////////////////////
+// FRIENDSHIPS
+////////////////////////////////////////////////////////////
+
+Table friendships {
+  requester_id int [not null, ref: > users.id]
+  recipient_id int [not null, ref: > users.id]
+
+  status FriendshipStatus [not null, default: 'PENDING']
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+
+  Indexes {
+    (requester_id, recipient_id) [pk]
+    recipient_id
+    (recipient_id, status)
+  }
+
+  Checks {
+    `requester_id != recipient_id` [name: 'chk_friendships_no_self_friendship']
+  }
+
+  Note: 'A request is accepted by updating its status. Reverse-direction pending requests must be detected and handled by the application.'
+}
+
+
+////////////////////////////////////////////////////////////
+// TRADES
+////////////////////////////////////////////////////////////
+
+Table trades {
+  id uuid [pk]
+
+  requester_id int [not null, ref: > users.id]
+  recipient_id int [not null, ref: > users.id]
+
+  status TradeStatus [not null, default: 'PENDING']
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW: last offer / counteroffer / answer
+
+  Indexes {
+    requester_id
+    recipient_id
+    (recipient_id, status)
+  }
+
+  Checks {
+    `requester_id != recipient_id` [name: 'chk_trades_no_self_trade']
+  }
+
+  Note: 'Trade participants and status transitions are validated by the application.'
+}
+
+Table trade_offers {
+  id uuid [pk]
+
+  trade_id uuid [not null, ref: > trades.id]
+  user_id int [not null, ref: > users.id]
+  card_id int [not null, ref: > catalog_cards.id]
+
+  quantity int [not null]
+
+  Indexes {
+    (trade_id, user_id, card_id) [unique]
+    user_id
+    card_id
+  }
+
+  Checks {
+    `quantity > 0` [name: 'chk_trade_offers_quantity_positive']
+  }
+
+  Note: 'user_id is the participant who gives the card. Counteroffers overwrite existing offer rows. Validate that each user is a participant and still owns enough cards before accepting. Execute transfers atomically.'
+}
+
+
+////////////////////////////////////////////////////////////
+// INVENTORY AND CREDITS
+////////////////////////////////////////////////////////////
+
+Table inventories {
+  id int [pk, increment]
+
+  user_id int [not null, unique, ref: - users.id]
+
+  credits int [not null, default: 0]
+
+  Checks {
+    `credits >= 0` [name: 'chk_inventories_credits_nonnegative']
+  }
+
+  Note: 'Each user has at most one inventory. Credit updates and pack purchases must be performed atomically.'
+}
+
+
+////////////////////////////////////////////////////////////
+// PACKS
+////////////////////////////////////////////////////////////
+
+Table packs {
+  id int [pk, increment]
+
+  name varchar(255) [not null, unique]
+
+  cost int [not null]
+
+  package_art text [not null]
+
+  is_active boolean [not null, default: true]
+
+  Indexes {
+    is_active
+  }
+
+  Checks {
+    `cost >= 0` [name: 'chk_packs_cost_nonnegative']
+  }
+
+  Note: 'Total cards per pack are determined by summing pack_rarity_rules quantities. Substitutions replace base slots rather than adding extra cards.'
+}
+
+Table pack_inventory {
+  inventory_id int [not null, ref: > inventories.id]
+  pack_id int [not null, ref: > packs.id]
+
+  quantity int [not null, default: 0]
+
+  Indexes {
+    (inventory_id, pack_id) [pk]
+    pack_id
+  }
+
+  Checks {
+    `quantity >= 0` [name: 'chk_pack_inventory_quantity_nonnegative']
+  }
+}
+
+
+////////////////////////////////////////////////////////////
+// PACK BASE RARITY DISTRIBUTION
+////////////////////////////////////////////////////////////
+
+Table pack_rarity_rules {
+  pack_id int [not null, ref: > packs.id]
+  rarity_id int [not null, ref: > rarities.id]
+
+  // Number of base slots assigned to this rarity.
+  quantity int [not null]
+
+  Indexes {
+    (pack_id, rarity_id) [pk]
+    rarity_id
+  }
+
+  Checks {
+    `quantity > 0` [name: 'chk_pack_rarity_rules_quantity_positive']
+  }
+
+  Note: 'Example distribution: 3 Common, 2 Uncommon, 2 Rare. Substitutions change the cards filling these slots, not the number of base slots.'
+}
+
+
+////////////////////////////////////////////////////////////
+// PACK BONUS RARITY PROBABILITIES
+////////////////////////////////////////////////////////////
+
+Table pack_bonus_rules {
+  pack_id int [not null, ref: > packs.id]
+  rarity_id int [not null, ref: > rarities.id]
+
+  // 0 to 10,000 units represent 0% to 100%.
+  // Example: 1,000 = 10%; 100 = 1%; 10 = 0.1%.
+  probability_units int [not null]
+
+  Indexes {
+    (pack_id, rarity_id) [pk]
+    rarity_id
+  }
+
+  Checks {
+    `probability_units >= 0 AND probability_units <= 10000` [name: 'chk_pack_bonus_probability_range']
+  }
+
+  Note: 'Bonus rolls are independent. The configured Mythic, Legendary, and Mutant probabilities are evaluated separately. Each successful bonus card substitutes one base slot, starting from the highest base rarity.'
+}
+
+
+////////////////////////////////////////////////////////////
+// PACK TAG FILTERS
+////////////////////////////////////////////////////////////
+
+Table pack_tags {
+  pack_id int [not null, ref: > packs.id]
+  tag_id int [not null, ref: > tags.id]
+
+  Indexes {
+    (pack_id, tag_id) [pk]
+    tag_id
+  }
+
+  Note: 'A card is tag-eligible when it matches at least one allowed pack tag through its own tags or its faction tags. A pack with no rows here is unrestricted.'
+}
+
+
+////////////////////////////////////////////////////////////
+// AUDIT LOGS
+////////////////////////////////////////////////////////////
+
+Table audit_logs {
+  id int [pk, increment]
+  admin_user_id int [not null]
+  action varchar(100) [not null]
+  entity_type varchar(100) [not null]
+  entity_id varchar(100) [not null]
+  old_values jsonb
+  new_values jsonb
+  created_at timestamp [not null, default: `now()`]
+
+  Indexes {
+    (admin_user_id, created_at)
+    (entity_type, entity_id)
+    created_at
+  }
+
+  Note: 'Records administrative actions and changes made through the backoffice.'
+}
+
+Ref: users.id < audit_logs.admin_user_id
