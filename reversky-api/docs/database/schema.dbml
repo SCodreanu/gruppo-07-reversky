@@ -3,6 +3,7 @@
 //
 // Changes compared to the previous version are marked:
 //   // NEW      → added column / table / enum
+//   // CHANGED  → modified column / constraint / note
 ////////////////////////////////////////////////////////////
 
 
@@ -21,12 +22,19 @@ Enum BattleInviteStatus {
   PENDING
   ACCEPTED
   REJECTED
+  EXPIRED   // NEW: no answer before expires_at
 }
 
 Enum BattleResult {
   CHALLENGER_WIN
   OPPONENT_WIN
   DRAW
+}
+
+// NEW
+Enum BattleMode {
+  FRIENDLY [note: 'Invite between friends. Does not change ratings.']
+  RANKED [note: 'Created by matchmaking. Updates Elo ratings.']
 }
 
 Enum FriendshipStatus {
@@ -66,11 +74,11 @@ Table users {
 
   is_enabled boolean [not null, default: true]
 
-  email_verified_at timestamp                                  // NEW: null = email not verified yet
+  email_verified_at timestamp                                  // null = email not verified yet
   privacy_accepted_at timestamp
   terms_accepted_at timestamp
 
-  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 
   Indexes {
     role_id
@@ -184,8 +192,8 @@ Table catalog_cards {
 
   image_path text [not null]
 
-  effect_description text   // NEW: effect text shown to players (the effect itself is the EFFECT_* tag)
-  flavor_text text          // NEW: lore text
+  effect_description text   // effect text shown to players (the effect itself is the EFFECT_* tag)
+  flavor_text text          // lore text
 
   // Some card types may not have combat statistics.
   atk int
@@ -309,36 +317,54 @@ Table battle_invites {
   id uuid [pk]
 
   challenger_id int [not null, ref: > users.id]
-  challenger_deck_id int [not null, ref: > decks.id]
+  // CHANGED: nullable. Required while PENDING; set to NULL when the deck is deleted (see Ref below).
+  challenger_deck_id int
   opponent_id int [not null, ref: > users.id]
 
   status BattleInviteStatus [not null, default: 'PENDING']
 
-  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  expires_at timestamp [not null, default: `CURRENT_TIMESTAMP + INTERVAL '48 hours'`] // NEW
 
   Indexes {
     challenger_id
     opponent_id
     challenger_deck_id
     (opponent_id, status)
+    (status, expires_at)                                        // NEW: expiry job
   }
 
   Checks {
     `challenger_id != opponent_id` [name: 'chk_battle_invites_no_self_challenge']
+    `status <> 'PENDING' OR challenger_deck_id IS NOT NULL` [name: 'chk_battle_invites_pending_has_deck'] // NEW
+    `expires_at > created_at` [name: 'chk_battle_invites_expiry_after_creation'] // NEW
   }
 
-  Note: 'Direct challenges: the challenger picks the opponent. The challenger deck is stored here; the opponent selects a deck when accepting.'
+  // CHANGED: invites are used for FRIENDLY battles only
+  Note: 'FRIENDLY battles only. The challenger picks the opponent, who must be a friend (friendships row ACCEPTED in either direction, validated by the application). The challenger deck is stored here; the opponent selects a deck when accepting. Never affects ratings. Invites expire after 48 hours: a scheduled job moves expired PENDING invites to EXPIRED, and accepting also checks expires_at. A deck used by a PENDING invite cannot be deleted (409); for closed invites the deck reference becomes NULL, the battle keeps its own deck snapshot.'
 }
+
+// NEW: closed invites must not block deck deletion.
+Ref: battle_invites.challenger_deck_id > decks.id [delete: set null]
 
 Table battles {
   id uuid [pk]
 
-  invite_id uuid [not null, unique, ref: - battle_invites.id]
+  mode BattleMode [not null]                                   // NEW
+
+  // CHANGED: nullable. Set for FRIENDLY battles, NULL for RANKED (no invite).
+  invite_id uuid [unique, ref: - battle_invites.id]
 
   challenger_id int [not null, ref: > users.id]
   opponent_id int [not null, ref: > users.id]
 
   result BattleResult
+
+  // NEW: Elo snapshot, RANKED only. Written in the same transaction as result.
+  challenger_rating_before int
+  challenger_rating_delta int
+  opponent_rating_before int
+  opponent_rating_delta int
 
   // Snapshots preserve the decks used in the completed battle.
   challenger_deck jsonb [not null]
@@ -350,19 +376,74 @@ Table battles {
   // Serialized battle events and round results.
   rounds_log jsonb [not null]
 
-  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 
   Indexes {
     challenger_id
     opponent_id
-    created_at                                                  // NEW: history ordering
+    created_at                                                  // history ordering
   }
 
   Checks {
     `challenger_id != opponent_id` [name: 'chk_battles_no_self_battle']
+    `(mode = 'FRIENDLY' AND invite_id IS NOT NULL) OR (mode = 'RANKED' AND invite_id IS NULL)` [name: 'chk_battles_invite_matches_mode'] // NEW
+    `mode = 'RANKED' OR (challenger_rating_before IS NULL AND challenger_rating_delta IS NULL AND opponent_rating_before IS NULL AND opponent_rating_delta IS NULL)` [name: 'chk_battles_friendly_no_rating'] // NEW
+    `mode = 'FRIENDLY' OR result IS NULL OR (challenger_rating_before IS NOT NULL AND challenger_rating_delta IS NOT NULL AND opponent_rating_before IS NOT NULL AND opponent_rating_delta IS NOT NULL)` [name: 'chk_battles_ranked_rating_complete'] // NEW
   }
 
-  Note: 'One invitation can produce at most one battle. The result stays NULL until simulation and persistence are complete.'
+  // CHANGED
+  Note: 'FRIENDLY: created from an invite; one invite produces at most one battle. RANKED: created by matchmaking, without an invite; challenger is the player who joined the queue first. The result stays NULL until simulation and persistence are complete. For RANKED battles the rating columns are written in the same transaction as the result, so Elo is applied exactly once (a retry of an unfinished battle cannot apply it twice).'
+}
+
+
+////////////////////////////////////////////////////////////
+// RANKED: MATCHMAKING AND RATINGS                          // NEW
+////////////////////////////////////////////////////////////
+
+Table matchmaking_queue {
+  user_id int [pk, ref: - users.id]
+  deck_id int [not null]  // FK below, ON DELETE CASCADE
+
+  rating int [not null]   // rating when the user joined the queue
+
+  queued_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    deck_id
+    rating
+    queued_at
+  }
+
+  Note: 'One ticket per user (primary key). The row is deleted when the user leaves the queue or is matched. Matching: oldest ticket first, opponent within +/-100 rating, the window widens by 50 every 10 seconds of waiting up to +/-400. Rows are read with FOR UPDATE SKIP LOCKED so two workers cannot match the same user. Anti-boosting: an opponent met in a RANKED battle in the last 10 minutes is skipped. Deleting both tickets and creating the RANKED battle happen in one transaction, after re-validating both decks (cards may have been traded while queued). Deleting the deck deletes the ticket (FK cascade); editing the deck removes the ticket in the application.'
+}
+
+Ref: matchmaking_queue.deck_id > decks.id [delete: cascade]
+
+Table player_ratings {
+  user_id int [pk, ref: - users.id]
+
+  rating int [not null, default: 1000]
+  peak_rating int [not null, default: 1000]
+
+  games_played int [not null, default: 0]
+  wins int [not null, default: 0]
+  losses int [not null, default: 0]
+  draws int [not null, default: 0]
+
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    rating      // leaderboard
+  }
+
+  Checks {
+    `rating >= 0` [name: 'chk_player_ratings_rating_nonnegative']
+    `peak_rating >= rating` [name: 'chk_player_ratings_peak']
+    `wins >= 0 AND losses >= 0 AND draws >= 0` [name: 'chk_player_ratings_counters_nonnegative']
+    `games_played = wins + losses + draws` [name: 'chk_player_ratings_games_total']
+  }
+
+  Note: 'RANKED stats only; FRIENDLY battles never touch this table. The row is created when the user first joins the queue. Elo: start at 1000; expected = 1 / (1 + 10^((R_opponent - R) / 400)); score = 1 win, 0.5 draw, 0 loss; delta = round(K * (score - expected)); K = 40 for the first 10 ranked games, then 20. The rating is clamped at 0. Before updating, lock both rows with SELECT ... FOR UPDATE, lower user_id first, to avoid deadlocks.'
 }
 
 
@@ -376,7 +457,7 @@ Table friendships {
 
   status FriendshipStatus [not null, default: 'PENDING']
 
-  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 
   Indexes {
     (requester_id, recipient_id) [pk]
@@ -404,8 +485,8 @@ Table trades {
 
   status TradeStatus [not null, default: 'PENDING']
 
-  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW
-  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // NEW: last offer / counteroffer / answer
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`] // last offer / counteroffer / answer
 
   Indexes {
     requester_id

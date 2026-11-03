@@ -2,7 +2,7 @@
 
 ## Scelte
 
-- **PostgreSQL 18.**
+- **PostgreSQL 18**, approvato dai docenti al posto di MySQL indicato nel brief.
 - Lo schema completo, fonte di verità per le migrazioni, è in [schema.dbml](schema.dbml) (si apre su dbdiagram.io).
 - Lo schema è gestito **solo da Flyway**. Hibernate non crea né modifica tabelle (`ddl-auto=validate`).
 - In locale il database parte con Docker grazie a `compose.yaml` e `spring-boot-docker-compose`.
@@ -34,6 +34,7 @@ V8__create_inventories_and_packs.sql
 V9__create_audit_logs.sql
 V10__insert_reference_data.sql      ruoli, rarità, fazioni, bonus di fazione, tag
 V11__insert_initial_catalog.sql     carte iniziali e pacchetto base
+V12__add_ranked_battles.sql         modalità di sfida, coda di matchmaking, rating Elo
 ```
 
 ### Regole
@@ -92,8 +93,10 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `battle_invites` | invito diretto: sfidante, mazzo dello sfidante, avversario scelto, stato, `created_at` |
-| `battles` | partita (sempre legata a un invito): fotografie dei mazzi, `battle_stats`, `rounds_log`, risultato, `created_at` |
+| `battle_invites` | invito diretto **tra amici**, solo per le partite `FRIENDLY`: sfidante, mazzo dello sfidante, avversario scelto, stato, `created_at`, `expires_at` (scadenza dopo 48 ore) |
+| `battles` | partita con `mode` `FRIENDLY` (legata a un invito) o `RANKED` (creata dal matchmaking, `invite_id` nullo): fotografie dei mazzi, `battle_stats`, `rounds_log`, risultato, `created_at`; per le `RANKED` anche rating prima della partita e variazione di entrambi i giocatori |
+| `matchmaking_queue` | utenti in coda per una partita classificata: un ticket per utente, mazzo scelto, rating al momento dell'ingresso, `queued_at` |
+| `player_ratings` | rating Elo (parte da 1000), rating massimo e statistiche delle sole partite classificate; le amichevoli non lo modificano |
 
 ### Amicizie e scambi → [amicizie](../amicizie/amicizie.md), [scambi](../scambi/scambi.md)
 

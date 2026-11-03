@@ -4,7 +4,7 @@
 
 Gli utenti possono mandarsi richieste di amicizia. La lista amici serve a trovare facilmente con chi sfidarsi o scambiare carte e a costruire la community.
 
-Sfide e scambi **non** richiedono l'amicizia, salvo diversa decisione del team.
+Le **sfide amichevoli** (inviti, vedi [sfide](../sfide/sfide.md)) sono possibili **solo tra amici**. Le partite classificate e gli scambi non richiedono l'amicizia.
 
 Tabella: `friendships`, chiave primaria `(requester_id, recipient_id)`.
 
@@ -28,7 +28,8 @@ PENDING ──accept (destinatario)──▶ ACCEPTED ──rimozione──▶ r
 3. Se esiste già un'amicizia `ACCEPTED` in una delle due direzioni → `409`.
 4. Dopo un `REJECTED`, il richiedente può riprovare: la riga esistente torna `PENDING` (la chiave primaria impedisce una seconda riga).
 5. Per sapere se A e B sono amici si controllano **entrambe** le direzioni.
-6. Rimuovere un amico elimina la riga.
+6. Rimuovere un amico elimina la riga e anche gli inviti di sfida `PENDING` tra i due, in entrambe le direzioni.
+7. L'amicizia si controlla sia quando si crea un invito di sfida sia quando lo si accetta.
 
 ```java
 /** Cerca la relazione tra due utenti, in qualunque direzione sia stata creata. */
@@ -58,3 +59,4 @@ Optional<Friendship> findBetween(Integer a, Integer b);
 - Richiesta a se stessi → `400`.
 - Richiesta dopo `REJECTED` → torna `PENDING`.
 - Solo il destinatario può accettare o rifiutare.
+- Rimozione di un amico con un invito di sfida `PENDING` → invito eliminato.

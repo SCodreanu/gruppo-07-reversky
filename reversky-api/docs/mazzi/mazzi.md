@@ -82,7 +82,7 @@ Codici di errore (usati dal frontend):
 
 1. **Al salvataggio** (`POST` / `PUT`): se ci sono errori → `422`, il mazzo non si salva.
 2. **Alla lettura**: il campo `valid` viene ricalcolato, perché nel frattempo l'utente potrebbe aver scambiato una carta.
-3. **Prima di una sfida**: alla creazione dell'invito e all'accettazione. Un mazzo non valido non può giocare.
+3. **Prima di una sfida**: alla creazione dell'invito e all'accettazione; per le classificate, all'ingresso in coda e al momento dell'abbinamento. Un mazzo non valido non può giocare.
 
 ## Endpoint
 
@@ -91,8 +91,8 @@ Codici di errore (usati dal frontend):
 | `GET` | `/api/v1/decks` | i miei mazzi (con `valid` e numero carte) |
 | `POST` | `/api/v1/decks` | crea |
 | `GET` | `/api/v1/decks/{id}` | dettaglio con carte |
-| `PUT` | `/api/v1/decks/{id}` | sostituisce nome e contenuto |
-| `DELETE` | `/api/v1/decks/{id}` | elimina (non se usato in un invito `PENDING` → `409`) |
+| `PUT` | `/api/v1/decks/{id}` | sostituisce nome e contenuto (se il mazzo è in coda classificata, il ticket viene rimosso) |
+| `DELETE` | `/api/v1/decks/{id}` | elimina (non se usato in un invito `PENDING` → `409`; se è in coda classificata, il ticket viene rimosso) |
 | `POST` | `/api/v1/decks/validate` | valida senza salvare (per il deck builder) |
 | `GET` | `/api/v1/decks/rules` | limiti attuali (configurazione + `deck_limit` delle rarità), così il frontend non li duplica |
 
@@ -112,6 +112,7 @@ Richiesta di creazione:
 
 - Un utente vede e modifica **solo i propri mazzi** (mazzo di un altro → `404`).
 - Nome: 1–255 caratteri, univoco per utente (vincolo `(user_id, name)`); duplicato → `409`.
+- Gli inviti già chiusi (`ACCEPTED`, `REJECTED`, `EXPIRED`) non bloccano l'eliminazione: il loro `challenger_deck_id` diventa `NULL` (`ON DELETE SET NULL`). Le partite conservano la propria fotografia del mazzo.
 
 ## Test minimi
 
@@ -121,4 +122,7 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - carta con `copy_limit` più basso della rarità → vale il `copy_limit`;
 - 2 Legendary diverse → ok; 3 → errore;
 - carta non posseduta → errore;
-- mazzo con più errori → li restituisce tutti.
+- mazzo con più errori → li restituisce tutti;
+- eliminazione di un mazzo usato in un invito `PENDING` → `409`;
+- eliminazione di un mazzo usato in un invito già chiuso → ok, `challenger_deck_id` diventa `NULL`;
+- modifica o eliminazione di un mazzo in coda classificata → ticket rimosso.
