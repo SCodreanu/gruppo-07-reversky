@@ -46,20 +46,20 @@ Tutti i documenti del gruppo (presi dal Drive) sono nella cartella [`docs/`](doc
 | Cartella | Contenuto |
 |---|---|
 | [`docs/assets/logo`](<docs/assets/logo>) | logo di Reversky nelle varie versioni (PNG e SVG) |
-| [`docs/assets/fazioni`](<docs/assets/fazioni>) | simboli delle quattro fazioni (Teoria della Ferita, dell'Invito, dell'Archivio, del Sogno) |
+| [`docs/assets/fazioni`](<docs/assets/fazioni>) | simboli delle quattro fazioni (Theory of the Wound, of the Invitation, of the Archive, of the Dream) |
 | [`docs/assets/carte`](<docs/assets/carte>) | esempi di carte, una per rarità, più una carta speciale |
 
 Esempi di carte:
 
 | Rarità | Carta |
 |---|---|
-| Common | [Corvo di Cenere](<docs/assets/carte/Common-Corvo_di_Cenere.png>) |
-| Uncommon | [Sala d'Attesa Vivente](<docs/assets/carte/Uncommon-Sala_d’Attesa_Vivente.png>) |
-| Rare | [SCP-106](<docs/assets/carte/Rare-SCP-106.png>) |
+| Common | [Ash Raven](<docs/assets/carte/Common-Corvo_di_Cenere.png>) |
+| Uncommon | [Living Waiting Room](<docs/assets/carte/Uncommon-Sala_d’Attesa_Vivente.png>) |
+| Rare | [SCP-106 (Old Man)](<docs/assets/carte/Rare-SCP-106.png>) |
 | Mythic | [Kitsune](<docs/assets/carte/Mythic-Kitsune.png>) |
 | Legendary | [Wendigo](<docs/assets/carte/Legendary-Wendingo.png>) |
 | Mutant | [Ashen Kitsune](<docs/assets/carte/Mutante-Ashen_Kitsune.png>) |
-| Speciale | [Carta speciale di Natale](<docs/assets/carte/CartaSpecialeNatale.png>) |
+| Speciale | [The Last Gift](<docs/assets/carte/CartaSpecialeNatale.png>) |
 
 ---
 
@@ -168,3 +168,4 @@ Ogni modulo ha la propria documentazione tecnica:
 
 - `reversky-api/AGENTS.md` e `reversky-api/docs/`: funzionalità del backend, database, regole del codice;
 - `reversky-engine/AGENTS.md` e `reversky-engine/docs/`: regole di gioco, effetti, contratto REST del motore.
+  Per chi inizia sull'engine: [guida allo sviluppo](reversky-engine/docs/guida-sviluppo/guida-sviluppo.md), [roadmap](reversky-engine/docs/roadmap/roadmap.md), [richieste di esempio](reversky-engine/examples/README.md).

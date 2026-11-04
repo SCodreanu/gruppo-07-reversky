@@ -75,13 +75,13 @@ Così l'ordine è sempre lo stesso e la partita è riproducibile. **[DA CONFERMA
 
 ### Effetti che annullano altri effetti
 
-Predicatore sotto la Pioggia, SCP-2521 e Baku disattivano l'effetto avversario. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
+The Rain Preacher, SCP-2521 e Baku disattivano l'effetto avversario. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
 
 ```java
 @Override
 public void onEnterPlay(EffectContext ctx) {
 	ctx.opponent().disableEffect();
-	ctx.log().effect(ctx.self(), "cancella l'effetto di " + ctx.opponent().name());
+	ctx.log().effect(ctx.self(), "cancels the effect of " + ctx.opponent().name());
 }
 ```
 
@@ -112,7 +112,7 @@ public final class HidebehindEffect implements CreatureEffect {
 	public int modifyIncomingDamage(EffectContext ctx, int damage) {
 		if (!dodgeUsed) {
 			dodgeUsed = true;
-			ctx.log().effect(ctx.self(), "schiva il primo attacco");
+			ctx.log().effect(ctx.self(), "dodges the first attack");
 			return 0;
 		}
 		return damage;
@@ -132,7 +132,7 @@ public void afterDamage(EffectContext ctx, int damageTaken) {
 	CreatureInPlay self = ctx.self();
 	if (!enraged && self.defense() > 0 && self.defense() * 2 <= self.initialDefense()) {
 		enraged = true;
-		self.addAttackModifier(3, "Furia incontrollabile");
+		self.addAttackModifier(3, "Uncontrollable Rage");
 	}
 }
 ```
@@ -182,6 +182,9 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | Codice | Carta | Momento | Stato |
 |---|---|---|---|
 | — | — | — | nessuno ancora |
+
+L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni), con codici proposti, momenti e domande aperte, è nel [catalogo degli effetti](catalogo-effetti.md).
+Le modifiche al motore che gli effetti richiedono (es. `onCombatStart`, morti fuori dal round) sono in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).
 
 Effetti che richiedono chiarimenti prima di essere implementati **[DA CONFERMARE]**:
 - **Mothman**: "se sta per perdere la sfida… ribalta il risultato" — riguarda la partita intera o lo scontro? Cosa significa "scarto"?

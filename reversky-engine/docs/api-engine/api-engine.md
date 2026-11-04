@@ -5,6 +5,8 @@ Se cambi questo contratto, va aggiornato anche l'`EngineClient` dell'API: avvisa
 
 Base URL in sviluppo: `http://localhost:8081`
 
+Richieste pronte per ogni caso, con il risultato atteso: [`examples/`](../../examples/README.md). Come lanciarle: [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#3-chiamare-lengine).
+
 ## `POST /api/v1/simulations`
 
 Simula una partita completa.
@@ -14,11 +16,12 @@ Simula una partita completa.
 ```json
 {
   "seed": 8812734650912,
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
   "factions": [
-    { "id": 1, "name": "Backrooms" },
-    { "id": 2, "name": "Monti Appalachi" },
-    { "id": 3, "name": "SCP" },
-    { "id": 4, "name": "Yokai" }
+    { "id": 1, "name": "Theory of the Wound" },
+    { "id": 2, "name": "Theory of the Invitation" },
+    { "id": 3, "name": "Theory of the Archive" },
+    { "id": 4, "name": "Theory of the Dream" }
   ],
   "factionBonuses": [
     { "originFactionId": 2, "targetFactionId": 3, "atkBonus": 2, "defBonus": 0 },
@@ -36,6 +39,7 @@ Simula una partita completa.
         "rarity": "Common",
         "rarityOrder": 1,
         "factionId": 1,
+        "secondaryFactionId": null,
         "atk": 4,
         "def": 5,
         "subtype": null,
@@ -43,11 +47,12 @@ Simula una partita completa.
       },
       {
         "cardId": 70,
-        "name": "Velo degli Ancorati",
+        "name": "Veil of the Anchored",
         "type": "SPELL",
         "rarity": "Uncommon",
         "rarityOrder": 2,
         "factionId": 3,
+        "secondaryFactionId": null,
         "atk": null,
         "def": null,
         "subtype": "SHIELD",
@@ -62,12 +67,17 @@ Simula una partita completa.
 | Campo | Obbligatorio | Note |
 |---|---|---|
 | `seed` | sì | `long`, generato dall'API |
+| `rules` | sì | regole della partita, dal **rule set attivo** nel database dell'API (backoffice, tabella `rule_sets`). L'engine **non ha valori predefiniti** |
+| `rules.rulesVersion` | sì | `rule_sets.version`, restituito uguale nel risultato |
+| `rules.startingLifePoints` | sì | ≥ 1 |
+| `rules.maxRounds` | sì | ≥ 1, limite di round **totali** della partita |
 | `factions` | sì | dalla tabella `factions` |
 | `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonus` |
 | `challenger`, `opponent` | sì | sfidante e avversario |
 | `deck` | sì | una voce **per ogni copia**, almeno una creatura |
 | `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN` (enum `CardType`) |
 | `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
+| `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
 | `subtype` | Spell e Hidden | ricavato dai tag: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
 | `effectCode` | no | ricavato dal tag `EFFECT_<CODICE>` (senza il prefisso) |
@@ -85,7 +95,7 @@ Simula una partita completa.
   "rulesVersion": "1.0",
   "log": [
     { "sequence": 1, "round": 0, "type": "MATCH_STARTED", "side": null,
-      "data": { "startingLifePoints": 30 }, "message": "Partita iniziata" }
+      "data": { "startingLifePoints": 30 }, "message": "Match started" }
   ]
 }
 ```
@@ -94,6 +104,9 @@ Simula una partita completa.
 |---|---|
 | `result` | `CHALLENGER_WIN`, `OPPONENT_WIN`, `DRAW` (uguali all'enum `BattleResult` del database) |
 | `endReason` | `LIFE_POINTS_ZERO`, `BOTH_LIFE_POINTS_ZERO`, `NO_CREATURES_LEFT`, `BOTH_DECKS_EMPTY`, `ROUND_LIMIT` |
+| `totalRounds` | round risolti; la preparazione (round 0) non conta **[DA CONFERMARE] D-42** |
+| `finalLifePoints` | minimo 0, anche se l'ultimo danno porta sotto zero **[DA CONFERMARE] D-43** |
+| `creaturesDefeated` | creature **avversarie** distrutte da quel giocatore; in una morte simultanea contano per entrambi **[DA CONFERMARE] D-42** |
 | `log` | vedi [log-partita](../log-partita/log-partita.md) |
 
 L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
@@ -106,6 +119,19 @@ L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
 | `500` | bug nel motore (non dovrebbe mai succedere: va segnalato con il seed per riprodurlo) |
 
 Formato: `ProblemDetail`, come nell'API.
+
+I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore:
+
+| Ordine | `code` | Quando | Esempio |
+|---|---|---|---|
+| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`) | `95` |
+| 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
+| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa o `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) | `93` |
+| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId` | `94` |
+| 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
+| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
+| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype` | — |
+| 8 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
 
 ```json
 {
@@ -127,17 +153,10 @@ Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per valida
 ]
 ```
 
-## `GET /api/v1/rules`
+## Regole della partita: niente `GET /api/v1/rules`
 
-Valori attuali di `RuleConfig`. Utile per mostrare le regole aggiornate nel portale senza duplicarle.
-
-```json
-{
-  "rulesVersion": "1.0",
-  "startingLifePoints": 30,
-  "maxRounds": 100
-}
-```
+L'engine non ha regole proprie: tutto ciò che non è una costante del regolamento (punti vita, limite di round, bonus di fazione)
+arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /api/v1/rules`, dal rule set attivo).
 
 ## Note
 

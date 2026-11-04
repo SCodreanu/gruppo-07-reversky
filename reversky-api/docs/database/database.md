@@ -76,10 +76,11 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `rarities` | rarità con `deck_limit` (copie massime per carta) e `sorting_order` |
+| `rule_sets` | **valori di gioco dal backoffice**, versionati, uno solo attivo: punti vita iniziali e limite di round (inviati all'engine), composizione del mazzo, crediti di benvenuto/vittoria/pareggio |
+| `rarities` | rarità con `deck_limit` (copie massime per carta), `max_per_deck` (bilanciamento del mazzo), `max_atk`/`max_def` (statistiche massime) e `sorting_order` |
 | `factions` | fazioni |
-| `faction_bonus` | bonus ATK/DEF di una fazione contro un'altra (solo valori ≥ 0) |
-| `catalog_cards` | carte: tipo, rarità, fazione, ATK/DEF (nulli per le carte senza statistiche), `copy_limit`, `is_active`, immagine, `effect_description`, `flavor_text` |
+| `faction_bonus` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
+| `catalog_cards` | carte: tipo, rarità, fazione e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit`, `is_active`, immagine, `effect_description`, `flavor_text` |
 | `tags` / `card_tags` / `faction_tags` | etichette per carte e fazioni (filtri dei pacchetti, effetti, sottotipi) |
 
 ### Collezione e mazzi → [collezione](../collezione/collezione.md), [mazzi](../mazzi/mazzi.md)
@@ -94,7 +95,7 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 | Tabella | Contenuto |
 |---|---|
 | `battle_invites` | invito diretto **tra amici**, solo per le partite `FRIENDLY`: sfidante, mazzo dello sfidante, avversario scelto, stato, `created_at`, `expires_at` (scadenza dopo 48 ore) |
-| `battles` | partita con `mode` `FRIENDLY` (legata a un invito) o `RANKED` (creata dal matchmaking, `invite_id` nullo): fotografie dei mazzi, `battle_stats`, `rounds_log`, risultato, `created_at`; per le `RANKED` anche rating prima della partita e variazione di entrambi i giocatori |
+| `battles` | partita con `mode` `FRIENDLY` (legata a un invito) o `RANKED` (creata dal matchmaking, `invite_id` nullo): fotografie dei mazzi, `rule_set_id` (regole usate), `battle_stats` (anche la copia delle regole e dei bonus di fazione inviati all'engine), `rounds_log`, risultato, `created_at`; per le `RANKED` anche rating prima della partita e variazione di entrambi i giocatori |
 | `matchmaking_queue` | utenti in coda per una partita classificata: un ticket per utente, mazzo scelto, rating al momento dell'ingresso, `queued_at` |
 | `player_ratings` | rating Elo (parte da 1000), rating massimo e statistiche delle sole partite classificate; le amichevoli non lo modificano |
 

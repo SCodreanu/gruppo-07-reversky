@@ -13,8 +13,10 @@ Obiettivo: codice **leggibile, prevedibile e uguale ovunque**, anche se scritto 
 | Endpoint REST | Inglese, plurale, minuscolo | `/api/v1/decks` |
 | Tabelle e colonne DB | Inglese, `snake_case` | `collection_cards.card_id` |
 | Commenti e Javadoc | Italiano | `// Blocca le righe per evitare doppie spese` |
-| Messaggi di errore per l'utente | Italiano | `"Crediti insufficienti"` |
+| Testi nel codice: errori per l'utente, validazione, email, log, Swagger, `@DisplayName` | Inglese | `"Insufficient credits"` |
 | Messaggi di commit | Italiano | `feat(deck): aggiunta validazione copie` |
+
+In breve: **tutto ciò che sta tra virgolette nel codice è in inglese** (il prodotto è English first); commenti, Javadoc e messaggi di commit restano in italiano.
 
 ### Glossario italiano → inglese
 
@@ -46,7 +48,6 @@ Usiamo sempre questi termini, mai sinonimi:
 ## 2. Formattazione
 
 - Indentazione con **tab** (come i file generati da Spring Initializr).
-- Righe di massimo **120 caratteri**.
 - Parentesi graffe sempre, anche per `if` di una riga.
 - Un solo `import` per riga, niente `import x.*`.
 - Ordine dei membri di una classe: costanti → campi → costruttori → metodi pubblici → metodi privati.
@@ -55,11 +56,11 @@ Usiamo sempre questi termini, mai sinonimi:
 ```java
 // SÌ
 if (deck.isEmpty()) {
-	throw new InvalidDeckException("Il mazzo è vuoto");
+	throw new InvalidDeckException("The deck is empty");
 }
 
 // NO
-if (deck.isEmpty()) throw new InvalidDeckException("Il mazzo è vuoto");
+if (deck.isEmpty()) throw new InvalidDeckException("The deck is empty");
 ```
 
 ---
@@ -106,7 +107,7 @@ Controller  →  Service  →  Repository  →  Database
 - DTO come **`record`** Java.
 - Non restituire mai `null` per una lista: restituisci una lista vuota.
 - Per "potrebbe non esserci" usa `Optional` nei repository, poi nel service trasformalo in eccezione.
-- Niente "numeri magici": i valori del regolamento vanno in costanti o in `application.properties`.
+- Niente "numeri magici": i valori del regolamento stanno nel database (rule set attivo, rarità, `faction_bonus`) e si modificano dal backoffice; in `application.properties` solo la configurazione tecnica.
 
 ```java
 // SÌ
@@ -179,7 +180,8 @@ Esempi completi in [docs/database](docs/database/database.md).
 ```java
 public class InsufficientCreditsException extends BusinessException {
 	public InsufficientCreditsException(int required, int available) {
-		super("Crediti insufficienti: servono " + required + ", disponibili " + available);
+		super(Category.RULE_VIOLATION, "INSUFFICIENT_CREDITS", "Insufficient credits",
+				"Insufficient credits: " + required + " required, " + available + " available");
 	}
 }
 ```
@@ -242,7 +244,7 @@ Formato: `// TODO(@username): cosa manca` — con l'utente GitHub di chi se ne o
 - **Mai** loggare password, token (JWT, refresh, reset) o dati personali.
 
 ```java
-log.info("Scambio {} accettato da utente {}", tradeId, userId);
+log.info("Trade {} accepted by user {}", tradeId, userId);
 ```
 
 ---

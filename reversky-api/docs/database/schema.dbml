@@ -146,13 +146,66 @@ Table rarities {
   // allowed in a deck, before considering a card-specific limit.
   deck_limit smallint [not null]
 
+  // Deck balance: maximum cards of this rarity in a deck (NULL = no limit).
+  max_per_deck smallint
+
+  // Maximum ATK and DEF of a card of this rarity (NULL = not defined yet, e.g. Mutant).
+  max_atk smallint
+  max_def smallint
+
   sorting_order smallint [not null, unique]
 
   Checks {
     `deck_limit >= 1` [name: 'chk_rarities_deck_limit']
+    `max_per_deck IS NULL OR max_per_deck >= 0` [name: 'chk_rarities_max_per_deck']
+    `max_atk IS NULL OR max_atk >= 0` [name: 'chk_rarities_max_atk']
+    `max_def IS NULL OR max_def >= 1` [name: 'chk_rarities_max_def']
   }
 
   Note: 'The effective per-card deck limit is the minimum of deck_limit and catalog_cards.copy_limit.'
+}
+
+// Game values editable from the backoffice: match rules sent to the engine,
+// deck composition and credit rewards. Nothing here is hard-coded in the API or the engine.
+Table rule_sets {
+  id int [pk, increment]
+
+  version varchar(20) [not null, unique]        // e.g. "1.0", sent to the engine as rulesVersion
+  is_active boolean [not null, default: false]  // exactly one active rule set
+
+  // Match (sent to the engine in every simulation)
+  starting_life_points smallint [not null]
+  max_rounds smallint [not null]                // total rounds of the match
+
+  // Deck composition
+  deck_size smallint [not null]
+  deck_creatures smallint [not null]
+  deck_specials smallint [not null]             // Spell + Hidden
+  deck_terrains smallint [not null]
+  max_hidden_survival smallint [not null]
+  max_hidden_damage smallint [not null]
+
+  // Credits
+  signup_bonus int [not null]
+  win_reward int [not null]
+  draw_reward int [not null]
+
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  created_by int [ref: > users.id]
+
+  Indexes {
+    is_active [unique, name: 'uq_rule_sets_one_active', note: 'partial index: WHERE is_active']
+  }
+
+  Checks {
+    `starting_life_points >= 1 AND max_rounds >= 1` [name: 'chk_rule_sets_match']
+    `deck_creatures >= 1 AND deck_specials >= 0 AND deck_terrains >= 0` [name: 'chk_rule_sets_deck_parts']
+    `deck_creatures + deck_specials + deck_terrains = deck_size` [name: 'chk_rule_sets_deck_size']
+    `max_hidden_survival >= 0 AND max_hidden_damage >= 0` [name: 'chk_rule_sets_hidden']
+    `signup_bonus >= 0 AND win_reward >= 0 AND draw_reward >= 0` [name: 'chk_rule_sets_credits']
+  }
+
+  Note: 'Versioned game values managed from the backoffice. Exactly one row is active. A rule set already used by a battle is never edited: a change creates a new version, which is then activated.'
 }
 
 Table factions {
@@ -164,7 +217,7 @@ Table faction_bonus {
   origin_faction_id int [not null, ref: > factions.id]
   target_faction_id int [not null, ref: > factions.id]
 
-  atk_bonus int [not null, default: 0]
+  atk_bonus int [not null, default: 0]   // can be negative: -1 is the malus against the faction that beats you
   def_bonus int [not null, default: 0]
 
   Indexes {
@@ -174,11 +227,10 @@ Table faction_bonus {
 
   Checks {
     `origin_faction_id != target_faction_id` [name: 'chk_faction_bonus_no_self_matchup']
-    `atk_bonus >= 0` [name: 'chk_faction_bonus_atk_nonnegative']
     `def_bonus >= 0` [name: 'chk_faction_bonus_def_nonnegative']
   }
 
-  Note: 'Defines bonuses applied by an origin faction against a target faction. Self-matchups are not allowed.'
+  Note: 'Defines bonuses applied by an origin faction against a target faction. atk_bonus may be negative (faction malus); def_bonus is never negative. Self-matchups are not allowed.'
 }
 
 Table catalog_cards {
@@ -186,6 +238,7 @@ Table catalog_cards {
 
   rarity_id int [not null, ref: > rarities.id]
   faction_id int [not null, ref: > factions.id]
+  secondary_faction_id int [ref: > factions.id]   // optional second faction (e.g. Mutant cards): the card gets bonuses and maluses of both
 
   name varchar(255) [not null]
   type CardType [not null]
@@ -208,6 +261,7 @@ Table catalog_cards {
   Indexes {
     rarity_id
     faction_id
+    secondary_faction_id
     (rarity_id, faction_id)
     (is_active, rarity_id)
   }
@@ -216,6 +270,7 @@ Table catalog_cards {
     `copy_limit >= 1` [name: 'chk_catalog_cards_copy_limit']
     `atk IS NULL OR atk >= 0` [name: 'chk_catalog_cards_atk_nonnegative']
     `def IS NULL OR def >= 0` [name: 'chk_catalog_cards_def_nonnegative']
+    `secondary_faction_id IS NULL OR secondary_faction_id != faction_id` [name: 'chk_catalog_cards_distinct_factions']
   }
 
   Note: 'Tags are assigned through card_tags. Effects use EFFECT_<CODE> tags; Spell/Hidden subtypes use DAMAGE, SHIELD, BURN, SURVIVAL tags.'
@@ -359,6 +414,10 @@ Table battles {
   opponent_id int [not null, ref: > users.id]
 
   result BattleResult
+
+  // Rule set active when the battle was prepared. The rules and faction bonuses actually sent to the
+  // engine are also copied into battle_stats, so a retry replays exactly the same match.
+  rule_set_id int [not null, ref: > rule_sets.id]
 
   // NEW: Elo snapshot, RANKED only. Written in the same transaction as result.
   challenger_rating_before int
@@ -585,7 +644,6 @@ Table pack_inventory {
   }
 }
 
-
 ////////////////////////////////////////////////////////////
 // PACK BASE RARITY DISTRIBUTION
 ////////////////////////////////////////////////////////////
@@ -648,7 +706,7 @@ Table pack_tags {
     tag_id
   }
 
-  Note: 'A card is tag-eligible when it matches at least one allowed pack tag through its own tags or its faction tags. A pack with no rows here is unrestricted.'
+  Note: 'A card is tag-eligible when it matches at least one allowed pack tag through its own tags or the tags of either of its factions. A pack with no rows here is unrestricted.'
 }
 
 

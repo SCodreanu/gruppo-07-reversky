@@ -26,6 +26,7 @@ Campi:
 | `type` | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN` |
 | `rarityId` | riferimento a `rarities` |
 | `factionId` | riferimento a `factions` (obbligatorio per tutte le carte) |
+| `secondaryFactionId` | seconda fazione facoltativa (es. Mutant), diversa da `factionId`: la carta prende vantaggi e svantaggi di entrambe |
 | `atk`, `def` | obbligatori e ≥ 0 per le creature (DEF > 0); vuoti per le altre carte |
 | `copyLimit` | ≥ 1; il limite reale nel mazzo è `min(deck_limit della rarità, copyLimit)` |
 | `imagePath` | illustrazione |
@@ -39,19 +40,38 @@ Campi:
 2. **Effetti tramite tag.** L'effetto di una carta è un tag `EFFECT_<CODICE>` (al massimo uno). Il codice **deve esistere nell'engine**: gli effetti sono codice Java, il backoffice può solo assegnare un effetto già implementato. L'elenco dei codici validi si ottiene dall'engine (`GET /api/v1/effects`).
 3. **Sottotipi tramite tag.** Una Spell deve avere uno tra `DAMAGE`, `SHIELD`, `BURN`; una Hidden uno tra `SURVIVAL`, `DAMAGE`.
 4. **Rarità coerenti con i pacchetti.** Spell e Hidden devono essere Common o Uncommon, i Terreni Rare (vedi [pacchetti](../pacchetti/pacchetti.md)).
-5. **Statistiche massime per rarità** (dalla bozza del regolamento): Common 10, Uncommon 12, Rare 14, Mythic 16, Legendary 20. **[DA CONFERMARE]** se il limite vale per ATK e DEF separati o per la somma.
+5. **Statistiche massime per rarità:** `rarities.max_atk` e `rarities.max_def`, separati (proposta al cliente: Common 10, Uncommon 12, Rare 14, Mythic 16, Legendary 20; Mutant da definire = nessun controllo).
 6. Modificare una carta **non** cambia le partite già giocate (vedi la "fotografia" in [sfide](../sfide/sfide.md)).
 
 ## Dati di riferimento
 
 | Metodo | URL | Tabella |
 |---|---|---|
-| `GET/POST/PUT` | `/admin/rarities` | `rarities` (`deck_limit` ≥ 1, `sorting_order` univoco) |
+| `GET/POST/PUT` | `/admin/rarities` | `rarities` (`deck_limit` ≥ 1, `max_per_deck`, `max_atk`, `max_def`, `sorting_order` univoco) |
 | `GET/POST/PUT` | `/admin/factions` | `factions`, `faction_tags` |
-| `GET/PUT` | `/admin/faction-bonus` | `faction_bonus` (bonus ≥ 0, mai una fazione contro se stessa) |
+| `GET/PUT` | `/admin/faction-bonus` | `faction_bonus` (`atkBonus` anche negativo per il malus, `defBonus` ≥ 0, mai una fazione contro se stessa) |
 | `GET/POST/PUT` | `/admin/tags` | `tags` |
 
 Modificare `faction_bonus` cambia il bilanciamento di **tutte** le partite future: va fatto solo dopo aver verificato l'effetto con le simulazioni dell'engine.
+
+## Regole di gioco — `rule_sets`
+
+Regola del progetto: **tutto ciò che non è una costante del regolamento si modifica da qui**, non dal codice né da `application.properties`.
+Il rule set contiene punti vita iniziali e limite di round (inviati all'engine a ogni partita), composizione del mazzo e crediti di benvenuto, vittoria e pareggio.
+Bonus di fazione e limiti per rarità stanno nelle loro tabelle (sopra).
+
+| Metodo | URL | Descrizione |
+|---|---|---|
+| `GET` | `/admin/rule-sets` | elenco delle versioni, con quella attiva |
+| `POST` | `/admin/rule-sets` | crea una nuova versione (di solito copiando quella attiva) |
+| `PUT` | `/admin/rule-sets/{id}` | modifica una versione **mai usata** da una partita (`409` altrimenti) |
+| `POST` | `/admin/rule-sets/{id}/activate` | la rende attiva e disattiva la precedente, in una sola transazione |
+
+Controlli: `version` univoca; valori ≥ 1 per punti vita e round; creature + speciali + terreni = carte totali; crediti ≥ 0.
+Ogni modifica e ogni attivazione va in `audit_logs`.
+
+Le partite già giocate non cambiano: ognuna salva il proprio `rule_set_id` e una copia delle regole e dei bonus di fazione usati.
+Un mazzo valido con il vecchio rule set può diventare non valido con il nuovo: lo segnala il campo `valid` (vedi [mazzi](../mazzi/mazzi.md)).
 
 ## Pacchetti
 

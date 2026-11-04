@@ -13,7 +13,7 @@ public record MatchEvent(
 		EventType type,
 		Side side,              // CHALLENGER, OPPONENT o null se riguarda entrambi
 		Map<String, Object> data,
-		String message) {       // frase leggibile in italiano
+		String message) {       // frase leggibile in inglese (la leggono i giocatori)
 }
 ```
 
@@ -26,7 +26,7 @@ In JSON:
   "type": "DAMAGE_DEALT",
   "side": "CHALLENGER",
   "data": { "source": "Hounds", "target": "Kappa", "amount": 11, "targetDefense": -2 },
-  "message": "Hounds infligge 11 danni a Kappa"
+  "message": "Hounds deals 11 damage to Kappa"
 }
 ```
 
@@ -55,17 +55,17 @@ In JSON:
 ## Esempio di sequenza
 
 ```
-#1  round 0  MATCH_STARTED     Partita iniziata — 30 PV a testa
-#2  round 0  CREATURE_ENTERED  Sfidante: Crawlers (ATK 4, DEF 5)
-#3  round 0  CREATURE_ENTERED  Avversario: Kappa (ATK 6, DEF 7)
-#4  round 0  EFFECT_TRIGGERED  Kappa: Forza dell'acqua, +3 ATK per 2 round
+#1  round 0  MATCH_STARTED     Match started — 30 life points each
+#2  round 0  CREATURE_ENTERED  Challenger plays Crawlers (ATK 4, DEF 5)
+#3  round 0  CREATURE_ENTERED  Opponent plays Kappa (ATK 6, DEF 7)
+#4  round 0  EFFECT_TRIGGERED  Kappa: Water Strength, +3 ATK for 2 rounds
 #5  round 1  ROUND_STARTED     Round 1
-#6  round 1  ATTACK_COMPUTED   Crawlers attacca con 6 (4 base, +2 fazione)
-#7  round 1  ATTACK_COMPUTED   Kappa attacca con 9 (6 base, +3 effetto)
-#8  round 1  DAMAGE_DEALT      Crawlers infligge 6 danni a Kappa (DEF 1)
-#9  round 1  DAMAGE_DEALT      Kappa infligge 9 danni a Crawlers (DEF −4)
-#10 round 1  CREATURE_DIED     Crawlers è stato distrutto
-#11 round 1  PLAYER_DAMAGED    Lo sfidante perde 4 PV (26 rimasti)
+#6  round 1  ATTACK_COMPUTED   Crawlers attacks with 6 (4 base, +2 faction)
+#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 effect)
+#8  round 1  DAMAGE_DEALT      Crawlers deals 6 damage to Kappa (DEF 1)
+#9  round 1  DAMAGE_DEALT      Kappa deals 8 damage to Crawlers (DEF −3)
+#10 round 1  CREATURE_DIED     Crawlers is destroyed
+#11 round 1  PLAYER_DAMAGED    Challenger loses 3 life points (27 left)
 ...
 ```
 
@@ -73,7 +73,7 @@ In JSON:
 
 1. **Ogni cambiamento di stato** visibile deve avere un evento: se qualcosa cambia ATK, DEF o PV e non c'è un evento, è un bug.
 2. Gli eventi si aggiungono **solo** tramite `MatchLog` (metodi come `log.damage(...)`, `log.effect(...)`), mai costruendo `MatchEvent` a mano in giro per il codice.
-3. I messaggi sono in **italiano**, brevi, al presente.
+3. I messaggi sono in **inglese** (li leggono i giocatori nel portale e nel Verbale), brevi, al presente. I `data` restano strutturati e senza testo.
 4. L'ordine degli eventi è quello reale di risoluzione: per i danni simultanei prima lo sfidante, poi l'avversario.
 
 ## Dimensione

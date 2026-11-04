@@ -12,6 +12,7 @@ public record CardDefinition(
 		String rarity,          // nome della rarità
 		int rarityOrder,        // rarities.sorting_order: più alto = più rara
 		int factionId,          // tutte le carte hanno una fazione
+		Integer secondaryFactionId, // seconda fazione facoltativa (es. Mutant), altrimenti null
 		Integer atk,            // solo creature, altrimenti null
 		Integer def,            // solo creature, altrimenti null
 		CardSubtype subtype,    // Spell/Hidden: DAMAGE, SHIELD, BURN, SURVIVAL (dai tag); altrimenti null
@@ -36,7 +37,12 @@ Nel motore la rarità serve solo a qualche effetto (es. Bigfoot: "+2 contro cart
 | Rare | Keter |
 | Mythic | Thaumiel |
 | Legendary | Apollyon |
-| Mutant | — (da definire) |
+| Mutant | — (ATK e DEF massimi da definire, D-20) |
+| Speciale (es. The Last Gift, edizione di Natale) | — (rarità da definire, D-23) |
+
+Limiti di ATK e DEF per rarità (proposta al cliente, li controlla l'API): Common 10, Uncommon 12, Rare 14, Mythic 16, Legendary 20.
+
+Una carta può avere **due fazioni** (es. la Mutant Ashen Kitsune: Theory of the Dream × Theory of the Invitation) e prende vantaggi e svantaggi di entrambe: vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni).
 
 ## Tipi di carta
 
@@ -53,7 +59,7 @@ public final class CreatureInPlay {
 	private int defense;                // DEF attuale
 	private final List<StatModifier> attackModifiers;
 	private CreatureEffect effect;      // null se la carta non ha effetto
-	private boolean effectDisabled;     // es. annullato da SCP-2521 o dal Predicatore
+	private boolean effectDisabled;     // es. annullato da SCP-2521 o da The Rain Preacher
 	private int roundsInCombat;         // per effetti "nei primi 2 round"
 	...
 }
@@ -65,9 +71,9 @@ Quando viene pescata, **il suo effetto si applica subito** in automatico e la ca
 
 | Sottotipo | Bersaglio | Esempi |
 |---|---|---|
-| `DAMAGE` | creatura avversaria in campo | Morso del Rovescio (−3 ATK), Frattura della Pelle (−3 DEF), Dissoluzione (−2/−2) |
-| `SHIELD` | la **prossima** propria creatura che entra in campo | Velo degli Ancorati (+3 DEF), Patto del Registro (+2 DEF/+1 ATK) |
-| `BURN` | vedi sotto | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati |
+| `DAMAGE` | creatura avversaria in campo | Bite of the Reverse (−3 ATK), Skin Fracture (−3 DEF), Dissolution (−2/−2) |
+| `SHIELD` | la **prossima** propria creatura che entra in campo | Veil of the Anchored (+3 DEF), Registry Pact (+2 DEF/+1 ATK) |
+| `BURN` | vedi sotto | Call of the Rift, Reverse Fusion, Echo of the Forgotten |
 
 Regole proposte **[DA CONFERMARE]**:
 - Spell `DAMAGE` pescata quando l'avversario non ha una creatura in campo (inizio partita): si applica alla prossima creatura avversaria che entra.
@@ -91,12 +97,12 @@ Quando viene pescato viene messo **accanto al mazzo** e resta in gioco **fino al
 
 | Terreno | Fazione | Effetto base |
 |---|---|---|
-| Echo Rift (Crepa Eco) | Backrooms | +1 ATK |
-| Hollow Clearing (Crepa Radura) | Monti Appalachi | +2 DEF |
-| Watching Rift (Crepa Occhio) | SCP | +1 ATK e +1 DEF |
-| Devouring Abyss (Crepa Cavità) | Yokai | +1 ATK |
+| Echo Rift (Crepa Eco) | Theory of the Wound | +1 ATK |
+| Hollow Clearing (Crepa Radura) | Theory of the Invitation | +2 DEF |
+| Watching Rift (Crepa Occhio) | Theory of the Archive | +1 ATK e +1 DEF |
+| Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK |
 
-La fazione del Terreno è il suo `factionId`; l'effetto è il suo `effectCode`.
+La fazione del Terreno è il suo `factionId`; l'effetto è il suo `effectCode`. Una creatura con due fazioni riceve il bonus se una delle due è quella del Terreno (una volta sola).
 
 **[DA CONFERMARE]**: il Terreno aiuta solo le creature **del proprietario** (proposta) o tutte le creature della fazione in campo?
 
@@ -108,7 +114,7 @@ L'engine **non** controlla le regole del mazzo (40 carte, copie…): lo fa l'API
 
 - ogni mazzo ha almeno una creatura;
 - le creature hanno ATK ≥ 0 e DEF > 0;
-- ogni `factionId` è tra le `factions` ricevute;
+- ogni `factionId` e `secondaryFactionId` è tra le `factions` ricevute, e le due fazioni di una carta sono diverse;
 - `effectCode`, se presente, esiste nell'`EffectRegistry`;
 - Spell/Hidden hanno un `subtype`.
 

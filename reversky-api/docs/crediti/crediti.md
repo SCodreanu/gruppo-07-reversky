@@ -33,13 +33,8 @@ E si spendono così:
 |---|---|
 | Acquisto pacchetto | `POST /packs/{id}/purchase` |
 
-I valori vengono dal modello economico dei Digital Strategist e stanno in `application.properties`, **non nel codice**:
-
-```properties
-reversky.credits.signup-bonus=500
-reversky.credits.win-reward=30
-reversky.credits.draw-reward=10
-```
+I valori vengono dal modello economico dei Digital Strategist e stanno nel **rule set attivo** (`rule_sets.signup_bonus`, `win_reward`, `draw_reward`),
+modificabile dal [backoffice](../backoffice/backoffice.md#regole-di-gioco--rule_sets): **non** sono nel codice né in `application.properties`.
 
 > Un bonus giornaliero richiederebbe una colonna per ricordare l'ultimo ritiro (es. `inventories.last_daily_bonus_at`), che oggi lo schema non ha.
 
@@ -82,4 +77,4 @@ public Inventory spendCredits(Integer userId, int amount) {
 
 ## Preparazione alla fase 2
 
-Non si sviluppa niente di pagamento. Il **tasso di conversione crediti/euro** è definito dai DSG nel modello economico (serve per le proiezioni a 12, 24 e 48 mesi) e può stare in configurazione, senza logica collegata.
+Non si sviluppa niente di pagamento. Il **tasso di conversione crediti/euro** è definito dai DSG nel modello economico (serve per le proiezioni a 12, 24 e 48 mesi) e, quando servirà, starà nel rule set (backoffice) come gli altri valori economici, senza logica collegata.

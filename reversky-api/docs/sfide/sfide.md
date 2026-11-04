@@ -71,9 +71,10 @@ Il flusso è diviso in **tre passi**, per non tenere aperta una transazione ment
    - controlla che i due giocatori siano ancora amici
    - valida di nuovo ENTRAMBI i mazzi (le collezioni possono essere cambiate)
    - genera il seed con SecureRandom
+   - legge il rule set attivo e i bonus di fazione
    - crea la riga in battles (mode = FRIENDLY, invite_id = invito):
        challenger_deck / opponent_deck = "fotografia" dei mazzi (jsonb)
-       battle_stats = { seed }
+       battle_stats = { seed, rules, factionBonuses }
        rounds_log   = []
        result       = NULL           ← simulazione non ancora completata
    - invito → ACCEPTED
@@ -86,7 +87,7 @@ Il flusso è diviso in **tre passi**, per non tenere aperta una transazione ment
    - crediti di vittoria/pareggio (vedi crediti)
 ```
 
-Se l'engine non risponde o dà errore, la partita resta con `result = NULL`. `POST /api/v1/battles/{id}/retry` rilancia la simulazione **con lo stesso seed e la stessa fotografia dei mazzi**, quindi il risultato non può essere "rigiocato" per ottenerne uno migliore.
+Se l'engine non risponde o dà errore, la partita resta con `result = NULL`. `POST /api/v1/battles/{id}/retry` rilancia la simulazione **con lo stesso seed, la stessa fotografia dei mazzi e le stesse regole** (copiate in `battle_stats` alla preparazione, anche se nel frattempo il backoffice le ha cambiate), quindi il risultato non può essere "rigiocato" per ottenerne uno migliore.
 
 ### Perché la fotografia dei mazzi
 
@@ -95,7 +96,7 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
 ```json
 [
   { "cardId": 4, "name": "Crawlers", "type": "CREATURE", "rarity": "Common",
-    "factionId": 1, "atk": 4, "def": 5, "tags": [], "quantity": 3 }
+    "factionId": 1, "secondaryFactionId": null, "atk": 4, "def": 5, "tags": [], "quantity": 3 }
 ]
 ```
 
@@ -109,6 +110,8 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
 ```json
 {
   "seed": 8812734650912,
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "factionBonuses": [ { "originFactionId": 2, "targetFactionId": 3, "atkBonus": 2, "defBonus": 0 } ],
   "rulesVersion": "1.0",
   "endReason": "LIFE_POINTS_ZERO",
   "totalRounds": 37,
@@ -116,6 +119,8 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
   "opponent":   { "finalLifePoints": 0, "creaturesDefeated": 11 }
 }
 ```
+
+`rules` e `factionBonuses` sono scritti alla preparazione (transazione 1) e servono al retry; il resto arriva dalla risposta dell'engine.
 
 `rounds_log` contiene la lista di eventi restituita dall'engine.
 
@@ -176,10 +181,11 @@ Il flusso usa gli stessi tre passi delle amichevoli:
        se un mazzo non è più valido: elimina solo quel ticket e si ferma
    - elimina i due ticket
    - genera il seed con SecureRandom
+   - legge il rule set attivo e i bonus di fazione
    - crea la riga in battles:
        mode = RANKED, invite_id = NULL
        challenger = chi era in coda da più tempo
-       fotografie dei mazzi, battle_stats = { seed }, rounds_log = [], result = NULL
+       fotografie dei mazzi, battle_stats = { seed, rules, factionBonuses }, rounds_log = [], result = NULL
 
 2) Chiamata HTTP all'engine (fuori transazione)
 
@@ -253,6 +259,7 @@ public class EngineClient {
 
 Cosa invia l'API (contratto completo nel modulo engine, `docs/api-engine`):
 - il seed;
+- le regole della partita (`rules`: versione, punti vita iniziali, limite di round) dal rule set attivo;
 - le fazioni e la tabella `faction_bonus` (l'engine non ha database);
 - i due mazzi, **una voce per ogni copia**, con `effectCode` e `subtype` ricavati dai tag (`EFFECT_*`, `DAMAGE`, `SHIELD`, …).
 

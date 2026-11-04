@@ -2,7 +2,7 @@
 
 ## In una frase
 
-**Input:** seed, fazioni con i loro bonus, mazzo dello sfidante e dell'avversario → **Output:** risultato (`CHALLENGER_WIN` / `OPPONENT_WIN` / `DRAW`), motivo di fine, log round per round.
+**Input:** seed, regole della partita (rule set), fazioni con i loro bonus, mazzo dello sfidante e dell'avversario → **Output:** risultato (`CHALLENGER_WIN` / `OPPONENT_WIN` / `DRAW`), motivo di fine, log round per round.
 
 ```
 reversky-api ──POST /api/v1/simulations──▶ web (Spring)
@@ -31,7 +31,7 @@ core/
 │   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno
 │   └── MatchState          i due giocatori + numero round + log + random
 ├── rules/
-│   ├── RuleConfig          punti vita, limite round
+│   ├── RuleConfig          punti vita, limite round, versione: costruita dalla richiesta
 │   └── FactionMatrix       bonus ATK/DEF tra fazioni, costruita dai dati della richiesta
 ├── simulation/
 │   ├── MatchSimulator      punto d'ingresso: simulate(SimulationInput) → MatchResult
@@ -50,10 +50,10 @@ core/
 ### `web` — l'adattatore HTTP
 
 Spring Boot. Contiene solo:
-- `SimulationController` (`POST /api/v1/simulations`, `GET /api/v1/effects`, `GET /api/v1/rules`);
+- `SimulationController` (`POST /api/v1/simulations`, `GET /api/v1/effects`);
 - DTO di richiesta/risposta con le annotazioni di validazione;
 - `SimulationMapper` (DTO ↔ core);
-- `EngineConfiguration` che crea i bean del core (`MatchSimulator`, `EffectRegistry`, `RuleConfig`);
+- `EngineConfiguration` che crea i bean del core (`MatchSimulator`, `EffectRegistry`);
 - `GlobalExceptionHandler`.
 
 ```java
@@ -61,18 +61,13 @@ Spring Boot. Contiene solo:
 public class EngineConfiguration {
 
 	@Bean
-	RuleConfig ruleConfig() {
-		return RuleConfig.defaults();
-	}
-
-	@Bean
 	EffectRegistry effectRegistry() {
 		return EffectRegistry.withAllEffects();
 	}
 
 	@Bean
-	MatchSimulator matchSimulator(RuleConfig rules, EffectRegistry effects) {
-		return new MatchSimulator(rules, effects);
+	MatchSimulator matchSimulator(EffectRegistry effects) {
+		return new MatchSimulator(effects);
 	}
 }
 ```
@@ -95,4 +90,7 @@ spring.application.name=reversky-engine
 server.port=8081
 ```
 
-I valori di gioco sono in `RuleConfig` (vedi [regole-base](../regole-base/regole-base.md)), con una versione (`rulesVersion`) restituita in ogni risultato: così nello storico si sa con quali regole è stata giocata una partita.
+Nessun valore di gioco sta nella configurazione o nel codice dell'engine. Punti vita, limite di round e bonus di fazione arrivano in **ogni richiesta**, presi dal rule set attivo e dalla tabella `faction_bonus` dell'API, che si modificano dal backoffice (vedi [regole-base](../regole-base/regole-base.md#valori-rule-set)).
+La versione delle regole (`rulesVersion`) torna in ogni risultato: così nello storico si sa con quali regole è stata giocata una partita.
+
+`MatchSimulator.simulate(SimulationInput)` riceve le regole dentro `SimulationInput`: lo stesso simulatore (un solo bean) gioca partite con rule set diversi.

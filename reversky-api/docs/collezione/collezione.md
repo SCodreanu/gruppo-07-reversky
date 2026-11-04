@@ -50,10 +50,10 @@ Conseguenza: se l'utente scambia una carta usata in un mazzo, quel mazzo può di
 
 | Parametro | Esempio | Effetto |
 |---|---|---|
-| `factionId` | `3` | solo una fazione |
+| `factionId` | `3` | solo una fazione (anche come seconda fazione) |
 | `rarityId` | `4` | solo una rarità |
 | `type` | `CREATURE` | solo un tipo di carta |
-| `tag` | `YOKAI` | solo carte con quel tag |
+| `tag` | `DREAM` | solo carte con quel tag |
 | `name` | `wend` | ricerca per nome (contiene, senza maiuscole) |
 | `sort` | `rarity,desc` | ordinamento |
 
@@ -65,13 +65,14 @@ Risposta (un elemento):
     "id": 60,
     "name": "Wendigo",
     "type": "CREATURE",
-    "faction": { "id": 2, "name": "Monti Appalachi" },
+    "faction": { "id": 2, "name": "Theory of the Invitation" },
+    "secondaryFaction": null,
     "rarity": { "id": 5, "name": "Legendary" },
-    "atk": 12,
-    "def": 8,
+    "atk": 18,
+    "def": 17,
     "tags": ["EFFECT_WENDIGO"],
-    "effectDescription": "Alla fine di ogni round la creatura avversaria perde 1 DEF...",
-    "flavorText": "Fame e gelo che consumano tutto.",
+    "effectDescription": "At the end of each round, the opposing creature loses 1 DEF...",
+    "flavorText": "Hunger and frost that consume everything.",
     "imagePath": "/images/cards/wendigo.webp"
   },
   "quantity": 1,

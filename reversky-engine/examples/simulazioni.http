@@ -1,0 +1,116 @@
+# Richieste di esempio per reversky-engine.
+# Si apre con IntelliJ IDEA (HTTP Client) o con VS Code (estensione "REST Client").
+# Prima avvia l'engine: scripts\start-engine.bat (porta 8081).
+
+@engine = http://localhost:8081
+
+### Effetti implementati
+GET {{engine}}/api/v1/effects
+
+### 01-base-esempio-regolamento
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./01-base-esempio-regolamento.json
+
+### 02-scontro-su-piu-round
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./02-scontro-su-piu-round.json
+
+### 03-morte-simultanea
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./03-morte-simultanea.json
+
+### 04-bonus-fazione-attacco
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./04-bonus-fazione-attacco.json
+
+### 05-bonus-fazione-difesa
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./05-bonus-fazione-difesa.json
+
+### 06-stallo-limite-round
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./06-stallo-limite-round.json
+
+### 07-limite-round-con-vincitore
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./07-limite-round-con-vincitore.json
+
+### 08-partita-completa-seed-42
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./08-partita-completa-seed-42.json
+
+### 09-effetto-hidebehind
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./09-effetto-hidebehind.json
+
+### 10-punti-vita-a-zero
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./10-punti-vita-a-zero.json
+
+### 11-doppia-fazione-vantaggio
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./11-doppia-fazione-vantaggio.json
+
+### 12-doppia-fazione-svantaggio
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./12-doppia-fazione-svantaggio.json
+
+### 90-errore-effetto-sconosciuto
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./90-errore-effetto-sconosciuto.json
+
+### 91-errore-mazzo-senza-creature
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./91-errore-mazzo-senza-creature.json
+
+### 92-errore-fazione-sconosciuta
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./92-errore-fazione-sconosciuta.json
+
+### 93-errore-bonus-fazione-non-valido
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./93-errore-bonus-fazione-non-valido.json
+
+### 94-errore-fazioni-uguali
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./94-errore-fazioni-uguali.json
+
+### 95-errore-regole-non-valide
+POST {{engine}}/api/v1/simulations
+Content-Type: application/json
+
+< ./95-errore-regole-non-valide.json

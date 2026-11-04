@@ -17,22 +17,22 @@ copie massime = min(rarities.deck_limit, catalog_cards.copy_limit)
 - `rarities.deck_limit` è il limite della rarità (proposta del regolamento: Common 3, Uncommon 2, Rare 2, Mythic 1, Legendary 1, Mutant 1).
 - `catalog_cards.copy_limit` permette di abbassarlo per una carta specifica (es. Spell Burn: 1).
 
-### Composizione (da configurazione)
+### Composizione (dal rule set attivo)
 
-Questi numeri non sono nello schema: stanno in `application.properties` (`reversky.deck.*`).
+Questi numeri stanno nel **rule set attivo** (tabella `rule_sets`) e si modificano dal backoffice: nessun valore è nel codice o in `application.properties`.
 
 | Regola | Valore |
 |---|---|
-| Carte totali | esattamente **40** |
-| Creature | **26** |
-| Spell + Hidden | **13** |
-| Terreni | **1** |
-| Hidden con tag `SURVIVAL` | massimo 2 in totale |
-| Hidden con tag `DAMAGE` | massimo 1 in totale |
+| Carte totali (`deck_size`) | esattamente **40** |
+| Creature (`deck_creatures`) | **26** |
+| Spell + Hidden (`deck_specials`) | **13** |
+| Terreni (`deck_terrains`) | **1** |
+| Hidden con tag `SURVIVAL` (`max_hidden_survival`) | massimo 2 in totale |
+| Hidden con tag `DAMAGE` (`max_hidden_damage`) | massimo 1 in totale |
 
 ### Bilanciamento (richiesto dal brief)
 
-Serve un vincolo che impedisca di riempire il mazzo solo con le carte più forti. Anche questi in configurazione:
+Serve un vincolo che impedisca di riempire il mazzo solo con le carte più forti. Sta in `rarities.max_per_deck` (backoffice; vuoto = nessun limite):
 
 | Regola | Valore |
 |---|---|
@@ -70,13 +70,13 @@ Codici di errore (usati dal frontend):
 
 | Codice | Esempio di messaggio |
 |---|---|
-| `DECK_SIZE` | Il mazzo ha 38 carte, ne servono 40 |
-| `DECK_CREATURE_COUNT` | Servono 26 creature, ce ne sono 24 |
-| `DECK_SPECIAL_COUNT` | Servono 13 Spell/Hidden, ce ne sono 14 |
-| `DECK_TERRAIN_COUNT` | Serve esattamente 1 Terreno |
-| `DECK_COPY_LIMIT` | Troppe copie di 'Hounds' (2/1) |
-| `DECK_BALANCE_LIMIT` | Troppe Legendary (3/2) |
-| `DECK_NOT_OWNED` | Possiedi 1 copia di 'Kappa', nel mazzo ce ne sono 2 |
+| `DECK_SIZE` | The deck has 38 cards, 40 are required |
+| `DECK_CREATURE_COUNT` | 26 creatures are required, there are 24 |
+| `DECK_SPECIAL_COUNT` | 13 Spell/Hidden cards are required, there are 14 |
+| `DECK_TERRAIN_COUNT` | Exactly 1 Terrain is required |
+| `DECK_COPY_LIMIT` | Too many copies of 'Hounds' (2/1) |
+| `DECK_BALANCE_LIMIT` | Too many Legendary cards (3/2) |
+| `DECK_NOT_OWNED` | You own 1 copy of 'Kappa', the deck contains 2 |
 
 ## Quando si valida
 
@@ -94,7 +94,7 @@ Codici di errore (usati dal frontend):
 | `PUT` | `/api/v1/decks/{id}` | sostituisce nome e contenuto (se il mazzo è in coda classificata, il ticket viene rimosso) |
 | `DELETE` | `/api/v1/decks/{id}` | elimina (non se usato in un invito `PENDING` → `409`; se è in coda classificata, il ticket viene rimosso) |
 | `POST` | `/api/v1/decks/validate` | valida senza salvare (per il deck builder) |
-| `GET` | `/api/v1/decks/rules` | limiti attuali (configurazione + `deck_limit` delle rarità), così il frontend non li duplica |
+| `GET` | `/api/v1/decks/rules` | limiti attuali del mazzo (rule set attivo + `deck_limit` e `max_per_deck` delle rarità), così il frontend non li duplica |
 
 Richiesta di creazione:
 

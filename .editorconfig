@@ -1,0 +1,50 @@
+# EditorConfig del progetto Reversky: stessa indentazione per tutti, in ogni IDE.
+# https://editorconfig.org — IntelliJ lo legge da solo; VS Code con l'estensione "EditorConfig for VS Code".
+#
+# Fine riga: NON la impostiamo qui (tranne .bat e gradlew), la gestiscono Git e i .gitattributes.
+
+root = true
+
+# ---- Default: tab (come i file generati da Spring Initializr, vedi CodingRequirements.md §2) ----
+[*]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Engine: righe Java di massimo 120 caratteri (reversky-engine/CodingRequirements.md).
+# Nell'API il limite non c'è.
+[reversky-engine/**.java]
+max_line_length = 120
+
+# ---- Formati in cui i tab non sono ammessi o non sono la convenzione ----
+
+# YAML vieta i tab per l'indentazione (compose.yaml)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON, frontend web (Next.js) e package manager
+[*.{json,js,jsx,ts,tsx,mjs,cjs,css,scss,html}]
+indent_style = space
+indent_size = 2
+
+# Markdown: gli spazi a fine riga possono essere un "a capo" voluto
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+# dbml / dbdiagram: come sono già scritti
+[*.{dbml,dbdiagram}]
+indent_style = space
+indent_size = 2
+
+# ---- Fine riga obbligata, allineata ai .gitattributes ----
+[*.bat]
+end_of_line = crlf
+
+[gradlew]
+end_of_line = lf

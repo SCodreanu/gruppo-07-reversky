@@ -86,14 +86,13 @@ Dettagli in [sfide](../sfide/sfide.md) e nel modulo `reversky-engine` (`docs/api
 
 ## Configurazione
 
-Ciò che sta nel database (rarità, limiti di copie, bonus di fazione, pacchetti e probabilità) si gestisce dal backoffice.
-Gli altri valori di gioco ed economia stanno in `application.properties` con prefisso `reversky.`:
+**Tutti i valori di gioco ed economia stanno nel database e si gestiscono dal backoffice:** rule set (punti vita, limite di round,
+composizione del mazzo, crediti), rarità e limiti, bonus di fazione, pacchetti e probabilità. L'engine li riceve in ogni richiesta.
+
+In `application.properties` (prefisso `reversky.`) resta solo la configurazione **tecnica**:
 
 ```properties
 reversky.engine.base-url=http://localhost:8081
-reversky.credits.signup-bonus=500
-reversky.credits.win-reward=30
-reversky.deck.total-cards=40
 ```
 
 Vengono letti con una classe `@ConfigurationProperties`, non con `@Value` sparsi nel codice.

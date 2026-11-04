@@ -13,23 +13,31 @@ Esiste **un solo regolamento** (decisione concordata con il cliente): abilità, 
 | **Scontro** | la serie di round tra le **stesse** due creature, finché almeno una muore |
 | **Partita** | tutti gli scontri, fino alla fine |
 
-## Valori (`RuleConfig`)
+## Valori (rule set)
 
-| Parametro | Valore | Stato |
-|---|---|---|
-| Punti vita iniziali | 30 | **[DA CONFERMARE]** |
-| Limite di round totali | 100 | **[DA CONFERMARE]** dopo le simulazioni |
+Tutto ciò che **non** è una costante del regolamento si modifica dal **backoffice**, nel database dell'API, e arriva all'engine in ogni richiesta
+(blocco `rules`, vedi [api-engine](../api-engine/api-engine.md)). L'engine non ha valori predefiniti.
 
-I bonus di fazione **non** sono qui: arrivano nella richiesta, presi dalla tabella `faction_bonus` dell'API (vedi [fazioni](../fazioni/fazioni.md)).
+| Parametro | Dove sta | Valore del rule set `1.0` | Stato |
+|---|---|---|---|
+| Punti vita iniziali | `rule_sets.starting_life_points` | 30 | **[DA CONFERMARE] D-01** |
+| Limite di round totali | `rule_sets.max_rounds` | 100 | **[DA CONFERMARE] D-02** dopo le simulazioni |
+| Bonus e malus di fazione | tabella `faction_bonus` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
 
 ```java
+/** Regole di una partita, costruite dal blocco {@code rules} della richiesta. Nessun valore predefinito. */
 public record RuleConfig(String rulesVersion, int startingLifePoints, int maxRounds) {
 
-	public static RuleConfig defaults() {
-		return new RuleConfig("1.0", 30, 100);
+	public RuleConfig {
+		if (startingLifePoints < 1 || maxRounds < 1) {
+			throw new InvalidSimulationInputException("Regole non valide");
+		}
 	}
 }
 ```
+
+Restano **nel codice** solo le regole che non sono numeri da bilanciare: l'ordine dei passi di un round, il danno al giocatore
+come DEF negativa, l'attacco minimo 0, l'ordine delle condizioni di fine partita. Nei test si usa `TestRules.standard()` (30, 100).
 
 ## Svolgimento
 
@@ -58,6 +66,7 @@ DEF di B = DEF di B − attaccoA
 - Il danno riduce la **DEF in modo permanente**: non si rigenera.
 - L'**ATK non cambia** per i danni.
 - Una creatura **muore** quando la sua DEF è **≤ 0**.
+- Il bonus di fazione può essere negativo (−1, malus) e, per le carte con due fazioni, è la somma di tutte le coppie: vedi [fazioni](../fazioni/fazioni.md#come-si-applica). L'attacco effettivo non scende mai sotto 0.
 
 ### 4. Esito del round
 
@@ -80,6 +89,9 @@ int playerDamage = Math.max(0, -defeated.defense());
 ```
 
 Esempio: la DEF della sconfitta passa da 5 a −3 → il giocatore perde **3** punti vita.
+
+> Il brief dice "differenza tra il proprio attacco e la difesa residua della creatura sconfitta": con la difesa residua *prima* del colpo è lo stesso numero (8 − 5 = 3).
+> La bozza del regolamento per i giocatori propone invece 8 − (−3) = 11: va allineata, vedi **D-03** in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#regole-base).
 
 La regola vale qualunque sia la causa della morte (attacco, effetti di fine round, effetti alla morte): conta la DEF finale.
 
@@ -123,3 +135,5 @@ Le condizioni 3, 4 e 5 sono proposte del team **[DA CONFERMARE]**; servono perch
 - Danno al giocatore che porta i punti vita sotto zero → la partita finisce subito.
 - Morte simultanea all'ultimo round utile.
 - Mazzo che finisce mentre l'avversario ha ancora una creatura in campo.
+
+Quasi tutti questi casi hanno una richiesta pronta, con il calcolo passo per passo, in [`examples/`](../../examples/README.md) (01–07 e 10).

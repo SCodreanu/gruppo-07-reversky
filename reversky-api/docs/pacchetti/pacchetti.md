@@ -48,9 +48,9 @@ Mutant    |        250        | 2,5% (~1 ogni 40)
 ### Filtro delle carte — `pack_tags`
 
 - Se il pacchetto non ha righe in `pack_tags`: può uscire **qualsiasi** carta attiva.
-- Altrimenti esce solo una carta che ha **almeno uno** dei tag del pacchetto, nei tag propri (`card_tags`) o in quelli della sua fazione (`faction_tags`).
+- Altrimenti esce solo una carta che ha **almeno uno** dei tag del pacchetto, nei tag propri (`card_tags`) o in quelli di una delle sue fazioni (`faction_tags`, anche della seconda fazione).
 
-Esempio: un pacchetto evento con tag `YOKAI` contiene solo carte Yokai.
+Esempio: un pacchetto evento con tag `DREAM` contiene solo carte della Theory of the Dream (anche come seconda fazione).
 
 ### Spell, Hidden e Terreni
 

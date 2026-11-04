@@ -1,0 +1,25 @@
+{
+  "seed": 1,
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "factions": [
+    { "id": 1, "name": "Theory of the Wound" },
+    { "id": 2, "name": "Theory of the Invitation" },
+    { "id": 3, "name": "Theory of the Archive" },
+    { "id": 4, "name": "Theory of the Dream" }
+  ],
+  "factionBonuses": [
+    { "originFactionId": 3, "targetFactionId": 2, "atkBonus": 0, "defBonus": 3 }
+  ],
+  "challenger": {
+    "userId": 7,
+    "deck": [
+      { "cardId": 303, "name": "SCP-1762", "type": "CREATURE", "rarity": "Common", "rarityOrder": 1, "factionId": 3, "secondaryFactionId": null, "atk": 3, "def": 4, "subtype": null, "effectCode": null }
+    ]
+  },
+  "opponent": {
+    "userId": 12,
+    "deck": [
+      { "cardId": 201, "name": "Squonk", "type": "CREATURE", "rarity": "Common", "rarityOrder": 1, "factionId": 2, "secondaryFactionId": null, "atk": 3, "def": 9, "subtype": null, "effectCode": null }
+    ]
+  }
+}

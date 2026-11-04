@@ -6,7 +6,7 @@ Istruzioni per Claude Code su questo modulo. Le regole complete e condivise con 
 
 ## Note specifiche per Claude
 
-- Rispondi e scrivi commenti/documentazione **in italiano**; nomi di classi, metodi e variabili **in inglese** (vedi `CodingRequirements.md`).
+- Rispondi e scrivi commenti/documentazione **in italiano**; nomi di classi, metodi e variabili **in inglese**; i testi tra virgolette nel codice (errori, validazione, email, log, Swagger) **in inglese** (vedi `CodingRequirements.md`).
 - Prima di modificare una funzionalità apri il suo file in `docs/` e rispettane le regole.
 - Prima di creare una nuova classe cerca se ne esiste già una simile nel package della funzionalità.
 - Non aggiungere dipendenze a `build.gradle` senza chiederlo.

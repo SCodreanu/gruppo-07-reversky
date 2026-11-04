@@ -24,7 +24,7 @@ Testcontainers avvia un PostgreSQL vero in Docker (configurazione in `Testcontai
 
 ## Come si scrive un test
 
-- Nome che descrive il comportamento: `metodo_condizione_risultatoAtteso`, oppure `@DisplayName` in italiano.
+- Nome che descrive il comportamento: `metodo_condizione_risultatoAtteso`, oppure `@DisplayName` in inglese.
 - Struttura **Arrange / Act / Assert**, separata da una riga vuota.
 - Un test verifica **una** cosa.
 - Asserzioni con AssertJ (`assertThat`), più leggibili.
@@ -35,7 +35,7 @@ class DeckValidatorTest {
 	private final DeckValidator validator = new DeckValidator(DeckRules.defaults());
 
 	@Test
-	@DisplayName("Un mazzo con 4 copie della stessa Common non è valido")
+	@DisplayName("A deck with 4 copies of the same Common is invalid")
 	void validate_tooManyCommonCopies_returnsCopyLimitViolation() {
 		// Arrange
 		CatalogCard crawlers = TestCards.creature("Crawlers", TestRarities.common()); // deck_limit 3

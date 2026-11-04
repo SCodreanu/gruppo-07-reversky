@@ -12,12 +12,18 @@ public record Faction(int id, String name) { }
 
 ## Le fazioni attuali
 
-| Fazione | Teoria | Terreno |
-|---|---|---|
-| Backrooms | Teoria della Ferita | Crepa Eco |
-| Monti Appalachi | Teoria dell'Invito | Crepa Radura |
-| SCP | Teoria dell'Archivio | Crepa Occhio |
-| Yokai | Teoria del Sogno | Crepa Cavità |
+Ogni fazione è una delle quattro **Teorie** sull'origine della Pioggia Inversa (proposta al cliente, 2 novembre).
+Nel gioco (database, carte, portale) i nomi sono **in inglese**; il nome italiano è solo quello usato nei documenti di lavoro.
+
+| `id` negli esempi | Fazione (nome nel gioco) | Nome di lavoro | Ispirata a | Costante nei test | Terreno | Batte |
+|---|---|---|---|---|---|---|
+| 1 | Theory of the Wound | Teoria della Ferita | Backrooms | `WOUND` | Echo Rift | Theory of the Dream |
+| 2 | Theory of the Invitation | Teoria dell'Invito | Monti Appalachi | `INVITATION` | Hollow Clearing | Theory of the Archive |
+| 3 | Theory of the Archive | Teoria dell'Archivio | SCP | `ARCHIVE` | Watching Rift | Theory of the Wound |
+| 4 | Theory of the Dream | Teoria del Sogno | Yokai | `DREAM` | Devouring Abyss | Theory of the Invitation |
+
+Gli `id` veri sono quelli della tabella `factions` dell'API; quelli qui sopra sono usati negli [esempi](../../examples/README.md).
+Le costanti inglesi servono solo nei test (`TestFactions`): nel core le fazioni restano dati.
 
 ## I bonus — `faction_bonus`
 
@@ -27,52 +33,82 @@ Ogni riga dice: *quando una creatura di `origin` affronta una creatura di `targe
 |---|---|
 | `originFactionId` | fazione che riceve il bonus |
 | `targetFactionId` | fazione affrontata |
-| `atkBonus` | si somma all'attacco **in ogni round** dello scontro |
-| `defBonus` | si somma alla DEF **una volta**, all'inizio dello scontro |
+| `atkBonus` | si somma all'attacco **in ogni round** dello scontro; **può essere negativo** (malus) |
+| `defBonus` | si somma alla DEF **una volta**, all'inizio dello scontro; sempre ≥ 0 |
 
-Vincoli (garantiti dal database): bonus sempre **≥ 0**, nessuna riga di una fazione contro se stessa. Se una coppia non ha una riga, il bonus è 0.
+Vincoli (garantiti dal database): nessuna riga di una fazione contro se stessa, `defBonus` ≥ 0. Se una coppia non ha una riga, il bonus è 0.
+L'attacco effettivo non scende mai sotto 0, anche con il malus.
 
-> Il regolamento v1.0 prevedeva anche un malus (−1 ATK) per la fazione debole. Lo schema ammette solo bonus positivi, quindi il malus non esiste: lo svantaggio è "subire il bonus dell'altro".
+### Valori (decisione D-04)
 
-### Dati proposti
-
-Ciclo: ogni fazione è forte contro una e neutra contro le altre.
+**+2 ATK** contro la fazione che si batte, **−1 ATK** contro quella che ti batte, 0 contro la fazione neutra.
+Valori presentati al cliente il 2 novembre, da confermare con i test di bilanciamento (`ENG-28`).
 
 | `origin` | `target` | `atkBonus` | `defBonus` |
 |---|---|---|---|
-| Monti Appalachi | SCP | 2 | 0 |
-| SCP | Backrooms | 2 | 0 |
-| Backrooms | Yokai | 2 | 0 |
-| Yokai | Monti Appalachi | 2 | 0 |
+| Theory of the Wound | Theory of the Dream | 2 | 0 |
+| Theory of the Invitation | Theory of the Archive | 2 | 0 |
+| Theory of the Archive | Theory of the Wound | 2 | 0 |
+| Theory of the Dream | Theory of the Invitation | 2 | 0 |
+| Theory of the Dream | Theory of the Wound | −1 | 0 |
+| Theory of the Archive | Theory of the Invitation | −1 | 0 |
+| Theory of the Wound | Theory of the Archive | −1 | 0 |
+| Theory of the Invitation | Theory of the Dream | −1 | 0 |
+
+Coppie neutre (nessuna riga): Wound–Invitation e Archive–Dream.
 
 ```
- SCP ───forte contro───▶ Backrooms
-  ▲                          │
-  │ forte contro             │ forte contro
-  │                          ▼
-Monti Appalachi ◀──forte contro── Yokai
+        Theory of the Archive ───batte───▶ Theory of the Wound
+                 ▲                                │
+                 │ batte                          │ batte
+                 │                                ▼
+        Theory of the Invitation ◀───batte─── Theory of the Dream
 ```
 
 ## Come si applica
 
-- **ATK:** nel calcolo di ogni round, `attacco = ATK + atkBonus(origine, bersaglio)`. Vale per entrambe le creature, ognuna con la sua riga.
-- **DEF:** all'inizio di ogni scontro, `DEF += defBonus(origine, bersaglio)`. Se la creatura sopravvive e affronta una nuova avversaria, riceve il bonus relativo alla nuova (il precedente resta, come se fosse DEF in più).
+- **ATK:** nel calcolo di ogni round, `attacco = max(0, ATK + bonus ATK di fazione + altri modificatori)`. Vale per entrambe le creature, ognuna con le sue righe.
+- **DEF:** all'inizio di ogni scontro, `DEF += bonus DEF di fazione`. Se la creatura sopravvive e affronta una nuova avversaria, riceve il bonus relativo alla nuova (il precedente resta, come se fosse DEF in più).
 - Le fazioni fanno parte del regolamento base richiesto dal brief.
 
 ### Esempio
 
 ```
-Kappa (Yokai)        ATK 6  DEF 7
-Hounds (Backrooms)   ATK 9  DEF 8
+Kappa (Theory of the Dream)     ATK 6  DEF 7
+Hounds (Theory of the Wound)    ATK 9  DEF 8
 
-Riga Backrooms → Yokai: atkBonus 2
-  attacco Hounds = 9 + 2 = 11
-  attacco Kappa  = 6 + 0 = 6
+Riga Wound → Dream: atkBonus +2    attacco Hounds = 9 + 2 = 11
+Riga Dream → Wound: atkBonus −1    attacco Kappa  = 6 − 1 = 5
 ```
+
+### Carte con due fazioni
+
+Una carta può avere una **seconda fazione** facoltativa (`secondaryFactionId`, nel database `catalog_cards.secondary_faction_id`),
+per esempio le Mutant come Ashen Kitsune (Theory of the Dream × Theory of the Invitation). Decisione D-22:
+la carta prende **sia i vantaggi sia gli svantaggi** di entrambe le fazioni.
+
+Regola: il bonus è la **somma su tutte le coppie** (fazione di chi attacca, fazione di chi difende). Vale per l'ATK e per la DEF,
+e vale anche quando è l'avversaria ad attaccare la carta con due fazioni.
+
+```
+Ashen Fox (Dream + Invitation)  contro  Archive Puppet (Archive)
+  Ashen Fox:       Dream → Archive 0   + Invitation → Archive +2   = +2
+  Archive Puppet:  Archive → Dream 0   + Archive → Invitation −1   = −1
+
+Ashen Fox (Dream + Invitation)  contro  Kodama (Dream)
+  Ashen Fox:       Dream → Dream 0     + Invitation → Dream −1     = −1
+  Kodama:          Dream → Dream 0     + Dream → Invitation +2     = +2
+```
+
+Gli stessi casi, con il risultato completo, sono gli esempi `11` e `12` di [`examples/`](../../examples/README.md).
+
+- Le due fazioni di una carta devono essere **diverse** (`400 INVALID_CARD_FACTIONS`).
+- **Terreni:** una carta con due fazioni riceve il bonus del Terreno se **una delle due** è quella del Terreno (una volta sola).
+- Due carte con due fazioni l'una contro l'altra: si sommano tutte e quattro le coppie.
 
 ## Nel codice
 
-`FactionMatrix` viene costruita a ogni simulazione dai dati della richiesta:
+`FactionMatrix` viene costruita a ogni simulazione dai dati della richiesta. Lavora su **liste di fazioni** (una o due per carta):
 
 ```java
 public final class FactionMatrix {
@@ -86,21 +122,35 @@ public final class FactionMatrix {
 						Function.identity()));
 	}
 
-	/** Bonus ATK di {@code origin} contro {@code target}; 0 se non c'è una riga. */
-	public int atkBonus(int origin, int target) {
-		FactionBonus bonus = bonuses.get(new FactionPair(origin, target));
-		return bonus == null ? 0 : bonus.atkBonus();
+	/**
+	 * Bonus ATK di una carta contro un'altra: somma delle righe di tutte le coppie
+	 * (fazione di chi attacca, fazione di chi difende). Può essere negativo (malus).
+	 */
+	public int atkBonus(List<Integer> attackerFactions, List<Integer> defenderFactions) {
+		int total = 0;
+		for (int origin : attackerFactions) {
+			for (int target : defenderFactions) {
+				FactionBonus bonus = bonuses.get(new FactionPair(origin, target));
+				total += bonus == null ? 0 : bonus.atkBonus();
+			}
+		}
+		return total;
 	}
 
-	/** Bonus DEF di {@code origin} contro {@code target}; 0 se non c'è una riga. */
-	public int defBonus(int origin, int target) { ... }
+	/** Bonus DEF, stessa regola di {@link #atkBonus}. */
+	public int defBonus(List<Integer> ownFactions, List<Integer> opponentFactions) { ... }
 }
 ```
+
+`CardDefinition.factions()` restituisce `List.of(factionId)` oppure `List.of(factionId, secondaryFactionId)`: sempre in quest'ordine, così il calcolo è deterministico.
 
 Le ricerche per chiave sulla mappa vanno bene; non si **itera** sulla mappa (l'ordine non è garantito, vedi [mescolamento](../mescolamento/mescolamento.md)).
 
 ## Test minimi
 
-- Coppia con riga → bonus della riga; coppia senza riga → 0; stessa fazione → 0.
+- Coppia con riga → bonus della riga (anche −1); coppia senza riga → 0; stessa fazione → 0.
+- L'attacco effettivo con il malus non scende sotto 0 (creatura con ATK 0 e −1).
 - Il bonus DEF si applica una sola volta per scontro, non a ogni round.
-- Riga con `originFactionId == targetFactionId` o bonus negativo nella richiesta → `400`.
+- Carta con due fazioni: somma di tutte le coppie, sia quando attacca sia quando viene attaccata (esempi `11` e `12`); due carte con due fazioni → quattro coppie.
+- Riga con `originFactionId == targetFactionId` o `defBonus` negativo → `400 INVALID_FACTION_BONUS`; `atkBonus` negativo → accettato.
+- `secondaryFactionId` uguale a `factionId` → `400 INVALID_CARD_FACTIONS`; `secondaryFactionId` non tra le `factions` → `400 UNKNOWN_FACTION`.

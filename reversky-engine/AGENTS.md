@@ -6,7 +6,7 @@ Leggi questo file **prima** di modificare il codice.
 ## Cos'è questo modulo
 
 `reversky-engine` è il **motore di gioco** di Reversky (Downfall, gruppo 07).
-Fa una cosa sola: **dati due mazzi, i bonus di fazione e un seed, simula una partita completa e restituisce il risultato round per round.**
+Fa una cosa sola: **dati due mazzi, le regole della partita, i bonus di fazione e un seed, simula una partita completa e restituisce il risultato round per round.**
 
 - Non ha database e non sa nulla di utenti, crediti, scambi.
 - Riceve i dati da `reversky-api` via HTTP e risponde in JSON.
@@ -32,6 +32,8 @@ Il brief richiede che il motore sia **un componente Java isolato e coperto da te
 ./gradlew test       # tutti i test (non serve Docker)
 ./gradlew build      # compilazione + test
 ```
+
+Altri comandi (un solo test, report, curl, Docker) e problemi comuni: [docs/guida-sviluppo](docs/guida-sviluppo/guida-sviluppo.md).
 
 ## Struttura del codice
 
@@ -59,6 +61,11 @@ src/main/java/it/downfall/reversky/engine/
 | Log della partita | [docs/log-partita](docs/log-partita/log-partita.md) |
 | Contratto REST con l'API | [docs/api-engine](docs/api-engine/api-engine.md) |
 | Strategia di test | [docs/test](docs/test/test.md) |
+| Catalogo di tutti gli effetti delle carte | [docs/effetti/catalogo-effetti](docs/effetti/catalogo-effetti.md) |
+| Decisioni aperte e incoerenze da risolvere | [docs/decisioni-aperte](docs/decisioni-aperte/decisioni-aperte.md) |
+| Roadmap e divisione del lavoro (issue `ENG-xx`) | [docs/roadmap](docs/roadmap/roadmap.md) |
+| Avviare, chiamare e testare l'engine | [docs/guida-sviluppo](docs/guida-sviluppo/guida-sviluppo.md) |
+| Richieste di esempio con il risultato atteso | [examples/](examples/README.md) |
 
 Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirements.md).
 
@@ -68,9 +75,9 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 2. **Determinismo:** stessi mazzi + stessi bonus di fazione + stesso seed = **stessa identica partita**. Vietati `Math.random()`, `new Random()` senza seed, orari di sistema, iterazione su `HashMap`/`HashSet` quando l'ordine conta.
 3. **Un solo regolamento.** Abilità, Spell, Hidden e Terreni fanno parte del gioco standard: non esistono modalità alternative (decisione concordata con il cliente). Non introdurre flag o `if` per "disattivare" parti del regolamento.
 4. **Ogni regola ha un test.** Ogni effetto speciale ha un test. Un bug corretto ha un test che lo riproduce.
-5. **Nessun numero magico:** punti vita e limite di round stanno in `RuleConfig`; fazioni e bonus di fazione arrivano nella richiesta (sono dati del database dell'API).
+5. **Nessun numero magico e nessun valore predefinito:** punti vita, limite di round, fazioni e bonus di fazione arrivano **nella richiesta**: sono dati del database dell'API, modificabili dal backoffice. Nel codice restano solo le regole che non sono numeri da bilanciare.
 6. **Il motore non valida i mazzi secondo il regolamento** (40 carte, copie…): lo fa l'API. L'engine controlla solo che i dati ricevuti siano coerenti.
-7. I punti segnati **[DA CONFERMARE]** nei documenti non sono decisioni definitive: chiedi prima di cambiarli.
+7. I punti segnati **[DA CONFERMARE]** nei documenti non sono decisioni definitive: chiedi prima di cambiarli. L'elenco completo, con le proposte, è in [docs/decisioni-aperte](docs/decisioni-aperte/decisioni-aperte.md).
 
 ## Come lavorare
 
@@ -82,3 +89,5 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 ## Stato attuale
 
 Il progetto è lo scheletro generato da Spring Initializr: esiste solo `ReverskyEngineApplication`. I documenti in `docs/` descrivono come **deve** essere costruito il motore.
+
+L'ordine di lavoro è nella [roadmap](docs/roadmap/roadmap.md) (prima issue: `ENG-01`); le richieste di prova con il risultato calcolato a mano sono in [examples/](examples/README.md).

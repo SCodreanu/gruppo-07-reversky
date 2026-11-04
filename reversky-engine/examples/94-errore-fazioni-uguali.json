@@ -1,0 +1,32 @@
+{
+  "seed": 1,
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "factions": [
+    { "id": 1, "name": "Theory of the Wound" },
+    { "id": 2, "name": "Theory of the Invitation" },
+    { "id": 3, "name": "Theory of the Archive" },
+    { "id": 4, "name": "Theory of the Dream" }
+  ],
+  "factionBonuses": [
+    { "originFactionId": 2, "targetFactionId": 3, "atkBonus": 2, "defBonus": 0 },
+    { "originFactionId": 3, "targetFactionId": 1, "atkBonus": 2, "defBonus": 0 },
+    { "originFactionId": 1, "targetFactionId": 4, "atkBonus": 2, "defBonus": 0 },
+    { "originFactionId": 4, "targetFactionId": 2, "atkBonus": 2, "defBonus": 0 },
+    { "originFactionId": 4, "targetFactionId": 1, "atkBonus": -1, "defBonus": 0 },
+    { "originFactionId": 3, "targetFactionId": 2, "atkBonus": -1, "defBonus": 0 },
+    { "originFactionId": 1, "targetFactionId": 3, "atkBonus": -1, "defBonus": 0 },
+    { "originFactionId": 2, "targetFactionId": 4, "atkBonus": -1, "defBonus": 0 }
+  ],
+  "challenger": {
+    "userId": 7,
+    "deck": [
+      { "cardId": 301, "name": "SCP-131", "type": "CREATURE", "rarity": "Common", "rarityOrder": 1, "factionId": 3, "secondaryFactionId": 3, "atk": 8, "def": 6, "subtype": null, "effectCode": null }
+    ]
+  },
+  "opponent": {
+    "userId": 12,
+    "deck": [
+      { "cardId": 305, "name": "Eternal Cup", "type": "CREATURE", "rarity": "Common", "rarityOrder": 1, "factionId": 3, "secondaryFactionId": null, "atk": 4, "def": 5, "subtype": null, "effectCode": null }
+    ]
+  }
+}

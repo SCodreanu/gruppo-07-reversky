@@ -101,7 +101,7 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 5. **Il server ricontrolla sempre tutto**: possesso delle carte, vincoli del mazzo, saldo, turno negli scambi. La validazione del frontend è solo una comodità.
 6. **Lo schema cambia solo tramite migrazioni Flyway nuove.** Non modificare mai una migrazione già committata.
 7. **Niente acquisto di crediti con denaro reale**: è fuori dal perimetro della fase 1.
-8. **Valori del regolamento non ancora approvati** (prezzi, ricompense, limiti del mazzo…) vanno in configurazione o nel database, non scritti a mano nel codice. Nei documenti sono segnati con **[DA CONFERMARE]**.
+8. **Valori del regolamento** (punti vita, limite di round, prezzi, ricompense, limiti del mazzo…) stanno nel database e si modificano dal **backoffice** (`rule_sets`, `rarities`, `faction_bonus`, `packs`), mai nel codice né in `application.properties`. Nei documenti sono segnati con **[DA CONFERMARE]**.
 
 ## Come lavorare
 

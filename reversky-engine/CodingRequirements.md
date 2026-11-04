@@ -11,7 +11,7 @@ Il motore deve essere **corretto, prevedibile e facile da testare**: queste rego
 |---|---|---|
 | Classi, metodi, variabili, package | Inglese | `CombatResolver.resolveRound()` |
 | Commenti e Javadoc | Italiano | `// I danni si applicano insieme: nessuno colpisce per primo` |
-| Messaggi del log di partita | Italiano | `"Wendigo infligge 7 danni a Kappa"` |
+| Messaggi del log di partita, nomi di carte, fazioni ed effetti (li vedono i giocatori) | Inglese | `"Wendigo deals 7 damage to Kappa"` |
 | Messaggi di commit | Italiano | `feat(effect): aggiunto effetto Hidebehind` |
 
 ### Glossario italiano → inglese
@@ -118,7 +118,7 @@ int reduced = damage / 2;   // 7 → 3
 - Un `MatchSimulator` non conserva stato tra una partita e l'altra: ogni chiamata crea il proprio `MatchState`.
 - Metodi corti (~30 righe max): la risoluzione di un round è divisa in passi con metodi dedicati.
 - Niente `null` per le liste. Per "assenza" usa `Optional` o un oggetto vuoto.
-- Niente "numeri magici": tutto in `RuleConfig` o in costanti con nome.
+- Niente "numeri magici": i valori di gioco arrivano nella richiesta (`RuleConfig`, `FactionMatrix`); il resto in costanti con nome.
 
 ```java
 // SÌ

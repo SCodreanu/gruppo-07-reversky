@@ -66,8 +66,8 @@ Risposta `200 OK`:
 }
 ```
 
-- Credenziali errate → `401` con messaggio generico ("Credenziali non valide"), **senza dire** se è sbagliata l'email o la password.
-- Utente con `is_enabled = false` → `403` ("Account disattivato").
+- Credenziali errate → `401` con messaggio generico ("Invalid credentials"), **senza dire** se è sbagliata l'email o la password.
+- Utente con `is_enabled = false` → `403` ("Account disabled").
 
 ## Token
 

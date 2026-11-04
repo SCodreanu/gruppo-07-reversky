@@ -39,19 +39,19 @@ Usiamo `ProblemDetail` di Spring (standard RFC 9457). Tutti gli errori hanno que
 ```json
 {
   "type": "about:blank",
-  "title": "Mazzo non valido",
+  "title": "Invalid deck",
   "status": 422,
-  "detail": "Il mazzo contiene 3 copie di 'Hounds', massimo consentito: 1",
+  "detail": "The deck contains 3 copies of 'Hounds', maximum allowed: 1",
   "instance": "/api/v1/decks",
   "code": "DECK_INVALID",
   "errors": [
-    { "field": "cards", "message": "Troppe copie di 'Hounds' (3/1)" }
+    { "field": "cards", "message": "Too many copies of 'Hounds' (3/1)" }
   ]
 }
 ```
 
 - `code`: codice stabile in inglese che il frontend può usare per tradurre o gestire il caso.
-- `detail`: messaggio leggibile in italiano.
+- `title` e `detail`: testo leggibile in inglese (il prodotto è English first).
 - `errors`: presente solo per errori di validazione con più problemi.
 
 ## Paginazione
@@ -98,15 +98,15 @@ Il brief richiede la documentazione Swagger. Si usa **springdoc-openapi** (da ag
 Ogni controller deve avere:
 
 ```java
-@Tag(name = "Mazzi", description = "Creazione e gestione dei mazzi")
+@Tag(name = "Decks", description = "Deck creation and management")
 @RestController
 @RequestMapping("/api/v1/decks")
 public class DeckController {
 
-	@Operation(summary = "Crea un nuovo mazzo",
-			description = "Valida il mazzo secondo il regolamento e lo salva.")
-	@ApiResponse(responseCode = "201", description = "Mazzo creato")
-	@ApiResponse(responseCode = "422", description = "Il mazzo non rispetta i vincoli")
+	@Operation(summary = "Create a new deck",
+			description = "Validates the deck against the game rules and saves it.")
+	@ApiResponse(responseCode = "201", description = "Deck created")
+	@ApiResponse(responseCode = "422", description = "The deck does not meet the constraints")
 	@PostMapping
 	public ResponseEntity<DeckResponse> create(@Valid @RequestBody CreateDeckRequest request) { ... }
 }
@@ -120,6 +120,7 @@ public class DeckController {
 | Utente | `GET /users/me`, `GET /users/{id}/collection` |
 | Inventario | `GET /inventory`, `POST /inventory/packs/{packId}/open` |
 | Carte | `GET /cards`, `GET /cards/{id}`, `GET /rarities`, `GET /factions` |
+| Regole | `GET /rules` (rule set attivo e bonus di fazione, per la pagina del regolamento) |
 | Pacchetti | `GET /packs`, `POST /packs/{id}/purchase` |
 | Collezione | `GET /collection`, `GET /collection/summary` |
 | Mazzi | `GET/POST /decks`, `GET/PUT/DELETE /decks/{id}`, `POST /decks/validate`, `GET /decks/rules` |
@@ -127,6 +128,6 @@ public class DeckController {
 | Scambi | `GET/POST /trades`, `GET /trades/{id}`, `POST /trades/{id}/counter`, `/accept`, `/reject` |
 | Sfide | `GET/POST /battle-invites`, `POST /battle-invites/{id}/accept`, `/reject`, `DELETE /battle-invites/{id}`, `GET /battles`, `GET /battles/{id}`, `POST /battles/{id}/retry` |
 | Classificate | `GET/POST/DELETE /matchmaking/queue`, `GET /rankings`, `GET /rankings/me` |
-| Backoffice | `/admin/cards/**`, `/admin/rarities`, `/admin/factions`, `/admin/faction-bonus`, `/admin/tags`, `/admin/packs/**`, `/admin/users/**`, `/admin/audit-logs`, `/admin/stats` |
+| Backoffice | `/admin/cards/**`, `/admin/rarities`, `/admin/factions`, `/admin/faction-bonus`, `/admin/rule-sets/**`, `/admin/tags`, `/admin/packs/**`, `/admin/users/**`, `/admin/audit-logs`, `/admin/stats` |
 
 (tutti con prefisso `/api/v1`)
