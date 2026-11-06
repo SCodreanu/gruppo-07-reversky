@@ -58,6 +58,7 @@ it.downfall.reversky.api
 
 - Si crea solo il sotto-package che serve: una funzionalità senza job non ha `job/`.
 - `common/` non è una funzionalità: resta diviso per argomento (`security/`, `mail/`, ...).
+- I controller del backoffice (`/api/v1/admin/**`) stanno in `admin/controller/` (es. `AdminFactionController`) e chiamano i service della funzionalità (es. `catalog/service/FactionService`), mai i suoi repository. Così le regole restano in un posto solo, e la sicurezza dell'intera area admin sta in una regola di `SecurityConfig`.
 - I test seguono gli stessi package delle classi che testano (es. `auth/service/AuthServiceIT`).
 
 Vantaggio: tutto ciò che riguarda i mazzi è in un posto solo, e ogni membro del team può lavorare su una funzionalità senza toccare le altre. Dentro la funzionalità, ogni classe ha un posto preciso in base al suo livello.

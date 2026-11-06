@@ -61,7 +61,7 @@ public class SecurityConfig {
 				// Il reinvio vale per l'utente del token, quindi senza token risponde 401.
 				.requestMatchers("/api/v1/auth/email/resend").authenticated()
 				.requestMatchers("/api/v1/auth/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions").permitAll()
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN)

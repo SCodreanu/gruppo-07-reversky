@@ -6,6 +6,10 @@ Area riservata agli **amministratori** (`ADMIN`) per gestire catalogo, pacchetti
 
 Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata in `audit_logs`.
 
+- Il controllo del ruolo è in `SecurityConfig` (`/api/v1/admin/**` → `hasRole(ADMIN)`): i controller non ripetono `@PreAuthorize`.
+- I controller stanno in `admin/controller/` e usano i service delle funzionalità (vedi [architettura](../architettura/architettura.md)).
+- Già implementato: `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83) e senza audit (task API-52, #122).
+
 ## Carte — `catalog_cards`
 
 | Metodo | URL | Descrizione |

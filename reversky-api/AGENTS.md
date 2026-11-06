@@ -122,6 +122,10 @@ L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni 
 - errori in formato ProblemDetail, Swagger con il pulsante Authorize;
 - test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
 
-Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`. Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`.
 
-Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1` e `V2` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.
+Catalogo: fazioni (`catalog/`, migrazione `V3`) con `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`).
+
+Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`, `V2` e `V3` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.

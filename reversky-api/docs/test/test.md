@@ -110,7 +110,7 @@ Consigliato: test di concorrenza sugli spostamenti di carte e crediti (due accet
 
 Classi di supporto in `src/test/java/.../support/` (`TestCards`, `TestDecks`, `TestUsers`, `TestPacks`) per creare dati di prova in una riga. Non duplicare la costruzione degli oggetti in ogni test.
 
-`TestUsers` esiste già: crea utenti sul database dei test (`create()`, `disable`, `markEmailVerified`, `delete`) e contiene la password comune `TestUsers.PASSWORD`. È un `@TestComponent`, quindi si aggiunge al test insieme al container:
+`TestUsers` esiste già: crea utenti sul database dei test (`create()` per un `USER`, `createAdmin()` per un `ADMIN`, poi `disable`, `markEmailVerified`, `delete`) e contiene la password comune `TestUsers.PASSWORD`. Per chiamare un endpoint protetto basta `jwtService.createAccessToken(testUsers.createAdmin())`, senza passare dal login (esempio in `AdminFactionControllerIT`). È un `@TestComponent`, quindi si aggiunge al test insieme al container:
 
 ```java
 @Import({TestcontainersConfiguration.class, TestUsers.class})

@@ -7,7 +7,10 @@ import org.springframework.boot.test.context.TestComponent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import it.downfall.reversky.api.user.entity.Role;
 import it.downfall.reversky.api.user.entity.User;
+import it.downfall.reversky.api.user.repository.RoleRepository;
+import it.downfall.reversky.api.user.repository.UserRepository;
 import it.downfall.reversky.api.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +28,8 @@ public class TestUsers {
 	public static final String PASSWORD = "CorrectPassword1";
 
 	private final UserService userService;
+	private final UserRepository userRepository;
+	private final RoleRepository roleRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JdbcTemplate jdbcTemplate;
 
@@ -35,6 +40,19 @@ public class TestUsers {
 		String suffix = uniqueSuffix();
 
 		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now());
+	}
+
+	/**
+	 * Crea un utente ADMIN abilitato, con password {@link #PASSWORD}.
+	 * <p>
+	 * La registrazione crea solo USER, quindi si salva l'entità direttamente. Il ruolo resta
+	 * caricato nell'oggetto restituito, così {@code JwtService.createAccessToken} lo può leggere.
+	 */
+	public User createAdmin() {
+		String suffix = uniqueSuffix();
+		Role adminRole = roleRepository.findByName(Role.ADMIN).orElseThrow();
+
+		return userRepository.save(new User(adminRole, "admin_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now()));
 	}
 
 	// SQL diretto: User non ha ancora un metodo per disabilitare, arriverà con il backoffice (#73)
