@@ -2,7 +2,7 @@
 
 ## Scelte
 
-- **PostgreSQL 18**, approvato dai docenti al posto di MySQL indicato nel brief.
+- **PostgreSQL 18**, concordato con il cliente e approvato, al posto di MySQL indicato nel brief.
 - Lo schema completo, fonte di verità per le migrazioni, è in [schema.dbml](schema.dbml) (si apre su dbdiagram.io).
 - Lo schema è gestito **solo da Flyway**. Hibernate non crea né modifica tabelle (`ddl-auto=validate`).
 - In locale il database parte con Docker grazie a `compose.yaml` e `spring-boot-docker-compose`.
@@ -27,14 +27,14 @@ V1__create_enums.sql
 V2__create_users_and_auth.sql
 V3__create_catalog_and_tags.sql
 V4__create_collection_and_decks.sql
-V5__create_battles.sql
+V5__create_battles.sql              inviti, partite, coda di matchmaking, rating Elo
 V6__create_friendships.sql
 V7__create_trades.sql
 V8__create_inventories_and_packs.sql
 V9__create_audit_logs.sql
-V10__insert_reference_data.sql      ruoli, rarità, fazioni, bonus di fazione, tag
+V10__insert_reference_data.sql      rule set 1.0 (attivo), rarità, fazioni, bonus di fazione, tag
 V11__insert_initial_catalog.sql     carte iniziali e pacchetto base
-V12__add_ranked_battles.sql         modalità di sfida, coda di matchmaking, rating Elo
+V12__insert_seed_users.sql          primo ADMIN e utenti di test, con il loro inventario (sempre l'ultima)
 ```
 
 ### Regole
@@ -42,13 +42,13 @@ V12__add_ranked_battles.sql         modalità di sfida, coda di matchmaking, rat
 1. **Mai modificare una migrazione già su `main`.** Per correggere, crea una nuova migrazione.
 2. Una migrazione = un cambiamento logico.
 3. Prima di creare `V<n>`, fai `git pull`: due persone non devono usare lo stesso numero.
-4. I dati di riferimento (ruoli, rarità, fazioni, tag) e il catalogo iniziale vanno in migrazioni dedicate.
+4. I dati di riferimento (rarità, fazioni, tag) e il catalogo iniziale vanno in migrazioni dedicate. Fanno eccezione i ruoli, inseriti in `V2` insieme alla tabella perché il codice ne usa i nomi.
 
 ## Convenzioni (quelle usate dallo schema)
 
 | Elemento | Regola | Esempio |
 |---|---|---|
-| Tabella | inglese, `snake_case` | `collection_cards`, `faction_bonus` |
+| Tabella | inglese, `snake_case` | `collection_cards`, `faction_bonuses` |
 | Colonna | `snake_case` | `password_hash` |
 | Chiave primaria semplice | `id INTEGER` generato, oppure `id UUID` | `users.id`, `trades.id` |
 | Chiave primaria composta | sulle tabelle di collegamento | `collection_cards (user_id, card_id)` |
@@ -58,7 +58,7 @@ V12__add_ranked_battles.sql         modalità di sfida, coda di matchmaking, rat
 | Enum | tipo enum PostgreSQL | `card_type`, `trade_status` |
 | JSON | `jsonb` | `battles.rounds_log` |
 
-Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `email_verification_tokens`), `battle_invites`, `battles`, `trades`, `trade_offers`. Tutte le altre usano `INTEGER`.
+Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `email_verification_tokens`), `battle_invites`, `battles`, `trades`. Tutte le altre usano `INTEGER`.
 
 ## Schema per aree
 
@@ -66,7 +66,7 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `roles` | ruoli con `authority_level` univoco (gerarchia: più alto = più permessi) |
+| `roles` | ruoli degli utenti (`USER`, `ADMIN`), con `name` univoco |
 | `users` | username, email, `password_hash`, ruolo, `is_enabled`, `email_verified_at`, date di accettazione privacy e termini, `created_at` |
 | `refresh_tokens` | refresh token (solo **hash**) con scadenza |
 | `password_reset_tokens` | token di reset password (solo hash) |
@@ -76,12 +76,12 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `rule_sets` | **valori di gioco dal backoffice**, versionati, uno solo attivo: punti vita iniziali e limite di round (inviati all'engine), composizione del mazzo, crediti di benvenuto/vittoria/pareggio |
+| `rule_sets` | **valori di gioco dal backoffice**, versionati, uno solo attivo: punti vita iniziali e limite di round (inviati all'engine), composizione del mazzo, crediti di benvenuto e di vittoria/pareggio (solo nelle partite `RANKED`) |
 | `rarities` | rarità con `deck_limit` (copie massime per carta), `max_per_deck` (bilanciamento del mazzo), `max_atk`/`max_def` (statistiche massime) e `sorting_order` |
-| `factions` | fazioni |
-| `faction_bonus` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
-| `catalog_cards` | carte: tipo, rarità, fazione e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit`, `is_active`, immagine, `effect_description`, `flavor_text` |
-| `tags` / `card_tags` / `faction_tags` | etichette per carte e fazioni (filtri dei pacchetti, effetti, sottotipi) |
+| `factions` | fazioni: nome, `emblem_path` (emblema) e `description` (testo mostrato ai giocatori, facoltativo) |
+| `faction_bonuses` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
+| `catalog_cards` | carte: tipo, `subtype` (solo Spell e Hidden), `effect_code`, rarità, fazione e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit` (nullo = solo il limite della rarità), `variant_of_id` (versione evento di un'altra carta), `is_active`, immagine, `effect_description`, `flavor_text`. Il nome è univoco tra le carte originali |
+| `tags` / `card_tags` / `faction_tags` | etichette libere per carte e fazioni, usate dai filtri dei pacchetti |
 
 ### Collezione e mazzi → [collezione](../collezione/collezione.md), [mazzi](../mazzi/mazzi.md)
 
@@ -94,7 +94,7 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `battle_invites` | invito diretto **tra amici**, solo per le partite `FRIENDLY`: sfidante, mazzo dello sfidante, avversario scelto, stato, `created_at`, `expires_at` (scadenza dopo 48 ore) |
+| `battle_invites` | invito diretto **tra amici**, solo per le partite `FRIENDLY`: sfidante, mazzo dello sfidante, avversario scelto, stato, `created_at`. Non scade; al massimo un invito `PENDING` per direzione; la riga si elimina quando l'invito viene rifiutato o ritirato |
 | `battles` | partita con `mode` `FRIENDLY` (legata a un invito) o `RANKED` (creata dal matchmaking, `invite_id` nullo): fotografie dei mazzi, `rule_set_id` (regole usate), `battle_stats` (anche la copia delle regole e dei bonus di fazione inviati all'engine), `rounds_log`, risultato, `created_at`; per le `RANKED` anche rating prima della partita e variazione di entrambi i giocatori |
 | `matchmaking_queue` | utenti in coda per una partita classificata: un ticket per utente, mazzo scelto, rating al momento dell'ingresso, `queued_at` |
 | `player_ratings` | rating Elo (parte da 1000), rating massimo e statistiche delle sole partite classificate; le amichevoli non lo modificano |
@@ -103,17 +103,19 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 
 | Tabella | Contenuto |
 |---|---|
-| `friendships` | richiesta di amicizia (chiave: richiedente + destinatario) e stato |
+| `friendships` | richiesta di amicizia (chiave: richiedente + destinatario) e stato; al massimo una riga per coppia di utenti, eliminata quando la richiesta viene rifiutata o ritirata |
 | `trades` | scambio tra due utenti e stato |
-| `trade_offers` | carte che **ogni partecipante** mette nello scambio |
+| `trade_offers` | carte che **ogni partecipante** mette nello scambio (chiave: scambio + chi cede + carta); le copie di chi ha fatto l'offerta in corso sono riservate finché lo scambio è aperto |
 
 ### Inventario e pacchetti → [crediti](../crediti/crediti.md), [pacchetti](../pacchetti/pacchetti.md)
 
 | Tabella | Contenuto |
 |---|---|
-| `inventories` | un inventario per utente con il saldo `credits` (≥ 0) |
-| `packs` | tipi di pacchetto: costo, immagine, attivo |
-| `pack_inventory` | pacchetti comprati e non ancora aperti |
+| `inventories` | un inventario per utente (chiave: `user_id`) con il saldo `credits` (≥ 0) |
+| `credit_transactions` | storico di ogni movimento di crediti: importo (positivo, negativo, oppure 0 per un pacchetto gratuito), motivo, `created_at` |
+| `packs` | tipi di pacchetto: costo (0 = omaggio), `purchase_limit` per utente (nullo = nessun limite, obbligatorio per gli omaggi), immagine, attivo |
+| `pack_inventory` | pacchetti comprati e non ancora aperti (`quantity > 0`, la riga si elimina a 0) |
+| `pack_openings` | storico delle aperture: utente, pacchetto, carte ricevute in `jsonb`, `created_at` |
 | `pack_rarity_rules` | slot base per rarità (es. 3 Common, 2 Uncommon, 2 Rare) |
 | `pack_bonus_rules` | probabilità di carte bonus per rarità, in unità su 10.000 |
 | `pack_tags` | filtro: quali carte possono uscire dal pacchetto |
@@ -124,18 +126,17 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 |---|---|
 | `audit_logs` | ogni azione del backoffice, con valori prima/dopo in `jsonb` |
 
-## Convenzioni sui tag
+## Effetti, sottotipi e tag
 
-Lo schema non ha colonne per il codice dell'effetto e per il sottotipo delle carte: si usano i **tag**. (`effect_description` è solo il testo mostrato al giocatore.)
+Effetto e sottotipo di una carta sono **colonne** di `catalog_cards`, così il database ne garantisce le regole. L'API le invia all'engine come `effectCode` e `subtype`. (`effect_description` è solo il testo mostrato al giocatore.)
 
-| Tag | Significato |
-|---|---|
-| `EFFECT_<CODICE>` | codice dell'effetto implementato nell'engine. Es. `EFFECT_HIDEBEHIND`. **Al massimo uno per carta.** |
-| `DAMAGE`, `SHIELD`, `BURN` | sottotipo di una Spell |
-| `SURVIVAL`, `DAMAGE` | sottotipo di una Hidden |
-| altri | liberi, usati soprattutto dai filtri dei pacchetti (`pack_tags`) |
-
-L'API traduce i tag in `effectCode` e `subtype` quando invia le carte all'engine.
+| Dato | Dove | Regola |
+|---|---|---|
+| Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta |
+| Sottotipo di una Spell | `subtype` | `DAMAGE`, `SHIELD` o `BURN` (obbligatorio) |
+| Sottotipo di una Hidden | `subtype` | `SURVIVAL` o `DAMAGE` (obbligatorio) |
+| Sottotipo di Creature e Terreni | `subtype` | sempre nullo |
+| Etichette | `tags` | libere, in maiuscolo (`^[A-Z0-9_]+$`), usate dai filtri dei pacchetti (`pack_tags`) |
 
 ## Mappatura JPA
 
@@ -146,7 +147,7 @@ L'API traduce i tag in `effectCode` e `subtype` quando invia le carte all'engine
 | Chiave composta | `@EmbeddedId` con una classe `@Embeddable` (es. `CollectionCardId`) |
 | Enum PostgreSQL | `@Enumerated(EnumType.STRING)` + `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` |
 | `jsonb` | `@JdbcTypeCode(SqlTypes.JSON)` su un campo `Map`, `List` o record |
-| `timestamp` | `LocalDateTime`, sempre in UTC |
+| `timestamptz` | `Instant`, sempre in UTC |
 
 ```java
 @Entity

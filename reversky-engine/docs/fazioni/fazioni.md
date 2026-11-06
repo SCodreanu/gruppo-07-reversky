@@ -2,7 +2,7 @@
 
 ## Le fazioni sono dati
 
-Le fazioni e i loro rapporti stanno nel database dell'API (tabelle `factions` e `faction_bonus`) e si modificano dal backoffice. L'engine non ha database: **riceve fazioni e bonus in ogni richiesta**.
+Le fazioni e i loro rapporti stanno nel database dell'API (tabelle `factions` e `faction_bonuses`) e si modificano dal backoffice. L'engine non ha database: **riceve fazioni e bonus in ogni richiesta**.
 
 Per questo nel core una fazione **non** è un enum, ma un record:
 
@@ -25,7 +25,7 @@ Nel gioco (database, carte, portale) i nomi sono **in inglese**; il nome italian
 Gli `id` veri sono quelli della tabella `factions` dell'API; quelli qui sopra sono usati negli [esempi](../../examples/README.md).
 Le costanti inglesi servono solo nei test (`TestFactions`): nel core le fazioni restano dati.
 
-## I bonus — `faction_bonus`
+## I bonus — `faction_bonuses`
 
 Ogni riga dice: *quando una creatura di `origin` affronta una creatura di `target`, ottiene questi bonus.*
 

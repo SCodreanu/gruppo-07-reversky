@@ -9,11 +9,13 @@ Le parti più rischiose del backend (crediti, pacchetti, scambi) spostano "valor
 | Tipo | Cosa testa | Strumenti | Nome file |
 |---|---|---|---|
 | **Unitario** | una classe da sola (service, validator) | JUnit 5, Mockito, AssertJ | `XxxTest` |
-| **Controller** | endpoint HTTP: status, JSON, sicurezza | `@WebMvcTest`, MockMvc | `XxxControllerTest` |
+| **Controller** | endpoint HTTP: status, JSON, sicurezza | `@SpringBootTest` + `@AutoConfigureMockMvc` + Testcontainers | `XxxControllerIT` |
 | **Repository** | query JPA personalizzate | `@DataJpaTest` + Testcontainers PostgreSQL | `XxxRepositoryTest` |
 | **Integrazione** | un flusso completo con database vero | `@SpringBootTest` + Testcontainers | `XxxIT` |
 
-Testcontainers avvia un PostgreSQL vero in Docker (configurazione in `TestcontainersConfiguration`): **serve Docker acceso** per eseguire i test di repository e integrazione.
+Testcontainers avvia un PostgreSQL vero in Docker (configurazione in `TestcontainersConfiguration`): **serve Docker acceso** per eseguire i test di repository, controller e integrazione.
+
+I test dei controller caricano tutta l'applicazione invece di usare `@WebMvcTest`: così passano davvero dai filtri di Spring Security, da `GlobalExceptionHandler` e dal database, senza mock dei service. Spring riusa il contesto tra le classi di test con la stessa configurazione (stesse annotazioni e stessi `@MockitoBean`), quindi conviene tenerla uguale: ad esempio tutti i test che usano MockMvc dichiarano `@MockitoBean EmailSender`.
 
 ## Comandi
 
@@ -93,16 +95,16 @@ Per l'errore dell'engine: `thenThrow(new EngineUnavailableException(...))`.
 
 Obbligatorio:
 - [ ] ogni regola di `DeckValidator`, compreso `min(deck_limit, copy_limit)`;
-- [ ] acquisto pacchetto: crediti scalati, crediti insufficienti, saldo mai negativo;
-- [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, nessun pacchetto da aprire;
-- [ ] scambi: tutti gli stati e i turni, controproposte, carte non più possedute, **totale delle carte invariato**;
-- [ ] amicizie: richiesta inversa, richiesta dopo un rifiuto;
-- [ ] sfide: stati dell'invito, mazzo non più valido, engine non disponibile, retry con lo stesso seed;
-- [ ] autenticazione: rotazione del refresh token, reset password che invalida i refresh token, account disattivato;
+- [ ] acquisto pacchetto: crediti scalati, crediti insufficienti, saldo mai negativo, limite di acquisto, pacchetto gratuito;
+- [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, ripiego degli slot senza carte, nessun pacchetto da aprire;
+- [ ] scambi: tutti gli stati e i turni, controproposte, copie riservate, copie non più disponibili, **totale delle carte invariato**;
+- [ ] amicizie: richiesta inversa, richiesta dopo un rifiuto, richieste opposte contemporanee;
+- [ ] sfide: stati dell'invito, mazzo non più valido, engine non disponibile, retry con lo stesso seed, retry sovrapposti che non assegnano due volte Elo e crediti;
+- [x] autenticazione: rotazione del refresh token, reset password che invalida i refresh token, account disattivato;
 - [ ] backoffice: ogni azione scrive in `audit_logs`;
 - [ ] sicurezza: endpoint protetti senza token → `401`, admin con `USER` → `403`, risorse altrui → `404`.
 
-Consigliato: un test di concorrenza sugli scambi (due accettazioni incrociate in parallelo).
+Consigliato: test di concorrenza sugli spostamenti di carte e crediti (due accettazioni incrociate in parallelo, uno scambio mentre si apre un pacchetto, un pareggio in classificata mentre si accetta uno scambio).
 
 ## Dati di test
 

@@ -2,13 +2,13 @@
 
 Elenco di **tutti** gli effetti delle carte, presi dal documento di lavoro (`docs/idee`, versione aggiornata) e dalla
 proposta al cliente del 2 novembre, tradotti in termini del motore: codice, momenti dell'interfaccia `CreatureEffect`
-(vedi [effetti](effetti.md)), stato da tenere e domande aperte. È il backlog delle issue `ENG-23`, `ENG-25`, `ENG-26`.
+(vedi [effetti](effetti.md)), stato da tenere e domande aperte. È il backlog delle issue `ENG-19`, `ENG-20`, `ENG-21`, `ENG-23`, `ENG-25`, `ENG-26`.
 
 > **Il catalogo è ancora da definire** (D-24): carte, statistiche e testi possono cambiare. Finché non è confermato, l'engine si sviluppa e si testa con **dati di prova**.
 > Ogni effetto si implementa quando la sua carta è confermata; la struttura (momenti, stato, pezzi di motore) vale comunque.
 
 - **Carta:** nel gioco tutto è in inglese (D-44). Dove la proposta o le carte illustrate non fissano ancora il nome, quello qui è un nome di lavoro tradotto.
-- **Codice:** proposta; diventa definitivo quando l'effetto è registrato in `EffectRegistry` e il backoffice lo usa nel tag `EFFECT_<CODICE>`.
+- **Codice:** proposta; diventa definitivo quando l'effetto è registrato in `EffectRegistry` e il backoffice lo assegna a una carta (`catalog_cards.effect_code`).
 - **Lotto:** `P1` = testo chiaro, si implementa subito; `P2` = serve una decisione o un pezzo di motore in più (vedi colonna *Domande*).
 - **Chi:** divisione tra i due sviluppatori — A = Theory of the Invitation + Theory of the Archive, B = Theory of the Wound + Theory of the Dream.
 - I riferimenti `D-xx` rimandano alle [decisioni aperte](../decisioni-aperte/decisioni-aperte.md).
@@ -127,7 +127,7 @@ Una Crepa per fazione. Restano in gioco fino alla fine. Bonus base `P1`, effetto
 
 ## Pezzi di motore richiesti dagli effetti
 
-Prima degli effetti `P1` serve il framework (`ENG-22`); prima dei `P2`, questi pezzi in più:
+Prima degli effetti di Spell, Hidden e Terreni serve il registro (`ENG-22`); prima di quelli delle creature serve anche `CreatureEffect` (`ENG-23`); prima dei `P2`, questi pezzi in più:
 
 | Pezzo | Serve a | Decisione |
 |---|---|---|

@@ -93,12 +93,13 @@ Dettagli in [autenticazione](../autenticazione/autenticazione.md).
 
 ## Swagger / OpenAPI
 
-Il brief richiede la documentazione Swagger. Si usa **springdoc-openapi** (da aggiungere al `build.gradle`, versione compatibile con Spring Boot 4).
+Il brief richiede la documentazione Swagger. Si usa **springdoc-openapi** (già in `build.gradle`).
 
 Ogni controller deve avere:
 
 ```java
 @Tag(name = "Decks", description = "Deck creation and management")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)   // solo se gli endpoint richiedono il token
 @RestController
 @RequestMapping("/api/v1/decks")
 public class DeckController {
@@ -127,7 +128,7 @@ public class DeckController {
 | Amicizie | `GET /friends`, `GET/POST /friends/requests`, `POST /friends/requests/{requesterId}/accept`, `/reject`, `DELETE /friends/{userId}` |
 | Scambi | `GET/POST /trades`, `GET /trades/{id}`, `POST /trades/{id}/counter`, `/accept`, `/reject` |
 | Sfide | `GET/POST /battle-invites`, `POST /battle-invites/{id}/accept`, `/reject`, `DELETE /battle-invites/{id}`, `GET /battles`, `GET /battles/{id}`, `POST /battles/{id}/retry` |
-| Classificate | `GET/POST/DELETE /matchmaking/queue`, `GET /rankings`, `GET /rankings/me` |
-| Backoffice | `/admin/cards/**`, `/admin/rarities`, `/admin/factions`, `/admin/faction-bonus`, `/admin/rule-sets/**`, `/admin/tags`, `/admin/packs/**`, `/admin/users/**`, `/admin/audit-logs`, `/admin/stats` |
+| Classificate | `GET/POST/DELETE /matchmaking/queue`, `GET /rankings/me`, `GET /rankings` **[DA CONFERMARE]** |
+| Backoffice | `/admin/cards/**`, `/admin/rarities`, `/admin/factions`, `/admin/faction-bonuses`, `/admin/rule-sets/**`, `/admin/tags`, `/admin/packs/**`, `/admin/users/**`, `/admin/audit-logs`, `/admin/stats` |
 
 (tutti con prefisso `/api/v1`)

@@ -50,7 +50,7 @@ Swagger UI, una volta configurato springdoc: `http://localhost:8080/swagger-ui.h
 
 ## Struttura del codice
 
-Organizzazione **per funzionalità** (package-by-feature), non per tipo di classe:
+Organizzazione **per funzionalità** (package-by-feature), e dentro ogni funzionalità un sotto-package per livello:
 
 ```
 src/main/java/it/downfall/reversky/api/
@@ -68,7 +68,7 @@ src/main/java/it/downfall/reversky/api/
 └── common/        errori, sicurezza, configurazione condivisa
 ```
 
-Dentro ogni package: `XxxController`, `XxxService`, `XxxRepository`, entità JPA, `dto/`.
+Dentro ogni funzionalità: `controller/`, `service/`, `repository/`, `entity/`, `dto/`, `exception/` e, se servono task schedulati, `job/`. Si crea solo il sotto-package che serve; `common/` resta diviso per argomento. I test usano gli stessi package delle classi che testano. Dettagli ed esempio in [docs/architettura](docs/architettura/architettura.md).
 
 ## Documentazione per funzionalità
 
@@ -101,7 +101,7 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 5. **Il server ricontrolla sempre tutto**: possesso delle carte, vincoli del mazzo, saldo, turno negli scambi. La validazione del frontend è solo una comodità.
 6. **Lo schema cambia solo tramite migrazioni Flyway nuove.** Non modificare mai una migrazione già committata.
 7. **Niente acquisto di crediti con denaro reale**: è fuori dal perimetro della fase 1.
-8. **Valori del regolamento** (punti vita, limite di round, prezzi, ricompense, limiti del mazzo…) stanno nel database e si modificano dal **backoffice** (`rule_sets`, `rarities`, `faction_bonus`, `packs`), mai nel codice né in `application.properties`. Nei documenti sono segnati con **[DA CONFERMARE]**.
+8. **Valori del regolamento** (punti vita, limite di round, prezzi, ricompense, limiti del mazzo…) stanno nel database e si modificano dal **backoffice** (`rule_sets`, `rarities`, `faction_bonuses`, `packs`), mai nel codice né in `application.properties`. Nei documenti sono segnati con **[DA CONFERMARE]**.
 
 ## Come lavorare
 
@@ -114,4 +114,14 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 
 ## Stato attuale
 
-Il progetto è lo scheletro generato da Spring Initializr: esiste solo `ReverskyApiApplication`. I documenti in `docs/` descrivono come **deve** essere costruito il backend.
+L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni `V1` e `V2`):
+
+- registrazione, login, rinnovo con rotazione, logout, reset della password, verifica e reinvio della verifica email;
+- `GET /api/v1/users/me`;
+- pulizia giornaliera dei token scaduti (`TokenCleanupJob`);
+- errori in formato ProblemDetail, Swagger con il pulsante Authorize;
+- test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
+
+Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`. Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1` e `V2` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.

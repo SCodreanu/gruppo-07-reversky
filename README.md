@@ -65,11 +65,12 @@ Esempi di carte:
 
 ## Come avviare il backend
 
-Il backend è composto da tre servizi, avviati insieme con Docker Compose:
+Il backend è composto da quattro servizi, avviati insieme con Docker Compose:
 
 | Servizio | Cosa fa | Indirizzo |
 |---|---|---|
 | `db` | database PostgreSQL 18 | `localhost:5432` |
+| `mailpit` | finto server email: cattura le email dell'API senza spedirle | `http://localhost:8025` |
 | `engine` | motore di gioco (`reversky-engine`) | solo interno, `http://engine:8081` |
 | `api` | backend REST (`reversky-api`) | `http://localhost:8080` |
 
@@ -117,6 +118,18 @@ Per sviluppare dall'IDE di solito si usano `start-engine.bat` e `start-api.bat` 
 | `docker compose down -v` | ferma tutto e **cancella il database** |
 | `docker compose up --build api` | ricompila e riavvia solo l'API dopo una modifica |
 
+### Provare l'API con Swagger
+
+Con l'API avviata, la documentazione interattiva è su `http://localhost:8080/swagger-ui.html`. Per gli endpoint protetti:
+
+1. chiama `POST /api/v1/auth/login` e copia `accessToken` dalla risposta;
+2. premi **Authorize** in alto e incolla solo il token (senza `Bearer `);
+3. gli endpoint con il lucchetto ora ricevono il token.
+
+### Email in sviluppo
+
+Le email dell'API (verifica dell'indirizzo, reset della password) non partono davvero: le riceve **Mailpit**, e si leggono su `http://localhost:8025`. I link nelle email puntano al frontend (`http://localhost:3000/verify-email?token=...` e `/reset-password?token=...`); senza frontend avviato, copia il `token` dal link e usalo in Swagger con `POST /api/v1/auth/email/verify` o `POST /api/v1/auth/password/reset`.
+
 ### Collegarsi al database
 
 Da DBeaver, pgAdmin o IntelliJ:
@@ -144,7 +157,7 @@ cd reversky-api
 ./gradlew bootRun
 ```
 
-L'API avvia da sola un PostgreSQL in Docker usando `reversky-api/compose.yaml`, quindi Docker Desktop deve essere acceso. Se è già in esecuzione il compose principale, fermalo prima (`docker compose down`) per non avere due database.
+L'API avvia da sola PostgreSQL e Mailpit in Docker usando `reversky-api/compose.yaml`, quindi Docker Desktop deve essere acceso. Se è già in esecuzione il compose principale, fermalo prima (`docker compose down`) per non avere due database e due Mailpit sulle stesse porte.
 
 ### Test
 

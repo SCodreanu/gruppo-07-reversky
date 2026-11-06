@@ -22,7 +22,7 @@ Tutto ciò che **non** è una costante del regolamento si modifica dal **backoff
 |---|---|---|---|
 | Punti vita iniziali | `rule_sets.starting_life_points` | 30 | **[DA CONFERMARE] D-01** |
 | Limite di round totali | `rule_sets.max_rounds` | 100 | **[DA CONFERMARE] D-02** dopo le simulazioni |
-| Bonus e malus di fazione | tabella `faction_bonus` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
+| Bonus e malus di fazione | tabella `faction_bonuses` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
 
 ```java
 /** Regole di una partita, costruite dal blocco {@code rules} della richiesta. Nessun valore predefinito. */

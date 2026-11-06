@@ -15,12 +15,12 @@ public record CardDefinition(
 		Integer secondaryFactionId, // seconda fazione facoltativa (es. Mutant), altrimenti null
 		Integer atk,            // solo creature, altrimenti null
 		Integer def,            // solo creature, altrimenti null
-		CardSubtype subtype,    // Spell/Hidden: DAMAGE, SHIELD, BURN, SURVIVAL (dai tag); altrimenti null
-		String effectCode) {    // dal tag EFFECT_<CODICE>, oppure null
+		CardSubtype subtype,    // Spell/Hidden: DAMAGE, SHIELD, BURN, SURVIVAL; altrimenti null
+		String effectCode) {    // catalog_cards.effect_code, oppure null
 }
 ```
 
-Sottotipo ed effetto non sono colonne del database: l'API li ricava dai tag della carta (vedi `docs/database` nell'API).
+Sottotipo ed effetto sono colonne di `catalog_cards` (`subtype`, `effect_code`): vedi `docs/database` nell'API.
 
 Un mazzo è una `List<CardDefinition>` con **un elemento per copia**.
 
@@ -110,12 +110,13 @@ Il bonus DEF del Terreno si applica quando la creatura **entra in campo** (o sub
 
 ## Validazione dell'input
 
-L'engine **non** controlla le regole del mazzo (40 carte, copie…): lo fa l'API. Controlla solo che i dati siano coerenti:
+L'engine **non** controlla le regole del mazzo (numero di carte, copie…): lo fa l'API. Controlla solo che i dati siano coerenti:
 
 - ogni mazzo ha almeno una creatura;
 - le creature hanno ATK ≥ 0 e DEF > 0;
 - ogni `factionId` e `secondaryFactionId` è tra le `factions` ricevute, e le due fazioni di una carta sono diverse;
 - `effectCode`, se presente, esiste nell'`EffectRegistry`;
-- Spell/Hidden hanno un `subtype`.
+- Spell/Hidden hanno un `subtype`;
+- Spell, Hidden e Terreni hanno un `effectCode` (per le creature è facoltativo).
 
 Se qualcosa non va → `400 Bad Request`.
