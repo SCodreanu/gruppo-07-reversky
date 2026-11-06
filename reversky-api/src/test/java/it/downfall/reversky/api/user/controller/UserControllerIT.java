@@ -5,9 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -24,8 +19,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
+import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
-import it.downfall.reversky.api.user.service.UserService;
 
 /**
  * {@link UserController} via HTTP, con i filtri di Spring Security attivi.
@@ -33,7 +28,7 @@ import it.downfall.reversky.api.user.service.UserService;
  * L'access token si crea direttamente con {@link JwtService}: il login è già coperto da AuthControllerIT.
  * Il 401 senza token è in AuthControllerIT, insieme alle altre regole generali di SecurityConfig.
  */
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserControllerIT {
@@ -42,16 +37,10 @@ class UserControllerIT {
 	private MockMvc mockMvc;
 
 	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
 	private JwtService jwtService;
 
 	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private TestUsers testUsers;
 
 	// Non serve al test: con la stessa configurazione di AuthControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
@@ -62,7 +51,7 @@ class UserControllerIT {
 	@DisplayName("A valid token returns the profile of its user")
 	void me_validToken_returnsProfile() throws Exception {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act + Assert: il ruolo è LAZY, quindi questo test verifica anche che venga letto dentro la transazione
 		me(jwtService.createAccessToken(user))
@@ -78,8 +67,8 @@ class UserControllerIT {
 	@DisplayName("emailVerified is true once the email has been verified")
 	void me_verifiedUser_returnsEmailVerifiedTrue() throws Exception {
 		// Arrange
-		User user = createUser();
-		jdbcTemplate.update("UPDATE users SET email_verified_at = now() WHERE id = ?", user.getId());
+		User user = testUsers.create();
+		testUsers.markEmailVerified(user);
 
 		// Act + Assert
 		me(jwtService.createAccessToken(user))
@@ -91,9 +80,9 @@ class UserControllerIT {
 	@DisplayName("A still valid token of a deleted user returns 404")
 	void me_deletedUser_returns404() throws Exception {
 		// Arrange: il token resta valido fino alla scadenza anche se l'utente non esiste più
-		User user = createUser();
+		User user = testUsers.create();
 		String accessToken = jwtService.createAccessToken(user);
-		jdbcTemplate.update("DELETE FROM users WHERE id = ?", user.getId());
+		testUsers.delete(user);
 
 		// Act + Assert
 		me(accessToken)
@@ -114,9 +103,4 @@ class UserControllerIT {
 		return mockMvc.perform(get("/api/v1/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken));
 	}
 
-	private User createUser() {
-		String suffix = UUID.randomUUID().toString().substring(0, 8);
-
-		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode("CorrectPassword1"), Instant.now());
-	}
 }

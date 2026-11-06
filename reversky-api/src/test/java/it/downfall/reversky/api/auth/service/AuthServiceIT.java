@@ -1,5 +1,7 @@
 package it.downfall.reversky.api.auth.service;
 
+import static it.downfall.reversky.api.support.TestUsers.PASSWORD;
+import static it.downfall.reversky.api.support.TestUsers.uniqueSuffix;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,7 +13,6 @@ import static org.mockito.Mockito.verify;
 
 import java.time.Instant;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -24,8 +25,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
@@ -52,6 +51,7 @@ import it.downfall.reversky.api.auth.repository.PasswordResetTokenRepository;
 import it.downfall.reversky.api.auth.repository.RefreshTokenRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.TokenHasher;
+import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.exception.UserNotFoundException;
 import it.downfall.reversky.api.user.service.UserService;
@@ -64,11 +64,10 @@ import it.downfall.reversky.api.user.service.UserService;
  * i test non si influenzano anche se condividono il database. {@link EmailSender} è un mock:
  * nessuna email parte davvero, e da lì si legge il token in chiaro che l'utente riceverebbe.
  */
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 class AuthServiceIT {
 
-	private static final String PASSWORD = "CorrectPassword1";
 	private static final String NEW_PASSWORD = "BrandNewPassword2";
 
 	@Autowired
@@ -81,19 +80,16 @@ class AuthServiceIT {
 	private RefreshTokenRepository refreshTokenRepository;
 
 	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
 	private TokenHasher tokenHasher;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	private PasswordResetTokenRepository passwordResetTokenRepository;
 
 	@Autowired
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
+
+	@Autowired
+	private TestUsers testUsers;
 
 	@MockitoBean
 	private EmailSender emailSender;
@@ -102,7 +98,7 @@ class AuthServiceIT {
 	@DisplayName("Correct credentials return a Bearer token pair")
 	void login_correctCredentials_returnsBearerTokens() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act
 		TokenResponse response = login(user);
@@ -118,7 +114,7 @@ class AuthServiceIT {
 	@DisplayName("Login stores the hash of the refresh token, never the raw value")
 	void login_correctCredentials_storesOnlyTokenHash() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act
 		String rawToken = login(user).refreshToken();
@@ -132,7 +128,7 @@ class AuthServiceIT {
 	@DisplayName("The email is matched regardless of case")
 	void login_emailInUpperCase_returnsTokens() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		LoginRequest request = new LoginRequest(user.getEmail().toUpperCase(Locale.ROOT), PASSWORD);
 
 		// Act
@@ -146,7 +142,7 @@ class AuthServiceIT {
 	@DisplayName("A wrong password is rejected")
 	void login_wrongPassword_throwsInvalidCredentials() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		LoginRequest request = new LoginRequest(user.getEmail(), "WrongPassword1");
 
 		// Act + Assert
@@ -158,7 +154,7 @@ class AuthServiceIT {
 	@DisplayName("An unknown email gets the same error as a wrong password")
 	void login_unknownEmail_throwsInvalidCredentials() {
 		// Arrange
-		LoginRequest request = new LoginRequest("nobody-" + UUID.randomUUID() + "@example.com", PASSWORD);
+		LoginRequest request = new LoginRequest("nobody-" + uniqueSuffix() + "@example.com", PASSWORD);
 
 		// Act + Assert
 		assertThatThrownBy(() -> authService.login(request))
@@ -169,8 +165,8 @@ class AuthServiceIT {
 	@DisplayName("A disabled account cannot log in")
 	void login_disabledAccount_throwsAccountDisabled() {
 		// Arrange
-		User user = createUser();
-		disable(user);
+		User user = testUsers.create();
+		testUsers.disable(user);
 
 		// Act + Assert
 		assertThatThrownBy(() -> login(user))
@@ -181,8 +177,8 @@ class AuthServiceIT {
 	@DisplayName("A disabled account is only revealed to someone who knows the password")
 	void login_disabledAccountAndWrongPassword_throwsInvalidCredentials() {
 		// Arrange
-		User user = createUser();
-		disable(user);
+		User user = testUsers.create();
+		testUsers.disable(user);
 		LoginRequest request = new LoginRequest(user.getEmail(), "WrongPassword1");
 
 		// Act + Assert
@@ -194,7 +190,7 @@ class AuthServiceIT {
 	@DisplayName("A valid refresh token returns a new token pair")
 	void refresh_validToken_returnsNewTokens() {
 		// Arrange
-		String oldToken = login(createUser()).refreshToken();
+		String oldToken = login(testUsers.create()).refreshToken();
 
 		// Act
 		TokenResponse response = refresh(oldToken);
@@ -208,7 +204,7 @@ class AuthServiceIT {
 	@DisplayName("Rotation: a refresh token cannot be used twice")
 	void refresh_alreadyUsedToken_throwsInvalidRefreshToken() {
 		// Arrange
-		String oldToken = login(createUser()).refreshToken();
+		String oldToken = login(testUsers.create()).refreshToken();
 		refresh(oldToken);
 
 		// Act + Assert
@@ -220,7 +216,7 @@ class AuthServiceIT {
 	@DisplayName("Rotation: the new refresh token works")
 	void refresh_tokenFromPreviousRefresh_returnsNewTokens() {
 		// Arrange
-		String secondToken = refresh(login(createUser()).refreshToken()).refreshToken();
+		String secondToken = refresh(login(testUsers.create()).refreshToken()).refreshToken();
 
 		// Act
 		TokenResponse response = refresh(secondToken);
@@ -246,7 +242,7 @@ class AuthServiceIT {
 		// Arrange
 		String rawToken = tokenHasher.generateToken();
 		Instant expiredAt = Instant.now().minusSeconds(60);
-		refreshTokenRepository.save(new RefreshToken(createUser(), tokenHasher.hash(rawToken), expiredAt));
+		refreshTokenRepository.save(new RefreshToken(testUsers.create(), tokenHasher.hash(rawToken), expiredAt));
 
 		// Act + Assert
 		assertThatThrownBy(() -> refresh(rawToken))
@@ -257,9 +253,9 @@ class AuthServiceIT {
 	@DisplayName("A disabled account cannot refresh its session")
 	void refresh_disabledAccount_throwsAccountDisabled() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String rawToken = login(user).refreshToken();
-		disable(user);
+		testUsers.disable(user);
 
 		// Act + Assert
 		assertThatThrownBy(() -> refresh(rawToken))
@@ -270,7 +266,7 @@ class AuthServiceIT {
 	@DisplayName("Two simultaneous refreshes with the same token: only one succeeds")
 	void refresh_sameTokenConcurrently_onlyOneSucceeds() throws Exception {
 		// Arrange
-		String rawToken = login(createUser()).refreshToken();
+		String rawToken = login(testUsers.create()).refreshToken();
 		CountDownLatch start = new CountDownLatch(1);
 
 		// false = 401 pulito; qualsiasi altra eccezione esce da get() e fa fallire il test
@@ -303,7 +299,7 @@ class AuthServiceIT {
 	@DisplayName("After logout the refresh token no longer works")
 	void logout_validToken_preventsLaterRefresh() {
 		// Arrange
-		String rawToken = login(createUser()).refreshToken();
+		String rawToken = login(testUsers.create()).refreshToken();
 
 		// Act
 		authService.logout(new RefreshTokenRequest(rawToken));
@@ -317,7 +313,7 @@ class AuthServiceIT {
 	@DisplayName("Logout only ends the session of that token")
 	void logout_oneOfTwoSessions_keepsTheOtherSession() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String firstSession = login(user).refreshToken();
 		String secondSession = login(user).refreshToken();
 
@@ -342,7 +338,7 @@ class AuthServiceIT {
 	@DisplayName("A registered email receives a reset link, and only its hash is stored")
 	void forgotPassword_registeredEmail_sendsLinkAndStoresHash() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act
 		String rawToken = requestResetToken(user);
@@ -356,7 +352,7 @@ class AuthServiceIT {
 	@DisplayName("An unknown email gets no error and no email")
 	void forgotPassword_unknownEmail_sendsNothing() {
 		// Arrange
-		ForgotPasswordRequest request = new ForgotPasswordRequest("nobody-" + UUID.randomUUID() + "@example.com");
+		ForgotPasswordRequest request = new ForgotPasswordRequest("nobody-" + uniqueSuffix() + "@example.com");
 
 		// Act
 		authService.forgotPassword(request);
@@ -369,7 +365,7 @@ class AuthServiceIT {
 	@DisplayName("A new reset request invalidates the previous link")
 	void forgotPassword_secondRequest_invalidatesPreviousToken() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String firstToken = requestResetToken(user);
 		requestResetToken(user);
 
@@ -382,7 +378,7 @@ class AuthServiceIT {
 	@DisplayName("After a reset the new password works")
 	void resetPassword_validToken_newPasswordWorks() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String rawToken = requestResetToken(user);
 
 		// Act
@@ -396,7 +392,7 @@ class AuthServiceIT {
 	@DisplayName("After a reset the old password no longer works")
 	void resetPassword_validToken_oldPasswordRejected() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String rawToken = requestResetToken(user);
 
 		// Act
@@ -411,7 +407,7 @@ class AuthServiceIT {
 	@DisplayName("A reset ends every session of the user")
 	void resetPassword_validToken_revokesAllRefreshTokens() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String firstSession = login(user).refreshToken();
 		String secondSession = login(user).refreshToken();
 		String rawToken = requestResetToken(user);
@@ -430,7 +426,7 @@ class AuthServiceIT {
 	@DisplayName("A reset link cannot be used twice")
 	void resetPassword_alreadyUsedToken_throwsInvalidResetToken() {
 		// Arrange
-		String rawToken = requestResetToken(createUser());
+		String rawToken = requestResetToken(testUsers.create());
 		resetPassword(rawToken);
 
 		// Act + Assert
@@ -455,7 +451,7 @@ class AuthServiceIT {
 		// Arrange
 		String rawToken = tokenHasher.generateToken();
 		Instant expiredAt = Instant.now().minusSeconds(60);
-		passwordResetTokenRepository.save(new PasswordResetToken(createUser(), tokenHasher.hash(rawToken), expiredAt));
+		passwordResetTokenRepository.save(new PasswordResetToken(testUsers.create(), tokenHasher.hash(rawToken), expiredAt));
 
 		// Act + Assert
 		assertThatThrownBy(() -> resetPassword(rawToken))
@@ -466,7 +462,7 @@ class AuthServiceIT {
 	@DisplayName("A new user starts unverified and receives a verification link")
 	void register_newUser_sendsLinkAndStartsUnverified() {
 		// Arrange
-		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		String suffix = uniqueSuffix();
 		String email = suffix + "@example.com";
 
 		// Act
@@ -481,8 +477,8 @@ class AuthServiceIT {
 	@DisplayName("A username that is already used is rejected")
 	void register_usernameAlreadyUsed_throwsUsernameAlreadyUsed() {
 		// Arrange
-		User user = createUser();
-		RegisterRequest request = new RegisterRequest(user.getUsername(), UUID.randomUUID() + "@example.com", PASSWORD, true, true);
+		User user = testUsers.create();
+		RegisterRequest request = new RegisterRequest(user.getUsername(), uniqueSuffix() + "@example.com", PASSWORD, true, true);
 
 		// Act + Assert
 		assertThatThrownBy(() -> authService.register(request))
@@ -493,8 +489,8 @@ class AuthServiceIT {
 	@DisplayName("An email that is already used is rejected, regardless of case")
 	void register_emailAlreadyUsedInUpperCase_throwsEmailAlreadyUsed() {
 		// Arrange
-		User user = createUser();
-		String otherUsername = "user_" + UUID.randomUUID().toString().substring(0, 8);
+		User user = testUsers.create();
+		String otherUsername = "user_" + uniqueSuffix();
 		RegisterRequest request = new RegisterRequest(otherUsername, user.getEmail().toUpperCase(Locale.ROOT), PASSWORD, true, true);
 
 		// Act + Assert
@@ -506,7 +502,7 @@ class AuthServiceIT {
 	@DisplayName("A valid verification link confirms the email")
 	void verifyEmail_validToken_marksEmailVerified() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String rawToken = requestVerificationToken(user);
 
 		// Act
@@ -520,7 +516,7 @@ class AuthServiceIT {
 	@DisplayName("A verification link cannot be used twice")
 	void verifyEmail_alreadyUsedToken_throwsInvalidVerificationToken() {
 		// Arrange
-		String rawToken = requestVerificationToken(createUser());
+		String rawToken = requestVerificationToken(testUsers.create());
 		verifyEmail(rawToken);
 
 		// Act + Assert
@@ -545,7 +541,7 @@ class AuthServiceIT {
 		// Arrange
 		String rawToken = tokenHasher.generateToken();
 		Instant expiredAt = Instant.now().minusSeconds(60);
-		emailVerificationTokenRepository.save(new EmailVerificationToken(createUser(), tokenHasher.hash(rawToken), expiredAt));
+		emailVerificationTokenRepository.save(new EmailVerificationToken(testUsers.create(), tokenHasher.hash(rawToken), expiredAt));
 
 		// Act + Assert
 		assertThatThrownBy(() -> verifyEmail(rawToken))
@@ -556,7 +552,7 @@ class AuthServiceIT {
 	@DisplayName("A new verification link invalidates the previous one")
 	void resendEmailVerification_secondRequest_invalidatesPreviousToken() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String firstToken = requestVerificationToken(user);
 		requestVerificationToken(user);
 
@@ -569,7 +565,7 @@ class AuthServiceIT {
 	@DisplayName("No new link for an email that is already verified")
 	void resendEmailVerification_alreadyVerified_throwsEmailAlreadyVerified() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		verifyEmail(requestVerificationToken(user));
 
 		// Act + Assert
@@ -611,17 +607,6 @@ class AuthServiceIT {
 
 	private void resetPassword(String rawToken) {
 		authService.resetPassword(new ResetPasswordRequest(rawToken, NEW_PASSWORD));
-	}
-
-	private User createUser() {
-		String suffix = UUID.randomUUID().toString().substring(0, 8);
-
-		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now());
-	}
-
-	// SQL diretto: User non ha ancora un metodo per disabilitare, arriverà con il backoffice
-	private void disable(User user) {
-		jdbcTemplate.update("UPDATE users SET is_enabled = false WHERE id = ?", user.getId());
 	}
 
 	private TokenResponse login(User user) {

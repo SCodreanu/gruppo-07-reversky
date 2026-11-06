@@ -1,5 +1,7 @@
 package it.downfall.reversky.api.auth.controller;
 
+import static it.downfall.reversky.api.support.TestUsers.PASSWORD;
+import static it.downfall.reversky.api.support.TestUsers.uniqueSuffix;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
@@ -16,9 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,8 +27,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -38,6 +35,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.common.mail.EmailSender;
+import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.service.UserService;
 
@@ -49,12 +47,11 @@ import it.downfall.reversky.api.user.service.UserService;
  * e regole di {@code SecurityConfig}. Come in AuthServiceIT ogni test crea un proprio utente
  * e {@link EmailSender} è un mock da cui si leggono i token in chiaro.
  */
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthControllerIT {
 
-	private static final String PASSWORD = "CorrectPassword1";
 	private static final String NEW_PASSWORD = "BrandNewPassword2";
 
 	@Autowired
@@ -64,10 +61,7 @@ class AuthControllerIT {
 	private UserService userService;
 
 	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private TestUsers testUsers;
 
 	@MockitoBean
 	private EmailSender emailSender;
@@ -78,7 +72,7 @@ class AuthControllerIT {
 	@DisplayName("Valid registration returns 201 without body")
 	void register_validData_returns201WithoutBody() throws Exception {
 		// Arrange
-		String suffix = randomSuffix();
+		String suffix = uniqueSuffix();
 		String body = registerBody("user_" + suffix, suffix + "@example.com", PASSWORD, true);
 
 		// Act + Assert
@@ -91,7 +85,7 @@ class AuthControllerIT {
 	@DisplayName("Invalid fields return 400 with the list of wrong fields")
 	void register_invalidFields_returns400WithFieldErrors() throws Exception {
 		// Arrange: password troppo corta e termini non accettati
-		String suffix = randomSuffix();
+		String suffix = uniqueSuffix();
 		String body = registerBody("user_" + suffix, suffix + "@example.com", "short", false);
 
 		// Act + Assert
@@ -106,8 +100,8 @@ class AuthControllerIT {
 	@DisplayName("A username already in use returns 409")
 	void register_usernameTaken_returns409() throws Exception {
 		// Arrange
-		User existing = createUser();
-		String body = registerBody(existing.getUsername(), randomSuffix() + "@example.com", PASSWORD, true);
+		User existing = testUsers.create();
+		String body = registerBody(existing.getUsername(), uniqueSuffix() + "@example.com", PASSWORD, true);
 
 		// Act + Assert
 		postJson("/api/v1/auth/register", body)
@@ -121,7 +115,7 @@ class AuthControllerIT {
 	@DisplayName("Correct credentials return 200 with a Bearer token pair")
 	void login_correctCredentials_returns200WithTokens() throws Exception {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act + Assert
 		postJson("/api/v1/auth/login", loginBody(user.getEmail(), PASSWORD))
@@ -136,7 +130,7 @@ class AuthControllerIT {
 	@DisplayName("A wrong password returns 401 in ProblemDetail format")
 	void login_wrongPassword_returns401() throws Exception {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act + Assert
 		postJson("/api/v1/auth/login", loginBody(user.getEmail(), "WrongPassword1"))
@@ -168,8 +162,8 @@ class AuthControllerIT {
 	@DisplayName("A disabled account returns 403")
 	void login_disabledAccount_returns403() throws Exception {
 		// Arrange
-		User user = createUser();
-		disable(user);
+		User user = testUsers.create();
+		testUsers.disable(user);
 
 		// Act + Assert
 		postJson("/api/v1/auth/login", loginBody(user.getEmail(), PASSWORD))
@@ -183,7 +177,7 @@ class AuthControllerIT {
 	@DisplayName("A valid refresh token returns 200 with a new refresh token")
 	void refresh_validToken_returns200WithNewToken() throws Exception {
 		// Arrange
-		String refreshToken = refreshTokenOf(createUser());
+		String refreshToken = refreshTokenOf(testUsers.create());
 
 		// Act + Assert
 		postJson("/api/v1/auth/refresh", refreshBody(refreshToken))
@@ -196,7 +190,7 @@ class AuthControllerIT {
 	@DisplayName("A refresh token already used returns 401")
 	void refresh_reusedToken_returns401() throws Exception {
 		// Arrange
-		String refreshToken = refreshTokenOf(createUser());
+		String refreshToken = refreshTokenOf(testUsers.create());
 		postJson("/api/v1/auth/refresh", refreshBody(refreshToken)).andExpect(status().isOk());
 
 		// Act + Assert
@@ -211,7 +205,7 @@ class AuthControllerIT {
 	@DisplayName("Logout returns 204 and the refresh token stops working")
 	void logout_validToken_returns204AndTokenIsRevoked() throws Exception {
 		// Arrange
-		String refreshToken = refreshTokenOf(createUser());
+		String refreshToken = refreshTokenOf(testUsers.create());
 
 		// Act
 		postJson("/api/v1/auth/logout", refreshBody(refreshToken))
@@ -236,7 +230,7 @@ class AuthControllerIT {
 	@DisplayName("Forgot password with an unknown email still returns 204")
 	void forgotPassword_unknownEmail_returns204() throws Exception {
 		// Act + Assert
-		postJson("/api/v1/auth/password/forgot", "{\"email\": \"nobody-%s@example.com\"}".formatted(randomSuffix()))
+		postJson("/api/v1/auth/password/forgot", "{\"email\": \"nobody-%s@example.com\"}".formatted(uniqueSuffix()))
 			.andExpect(status().isNoContent());
 
 		verify(emailSender, never()).sendPasswordReset(anyString(), anyString());
@@ -246,7 +240,7 @@ class AuthControllerIT {
 	@DisplayName("A valid reset token returns 204 and the new password works")
 	void resetPassword_validToken_returns204AndNewPasswordWorks() throws Exception {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		postJson("/api/v1/auth/password/forgot", "{\"email\": \"%s\"}".formatted(user.getEmail()))
 			.andExpect(status().isNoContent());
 		String resetToken = lastResetToken(user);
@@ -275,7 +269,7 @@ class AuthControllerIT {
 	@DisplayName("A valid verification token returns 204 and marks the email as verified")
 	void verifyEmail_validToken_returns204() throws Exception {
 		// Arrange: il reinvio genera un token di verifica e lo passa al mock
-		User user = createUser();
+		User user = testUsers.create();
 		resend(accessTokenOf(user)).andExpect(status().isNoContent());
 		String verificationToken = lastVerificationToken(user);
 
@@ -321,7 +315,7 @@ class AuthControllerIT {
 	@DisplayName("Resend for an unverified user returns 204 and sends the email")
 	void resend_unverifiedUser_returns204() throws Exception {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 
 		// Act
 		resend(accessTokenOf(user))
@@ -335,8 +329,8 @@ class AuthControllerIT {
 	@DisplayName("Resend for a user already verified returns 409")
 	void resend_verifiedUser_returns409() throws Exception {
 		// Arrange
-		User user = createUser();
-		markVerified(user);
+		User user = testUsers.create();
+		testUsers.markEmailVerified(user);
 
 		// Act + Assert
 		resend(accessTokenOf(user))
@@ -359,7 +353,7 @@ class AuthControllerIT {
 	@DisplayName("A USER on an admin endpoint returns 403")
 	void adminEndpoint_userRole_returns403() throws Exception {
 		// Arrange
-		String accessToken = accessTokenOf(createUser());
+		String accessToken = accessTokenOf(testUsers.create());
 
 		// Act + Assert
 		mockMvc.perform(get("/api/v1/admin/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
@@ -422,25 +416,6 @@ class AuthControllerIT {
 		verify(emailSender).sendEmailVerification(eq(user.getEmail()), rawToken.capture());
 
 		return rawToken.getValue();
-	}
-
-	private User createUser() {
-		String suffix = randomSuffix();
-
-		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now());
-	}
-
-	// SQL diretto: User non ha ancora un metodo per disabilitare, arriverà con il backoffice
-	private void disable(User user) {
-		jdbcTemplate.update("UPDATE users SET is_enabled = false WHERE id = ?", user.getId());
-	}
-
-	private void markVerified(User user) {
-		jdbcTemplate.update("UPDATE users SET email_verified_at = now() WHERE id = ?", user.getId());
-	}
-
-	private static String randomSuffix() {
-		return UUID.randomUUID().toString().substring(0, 8);
 	}
 
 	private static String registerBody(String username, String email, String password, boolean acceptTerms) {

@@ -109,3 +109,17 @@ Consigliato: test di concorrenza sugli spostamenti di carte e crediti (due accet
 ## Dati di test
 
 Classi di supporto in `src/test/java/.../support/` (`TestCards`, `TestDecks`, `TestUsers`, `TestPacks`) per creare dati di prova in una riga. Non duplicare la costruzione degli oggetti in ogni test.
+
+`TestUsers` esiste già: crea utenti sul database dei test (`create()`, `disable`, `markEmailVerified`, `delete`) e contiene la password comune `TestUsers.PASSWORD`. È un `@TestComponent`, quindi si aggiunge al test insieme al container:
+
+```java
+@Import({TestcontainersConfiguration.class, TestUsers.class})
+@SpringBootTest
+class DeckServiceIT {
+
+	@Autowired
+	private TestUsers testUsers;
+
+	// ... User user = testUsers.create();
+}
+```

@@ -22,27 +22,31 @@ Percorso: `src/main/resources/db/migration/`
 
 Nome dei file: `V<numero>__<descrizione_in_snake_case>.sql`
 
+Migrazioni presenti:
+
 ```
-V1__create_enums.sql
-V2__create_users_and_auth.sql
-V3__create_catalog_and_tags.sql
-V4__create_collection_and_decks.sql
-V5__create_battles.sql              inviti, partite, coda di matchmaking, rating Elo
-V6__create_friendships.sql
-V7__create_trades.sql
-V8__create_inventories_and_packs.sql
-V9__create_audit_logs.sql
-V10__insert_reference_data.sql      rule set 1.0 (attivo), rarità, fazioni, bonus di fazione, tag
-V11__insert_initial_catalog.sql     carte iniziali e pacchetto base
-V12__insert_seed_users.sql          primo ADMIN e utenti di test, con il loro inventario (sempre l'ultima)
+V1__create_enums.sql                tutti gli enum dello schema
+V2__create_users_and_auth.sql       roles (con USER e ADMIN), users e le tre tabelle dei token
 ```
+
+Non c'è un elenco fisso delle migrazioni future: **ogni task** che crea un'entità o un collegamento aggiunge la **propria** migrazione, con il primo numero libero. Ad esempio il task delle rarità crea `V<n>__create_rarities.sql` e il collegamento Carta ↔ Rarità `V<n>__add_rarity_to_catalog_cards.sql`. Lo schema finale resta quello di [schema.dbml](schema.dbml): le migrazioni ci arrivano un pezzo alla volta.
+
+Dati inseriti con le migrazioni:
+
+| Dati | Dove |
+|---|---|
+| ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
+| rule set `1.0` attivo, rarità, fazioni, bonus di fazione | migrazione dedicata del task API-15 (#85) |
+| tag delle fazioni | migrazione del task API-13 (#83) |
+| catalogo iniziale e pacchetto base | migrazioni dedicate, quando il catalogo sarà deciso |
+| primo `ADMIN`, utenti, carte e collezioni di prova | task API-25 (#95), che decide anche come caricarli solo in sviluppo e test |
 
 ### Regole
 
 1. **Mai modificare una migrazione già su `main`.** Per correggere, crea una nuova migrazione.
 2. Una migrazione = un cambiamento logico.
-3. Prima di creare `V<n>`, fai `git pull`: due persone non devono usare lo stesso numero.
-4. I dati di riferimento (rarità, fazioni, tag) e il catalogo iniziale vanno in migrazioni dedicate. Fanno eccezione i ruoli, inseriti in `V2` insieme alla tabella perché il codice ne usa i nomi.
+3. Prima di creare `V<n>`, fai `git pull` e guarda il numero più alto nella cartella. Se due branch usano lo stesso numero, chi unisce per secondo rinomina la propria migrazione prima del merge.
+4. I dati di riferimento e il catalogo iniziale vanno in migrazioni dedicate, mai insieme alla creazione delle tabelle. Unica eccezione: i ruoli in `V2`.
 
 ## Convenzioni (quelle usate dallo schema)
 

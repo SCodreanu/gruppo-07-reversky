@@ -17,7 +17,7 @@ Tabelle: `roles`, `users`, `refresh_tokens`, `password_reset_tokens`, `email_ver
 | `ADMIN` | backoffice |
 
 - In Spring Security il ruolo diventa l'authority `ROLE_<name>`.
-- Gli `ADMIN` si creano solo da migrazione o dal backoffice, mai dalla registrazione pubblica. Il primo `ADMIN` e gli utenti di test sono inseriti dall'ultima migrazione (`V12__insert_seed_users.sql`), che deve valorizzare anche `privacy_accepted_at` e `terms_accepted_at` e creare il loro `inventories`, con la riga `SIGNUP` in `credit_transactions` se hanno crediti.
+- Gli `ADMIN` si creano solo da migrazione o dal backoffice, mai dalla registrazione pubblica. Il primo `ADMIN` e gli utenti di test sono inseriti dalla migrazione dei dati di prova (task API-25, #95), che deve valorizzare anche `privacy_accepted_at` e `terms_accepted_at` e creare il loro `inventories`, con la riga `SIGNUP` in `credit_transactions` se hanno crediti.
 
 ## Registrazione
 

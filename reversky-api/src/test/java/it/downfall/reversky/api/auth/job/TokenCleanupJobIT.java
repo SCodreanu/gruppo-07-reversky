@@ -4,14 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
@@ -23,8 +21,8 @@ import it.downfall.reversky.api.auth.repository.PasswordResetTokenRepository;
 import it.downfall.reversky.api.auth.repository.RefreshTokenRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.TokenHasher;
+import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
-import it.downfall.reversky.api.user.service.UserService;
 
 /**
  * {@link TokenCleanupJob} su un PostgreSQL vero: il metodo si chiama direttamente,
@@ -33,7 +31,7 @@ import it.downfall.reversky.api.user.service.UserService;
  * Il job cancella i token scaduti di tutti gli utenti, quindi ogni test controlla solo i propri
  * token, cercandoli per hash.
  */
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 class TokenCleanupJobIT {
 
@@ -52,13 +50,10 @@ class TokenCleanupJobIT {
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
 	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
 	private TokenHasher tokenHasher;
+
+	@Autowired
+	private TestUsers testUsers;
 
 	// Non serve al test: con la stessa configurazione di AuthServiceIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
@@ -69,7 +64,7 @@ class TokenCleanupJobIT {
 	@DisplayName("Expired refresh tokens are deleted, valid ones are kept")
 	void deleteExpiredTokens_refreshTokens_deletesOnlyExpired() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String expiredHash = newHash();
 		String validHash = newHash();
 		refreshTokenRepository.save(new RefreshToken(user, expiredHash, Instant.now().minus(ONE_HOUR)));
@@ -87,7 +82,7 @@ class TokenCleanupJobIT {
 	@DisplayName("Expired password reset tokens are deleted, valid ones are kept")
 	void deleteExpiredTokens_passwordResetTokens_deletesOnlyExpired() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String expiredHash = newHash();
 		String validHash = newHash();
 		passwordResetTokenRepository.save(new PasswordResetToken(user, expiredHash, Instant.now().minus(ONE_HOUR)));
@@ -105,7 +100,7 @@ class TokenCleanupJobIT {
 	@DisplayName("Expired email verification tokens are deleted, valid ones are kept")
 	void deleteExpiredTokens_emailVerificationTokens_deletesOnlyExpired() {
 		// Arrange
-		User user = createUser();
+		User user = testUsers.create();
 		String expiredHash = newHash();
 		String validHash = newHash();
 		emailVerificationTokenRepository.save(new EmailVerificationToken(user, expiredHash, Instant.now().minus(ONE_HOUR)));
@@ -117,12 +112,6 @@ class TokenCleanupJobIT {
 		// Assert
 		assertThat(emailVerificationTokenRepository.findByTokenHash(expiredHash)).isEmpty();
 		assertThat(emailVerificationTokenRepository.findByTokenHash(validHash)).isPresent();
-	}
-
-	private User createUser() {
-		String suffix = UUID.randomUUID().toString().substring(0, 8);
-
-		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode("CorrectPassword1"), Instant.now());
 	}
 
 	// Hash di un token casuale: stesso formato di quelli salvati dal service
