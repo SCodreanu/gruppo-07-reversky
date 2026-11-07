@@ -28,6 +28,7 @@ Migrazioni presenti:
 V1__create_enums.sql                tutti gli enum dello schema
 V2__create_users_and_auth.sql       roles (con USER e ADMIN), users e le tre tabelle dei token
 V3__create_factions.sql             factions (nome univoco, emblema obbligatorio)
+V4__create_rarities.sql             rarities (nome e sorting_order univoci, CHECK sui limiti)
 ```
 
 Non c'è un elenco fisso delle migrazioni future: **ogni task** che crea un'entità o un collegamento aggiunge la **propria** migrazione, con il primo numero libero. Ad esempio il task delle rarità crea `V<n>__create_rarities.sql` e il collegamento Carta ↔ Rarità `V<n>__add_rarity_to_catalog_cards.sql`. Lo schema finale resta quello di [schema.dbml](schema.dbml): le migrazioni ci arrivano un pezzo alla volta.

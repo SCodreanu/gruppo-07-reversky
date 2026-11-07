@@ -124,8 +124,11 @@ L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni 
 
 Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`.
 
-Catalogo: fazioni (`catalog/`, migrazione `V3`) con `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`).
+Catalogo (`catalog/`):
+
+- fazioni (migrazione `V3`): `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
+- rarità (migrazione `V4`): `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`).
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
-Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`, `V2` e `V3` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`–`V4` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.

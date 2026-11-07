@@ -189,7 +189,7 @@ Il formato è quello di [api-rest](../api-rest/api-rest.md); il campo `code` val
 | Endpoint | Accesso |
 |---|---|
 | `/auth/**` | pubblico, tranne `/auth/email/resend` (utente autenticato) |
-| `GET /cards/**`, `GET /packs`, `GET /factions` | pubblico (servono anche alle pagine SEO) |
+| `GET /cards/**`, `GET /packs`, `GET /factions`, `GET /rarities` | pubblico (servono anche alle pagine SEO) |
 | Swagger (`/swagger-ui/**`, `/v3/api-docs/**`) | pubblico in sviluppo |
 | `/admin/**` | solo `ADMIN` |
 | tutto il resto | utente autenticato |
@@ -205,7 +205,7 @@ http
 	.authorizeHttpRequests(auth -> auth
 		.requestMatchers("/api/v1/auth/email/resend").authenticated()   // prima di /auth/**: vince la prima regola che corrisponde
 		.requestMatchers("/api/v1/auth/**").permitAll()
-		.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions").permitAll()
+		.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions", "/api/v1/rarities").permitAll()
 		.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 		.anyRequest().authenticated())
 	.oauth2ResourceServer(o -> o.jwt(...));       // spring-boot-starter-oauth2-resource-server valida i JWT
