@@ -13,7 +13,8 @@ import jakarta.validation.constraints.Size;
  * Dati di una carta per PUT /admin/cards/{id} (docs/backoffice, "Carte").
  * <p>
  * Qui si controlla solo la forma dei singoli campi (400). Le regole che legano i campi al tipo
- * (statistiche, sottotipo, effetto) e quelle sulle varianti le controlla il service (422), perché
+ * (statistiche, sottotipo, effetto, rarità e massimi della rarità) e quelle sulle varianti le
+ * controlla il service (422), perché
  * per una variante valgono sui valori copiati dall'originale e non su quelli della richiesta.
  * <p>
  * Non c'è imagePath: l'illustrazione si sostituisce con POST /admin/cards/{id}/image (API-14).
@@ -28,6 +29,11 @@ public record CatalogCardUpdateRequest(
 	@Schema(example = "CREATURE", description = "Ignored for a variant: copied from the original")
 	@NotNull(message = "Type is required")
 	CardType type,
+
+	@Schema(example = "5", description = "SPELL and HIDDEN must be Common or Uncommon, TERRAIN must be Rare, CREATURE accepts any rarity; "
+			+ "a creature's ATK and DEF must not exceed the rarity maximums. Ignored for a variant: copied from the original")
+	@NotNull(message = "Rarity is required")
+	Integer rarityId,
 
 	@Schema(example = "BURN", description = "Required for SPELL (DAMAGE, SHIELD, BURN) and HIDDEN (SURVIVAL, DAMAGE), empty otherwise. Ignored for a variant")
 	CardSubtype subtype,

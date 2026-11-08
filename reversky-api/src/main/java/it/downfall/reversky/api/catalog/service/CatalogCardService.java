@@ -13,12 +13,15 @@ import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.CatalogCardSpecifications;
+import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -37,16 +40,20 @@ public class CatalogCardService {
 	private static final Sort CARD_ORDER = Sort.by("name", "id");
 
 	private final CatalogCardRepository catalogCardRepository;
+	private final RarityRepository rarityRepository;
 
 	/**
 	 * Carte attive, con filtri facoltativi (GET /cards, pubblico).
+	 *
+	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
+			CatalogCardSpecifications.hasRarity(rarityId),
 			CatalogCardSpecifications.isActive(true)
 		);
 
@@ -57,14 +64,16 @@ public class CatalogCardService {
 	/**
 	 * Tutte le carte, anche disattivate, con filtri facoltativi (GET /admin/cards).
 	 *
-	 * @param active null = attive e disattivate
+	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param active   null = attive e disattivate
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Boolean active, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Boolean active, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
+			CatalogCardSpecifications.hasRarity(rarityId),
 			CatalogCardSpecifications.isActive(active)
 		);
 
@@ -85,12 +94,15 @@ public class CatalogCardService {
 	/**
 	 * Modifica una carta (PUT /admin/cards/{id}).
 	 * <p>
-	 * Per una variante i campi di gioco della richiesta si ignorano e si copiano dall'originale.
-	 * Per un'originale, dopo la modifica, le sue varianti ricevono gli stessi campi di gioco.
+	 * Per una variante i campi di gioco della richiesta, rarità compresa, si ignorano e si copiano
+	 * dall'originale. Per un'originale, dopo la modifica, le sue varianti ricevono gli stessi campi di gioco.
+	 * Tutti i controlli avvengono prima di modificare la carta.
 	 *
 	 * @throws CatalogCardNotFoundException         se la carta non esiste
 	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale valida
-	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo o effetto non vanno con il tipo
+	 * @throws InvalidCardRarityException           se la rarità non esiste o non è ammessa per il tipo
+	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo o effetto non vanno con il tipo,
+	 *                                              o se ATK e DEF superano i massimi della rarità
 	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
 	 */
 	@Transactional
@@ -98,9 +110,13 @@ public class CatalogCardService {
 
 		CatalogCard card = loadCard(id);
 		CatalogCard original = resolveOriginal(card, request.variantOfId());
+		Rarity rarity = null;
 
 		if (original == null) {
+			rarity = loadRarity(request.rarityId());
+
 			validateRules(request.type(), request.subtype(), request.effectCode(), request.atk(), request.def());
+			validateRarity(request.type(), rarity, request.atk(), request.def());
 		}
 
 		Integer excludedId = (original != null) ? original.getId() : card.getId();
@@ -110,7 +126,7 @@ public class CatalogCardService {
 		if (original != null) {
 			card.copyRulesFrom(original);
 		} else {
-			card.updateRules(request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
+			card.updateRules(rarity, request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
 		}
 
 		card.updateDetails(request.name(), request.flavorText());
@@ -199,6 +215,28 @@ public class CatalogCardService {
 
 		if (type.requiresEffect() && effectCode == null) {
 			throw CatalogCardRulesViolatedException.missingEffect(type);
+		}
+	}
+
+	// La rarità indicata da rarityId; 422 e non 404 se non esiste, come variantOfId
+	private Rarity loadRarity(Integer rarityId) {
+		return rarityRepository.findById(rarityId)
+			.orElseThrow(() -> InvalidCardRarityException.notFound(rarityId));
+	}
+
+	// Regole 4 e 5 di docs/backoffice: rarità ammessa per il tipo, poi ATK e DEF entro i massimi.
+	// Si chiama dopo validateRules, così ATK e DEF ci sono solo per le creature.
+	private void validateRarity(CardType type, Rarity rarity, Integer atk, Integer def) {
+		if (!type.acceptsRarity(rarity)) {
+			throw InvalidCardRarityException.notAllowedForType(type, rarity);
+		}
+
+		if (rarity.exceedsMaxAtk(atk)) {
+			throw CatalogCardRulesViolatedException.atkAboveMax(atk, rarity);
+		}
+
+		if (rarity.exceedsMaxDef(def)) {
+			throw CatalogCardRulesViolatedException.defAboveMax(def, rarity);
 		}
 	}
 

@@ -29,8 +29,10 @@ V1__create_enums.sql                tutti gli enum dello schema
 V2__create_users_and_auth.sql       roles (con USER e ADMIN), users e le tre tabelle dei token
 V3__create_factions.sql             factions (nome univoco, emblema obbligatorio)
 V4__create_rarities.sql             rarities (nome e sorting_order univoci, CHECK sui limiti)
-V5__create_catalog_cards.sql        catalog_cards senza rarità e fazioni (arrivano con #80 e #81): CHECK su statistiche,
-                                    sottotipo, effetto e copy_limit, indice univoco parziale sul nome delle originali
+V5__create_catalog_cards.sql        catalog_cards senza rarità e fazioni: CHECK su statistiche, sottotipo, effetto e
+                                    copy_limit, indice univoco parziale sul nome delle originali
+V6__add_rarity_to_catalog_cards.sql catalog_cards.rarity_id NOT NULL verso rarities, indici su (rarity_id) e
+                                    (is_active, rarity_id); fallisce se catalog_cards ha già righe. Le fazioni arrivano con #81
 ```
 
 Non c'è un elenco fisso delle migrazioni future: **ogni task** che crea un'entità o un collegamento aggiunge la **propria** migrazione, con il primo numero libero. Ad esempio il task delle rarità crea `V<n>__create_rarities.sql` e il collegamento Carta ↔ Rarità `V<n>__add_rarity_to_catalog_cards.sql`. Lo schema finale resta quello di [schema.dbml](schema.dbml): le migrazioni ci arrivano un pezzo alla volta.

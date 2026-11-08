@@ -8,7 +8,7 @@ import it.downfall.reversky.api.catalog.entity.CatalogCard;
 /**
  * Carta restituita da GET /cards, GET /cards/{id} e dagli endpoint di /admin/cards.
  * <p>
- * Rarità, fazioni e tag si aggiungono con #80, #81 e #82.
+ * Fazioni e tag si aggiungono con #81 e #82.
  */
 public record CatalogCardResponse(
 
@@ -20,6 +20,9 @@ public record CatalogCardResponse(
 
 	@Schema(example = "CREATURE")
 	CardType type,
+
+	@Schema(description = "For a variant, the rarity of its original card")
+	RaritySummaryResponse rarity,
 
 	@Schema(example = "BURN", description = "Only for SPELL and HIDDEN cards, null otherwise")
 	CardSubtype subtype,
@@ -56,6 +59,7 @@ public record CatalogCardResponse(
 	 * Converte l'entità nel DTO.
 	 * <p>
 	 * {@code getVariantOf().getId()} non carica l'originale: Hibernate conosce già l'id del proxy.
+	 * Il nome della rarità invece la carica, quindi va chiamato dentro la transazione del service.
 	 */
 	public static CatalogCardResponse from(CatalogCard card) {
 		Integer variantOfId = card.isVariant() ? card.getVariantOf().getId() : null;
@@ -64,6 +68,7 @@ public record CatalogCardResponse(
 			card.getId(),
 			card.getName(),
 			card.getCardType(),
+			RaritySummaryResponse.from(card.getRarity()),
 			card.getCardSubtype(),
 			card.getEffectCode(),
 			variantOfId,

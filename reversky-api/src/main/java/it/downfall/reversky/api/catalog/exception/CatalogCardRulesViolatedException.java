@@ -2,11 +2,13 @@ package it.downfall.reversky.api.catalog.exception;
 
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
+import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.common.exception.BusinessException;
 
 /**
  * Campi di gioco non coerenti con il tipo della carta (docs/backoffice, "Carte"): sono le stesse
  * regole dei vincoli CHECK di V5, controllate prima per rispondere 422 con un messaggio chiaro.
+ * Ci sono anche ATK e DEF oltre i massimi della rarità, che invece non hanno un vincolo nel database.
  * <p>
  * Si crea con i metodi statici, uno per regola, così i messaggi restano uguali ovunque.
  */
@@ -46,5 +48,19 @@ public class CatalogCardRulesViolatedException extends BusinessException {
 	 */
 	public static CatalogCardRulesViolatedException missingEffect(CardType type) {
 		return new CatalogCardRulesViolatedException("A " + type + " card must have an effect code");
+	}
+
+	/**
+	 * ATK oltre il massimo della rarità (docs/backoffice, regola 5).
+	 */
+	public static CatalogCardRulesViolatedException atkAboveMax(Integer atk, Rarity rarity) {
+		return new CatalogCardRulesViolatedException("ATK " + atk + " exceeds the maximum of " + rarity.getMaxAtk() + " for the rarity " + rarity.getName());
+	}
+
+	/**
+	 * DEF oltre il massimo della rarità (docs/backoffice, regola 5).
+	 */
+	public static CatalogCardRulesViolatedException defAboveMax(Integer def, Rarity rarity) {
+		return new CatalogCardRulesViolatedException("DEF " + def + " exceeds the maximum of " + rarity.getMaxDef() + " for the rarity " + rarity.getName());
 	}
 }

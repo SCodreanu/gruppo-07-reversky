@@ -23,9 +23,9 @@ import lombok.NoArgsConstructor;
  * <p>
  * Le carte non si cancellano mai: si disattivano. Una variante (versione evento) ha
  * {@code variantOf} valorizzato e copia dall'originale tutti i campi di gioco
- * (vedi {@link #copyRulesFrom(CatalogCard)}); cambia solo nome, immagine e testo di sapore.
+ * (vedi {@link #copyRulesFrom(CatalogCard)}), rarità compresa; cambia solo nome, immagine e testo di sapore.
  * <p>
- * Rarità e fazioni arrivano con #80 e #81.
+ * Le fazioni arrivano con #81.
  */
 @Entity
 @Table(name = "catalog_cards")
@@ -40,6 +40,10 @@ public class CatalogCard {
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "variant_of_id", nullable = true)
 	private CatalogCard variantOf;
+
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "rarity_id", nullable = false)
+	private Rarity rarity;
 
 	// Niente unique = true: il nome è univoco solo tra le originali (indice parziale in V5)
 	@Column(nullable = false)
@@ -79,9 +83,12 @@ public class CatalogCard {
 	/**
 	 * Crea una carta. Oggi la usano solo i test (le carte arrivano da migrazione),
 	 * da API-14 la userà POST /admin/cards. Una carta nuova è sempre attiva.
+	 * <p>
+	 * Non controlla che la rarità sia ammessa per il tipo né le statistiche massime: lo fa il service.
 	 */
-	public CatalogCard(CatalogCard variantOf, String name, CardType type, CardSubtype subtype, String effectCode, String imagePath, String effectDescription, String flavorText, Integer atk, Integer def, Integer copyLimit) {
+	public CatalogCard(CatalogCard variantOf, Rarity rarity, String name, CardType type, CardSubtype subtype, String effectCode, String imagePath, String effectDescription, String flavorText, Integer atk, Integer def, Integer copyLimit) {
 		this.variantOf = variantOf;
+		this.rarity = rarity;
 		this.name = name;
 		this.cardType = type;
 		this.cardSubtype = subtype;
@@ -111,10 +118,13 @@ public class CatalogCard {
 	}
 
 	/**
-	 * Campi di gioco: tipo, sottotipo, effetto (codice e testo), statistiche e limite di copie.
+	 * Campi di gioco: rarità, tipo, sottotipo, effetto (codice e testo), statistiche e limite di copie.
 	 * Su una variante non si chiama direttamente: si usa {@link #copyRulesFrom(CatalogCard)}.
+	 * <p>
+	 * I controlli (rarità ammessa per il tipo, statistiche entro i massimi della rarità) li fa il service.
 	 */
-	public void updateRules(CardType type, CardSubtype subtype, String effectCode, String effectDescription, Integer atk, Integer def, Integer copyLimit) {
+	public void updateRules(Rarity rarity, CardType type, CardSubtype subtype, String effectCode, String effectDescription, Integer atk, Integer def, Integer copyLimit) {
+		this.rarity = rarity;
 		this.cardType = type;
 		this.cardSubtype = subtype;
 		this.effectCode = effectCode;
@@ -128,10 +138,11 @@ public class CatalogCard {
 	 * Copia i campi di gioco dall'originale (docs/backoffice, regola 8).
 	 * <p>
 	 * Usa i getter e non i campi: original può essere un proxy LAZY di Hibernate,
-	 * i cui campi sono vuoti finché non si chiama un suo metodo.
+	 * i cui campi sono vuoti finché non si chiama un suo metodo. La rarità copiata può essere a sua
+	 * volta un proxy: va bene, la variante salva solo il suo id.
 	 */
 	public void copyRulesFrom(CatalogCard original) {
-		updateRules(original.getCardType(), original.getCardSubtype(), original.getEffectCode(), original.getEffectDescription(), original.getAtk(), original.getDef(), original.getCopyLimit());
+		updateRules(original.getRarity(),original.getCardType(), original.getCardSubtype(), original.getEffectCode(), original.getEffectDescription(), original.getAtk(), original.getDef(), original.getCopyLimit());
 	}
 
 	/**

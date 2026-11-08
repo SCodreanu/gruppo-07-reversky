@@ -21,7 +21,9 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.support.TestCards;
 import it.downfall.reversky.api.support.TestUsers;
@@ -45,6 +47,9 @@ class CardControllerIT {
 	@Autowired
 	private CatalogCardRepository catalogCardRepository;
 
+	@Autowired
+	private RarityRepository rarityRepository;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
 	@MockitoBean
@@ -54,7 +59,7 @@ class CardControllerIT {
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository);
 	}
 
 	// --- GET /cards ---
@@ -75,6 +80,8 @@ class CardControllerIT {
 			.andExpect(jsonPath("$.content[0].type").value("SPELL"))
 			.andExpect(jsonPath("$.content[0].subtype").value("BURN"))
 			.andExpect(jsonPath("$.content[0].effectCode").value(TestCards.EFFECT_CODE))
+			.andExpect(jsonPath("$.content[0].rarity.id").value(testCards.common().getId()))
+			.andExpect(jsonPath("$.content[0].rarity.name").value(testCards.common().getName()))
 			.andExpect(jsonPath("$.content[0].active").value(true))
 			.andExpect(jsonPath("$.page").value(0))
 			.andExpect(jsonPath("$.size").value(20))
@@ -109,6 +116,44 @@ class CardControllerIT {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content.length()").value(1))
 			.andExpect(jsonPath("$.content[0].id").value(terrain.getId()));
+	}
+
+	@Test
+	@DisplayName("The rarityId parameter filters the list")
+	void findAll_rarityIdParameter_filtersByRarity() throws Exception {
+		// Arrange
+		String token = TestUsers.uniqueSuffix();
+		Rarity other = testCards.createRarity(null, null);
+		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE, other);
+		testCards.create("Common " + token, CardType.CREATURE);
+
+		// Act + Assert
+		mockMvc.perform(get(BASE_PATH).param("name", token).param("rarityId", other.getId().toString()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(otherCard.getId()))
+			.andExpect(jsonPath("$.content[0].rarity.id").value(other.getId()));
+	}
+
+	@Test
+	@DisplayName("An unknown rarityId returns an empty page, not 404")
+	void findAll_unknownRarityId_returnsEmptyPage() throws Exception {
+		// Arrange
+		String token = TestUsers.uniqueSuffix();
+		testCards.create("Common " + token, CardType.CREATURE);
+
+		// Act + Assert
+		mockMvc.perform(get(BASE_PATH).param("name", token).param("rarityId", String.valueOf(Integer.MAX_VALUE)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.totalElements").value(0));
+	}
+
+	@Test
+	@DisplayName("A rarityId that is not a number returns 400")
+	void findAll_rarityIdNotNumber_returns400() throws Exception {
+		// Act + Assert
+		mockMvc.perform(get(BASE_PATH).param("rarityId", "rare"))
+			.andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -153,6 +198,8 @@ class CardControllerIT {
 			.andExpect(jsonPath("$.subtype").isEmpty())
 			.andExpect(jsonPath("$.effectCode").isEmpty())
 			.andExpect(jsonPath("$.variantOfId").isEmpty())
+			.andExpect(jsonPath("$.rarity.id").value(card.getRarity().getId()))
+			.andExpect(jsonPath("$.rarity.name").value(testCards.common().getName()))
 			.andExpect(jsonPath("$.atk").value(TestCards.CREATURE_ATK))
 			.andExpect(jsonPath("$.def").value(TestCards.CREATURE_DEF))
 			.andExpect(jsonPath("$.copyLimit").isEmpty())
@@ -185,6 +232,7 @@ class CardControllerIT {
 		mockMvc.perform(get(BASE_PATH + "/" + variant.getId()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.variantOfId").value(original.getId()))
+			.andExpect(jsonPath("$.rarity.id").value(original.getRarity().getId()))
 			.andExpect(jsonPath("$.subtype").value(CardSubtype.SURVIVAL.name()));
 	}
 
@@ -211,12 +259,12 @@ class CardControllerIT {
 	}
 
 	@Test
-	@DisplayName("OpenAPI documents type, name, page and size, but not sort")
+	@DisplayName("OpenAPI documents type, name, rarityId, page and size, but not sort")
 	void apiDocs_cardList_documentsOnlyUsedParameters() throws Exception {
 		// Act + Assert: il sort del client si ignora, quindi Swagger non lo deve offrire
 		mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.paths['/api/v1/cards'].get.parameters[*].name", hasItems("type", "name", "page", "size")))
+			.andExpect(jsonPath("$.paths['/api/v1/cards'].get.parameters[*].name", hasItems("type", "name", "rarityId", "page", "size")))
 			.andExpect(jsonPath("$.paths['/api/v1/cards'].get.parameters[*].name", not(hasItem("sort"))))
 			.andExpect(jsonPath("$.paths['/api/v1/cards'].get.parameters[*].name", not(hasItem("pageable"))));
 	}

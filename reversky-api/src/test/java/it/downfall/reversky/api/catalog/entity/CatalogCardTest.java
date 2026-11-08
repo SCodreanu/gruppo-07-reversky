@@ -13,6 +13,10 @@ import org.junit.jupiter.api.Test;
  */
 class CatalogCardTest {
 
+	// Rarità costruite senza database: qui servono solo come oggetti da confrontare
+	private static final Rarity COMMON = new Rarity("Common", 3, null, null, null, Rarity.COMMON_ORDER);
+	private static final Rarity UNCOMMON = new Rarity("Uncommon", 3, null, null, null, Rarity.UNCOMMON_ORDER);
+
 	// --- costruttore e isVariant ---
 
 	@Test
@@ -53,8 +57,8 @@ class CatalogCardTest {
 	@Test
 	@DisplayName("Copying the rules takes every game field from the original")
 	void copyRulesFrom_original_copiesAllGameFields() {
-		// Arrange: originale Spell, variante ancora creatura con valori diversi
-		CatalogCard original = new CatalogCard(null, "Original", CardType.SPELL, CardSubtype.BURN, "BURN_TWO",
+		// Arrange: originale Spell Uncommon, variante ancora creatura Common con valori diversi
+		CatalogCard original = new CatalogCard(null, UNCOMMON, "Original", CardType.SPELL, CardSubtype.BURN, "BURN_TWO",
 				"/images/original.webp", "Burns for 2", "Original flavor", null, null, 2);
 		CatalogCard variant = creature(original);
 
@@ -62,6 +66,7 @@ class CatalogCardTest {
 		variant.copyRulesFrom(original);
 
 		// Assert
+		assertThat(variant.getRarity()).isSameAs(UNCOMMON);
 		assertThat(variant.getCardType()).isEqualTo(CardType.SPELL);
 		assertThat(variant.getCardSubtype()).isEqualTo(CardSubtype.BURN);
 		assertThat(variant.getEffectCode()).isEqualTo("BURN_TWO");
@@ -76,7 +81,7 @@ class CatalogCardTest {
 	void copyRulesFrom_original_keepsOwnDetails() {
 		// Arrange
 		CatalogCard original = creature(null);
-		CatalogCard variant = new CatalogCard(original, "Event name", CardType.CREATURE, null, null,
+		CatalogCard variant = new CatalogCard(original, COMMON, "Event name", CardType.CREATURE, null, null,
 				"/images/event.webp", null, "Event flavor", 1, 1, null);
 
 		// Act
@@ -86,6 +91,22 @@ class CatalogCardTest {
 		assertThat(variant.getName()).isEqualTo("Event name");
 		assertThat(variant.getImagePath()).isEqualTo("/images/event.webp");
 		assertThat(variant.getFlavorText()).isEqualTo("Event flavor");
+	}
+
+	// --- updateRules ---
+
+	@Test
+	@DisplayName("Updating the rules changes the rarity too")
+	void updateRules_newRarity_changesRarity() {
+		// Arrange
+		CatalogCard card = creature(null);
+
+		// Act
+		card.updateRules(UNCOMMON, CardType.CREATURE, null, null, null, 7, 8, null);
+
+		// Assert
+		assertThat(card.getRarity()).isSameAs(UNCOMMON);
+		assertThat(card.getAtk()).isEqualTo(7);
 	}
 
 	// --- updateDetails e changeVariantOf ---
@@ -135,9 +156,9 @@ class CatalogCardTest {
 		assertThat(card.isActive()).isTrue();
 	}
 
-	// Creatura valida con ATK 5 e DEF 6; variantOf null = originale
+	// Creatura Common valida con ATK 5 e DEF 6; variantOf null = originale
 	private CatalogCard creature(CatalogCard variantOf) {
-		return new CatalogCard(variantOf, "Creature", CardType.CREATURE, null, null,
+		return new CatalogCard(variantOf, COMMON, "Creature", CardType.CREATURE, null, null,
 				"/images/creature.webp", null, "Flavor", 5, 6, null);
 	}
 }

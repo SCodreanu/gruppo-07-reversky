@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
  * <p>
  * Le regole sono le stesse dei vincoli di V5 (chk_catalog_cards_subtype_matches_type,
  * chk_catalog_cards_stats_match_type, chk_catalog_cards_effect_required): il service le usa
- * per rispondere 422 prima che il database rifiuti la riga.
+ * per rispondere 422 prima che il database rifiuti la riga. La regola sulle rarità invece non ha
+ * un vincolo nel database e la controlla solo il service.
  */
 class CardTypeTest {
 
@@ -77,5 +78,51 @@ class CardTypeTest {
 		assertThat(CardType.TERRAIN.requiresEffect()).isTrue();
 		assertThat(CardType.SPELL.requiresEffect()).isTrue();
 		assertThat(CardType.HIDDEN.requiresEffect()).isTrue();
+	}
+
+	// --- acceptsRarity (docs/backoffice, regola 4) ---
+
+	@Test
+	@DisplayName("A creature accepts any rarity")
+	void acceptsRarity_creature_acceptsAnyOrder() {
+		// Act + Assert
+		for (int order : new int[] { 1, 2, 3, 4, 5, 6, 1_000 }) {
+			assertThat(CardType.CREATURE.acceptsRarity(rarity("Any", order))).as("order %d", order).isTrue();
+		}
+	}
+
+	@Test
+	@DisplayName("Spells and hidden cards accept only Common and Uncommon")
+	void acceptsRarity_spellAndHidden_acceptOnlyCommonAndUncommon() {
+		// Act + Assert
+		for (CardType type : new CardType[] { CardType.SPELL, CardType.HIDDEN }) {
+			assertThat(type.acceptsRarity(rarity("Common", Rarity.COMMON_ORDER))).as("%s Common", type).isTrue();
+			assertThat(type.acceptsRarity(rarity("Uncommon", Rarity.UNCOMMON_ORDER))).as("%s Uncommon", type).isTrue();
+			assertThat(type.acceptsRarity(rarity("Rare", Rarity.RARE_ORDER))).as("%s Rare", type).isFalse();
+			assertThat(type.acceptsRarity(rarity("Mythic", 4))).as("%s Mythic", type).isFalse();
+		}
+	}
+
+	@Test
+	@DisplayName("Terrains accept only Rare")
+	void acceptsRarity_terrain_acceptsOnlyRare() {
+		// Act + Assert
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Rare", Rarity.RARE_ORDER))).isTrue();
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Common", Rarity.COMMON_ORDER))).isFalse();
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Uncommon", Rarity.UNCOMMON_ORDER))).isFalse();
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Mythic", 4))).isFalse();
+	}
+
+	@Test
+	@DisplayName("The rarity is recognised by its order, not by its name")
+	void acceptsRarity_renamedRarity_usesSortingOrder() {
+		// Act + Assert: una Rare rinominata resta ammessa, un nome "Rare" con un altro ordine no
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Renamed rare", Rarity.RARE_ORDER))).isTrue();
+		assertThat(CardType.TERRAIN.acceptsRarity(rarity("Rare", 4))).isFalse();
+	}
+
+	// Rarità senza massimi, costruita senza database
+	private static Rarity rarity(String name, int sortingOrder) {
+		return new Rarity(name, 3, null, null, null, sortingOrder);
 	}
 }

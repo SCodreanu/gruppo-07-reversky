@@ -20,11 +20,14 @@ import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.support.TestCards;
@@ -35,7 +38,8 @@ import it.downfall.reversky.api.support.TestUsers;
  * <p>
  * Copre le regole del task: carte mai cancellate, statistiche, sottotipo ed effetto per tipo,
  * nome univoco tra le originali, varianti che puntano solo a originali e che ricevono le modifiche
- * dell'originale. Dopo ogni modifica si rilegge la carta dal database, per non fidarsi della risposta.
+ * dell'originale, rarità ammesse per tipo e statistiche entro i massimi della rarità (#80). I massimi
+ * si provano solo con rarità create dal test, mai con Common, Uncommon e Rare. Dopo ogni modifica si rilegge la carta dal database, per non fidarsi della risposta.
  * <p>
  * Le carte non si cancellano, quindi ogni test usa nomi univoci e guarda solo le proprie carte.
  */
@@ -57,11 +61,14 @@ class CatalogCardServiceIT {
 	@MockitoBean
 	private EmailSender emailSender;
 
+	@Autowired
+	private RarityRepository rarityRepository;
+
 	private TestCards testCards;
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository);
 	}
 
 	// --- findById ---
@@ -113,7 +120,7 @@ class CatalogCardServiceIT {
 		testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(active.getId());
@@ -130,7 +137,7 @@ class CatalogCardServiceIT {
 		testCards.create("Creature " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(CardType.SPELL, token, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(CardType.SPELL, token, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactlyInAnyOrder(spell.getId(), variant.getId());
@@ -145,7 +152,7 @@ class CatalogCardServiceIT {
 		CatalogCard first = testCards.create("A " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token,
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null,
 				PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "doesNotExist")));
 
 		// Assert
@@ -162,7 +169,7 @@ class CatalogCardServiceIT {
 		CatalogCard third = testCards.create("C " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, PageRequest.of(1, 2));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, PageRequest.of(1, 2));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(third.getId());
@@ -181,7 +188,7 @@ class CatalogCardServiceIT {
 		CatalogCard inactive = testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(active.getId(), inactive.getId());
@@ -196,7 +203,7 @@ class CatalogCardServiceIT {
 		CatalogCard inactive = testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, false, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, false, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(inactive.getId());
@@ -208,9 +215,11 @@ class CatalogCardServiceIT {
 	@DisplayName("A valid update of an original changes every field")
 	void update_original_changesEveryField() {
 		// Arrange
+		// Arrange: creatura Common che diventa Spell Uncommon
 		CatalogCard card = testCards.createCreature();
+		Rarity uncommon = testCards.uncommon();
 		String newName = uniqueName("Renamed");
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.SPELL, CardSubtype.SHIELD,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.SPELL, uncommon.getId(), CardSubtype.SHIELD,
 				"SHIELD_TWO", null, null, null, 2, "Shields for 2", "New flavor");
 
 		// Act
@@ -219,6 +228,9 @@ class CatalogCardServiceIT {
 		// Assert
 		CatalogCard reloaded = reload(card);
 		assertThat(response.name()).isEqualTo(newName);
+		assertThat(response.rarity().id()).isEqualTo(uncommon.getId());
+		assertThat(response.rarity().name()).isEqualTo(uncommon.getName());
+		assertThat(reloaded.getRarity().getId()).isEqualTo(uncommon.getId());
 		assertThat(reloaded.getName()).isEqualTo(newName);
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.SPELL);
 		assertThat(reloaded.getCardSubtype()).isEqualTo(CardSubtype.SHIELD);
@@ -231,13 +243,14 @@ class CatalogCardServiceIT {
 	}
 
 	@Test
-	@DisplayName("Updating an original updates the game fields of all its variants")
+	@DisplayName("Updating an original updates the game fields of all its variants, rarity included")
 	void update_originalWithVariants_copiesRulesToVariants() {
-		// Arrange
+		// Arrange: rarità nuova senza massimi, così ATK 11 e DEF 12 vanno bene qualunque sia il seed di Common
 		CatalogCard original = testCards.createCreature();
 		CatalogCard firstVariant = testCards.createVariantOf(original, uniqueName("Event"));
 		CatalogCard secondVariant = testCards.createVariantOf(original);
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(original.getName(), CardType.CREATURE, null,
+		Rarity newRarity = testCards.createRarity(null, null);
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(original.getName(), CardType.CREATURE, newRarity.getId(), null,
 				"NEW_EFFECT", null, 11, 12, 1, "New effect text", "Original flavor");
 
 		// Act
@@ -246,6 +259,7 @@ class CatalogCardServiceIT {
 		// Assert
 		for (CatalogCard variant : new CatalogCard[] {firstVariant, secondVariant}) {
 			CatalogCard reloaded = reload(variant);
+			assertThat(reloaded.getRarity().getId()).isEqualTo(newRarity.getId());
 			assertThat(reloaded.getAtk()).isEqualTo(11);
 			assertThat(reloaded.getDef()).isEqualTo(12);
 			assertThat(reloaded.getEffectCode()).isEqualTo("NEW_EFFECT");
@@ -313,7 +327,7 @@ class CatalogCardServiceIT {
 	void update_creatureWithoutDef_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.CREATURE, null,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.CREATURE, rarityIdFor(CardType.CREATURE), null,
 				null, null, 7, null, null, null, null);
 
 		// Act + Assert
@@ -328,7 +342,7 @@ class CatalogCardServiceIT {
 	void update_spellWithStats_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, CardSubtype.BURN,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rarityIdFor(CardType.SPELL), CardSubtype.BURN,
 				TestCards.EFFECT_CODE, null, 1, 1, null, null, null);
 
 		// Act + Assert
@@ -342,7 +356,7 @@ class CatalogCardServiceIT {
 	void update_spellWithoutSubtype_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, null,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rarityIdFor(CardType.SPELL), null,
 				TestCards.EFFECT_CODE, null, null, null, null, null, null);
 
 		// Act + Assert
@@ -356,7 +370,7 @@ class CatalogCardServiceIT {
 	void update_hiddenWithSpellSubtype_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, CardSubtype.BURN,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, rarityIdFor(CardType.HIDDEN), CardSubtype.BURN,
 				TestCards.EFFECT_CODE, null, null, null, null, null, null);
 
 		// Act + Assert
@@ -370,7 +384,7 @@ class CatalogCardServiceIT {
 	void update_creatureWithSubtype_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.CREATURE, CardSubtype.DAMAGE,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.CREATURE, rarityIdFor(CardType.CREATURE), CardSubtype.DAMAGE,
 				null, null, 1, 1, null, null, null);
 
 		// Act + Assert
@@ -384,7 +398,7 @@ class CatalogCardServiceIT {
 	void update_terrainWithoutEffect_throwsRulesViolated() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, null,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, rarityIdFor(CardType.TERRAIN), null,
 				null, null, null, null, null, null, null);
 
 		// Act + Assert
@@ -411,20 +425,24 @@ class CatalogCardServiceIT {
 	// --- update di una variante ---
 
 	@Test
-	@DisplayName("Game fields sent for a variant are ignored and copied from the original")
+	@DisplayName("Game fields sent for a variant are ignored and copied from the original, rarity included")
 	void update_variant_ignoresRequestRulesAndCopiesOriginal() {
-		// Arrange
-		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		// Arrange: la rarità della richiesta non esiste, ma per una variante non si guarda nemmeno.
+		// Il service riceve l'originale come proxy (è già nel contesto come variantOf della variante):
+		// se copyRulesFrom leggesse original.rarity invece di getRarity(), copierebbe null e il salvataggio fallirebbe.
+		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL, testCards.uncommon());
 		CatalogCard variant = testCards.createVariantOf(original);
 		String newName = uniqueName("Event");
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.CREATURE, null,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.CREATURE, MISSING_ID, null,
 				null, original.getId(), 9, 9, 3, "Ignored text", "Event flavor 2");
 
 		// Act
-		catalogCardService.update(variant.getId(), request);
+		CatalogCardResponse response = catalogCardService.update(variant.getId(), request);
 
 		// Assert
 		CatalogCard reloaded = reload(variant);
+		assertThat(response.rarity().id()).isEqualTo(original.getRarity().getId());
+		assertThat(reloaded.getRarity().getId()).isEqualTo(original.getRarity().getId());
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.SPELL);
 		assertThat(reloaded.getCardSubtype()).isEqualTo(original.getCardSubtype());
 		assertThat(reloaded.getEffectCode()).isEqualTo(original.getEffectCode());
@@ -479,6 +497,7 @@ class CatalogCardServiceIT {
 		assertThat(response.variantOfId()).isEqualTo(original.getId());
 		assertThat(reloaded.getVariantOf().getId()).isEqualTo(original.getId());
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.TERRAIN);
+		assertThat(reloaded.getRarity().getId()).isEqualTo(testCards.rare().getId());
 		assertThat(reloaded.getAtk()).isNull();
 	}
 
@@ -572,6 +591,210 @@ class CatalogCardServiceIT {
 			.hasMessageContaining("has variants");
 	}
 
+	// --- rarità (docs/backoffice, regole 4 e 5) ---
+
+	@Test
+	@DisplayName("A rarity that does not exist is rejected and nothing changes")
+	void update_missingRarity_throwsInvalidRarity() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		CatalogCardUpdateRequest request = creatureRequest(uniqueName("Renamed"), null, MISSING_ID, 7, 8);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
+			.isInstanceOf(InvalidCardRarityException.class)
+			.hasMessageContaining("does not exist");
+		assertThat(reload(card).getName()).isEqualTo(card.getName());
+	}
+
+	@Test
+	@DisplayName("A spell or a hidden card with a Rare rarity is rejected")
+	void update_spellAndHiddenWithRare_throwInvalidRarity() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Integer rareId = testCards.rare().getId();
+		CatalogCardUpdateRequest spell = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rareId, CardSubtype.BURN,
+				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+		CatalogCardUpdateRequest hidden = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, rareId, CardSubtype.SURVIVAL,
+				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), spell))
+			.isInstanceOf(InvalidCardRarityException.class)
+			.hasMessageContaining("not allowed for a SPELL card");
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), hidden))
+			.isInstanceOf(InvalidCardRarityException.class)
+			.hasMessageContaining("not allowed for a HIDDEN card");
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.CREATURE);
+	}
+
+	@Test
+	@DisplayName("A spell and a hidden card accept Common and Uncommon")
+	void update_spellAndHiddenWithCommonOrUncommon_isAccepted() {
+		// Arrange
+		CatalogCard spell = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		CatalogCard hidden = testCards.create(uniqueName("Hidden"), CardType.HIDDEN);
+
+		// Act
+		CatalogCardResponse spellResponse = catalogCardService.update(spell.getId(), new CatalogCardUpdateRequest(spell.getName(),
+				CardType.SPELL, testCards.uncommon().getId(), CardSubtype.BURN, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+		CatalogCardResponse hiddenResponse = catalogCardService.update(hidden.getId(), new CatalogCardUpdateRequest(hidden.getName(),
+				CardType.HIDDEN, testCards.common().getId(), CardSubtype.SURVIVAL, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+
+		// Assert
+		assertThat(spellResponse.rarity().id()).isEqualTo(testCards.uncommon().getId());
+		assertThat(hiddenResponse.rarity().id()).isEqualTo(testCards.common().getId());
+	}
+
+	@Test
+	@DisplayName("A terrain accepts only Rare")
+	void update_terrain_acceptsOnlyRare() {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
+		CatalogCardUpdateRequest common = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, testCards.common().getId(), null,
+				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+		CatalogCardUpdateRequest rare = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, testCards.rare().getId(), null,
+				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), common))
+			.isInstanceOf(InvalidCardRarityException.class)
+			.hasMessageContaining("not allowed for a TERRAIN card");
+		assertThat(catalogCardService.update(card.getId(), rare).rarity().id()).isEqualTo(testCards.rare().getId());
+	}
+
+	@Test
+	@DisplayName("A creature accepts any rarity, even one that is not Common, Uncommon or Rare")
+	void update_creatureWithAnyRarity_isAccepted() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Rarity mythicLike = testCards.createRarity(null, null);
+
+		// Act
+		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, mythicLike.getId(), 7, 8));
+
+		// Assert
+		assertThat(response.rarity().id()).isEqualTo(mythicLike.getId());
+		assertThat(reload(card).getRarity().getId()).isEqualTo(mythicLike.getId());
+	}
+
+	@Test
+	@DisplayName("ATK above the rarity maximum is rejected and nothing changes")
+	void update_atkAboveMax_throwsRulesViolated() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Rarity rarity = testCards.createRarity(10, 12);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 11, 12)))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessageContaining("ATK 11 exceeds the maximum of 10");
+		assertThat(reload(card).getAtk()).isEqualTo(TestCards.CREATURE_ATK);
+	}
+
+	@Test
+	@DisplayName("DEF above the rarity maximum is rejected")
+	void update_defAboveMax_throwsRulesViolated() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Rarity rarity = testCards.createRarity(10, 12);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 10, 13)))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessageContaining("DEF 13 exceeds the maximum of 12");
+	}
+
+	@Test
+	@DisplayName("ATK and DEF equal to the rarity maximums are accepted")
+	void update_statsEqualToMax_isAccepted() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Rarity rarity = testCards.createRarity(10, 12);
+
+		// Act
+		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 10, 12));
+
+		// Assert
+		assertThat(response.atk()).isEqualTo(10);
+		assertThat(response.def()).isEqualTo(12);
+	}
+
+	@Test
+	@DisplayName("A rarity without maximums accepts any stats")
+	void update_rarityWithoutMax_acceptsAnyStats() {
+		// Arrange: come la Mutant, massimi non ancora definiti
+		CatalogCard card = testCards.createCreature();
+		Rarity rarity = testCards.createRarity(null, null);
+
+		// Act
+		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 99, 99));
+
+		// Assert
+		assertThat(response.atk()).isEqualTo(99);
+	}
+
+	@Test
+	@DisplayName("A spell with stats gets the type error, not the rarity maximum error")
+	void update_spellWithStatsAboveMax_reportsTypeRuleFirst() {
+		// Arrange: Common con massimi bassi; le regole del tipo si controllano prima di quelle della rarità
+		CatalogCard card = testCards.createCreature();
+		Rarity lowMax = testCards.createRarity(1, 1);
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, lowMax.getId(), CardSubtype.BURN,
+				TestCards.EFFECT_CODE, null, 50, 50, null, null, null);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessageContaining("must not have ATK or DEF");
+	}
+
+	@Test
+	@DisplayName("A missing rarity is reported before the type rules")
+	void update_missingRarityAndInvalidStats_reportsRarityFirst() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+
+		// Act + Assert: creatura senza DEF e rarità inesistente
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, MISSING_ID, 7, null)))
+			.isInstanceOf(InvalidCardRarityException.class);
+	}
+
+	// --- findById e filtro per rarità ---
+
+	@Test
+	@DisplayName("A card is returned with the id and name of its rarity")
+	void findById_card_returnsRarity() {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
+		Rarity rare = testCards.rare();
+
+		// Act
+		CatalogCardResponse response = catalogCardService.findById(card.getId());
+
+		// Assert
+		assertThat(response.rarity().id()).isEqualTo(rare.getId());
+		assertThat(response.rarity().name()).isEqualTo(rare.getName());
+	}
+
+	@Test
+	@DisplayName("The public and admin lists filter by rarity")
+	void findActiveAndFindAll_rarityFilter_returnOnlyThatRarity() {
+		// Arrange
+		String token = TestUsers.uniqueSuffix();
+		Rarity other = testCards.createRarity(null, null);
+		CatalogCard commonCard = testCards.create("Common " + token, CardType.CREATURE);
+		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE, other);
+
+		// Act
+		PageResponse<CatalogCardResponse> publicPage = catalogCardService.findActive(null, token, other.getId(), PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> adminPage = catalogCardService.findAll(null, token, testCards.common().getId(), null, PageRequest.of(0, 20));
+
+		// Assert
+		assertThat(publicPage.content()).extracting(CatalogCardResponse::id).containsExactly(otherCard.getId());
+		assertThat(adminPage.content()).extracting(CatalogCardResponse::id).containsExactly(commonCard.getId());
+	}
+
 	// --- activate e deactivate ---
 
 	@Test
@@ -625,9 +848,19 @@ class CatalogCardServiceIT {
 		assertThatThrownBy(() -> catalogCardService.deactivate(MISSING_ID)).isInstanceOf(CatalogCardNotFoundException.class);
 	}
 
-	// Creatura valida (ATK 7, DEF 8); variantOfId null = originale
+	// Creatura Common valida (ATK 7, DEF 8); variantOfId null = originale
 	private CatalogCardUpdateRequest creatureRequest(String name, Integer variantOfId) {
-		return new CatalogCardUpdateRequest(name, CardType.CREATURE, null, null, variantOfId, 7, 8, null, null, "Flavor");
+		return creatureRequest(name, variantOfId, rarityIdFor(CardType.CREATURE), 7, 8);
+	}
+
+	private CatalogCardUpdateRequest creatureRequest(String name, Integer variantOfId, Integer rarityId, Integer atk, Integer def) {
+		return new CatalogCardUpdateRequest(name, CardType.CREATURE, rarityId, null, null, variantOfId, atk, def, null, null, "Flavor");
+	}
+
+	// Una rarità ammessa dal tipo: Rare per i Terreni, Common per gli altri (ATK 7 e DEF 8 stanno
+	// sotto i massimi proposti per Common, quindi vanno bene anche con il seed di #85)
+	private Integer rarityIdFor(CardType type) {
+		return (type == CardType.TERRAIN) ? testCards.rare().getId() : testCards.common().getId();
 	}
 
 	// Rilegge la carta dal database, fuori dalla transazione del service

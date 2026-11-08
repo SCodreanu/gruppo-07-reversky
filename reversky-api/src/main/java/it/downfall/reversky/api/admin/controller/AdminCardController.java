@@ -52,18 +52,18 @@ public class AdminCardController {
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@GetMapping
-	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "true = only active cards, false = only deactivated cards, empty = all") @RequestParam(required = false) Boolean active, @Parameter(hidden = true) Pageable pageable) {
-		return ResponseEntity.ok(catalogCardService.findAll(type, name, active, pageable));
+	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "Only cards of this rarity (id from GET /admin/rarities). An unknown id returns an empty page", example = "3") @RequestParam(required = false) Integer rarityId, @Parameter(description = "true = only active cards, false = only deactivated cards, empty = all") @RequestParam(required = false) Boolean active, @Parameter(hidden = true) Pageable pageable) {
+		return ResponseEntity.ok(catalogCardService.findAll(type, name, rarityId, active, pageable));
 	}
 
-	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants. " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original.")
+	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants, rarity included. " + "SPELL and HIDDEN cards must be Common or Uncommon, TERRAIN cards must be Rare, and a creature's ATK and DEF must not exceed the maximums of its rarity (no check when the rarity has no maximum). " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original.")
 	@ApiResponse(responseCode = "200", description = "Card updated")
 	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@ApiResponse(responseCode = "404", description = "Card not found")
 	@ApiResponse(responseCode = "409", description = "Name already used by another original card")
-	@ApiResponse(responseCode = "422", description = "Stats, subtype or effect do not match the card type, or variantOfId does not point to an original card")
+	@ApiResponse(responseCode = "422", description = "Stats, subtype or effect do not match the card type, ATK or DEF exceed the rarity maximums, the rarity does not exist or is not allowed for the type, or variantOfId does not point to an original card")
 	@PutMapping("/{id}")
 	public ResponseEntity<CatalogCardResponse> update(@PathVariable Integer id, @Valid @RequestBody CatalogCardUpdateRequest request) {
 		return ResponseEntity.ok(catalogCardService.update(id, request));

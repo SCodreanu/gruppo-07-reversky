@@ -28,7 +28,9 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
 import it.downfall.reversky.api.support.TestCards;
@@ -39,7 +41,8 @@ import it.downfall.reversky.api.support.TestUsers;
  * <p>
  * Si verificano accesso (401, 403), validazione del DTO (400), status e codici degli errori del
  * service, e i "test minimi" di docs/backoffice sulle carte. I casi limite delle regole sono già in
- * CatalogCardServiceIT.
+ * CatalogCardServiceIT. I corpi delle richieste usano una rarità ammessa dal tipo (Rare per i Terreni,
+ * Common per gli altri), salvo i test sulle rarità.
  */
 @Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
@@ -60,6 +63,9 @@ class AdminCardControllerIT {
 	@Autowired
 	private CatalogCardRepository catalogCardRepository;
 
+	@Autowired
+	private RarityRepository rarityRepository;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
 	@MockitoBean
@@ -69,7 +75,7 @@ class AdminCardControllerIT {
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository);
 	}
 
 	// --- accesso ---
@@ -152,6 +158,22 @@ class AdminCardControllerIT {
 			.andExpect(jsonPath("$.content[0].id").value(inactive.getId()));
 	}
 
+	@Test
+	@DisplayName("The rarityId parameter filters the admin list")
+	void findAll_rarityId_returnsOnlyThatRarity() throws Exception {
+		// Arrange
+		String token = TestUsers.uniqueSuffix();
+		Rarity other = testCards.createRarity(null, null);
+		CatalogCard otherCard = testCards.deactivate(testCards.create("Other " + token, CardType.CREATURE, other));
+		testCards.create("Common " + token, CardType.CREATURE);
+
+		// Act + Assert: anche le carte disattivate, come il resto della lista admin
+		mockMvc.perform(asAdmin(get(BASE_PATH)).param("name", token).param("rarityId", other.getId().toString()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(otherCard.getId()));
+	}
+
 	// --- PUT ---
 
 	@Test
@@ -159,14 +181,17 @@ class AdminCardControllerIT {
 	void update_validRequest_returns200WithCard() throws Exception {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
+		Rarity uncommon = testCards.uncommon();
 		String newName = uniqueName("Renamed");
 
 		// Act + Assert
-		putCard(card.getId(), body(newName, CardType.HIDDEN, CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
+		putCard(card.getId(), body(newName, CardType.HIDDEN, uncommon.getId(), CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(card.getId()))
 			.andExpect(jsonPath("$.name").value(newName))
 			.andExpect(jsonPath("$.type").value("HIDDEN"))
+			.andExpect(jsonPath("$.rarity.id").value(uncommon.getId()))
+			.andExpect(jsonPath("$.rarity.name").value(uncommon.getName()))
 			.andExpect(jsonPath("$.subtype").value("DAMAGE"))
 			.andExpect(jsonPath("$.effectCode").value("HIDE_BEHIND"))
 			.andExpect(jsonPath("$.atk").isEmpty())
@@ -174,19 +199,22 @@ class AdminCardControllerIT {
 		CatalogCard saved = reload(card);
 		assertThat(saved.getName()).isEqualTo(newName);
 		assertThat(saved.getCardType()).isEqualTo(CardType.HIDDEN);
+		assertThat(saved.getRarity().getId()).isEqualTo(uncommon.getId());
 	}
 
 	@Test
-	@DisplayName("Updating an original gives its variants the same game fields")
+	@DisplayName("Updating an original gives its variants the same game fields, rarity included")
 	void update_originalWithVariant_updatesVariant() throws Exception {
-		// Arrange
+		// Arrange: rarità senza massimi, così ATK 13 e DEF 14 vanno bene qualunque sia il seed di Common
 		CatalogCard original = testCards.createCreature();
 		CatalogCard variant = testCards.createVariantOf(original);
+		Rarity newRarity = testCards.createRarity(null, null);
 
 		// Act + Assert
-		putCard(original.getId(), body(original.getName(), CardType.CREATURE, null, null, null, 13, 14, null))
+		putCard(original.getId(), body(original.getName(), CardType.CREATURE, newRarity.getId(), null, null, null, 13, 14, null))
 			.andExpect(status().isOk());
 		CatalogCard savedVariant = reload(variant);
+		assertThat(savedVariant.getRarity().getId()).isEqualTo(newRarity.getId());
 		assertThat(savedVariant.getAtk()).isEqualTo(13);
 		assertThat(savedVariant.getDef()).isEqualTo(14);
 	}
@@ -197,8 +225,8 @@ class AdminCardControllerIT {
 		// Arrange: CatalogCardUpdateRequest non ha il campo, quindi Jackson lo scarta
 		CatalogCard card = testCards.createCreature();
 		String bodyWithImage = """
-			{"name": "%s", "type": "CREATURE", "atk": 1, "def": 1, "imagePath": "/images/other.webp"}
-			""".formatted(card.getName());
+			{"name": "%s", "type": "CREATURE", "rarityId": %d, "atk": 1, "def": 1, "imagePath": "/images/other.webp"}
+			""".formatted(card.getName(), testCards.common().getId());
 
 		// Act + Assert
 		putCard(card.getId(), bodyWithImage)
@@ -208,16 +236,16 @@ class AdminCardControllerIT {
 	}
 
 	@Test
-	@DisplayName("Missing name and type return 400 with both fields")
+	@DisplayName("Missing name, type and rarity return 400 with every field")
 	void update_missingRequiredFields_returns400WithFields() throws Exception {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 
 		// Act + Assert
-		putCard(card.getId(), body("", null, null, null, null, 1, 1, null))
+		putCard(card.getId(), body("", null, null, null, null, null, 1, 1, null))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-			.andExpect(jsonPath("$.errors[*].field", hasItems("name", "type")));
+			.andExpect(jsonPath("$.errors[*].field", hasItems("name", "type", "rarityId")));
 	}
 
 	@Test
@@ -278,6 +306,59 @@ class AdminCardControllerIT {
 		putCard(card.getId(), body(card.getName(), CardType.SPELL, null, TestCards.EFFECT_CODE, null, null, null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"));
+	}
+
+	@Test
+	@DisplayName("A terrain with a Common rarity returns 422 and nothing changes")
+	void update_terrainWithCommon_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
+
+		// Act + Assert
+		putCard(card.getId(), body(card.getName(), CardType.TERRAIN, testCards.common().getId(), null, TestCards.EFFECT_CODE, null, null, null, null))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_RARITY_INVALID"));
+		assertThat(reload(card).getRarity().getId()).isEqualTo(testCards.rare().getId());
+	}
+
+	@Test
+	@DisplayName("A rarity that does not exist returns 422, not 404")
+	void update_unknownRarity_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+
+		// Act + Assert: la carta dell'URL esiste, è sbagliato un riferimento nel corpo
+		putCard(card.getId(), body(card.getName(), CardType.CREATURE, Integer.MAX_VALUE, null, null, null, 7, 8, null))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_RARITY_INVALID"));
+	}
+
+	@Test
+	@DisplayName("ATK above the rarity maximum returns 422")
+	void update_atkAboveRarityMax_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Rarity rarity = testCards.createRarity(10, 12);
+
+		// Act + Assert
+		putCard(card.getId(), body(card.getName(), CardType.CREATURE, rarity.getId(), null, null, null, 11, 12, null))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"))
+			.andExpect(jsonPath("$.detail").value("ATK 11 exceeds the maximum of 10 for the rarity " + rarity.getName()));
+		assertThat(reload(card).getAtk()).isEqualTo(TestCards.CREATURE_ATK);
+	}
+
+	@Test
+	@DisplayName("The rarityId sent for a variant is ignored, even if it does not exist")
+	void update_variantWithUnknownRarity_returns200() throws Exception {
+		// Arrange
+		CatalogCard original = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
+		CatalogCard variant = testCards.createVariantOf(original);
+
+		// Act + Assert
+		putCard(variant.getId(), body(variant.getName(), CardType.CREATURE, Integer.MAX_VALUE, null, null, original.getId(), 7, 8, null))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.rarity.id").value(testCards.rare().getId()));
 	}
 
 	@Test
@@ -361,6 +442,18 @@ class AdminCardControllerIT {
 			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.imagePath").doesNotExist());
 	}
 
+	@Test
+	@DisplayName("OpenAPI documents the rarity: filter on the list, required in the update form, object in the card")
+	void apiDocs_adminCards_documentRarity() throws Exception {
+		// Act + Assert
+		mockMvc.perform(get("/v3/api-docs"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].get.parameters[*].name", hasItems("type", "name", "rarityId", "active")))
+			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.required", hasItems("name", "type", "rarityId")))
+			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.rarity").exists())
+			.andExpect(jsonPath("$.components.schemas.RaritySummaryResponse.properties.name").exists());
+	}
+
 	// --- supporto ---
 
 	private MockHttpServletRequestBuilder asAdmin(MockHttpServletRequestBuilder request) {
@@ -379,18 +472,25 @@ class AdminCardControllerIT {
 		return catalogCardRepository.findById(card.getId()).orElseThrow();
 	}
 
-	// Creatura valida (ATK 7, DEF 8); variantOfId null = originale
-	private static String creatureBody(String name, Integer variantOfId) {
-		return body(name, CardType.CREATURE, null, null, variantOfId, 7, 8, null);
+	// Creatura Common valida (ATK 7, DEF 8); variantOfId null = originale
+	private String creatureBody(String name, Integer variantOfId) {
+		return body(name, CardType.CREATURE, testCards.common().getId(), null, null, variantOfId, 7, 8, null);
+	}
+
+	// Come sotto, con la rarità ammessa dal tipo: Rare per i Terreni, Common per gli altri
+	private String body(String name, CardType type, CardSubtype subtype, String effectCode, Integer variantOfId,
+			Integer atk, Integer def, Integer copyLimit) {
+		Integer rarityId = (type == CardType.TERRAIN) ? testCards.rare().getId() : testCards.common().getId();
+		return body(name, type, rarityId, subtype, effectCode, variantOfId, atk, def, copyLimit);
 	}
 
 	// I null diventano il JSON null, come li manderebbe il frontend per un campo vuoto
-	private static String body(String name, CardType type, CardSubtype subtype, String effectCode, Integer variantOfId,
+	private static String body(String name, CardType type, Integer rarityId, CardSubtype subtype, String effectCode, Integer variantOfId,
 			Integer atk, Integer def, Integer copyLimit) {
 		return """
-			{"name": %s, "type": %s, "subtype": %s, "effectCode": %s, "variantOfId": %s, "atk": %s, "def": %s, "copyLimit": %s,
+			{"name": %s, "type": %s, "rarityId": %s, "subtype": %s, "effectCode": %s, "variantOfId": %s, "atk": %s, "def": %s, "copyLimit": %s,
 			"effectDescription": "Effect text", "flavorText": "Flavor text"}
-			""".formatted(quoted(name), quoted(type), quoted(subtype), quoted(effectCode), variantOfId, atk, def, copyLimit);
+			""".formatted(quoted(name), quoted(type), rarityId, quoted(subtype), quoted(effectCode), variantOfId, atk, def, copyLimit);
 	}
 
 	private static String quoted(Object value) {

@@ -124,6 +124,12 @@ class DeckServiceIT {
 }
 ```
 
-`TestCards` esiste già: crea carte valide (`create(name, type)`, `createCreature()`, `createVariantOf(original)`, `deactivate(card)`) e nomi univoci con `TestCards.uniqueName(...)`. Finché non c'è `POST /admin/cards` (API-14) è l'unico modo di creare carte nei test. **Non** è un `@TestComponent`: si crea nel test con `new TestCards(catalogCardRepository)`. Così `@Import` resta `{TestcontainersConfiguration.class, TestUsers.class}` come negli altri IT e Spring riusa lo stesso contesto (e lo stesso container); con un `@Import` diverso ne avvierebbe un secondo. Esempi in `CatalogCardServiceIT`.
+`TestCards` esiste già: crea carte valide (`create(name, type)`, `create(name, type, rarity)`, `createCreature()`, `createVariantOf(original)`, `deactivate(card)`) e nomi univoci con `TestCards.uniqueName(...)`. Finché non c'è `POST /admin/cards` (API-14) è l'unico modo di creare carte nei test. **Non** è un `@TestComponent`: si crea nel test con `new TestCards(catalogCardRepository, rarityRepository)`.
+
+Rarità in `TestCards` (task #80):
+
+- `common()`, `uncommon()` e `rare()` cercano la rarità con `sorting_order` 1, 2 e 3 e, se manca, la creano **senza massimi**; con il seed di #85 troveranno quella del seed. `create(name, type)` usa Rare per i Terreni e Common per gli altri tipi.
+- I test **non** devono contare sui massimi di queste tre rarità, perché il seed li può cambiare: per provare `max_atk` e `max_def` si crea una rarità propria con `createRarity(maxAtk, maxDef)`, che ha un `sorting_order` casuale ≥ 1000 (quindi la ammettono solo le creature).
+- Per lo stesso motivo i test sulle rarità (`RarityServiceIT`, `AdminRarityControllerIT`, `RarityControllerIT`) usano `sorting_order` casuali ≥ 1000 e lasciano liberi 1, 2 e 3. Così `@Import` resta `{TestcontainersConfiguration.class, TestUsers.class}` come negli altri IT e Spring riusa lo stesso contesto (e lo stesso container); con un `@Import` diverso ne avvierebbe un secondo. Esempi in `CatalogCardServiceIT`.
 
 Le carte non si cancellano mai, quindi restano nel database tra un test e l'altro: le ricerche dei test filtrano per un token univoco nel nome (`TestUsers.uniqueSuffix()`).
