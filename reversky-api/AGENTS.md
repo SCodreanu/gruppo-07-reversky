@@ -127,8 +127,9 @@ Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i cre
 Catalogo (`catalog/`):
 
 - fazioni (migrazione `V3`): `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
-- rarità (migrazione `V4`): `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`).
+- rarità (migrazione `V4`): `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`);
+- carte (migrazione `V5`, senza rarità, fazioni e tag): `GET /api/v1/cards` pubblico e paginato con filtri `type` e `name`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
-Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`–`V4` sono allineate. Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`–`V5` sono allineate (in `V5` mancano ancora le colonne di rarità e fazioni di `catalog_cards`, che aggiungono le migrazioni di #80 e #81). Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.

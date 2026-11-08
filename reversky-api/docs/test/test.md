@@ -123,3 +123,7 @@ class DeckServiceIT {
 	// ... User user = testUsers.create();
 }
 ```
+
+`TestCards` esiste già: crea carte valide (`create(name, type)`, `createCreature()`, `createVariantOf(original)`, `deactivate(card)`) e nomi univoci con `TestCards.uniqueName(...)`. Finché non c'è `POST /admin/cards` (API-14) è l'unico modo di creare carte nei test. **Non** è un `@TestComponent`: si crea nel test con `new TestCards(catalogCardRepository)`. Così `@Import` resta `{TestcontainersConfiguration.class, TestUsers.class}` come negli altri IT e Spring riusa lo stesso contesto (e lo stesso container); con un `@Import` diverso ne avvierebbe un secondo. Esempi in `CatalogCardServiceIT`.
+
+Le carte non si cancellano mai, quindi restano nel database tra un test e l'altro: le ricerche dei test filtrano per un token univoco nel nome (`TestUsers.uniqueSuffix()`).

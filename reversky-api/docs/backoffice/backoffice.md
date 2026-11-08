@@ -10,7 +10,8 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
 - I controller stanno in `admin/controller/` e usano i service delle funzionalità (vedi [architettura](../architettura/architettura.md)).
 - Già implementato, senza audit (task API-52, #122):
   - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
-  - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato).
+  - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
+  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), senza rarità, fazioni e tag (task #80, #81, #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
 
 ## Carte — `catalog_cards`
 
@@ -51,8 +52,40 @@ Campi:
 4. **Rarità coerenti con i pacchetti.** Spell e Hidden devono essere Common o Uncommon, i Terreni Rare (vedi [pacchetti](../pacchetti/pacchetti.md)).
 5. **Statistiche massime per rarità:** `rarities.max_atk` e `rarities.max_def`, separati (proposta al cliente: Common 10, Uncommon 12, Rare 14, Mythic 16, Legendary 20; Mutant da definire = nessun controllo).
 6. Modificare una carta **non** cambia le partite già giocate (vedi la "fotografia" in [sfide](../sfide/sfide.md)).
-7. **Nomi.** Il nome è univoco tra le carte originali; una variante può riutilizzare quello dell'originale.
-8. **Varianti.** Una versione evento cambia solo la grafica: `variantOfId` deve indicare una carta originale (mai un'altra variante), e tipo, sottotipo, effetto, rarità, fazioni, statistiche e `copyLimit` si copiano dall'originale. Modificare l'originale aggiorna anche le sue varianti, nella stessa transazione.
+7. **Nomi.** Il nome è univoco tra le carte originali; una variante può riutilizzare quello della **propria** originale, ma non quello di un'altra originale.
+8. **Varianti.** Una versione evento cambia solo la grafica: `variantOfId` deve indicare una carta originale (mai un'altra variante), e tipo, sottotipo, effetto (`effectCode` e `effectDescription`), rarità, fazioni, statistiche e `copyLimit` si copiano dall'originale. Nome, illustrazione e `flavorText` restano quelli della variante. Modificare l'originale aggiorna anche le sue varianti, nella stessa transazione.
+
+### Comportamento già implementato (task API-08, #78)
+
+Endpoint pubblici, senza token (`CardController`):
+
+| Metodo | URL | Descrizione |
+|---|---|---|
+| `GET` | `/cards` | carte **attive**, varianti comprese, paginate; filtri facoltativi `type` e `name` (contiene, senza maiuscole) |
+| `GET` | `/cards/{id}` | una carta, **anche disattivata** (collezioni e storico la usano ancora); `404` se non esiste |
+
+`GET /admin/cards` ha in più il filtro `active` (`true`, `false`, vuoto = tutte). Le liste sono sempre ordinate per nome e poi per `id`: il parametro `sort` del client si ignora, quindi Swagger documenta solo `page` e `size`.
+
+`PUT /admin/cards/{id}` (`CatalogCardUpdateRequest`):
+
+- non ha `imagePath`: l'illustrazione si sostituisce con `POST /admin/cards/{id}/image` (API-14); se il client lo invia viene ignorato;
+- `variantOfId` vuoto rende la carta originale, valorizzato la rende variante di quella carta;
+- su una variante i campi di gioco della richiesta si ignorano e si copiano dall'originale;
+- tutti i controlli avvengono prima di modificare la carta, in questo ordine:
+
+| Caso | Status | `code` |
+|---|---|---|
+| campi mancanti o fuori dai limiti del DTO (nome, tipo, ATK < 0, DEF < 1, `copyLimit` < 1, `effectCode` vuoto) | `400` | `VALIDATION_FAILED` |
+| carta inesistente | `404` | `CARD_NOT_FOUND` |
+| `variantOfId` uguale alla carta stessa, inesistente, che indica una variante, oppure carta che ha già varianti | `422` | `CARD_VARIANT_INVALID` |
+| statistiche, sottotipo o effetto non coerenti con il tipo (regole 2 e 3 e la riga `atk`, `def` dei campi) | `422` | `CARD_RULES_VIOLATED` |
+| nome già usato da un'altra carta originale (regola 7) | `409` | `CARD_NAME_TAKEN` |
+
+`variantOfId` inesistente è `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo.
+
+`POST /admin/cards/{id}/deactivate` e `/activate` rispondono `200` con la carta e sono idempotenti (disattivare una carta già disattivata non cambia niente). Non toccano le varianti: una versione evento si attiva e disattiva per conto suo.
+
+Non ancora implementato: il controllo che `effectCode` esista nell'engine (regola 2), che richiede il client verso l'engine; per ora si controlla solo che non sia vuoto e che non superi 100 caratteri.
 
 ## Dati di riferimento
 

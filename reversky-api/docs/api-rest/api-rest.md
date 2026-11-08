@@ -75,6 +75,7 @@ Risposta:
 ```
 
 - Le pagine partono da `0`. Senza `size` si ricevono 20 elementi; il massimo è 100, e una richiesta più grande riceve 100 elementi senza errore (`spring.data.web.pageable.*` in `application.properties`).
+- Il parametro `sort` vale solo dove il documento della funzionalità lo prevede. Il catalogo carte (`GET /cards`, `GET /admin/cards`) ha un ordine fisso, per nome e poi per `id`, e ignora `sort`: una proprietà sconosciuta farebbe fallire la query con un `500`.
 - Nel codice la risposta è `common/dto/PageResponse`: il controller riceve un `Pageable`, il repository restituisce una `Page` e il service la converte con `PageResponse.from(page.map(XxxResponse::from))`, dentro la propria transazione. Non si restituisce mai direttamente la `Page` di Spring Data.
 
 ## Formati dei dati
