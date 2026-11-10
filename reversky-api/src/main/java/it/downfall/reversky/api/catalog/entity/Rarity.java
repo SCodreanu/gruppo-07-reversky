@@ -55,21 +55,13 @@ public class Rarity {
 	@Column(name = "max_per_deck")
 	private Integer maxPerDeck;
 
-	@Column(name = "max_atk")
-	private Integer maxAtk;
-
-	@Column(name = "max_def")
-	private Integer maxDef;
-
 	@Column(name = "sorting_order", nullable = false, unique = true, updatable = false)
 	private Integer sortingOrder;
 
-	public Rarity(String name, Integer deckLimit, Integer maxPerDeck, Integer maxAtk, Integer maxDef, Integer sortingOrder) {
+	public Rarity(String name, Integer deckLimit, Integer maxPerDeck, Integer sortingOrder) {
 		this.name = name;
 		this.deckLimit = deckLimit;
 		this.maxPerDeck = maxPerDeck;
-		this.maxAtk = maxAtk;
-		this.maxDef = maxDef;
 		this.sortingOrder = sortingOrder;
 	}
 
@@ -77,45 +69,10 @@ public class Rarity {
 	 * Modifica dal backoffice (PUT /admin/rarities/{id}): si salva da sola alla fine della transazione.
 	 * sortingOrder non c'è di proposito.
 	 */
-	public void update(String name, Integer deckLimit, Integer maxPerDeck, Integer maxAtk, Integer maxDef) {
+	public void update(String name, Integer deckLimit, Integer maxPerDeck) {
 		this.name = name;
 		this.deckLimit = deckLimit;
 		this.maxPerDeck = maxPerDeck;
-		this.maxAtk = maxAtk;
-		this.maxDef = maxDef;
-	}
-
-	/**
-	 * L'ATK supera il massimo di questa rarità (docs/backoffice, regola 5)?
-	 * <p>
-	 * Un ATK uguale al massimo è ammesso. Nessun controllo se il massimo è nullo (non ancora
-	 * definito, es. Mutant) o se l'ATK è nullo (carta senza statistiche).
-	 *
-	 * @param atk ATK della carta, null per Spell, Hidden e Terreni
-	 * @return true solo se entrambi i valori ci sono e atk è maggiore di maxAtk
-	 */
-	public boolean exceedsMaxAtk(Integer atk) {
-		if (atk == null || maxAtk == null) {
-			return false;
-		}
-
-		return atk > maxAtk;
-	}
-
-	/**
-	 * La DEF supera il massimo di questa rarità (docs/backoffice, regola 5)?
-	 * <p>
-	 * Stesse regole di {@link #exceedsMaxAtk(Integer)}, con {@code maxDef}.
-	 *
-	 * @param def DEF della carta, null per Spell, Hidden e Terreni
-	 * @return true solo se entrambi i valori ci sono e def è maggiore di maxDef
-	 */
-	public boolean exceedsMaxDef(Integer def) {
-		if (def == null || maxDef == null) {
-			return false;
-		}
-
-		return def > maxDef;
 	}
 
 }

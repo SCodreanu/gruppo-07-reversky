@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link CardType}: test unitario, senza Spring né database.
  * <p>
- * Le regole sono le stesse dei vincoli di V5 (chk_catalog_cards_subtype_matches_type,
- * chk_catalog_cards_stats_match_type, chk_catalog_cards_effect_required): il service le usa
+ * Le regole sono le stesse dei vincoli di V3 (chk_catalog_cards_subtype_matches_type,
+ * chk_catalog_cards_stats_match_type, chk_catalog_cards_effect_required, chk_catalog_cards_faction_matches_type): il service le usa
  * per rispondere 422 prima che il database rifiuti la riga. La regola sulle rarità invece non ha
  * un vincolo nel database e la controlla solo il service.
  */
@@ -18,15 +18,17 @@ class CardTypeTest {
 	// --- acceptsSubtype ---
 
 	@Test
-	@DisplayName("Creatures and terrains accept no subtype")
+	@DisplayName("Creatures, terrains and items accept no subtype")
 	void acceptsSubtype_typeWithoutSubtypes_acceptsOnlyNull() {
 		// Act + Assert
 		assertThat(CardType.CREATURE.acceptsSubtype(null)).isTrue();
 		assertThat(CardType.TERRAIN.acceptsSubtype(null)).isTrue();
+		assertThat(CardType.ITEM.acceptsSubtype(null)).isTrue();
 
 		for (CardSubtype subtype : CardSubtype.values()) {
 			assertThat(CardType.CREATURE.acceptsSubtype(subtype)).as("CREATURE with %s", subtype).isFalse();
 			assertThat(CardType.TERRAIN.acceptsSubtype(subtype)).as("TERRAIN with %s", subtype).isFalse();
+			assertThat(CardType.ITEM.acceptsSubtype(subtype)).as("ITEM with %s", subtype).isFalse();
 		}
 	}
 
@@ -68,6 +70,7 @@ class CardTypeTest {
 		assertThat(CardType.TERRAIN.hasStats()).isFalse();
 		assertThat(CardType.SPELL.hasStats()).isFalse();
 		assertThat(CardType.HIDDEN.hasStats()).isFalse();
+		assertThat(CardType.ITEM.hasStats()).isFalse();
 	}
 
 	@Test
@@ -78,6 +81,20 @@ class CardTypeTest {
 		assertThat(CardType.TERRAIN.requiresEffect()).isTrue();
 		assertThat(CardType.SPELL.requiresEffect()).isTrue();
 		assertThat(CardType.HIDDEN.requiresEffect()).isTrue();
+		assertThat(CardType.ITEM.requiresEffect()).isTrue();
+	}
+
+	// --- hasFaction ---
+
+	@Test
+	@DisplayName("Creatures, terrains and items have a faction; spells and hidden cards are shared")
+	void hasFaction_allButSpellAndHidden_returnsTrue() {
+		// Act + Assert
+		assertThat(CardType.CREATURE.hasFaction()).isTrue();
+		assertThat(CardType.TERRAIN.hasFaction()).isTrue();
+		assertThat(CardType.ITEM.hasFaction()).isTrue();
+		assertThat(CardType.SPELL.hasFaction()).isFalse();
+		assertThat(CardType.HIDDEN.hasFaction()).isFalse();
 	}
 
 	// --- acceptsRarity (docs/backoffice, regola 4) ---
@@ -114,6 +131,15 @@ class CardTypeTest {
 	}
 
 	@Test
+	@DisplayName("Items accept only Rare")
+	void acceptsRarity_item_acceptsOnlyRare() {
+		// Act + Assert
+		assertThat(CardType.ITEM.acceptsRarity(rarity("Rare", Rarity.RARE_ORDER))).isTrue();
+		assertThat(CardType.ITEM.acceptsRarity(rarity("Common", Rarity.COMMON_ORDER))).isFalse();
+		assertThat(CardType.ITEM.acceptsRarity(rarity("Mythic", 4))).isFalse();
+	}
+
+	@Test
 	@DisplayName("The rarity is recognised by its order, not by its name")
 	void acceptsRarity_renamedRarity_usesSortingOrder() {
 		// Act + Assert: una Rare rinominata resta ammessa, un nome "Rare" con un altro ordine no
@@ -123,6 +149,6 @@ class CardTypeTest {
 
 	// Rarità senza massimi, costruita senza database
 	private static Rarity rarity(String name, int sortingOrder) {
-		return new Rarity(name, 3, null, null, null, sortingOrder);
+		return new Rarity(name, 3, null, sortingOrder);
 	}
 }

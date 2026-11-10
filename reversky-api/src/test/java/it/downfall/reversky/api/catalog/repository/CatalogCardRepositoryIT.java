@@ -26,6 +26,7 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.support.TestCards;
@@ -34,8 +35,8 @@ import it.downfall.reversky.api.support.TestUsers;
 /**
  * {@link CatalogCardRepository} e {@link CatalogCardSpecifications} su un PostgreSQL vero.
  * <p>
- * Verifica tre cose: che l'entità corrisponda alla tabella di V5 e V6 (tipi, enum e rarità letti e scritti),
- * che i vincoli di V5 e V6 rifiutino le carte non valide anche se il service sbagliasse, e che metodi
+ * Verifica tre cose: che l'entità corrisponda alla tabella di V3 (tipi, enum, rarità e fazioni letti e scritti),
+ * che i vincoli di V3 rifiutino le carte non valide anche se il service sbagliasse, e che metodi
  * derivati e filtri restituiscano le righe giuste.
  * <p>
  * Le carte non si cancellano, quindi ogni test usa nomi univoci e guarda solo le proprie carte.
@@ -61,15 +62,20 @@ class CatalogCardRepositoryIT {
 	@Autowired
 	private RarityRepository rarityRepository;
 
+	@Autowired
+	private FactionRepository factionRepository;
+
 	private TestCards testCards;
 
 	// Rarità delle carte costruite a mano in questo test: le creature la ammettono sempre
 	private Rarity common;
+	private Faction faction;
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository, rarityRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
 		common = testCards.common();
+		faction = testCards.faction();
 	}
 
 	// --- mappatura ---
@@ -78,7 +84,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("A creature is saved and read back with all its fields")
 	void save_creature_readsBackAllFields() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Wendigo"), CardType.CREATURE, null, "WENDIGO",
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Wendigo"), CardType.CREATURE, null, "WENDIGO",
 				"/images/cards/wendigo.webp", "Loses 1 DEF", "Hunger and frost", 18, 17, 1);
 
 		// Act
@@ -98,6 +104,8 @@ class CatalogCardRepositoryIT {
 		assertThat(reloaded.getCopyLimit()).isEqualTo(1);
 		assertThat(reloaded.isActive()).isTrue();
 		assertThat(reloaded.getVariantOf()).isNull();
+		assertThat(reloaded.getFaction().getId()).isEqualTo(faction.getId());
+		assertThat(reloaded.getSecondaryFaction()).isNull();
 		// getId() su un proxy non lo carica, quindi funziona anche fuori transazione
 		assertThat(reloaded.getRarity().getId()).isEqualTo(common.getId());
 	}
@@ -147,13 +155,88 @@ class CatalogCardRepositoryIT {
 		assertThat(reloaded.isVariant()).isTrue();
 	}
 
-	// --- vincoli di V5 ---
+	@Test
+	@DisplayName("A card with two factions is saved and read back with both")
+	void save_twoFactions_readsBackBoth() {
+		// Arrange
+		Faction second = testCards.createFaction();
+		CatalogCard card = new CatalogCard(null, common, faction, second, uniqueName("Hybrid"), CardType.CREATURE, null, null,
+				TestCards.IMAGE_PATH, null, null, 5, 6, null);
+
+		// Act
+		Integer id = catalogCardRepository.save(card).getId();
+		CatalogCard reloaded = catalogCardRepository.findById(id).orElseThrow();
+
+		// Assert
+		assertThat(reloaded.getFaction().getId()).isEqualTo(faction.getId());
+		assertThat(reloaded.getSecondaryFaction().getId()).isEqualTo(second.getId());
+	}
+
+	@Test
+	@DisplayName("An item is saved and read back: ITEM exists in the card_type enum")
+	void save_item_readsBack() {
+		// Arrange
+		CatalogCard card = new CatalogCard(null, testCards.rare(), faction, null, uniqueName("Item"), CardType.ITEM, null, TestCards.EFFECT_CODE,
+				TestCards.IMAGE_PATH, null, null, null, null, null);
+
+		// Act
+		Integer id = catalogCardRepository.save(card).getId();
+
+		// Assert
+		assertThat(catalogCardRepository.findById(id).orElseThrow().getCardType()).isEqualTo(CardType.ITEM);
+	}
+
+	// --- vincoli di V3 ---
+
+	@Test
+	@DisplayName("The database rejects a creature without a faction")
+	void save_creatureWithoutFaction_isRejected() {
+		// Arrange
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.CREATURE, null, null,
+				TestCards.IMAGE_PATH, null, null, 1, 1, null);
+
+		// Act + Assert
+		assertRejectedBy(card, "chk_catalog_cards_faction_matches_type");
+	}
+
+	@Test
+	@DisplayName("The database rejects a spell with a faction")
+	void save_spellWithFaction_isRejected() {
+		// Arrange
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.EFFECT_CODE,
+				TestCards.IMAGE_PATH, null, null, null, null, null);
+
+		// Act + Assert
+		assertRejectedBy(card, "chk_catalog_cards_faction_matches_type");
+	}
+
+	@Test
+	@DisplayName("The database rejects the same faction twice")
+	void save_sameFactionTwice_isRejected() {
+		// Arrange
+		CatalogCard card = new CatalogCard(null, common, faction, faction, uniqueName("Bad"), CardType.CREATURE, null, null,
+				TestCards.IMAGE_PATH, null, null, 1, 1, null);
+
+		// Act + Assert
+		assertRejectedBy(card, "chk_catalog_cards_distinct_factions");
+	}
+
+	@Test
+	@DisplayName("The database rejects an item with a subtype")
+	void save_itemWithSubtype_isRejected() {
+		// Arrange
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.ITEM, CardSubtype.DAMAGE, TestCards.EFFECT_CODE,
+				TestCards.IMAGE_PATH, null, null, null, null, null);
+
+		// Act + Assert
+		assertRejectedBy(card, "chk_catalog_cards_subtype_matches_type");
+	}
 
 	@Test
 	@DisplayName("The database rejects a creature with DEF 0")
 	void save_creatureWithZeroDef_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.CREATURE, null, null,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.CREATURE, null, null,
 				TestCards.IMAGE_PATH, null, null, 3, 0, null);
 
 		// Act + Assert
@@ -164,7 +247,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a creature without stats")
 	void save_creatureWithoutStats_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.CREATURE, null, null,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.CREATURE, null, null,
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -175,7 +258,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a spell with stats")
 	void save_spellWithStats_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.EFFECT_CODE,
 				TestCards.IMAGE_PATH, null, null, 1, 1, null);
 
 		// Act + Assert
@@ -186,7 +269,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a spell without a subtype")
 	void save_spellWithoutSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.SPELL, null, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, null, TestCards.EFFECT_CODE,
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -197,7 +280,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a hidden card with a spell subtype")
 	void save_hiddenWithSpellSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.HIDDEN, CardSubtype.BURN, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.HIDDEN, CardSubtype.BURN, TestCards.EFFECT_CODE,
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -208,7 +291,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a creature with a subtype")
 	void save_creatureWithSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.CREATURE, CardSubtype.DAMAGE, null,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.CREATURE, CardSubtype.DAMAGE, null,
 				TestCards.IMAGE_PATH, null, null, 1, 1, null);
 
 		// Act + Assert
@@ -219,7 +302,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a terrain without an effect")
 	void save_terrainWithoutEffect_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.TERRAIN, null, null,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.TERRAIN, null, null,
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -230,7 +313,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a copy limit of 0")
 	void save_zeroCopyLimit_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, uniqueName("Bad"), CardType.CREATURE, null, null,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.CREATURE, null, null,
 				TestCards.IMAGE_PATH, null, null, 1, 1, 0);
 
 		// Act + Assert
@@ -250,7 +333,7 @@ class CatalogCardRepositoryIT {
 			.hasMessageContaining("chk_catalog_cards_not_own_variant");
 	}
 
-	// --- vincoli di V6 ---
+	// --- rarità obbligatoria (V3) ---
 
 	@Test
 	@DisplayName("The database rejects a card without a rarity")
@@ -271,7 +354,7 @@ class CatalogCardRepositoryIT {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 
-		// Act + Assert: il nome della chiave esterna è quello generato da PostgreSQL (V6 non lo sceglie)
+		// Act + Assert: il nome della chiave esterna è quello generato da PostgreSQL (V3 non lo sceglie)
 		assertThatThrownBy(() -> jdbcTemplate.update("UPDATE catalog_cards SET rarity_id = -1 WHERE id = ?", card.getId()))
 			.isInstanceOf(DataIntegrityViolationException.class)
 			.rootCause()
@@ -283,7 +366,7 @@ class CatalogCardRepositoryIT {
 	void save_twoOriginalsWithSameName_isRejected() {
 		// Arrange
 		CatalogCard original = testCards.createCreature();
-		CatalogCard duplicate = new CatalogCard(null, common, original.getName(), CardType.CREATURE, null, null,
+		CatalogCard duplicate = new CatalogCard(null, common, faction, null, original.getName(), CardType.CREATURE, null, null,
 				TestCards.IMAGE_PATH, null, null, 1, 1, null);
 
 		// Act + Assert
@@ -407,7 +490,7 @@ class CatalogCardRepositoryIT {
 	void hasRarity_rarityId_returnsOnlyThatRarity() {
 		// Arrange
 		String token = TestUsers.uniqueSuffix();
-		Rarity other = testCards.createRarity(null, null);
+		Rarity other = testCards.createRarity();
 		CatalogCard commonCard = testCards.create("Common " + token, CardType.CREATURE, common);
 		testCards.create("Other " + token, CardType.CREATURE, other);
 

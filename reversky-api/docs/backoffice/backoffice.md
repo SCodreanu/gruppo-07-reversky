@@ -11,7 +11,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
 - Già implementato, senza audit (task API-52, #122):
   - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
-  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80) ma ancora senza fazioni e tag (task #81, #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
+  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80); le fazioni sono nell'entità ma `PUT` non le riceve ancora (task #81), e i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
 
 ## Carte — `catalog_cards`
 
@@ -30,13 +30,13 @@ Campi:
 | Campo | Note |
 |---|---|
 | `name` | nome della carta |
-| `type` | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN` |
+| `type` | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (Oggetto) |
 | `subtype` | obbligatorio per Spell e Hidden, vuoto per le altre carte (vedi sotto) |
-| `effectCode` | effetto della carta: obbligatorio per Spell, Hidden e Terreni, facoltativo per le creature (vedi sotto) |
+| `effectCode` | effetto della carta: obbligatorio per Spell, Hidden, Terreni e Oggetti, facoltativo per le creature (vedi sotto) |
 | `variantOfId` | carta originale, solo per una versione evento (vedi sotto) |
 | `rarityId` | riferimento a `rarities` |
-| `factionId` | riferimento a `factions` (obbligatorio per tutte le carte) |
-| `secondaryFactionId` | seconda fazione facoltativa (es. Mutant), diversa da `factionId`: la carta prende vantaggi e svantaggi di entrambe |
+| `factionId` | riferimento a `factions`: obbligatorio per Creature, Terreni e Oggetti, **vuoto** per Spell e Hidden, che sono condivise tra tutte le fazioni |
+| `secondaryFactionId` | seconda fazione facoltativa (es. Mutant), diversa da `factionId`: la carta prende vantaggi e svantaggi di entrambe. Sempre vuota per Spell e Hidden |
 | `atk`, `def` | obbligatori e ≥ 0 per le creature (DEF > 0); vuoti per le altre carte |
 | `copyLimit` | ≥ 1, oppure vuoto se vale solo il limite della rarità; il limite reale nel mazzo è `min(deck_limit della rarità, copyLimit)` |
 | `imagePath` | illustrazione |
@@ -49,8 +49,8 @@ Campi:
 1. **Le carte non si cancellano mai.** Gli utenti le possiedono e lo storico le usa: si **disattivano**. Una carta disattivata non esce più dai pacchetti ma resta nelle collezioni.
 2. **Effetti.** L'effetto di una carta è `catalog_cards.effect_code` (al massimo uno). Il codice **deve esistere nell'engine**: gli effetti sono codice Java, il backoffice può solo assegnare un effetto già implementato. L'elenco dei codici validi si ottiene dall'engine (`GET /api/v1/effects`).
 3. **Sottotipi.** Una Spell deve avere uno tra `DAMAGE`, `SHIELD`, `BURN`; una Hidden uno tra `SURVIVAL`, `DAMAGE`; le altre carte nessuno. Lo garantisce il vincolo `chk_catalog_cards_subtype_matches_type`.
-4. **Rarità coerenti con i pacchetti.** Spell e Hidden devono essere Common o Uncommon, i Terreni Rare (vedi [pacchetti](../pacchetti/pacchetti.md)); le creature accettano qualsiasi rarità. Le rarità si riconoscono dal `sorting_order` e **mai dal nome** (il nome si modifica dal backoffice, l'ordine no; anche l'engine le confronta solo con `rarityOrder`): Common = 1, Uncommon = 2, Rare = 3 (`Rarity.COMMON_ORDER`, `UNCOMMON_ORDER`, `RARE_ORDER`). Il seed delle rarità (#85) deve usare questi valori. La regola non ha un vincolo nel database: la controlla solo il service.
-5. **Statistiche massime per rarità:** `rarities.max_atk` e `rarities.max_def`, separati (proposta al cliente: Common 10, Uncommon 12, Rare 14, Mythic 16, Legendary 20; Mutant da definire = nessun controllo). Un valore uguale al massimo è ammesso; massimo nullo = nessun controllo.
+4. **Rarità coerenti con i pacchetti.** Spell e Hidden devono essere Common o Uncommon, Terreni e Oggetti Rare (vedi [pacchetti](../pacchetti/pacchetti.md)); le creature accettano qualsiasi rarità. Le rarità si riconoscono dal `sorting_order` e **mai dal nome** (il nome si modifica dal backoffice, l'ordine no; anche l'engine le confronta solo con `rarityOrder`): Common = 1, Uncommon = 2, Rare = 3 (`Rarity.COMMON_ORDER`, `UNCOMMON_ORDER`, `RARE_ORDER`). Il seed delle rarità (#85) deve usare questi valori. La regola non ha un vincolo nel database: la controlla solo il service.
+5. **Nessun massimo di ATK e DEF per rarità.** Le carte personalizzate possono superare qualsiasi soglia: la rarità non limita le statistiche, valgono solo ATK ≥ 0 e DEF ≥ 1 per le creature (decisione del 9 novembre, che sostituisce `max_atk` e `max_def`).
 6. Modificare una carta **non** cambia le partite già giocate (vedi la "fotografia" in [sfide](../sfide/sfide.md)).
 7. **Nomi.** Il nome è univoco tra le carte originali; una variante può riutilizzare quello della **propria** originale, ma non quello di un'altra originale.
 8. **Varianti.** Una versione evento cambia solo la grafica: `variantOfId` deve indicare una carta originale (mai un'altra variante), e tipo, sottotipo, effetto (`effectCode` e `effectDescription`), rarità, fazioni, statistiche e `copyLimit` si copiano dall'originale. Nome, illustrazione e `flavorText` restano quelli della variante. Modificare l'originale aggiorna anche le sue varianti, nella stessa transazione.
@@ -82,22 +82,22 @@ Endpoint pubblici, senza token (`CardController`):
 | solo per un'originale: `rarityId` inesistente | `422` | `CARD_RARITY_INVALID` |
 | statistiche, sottotipo o effetto non coerenti con il tipo (regole 2 e 3 e la riga `atk`, `def` dei campi) | `422` | `CARD_RULES_VIOLATED` |
 | rarità non ammessa per il tipo (regola 4) | `422` | `CARD_RARITY_INVALID` |
-| ATK o DEF oltre i massimi della rarità (regola 5) | `422` | `CARD_RULES_VIOLATED` |
+| il nuovo tipo richiede una fazione ma la carta non ne ha (riga `factionId` dei campi) | `422` | `CARD_RULES_VIOLATED` |
 | nome già usato da un'altra carta originale (regola 7) | `409` | `CARD_NAME_TAKEN` |
 
-`variantOfId` e `rarityId` inesistenti sono `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo. Le regole del tipo vengono prima di quelle della rarità: una Spell con ATK riceve "must not have ATK or DEF", non un errore sui massimi.
+Fazioni finché `PUT` non le riceve (task #81): la carta tiene quelle che ha. Una Spell o una Hidden non ne ha, quindi non può diventare Creatura, Terreno o Oggetto ("A CREATURE card must have a faction"); una carta che diventa Spell o Hidden perde le fazioni, e con lei le sue varianti.
+
+`variantOfId` e `rarityId` inesistenti sono `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo. Le regole del tipo vengono prima di quelle della rarità: una Spell Rare con ATK riceve "must not have ATK or DEF", non un errore sulla rarità.
 
 `POST /admin/cards/{id}/deactivate` e `/activate` rispondono `200` con la carta e sono idempotenti (disattivare una carta già disattivata non cambia niente). Non toccano le varianti: una versione evento si attiva e disattiva per conto suo.
 
 Non ancora implementato: il controllo che `effectCode` esista nell'engine (regola 2), che richiede il client verso l'engine; per ora si controlla solo che non sia vuoto e che non superi 100 caratteri.
 
-Limite noto (fuori dal task #80): i massimi della regola 5 si controllano solo quando si modifica una carta. Abbassare `max_atk` o `max_def` di una rarità con `PUT /admin/rarities/{id}` lascia valide le carte che già li superano, finché qualcuno non le modifica. Da decidere se `PUT /admin/rarities` debba rifiutare la modifica o elencare le carte fuori limite.
-
 ## Dati di riferimento
 
 | Metodo | URL | Tabella |
 |---|---|---|
-| `GET/POST/PUT` | `/admin/rarities` | `rarities` (`deck_limit` ≥ 1, `max_per_deck`, `max_atk`, `max_def`, `sorting_order` univoco, scelto alla creazione e poi non più modificabile) |
+| `GET/POST/PUT` | `/admin/rarities` | `rarities` (`deck_limit` ≥ 1, `max_per_deck`, `sorting_order` univoco, scelto alla creazione e poi non più modificabile) |
 | `GET/POST/PUT` | `/admin/factions` | `factions` (`name`, `emblem_path`, `description` facoltativa), `faction_tags` |
 | `GET/PUT` | `/admin/faction-bonuses` | `faction_bonuses` (`atkBonus` anche negativo per il malus, `defBonus` ≥ 0, mai una fazione contro se stessa) |
 | `GET/POST/PUT` | `/admin/tags` | `tags` |
@@ -119,7 +119,7 @@ Bonus di fazione e limiti per rarità stanno nelle loro tabelle (sopra).
 | `PUT` | `/admin/rule-sets/{id}` | modifica una versione **mai usata** da una partita (`409` altrimenti) |
 | `POST` | `/admin/rule-sets/{id}/activate` | la rende attiva e disattiva la precedente, in una sola transazione |
 
-Controlli: `version` univoca; valori ≥ 1 per punti vita e round; creature + speciali + terreni = carte totali; crediti ≥ 0.
+Controlli: `version` univoca; valori ≥ 1 per punti vita e round; creature + Spell + Hidden + Oggetti + Terreni = carte totali; crediti ≥ 0.
 Ogni modifica e ogni attivazione va in `audit_logs`.
 
 Le partite già giocate non cambiano: ognuna salva il proprio `rule_set_id` e una copia delle regole e dei bonus di fazione usati.

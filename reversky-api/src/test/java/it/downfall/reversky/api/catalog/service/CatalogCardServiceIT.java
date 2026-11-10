@@ -27,6 +27,7 @@ import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedExcept
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import it.downfall.reversky.api.common.mail.EmailSender;
@@ -64,11 +65,14 @@ class CatalogCardServiceIT {
 	@Autowired
 	private RarityRepository rarityRepository;
 
+	@Autowired
+	private FactionRepository factionRepository;
+
 	private TestCards testCards;
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository, rarityRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
 	}
 
 	// --- findById ---
@@ -240,6 +244,7 @@ class CatalogCardServiceIT {
 		assertThat(reloaded.getDef()).isNull();
 		assertThat(reloaded.getCopyLimit()).isEqualTo(2);
 		assertThat(reloaded.getFlavorText()).isEqualTo("New flavor");
+		assertThat(reloaded.getFaction()).isNull();
 	}
 
 	@Test
@@ -249,7 +254,7 @@ class CatalogCardServiceIT {
 		CatalogCard original = testCards.createCreature();
 		CatalogCard firstVariant = testCards.createVariantOf(original, uniqueName("Event"));
 		CatalogCard secondVariant = testCards.createVariantOf(original);
-		Rarity newRarity = testCards.createRarity(null, null);
+		Rarity newRarity = testCards.createRarity();
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(original.getName(), CardType.CREATURE, newRarity.getId(), null,
 				"NEW_EFFECT", null, 11, 12, 1, "New effect text", "Original flavor");
 
@@ -410,8 +415,8 @@ class CatalogCardServiceIT {
 	@Test
 	@DisplayName("A creature without an effect is accepted")
 	void update_creatureWithoutEffect_isAccepted() {
-		// Arrange
-		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		// Arrange: un Terreno, perché ha già una fazione (una Spell non può diventare creatura, vedi sotto)
+		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
 
 		// Act
 		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null));
@@ -499,13 +504,14 @@ class CatalogCardServiceIT {
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.TERRAIN);
 		assertThat(reloaded.getRarity().getId()).isEqualTo(testCards.rare().getId());
 		assertThat(reloaded.getAtk()).isNull();
+		assertThat(reloaded.getFaction().getId()).isEqualTo(original.getFaction().getId());
 	}
 
 	@Test
 	@DisplayName("A variant can become an original again, with the game fields of the request")
 	void update_variantBecomesOriginal_usesRequestRules() {
-		// Arrange
-		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		// Arrange: originale Terreno, così la variante ha già una fazione
+		CatalogCard original = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
 		CatalogCard variant = testCards.createVariantOf(original, uniqueName("Event"));
 
 		// Act
@@ -668,7 +674,7 @@ class CatalogCardServiceIT {
 	void update_creatureWithAnyRarity_isAccepted() {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		Rarity mythicLike = testCards.createRarity(null, null);
+		Rarity mythicLike = testCards.createRarity();
 
 		// Act
 		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, mythicLike.getId(), 7, 8));
@@ -679,74 +685,64 @@ class CatalogCardServiceIT {
 	}
 
 	@Test
-	@DisplayName("ATK above the rarity maximum is rejected and nothing changes")
-	void update_atkAboveMax_throwsRulesViolated() {
-		// Arrange
+	@DisplayName("Any rarity accepts any stats: rarities have no maximums")
+	void update_highStats_isAccepted() {
+		// Arrange: decisione del 9 novembre, max_atk e max_def tolti con la baseline
 		CatalogCard card = testCards.createCreature();
-		Rarity rarity = testCards.createRarity(10, 12);
-
-		// Act + Assert
-		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 11, 12)))
-			.isInstanceOf(CatalogCardRulesViolatedException.class)
-			.hasMessageContaining("ATK 11 exceeds the maximum of 10");
-		assertThat(reload(card).getAtk()).isEqualTo(TestCards.CREATURE_ATK);
-	}
-
-	@Test
-	@DisplayName("DEF above the rarity maximum is rejected")
-	void update_defAboveMax_throwsRulesViolated() {
-		// Arrange
-		CatalogCard card = testCards.createCreature();
-		Rarity rarity = testCards.createRarity(10, 12);
-
-		// Act + Assert
-		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 10, 13)))
-			.isInstanceOf(CatalogCardRulesViolatedException.class)
-			.hasMessageContaining("DEF 13 exceeds the maximum of 12");
-	}
-
-	@Test
-	@DisplayName("ATK and DEF equal to the rarity maximums are accepted")
-	void update_statsEqualToMax_isAccepted() {
-		// Arrange
-		CatalogCard card = testCards.createCreature();
-		Rarity rarity = testCards.createRarity(10, 12);
 
 		// Act
-		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 10, 12));
-
-		// Assert
-		assertThat(response.atk()).isEqualTo(10);
-		assertThat(response.def()).isEqualTo(12);
-	}
-
-	@Test
-	@DisplayName("A rarity without maximums accepts any stats")
-	void update_rarityWithoutMax_acceptsAnyStats() {
-		// Arrange: come la Mutant, massimi non ancora definiti
-		CatalogCard card = testCards.createCreature();
-		Rarity rarity = testCards.createRarity(null, null);
-
-		// Act
-		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, rarity.getId(), 99, 99));
+		CatalogCardResponse response = catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, testCards.common().getId(), 99, 99));
 
 		// Assert
 		assertThat(response.atk()).isEqualTo(99);
+		assertThat(response.def()).isEqualTo(99);
+	}
+
+	// --- fazioni ---
+
+	@Test
+	@DisplayName("A spell cannot become a creature: it has no faction, and PUT cannot set one yet")
+	void update_spellToCreature_throwsMissingFaction() {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null)))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessageContaining("A CREATURE card must have a faction");
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.SPELL);
 	}
 
 	@Test
-	@DisplayName("A spell with stats gets the type error, not the rarity maximum error")
-	void update_spellWithStatsAboveMax_reportsTypeRuleFirst() {
-		// Arrange: Common con massimi bassi; le regole del tipo si controllano prima di quelle della rarità
+	@DisplayName("A creature keeps its faction when it stays a creature")
+	void update_creatureStaysCreature_keepsFaction() {
+		// Arrange
 		CatalogCard card = testCards.createCreature();
-		Rarity lowMax = testCards.createRarity(1, 1);
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, lowMax.getId(), CardSubtype.BURN,
-				TestCards.EFFECT_CODE, null, 50, 50, null, null, null);
+		Integer factionId = card.getFaction().getId();
 
-		// Act + Assert
-		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
-			.isInstanceOf(CatalogCardRulesViolatedException.class)
-			.hasMessageContaining("must not have ATK or DEF");
+		// Act
+		catalogCardService.update(card.getId(), creatureRequest(card.getName(), null));
+
+		// Assert
+		assertThat(reload(card).getFaction().getId()).isEqualTo(factionId);
+	}
+
+	@Test
+	@DisplayName("A creature that becomes a hidden card loses its factions, and so do its variants")
+	void update_creatureToHidden_clearsFactionsOfVariants() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		CatalogCard variant = testCards.createVariantOf(card, uniqueName("Event"));
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.common().getId(), CardSubtype.SURVIVAL,
+				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+
+		// Act
+		catalogCardService.update(card.getId(), request);
+
+		// Assert
+		assertThat(reload(card).getFaction()).isNull();
+		assertThat(reload(variant).getFaction()).isNull();
+		assertThat(reload(variant).getCardType()).isEqualTo(CardType.HIDDEN);
 	}
 
 	@Test
@@ -782,7 +778,7 @@ class CatalogCardServiceIT {
 	void findActiveAndFindAll_rarityFilter_returnOnlyThatRarity() {
 		// Arrange
 		String token = TestUsers.uniqueSuffix();
-		Rarity other = testCards.createRarity(null, null);
+		Rarity other = testCards.createRarity();
 		CatalogCard commonCard = testCards.create("Common " + token, CardType.CREATURE);
 		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE, other);
 

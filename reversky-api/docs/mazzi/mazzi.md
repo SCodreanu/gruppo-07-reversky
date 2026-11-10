@@ -22,16 +22,20 @@ copie massime = min(rarities.deck_limit, catalog_cards.copy_limit)
 
 Questi numeri stanno nel **rule set attivo** (tabella `rule_sets`) e si modificano dal backoffice: nessun valore è nel codice o in `application.properties`.
 
-**[DA CONFERMARE]** Tutti i valori di questa tabella e i `deck_limit` qui sopra: i limiti del mazzo sono ancora in discussione, perché il cliente vuole più carte.
+La composizione viene dalla scheda di progettazione del catalogo (mazzo da 30 su un catalogo di 120 carte). I numeri sono esatti: ogni categoria deve avere **esattamente** quel numero di carte. Possono ancora cambiare dopo i test di bilanciamento (API-64), sempre e solo dal backoffice.
 
 | Regola | Valore |
 |---|---|
-| Carte totali (`deck_size`) | esattamente **40** |
-| Creature (`deck_creatures`) | **26** |
-| Spell + Hidden (`deck_specials`) | **13** |
+| Carte totali (`deck_size`) | esattamente **30** |
+| Creature (`deck_creatures`) | **20** |
+| Spell (`deck_spells`) | **6** |
+| Hidden (`deck_hidden`) | **2** |
+| Oggetti (`deck_items`) | **1** |
 | Terreni (`deck_terrains`) | **1** |
 | Hidden con sottotipo `SURVIVAL` (`max_hidden_survival`) | massimo 2 in totale |
 | Hidden con sottotipo `DAMAGE` (`max_hidden_damage`) | massimo 1 in totale |
+
+**[DA CONFERMARE]** I `deck_limit` qui sopra e i `max_per_deck` qui sotto: si decidono con il bilanciamento (API-64).
 
 ### Bilanciamento (richiesto dal brief)
 
@@ -44,7 +48,9 @@ Serve un vincolo che impedisca di riempire il mazzo solo con le carte più forti
 | Mutant totali | massimo 1 **[DA CONFERMARE]** |
 | Rare totali | massimo 5 **[DA CONFERMARE]** |
 
-Il Terreno è una carta Rare e occupa uno dei posti del massimo delle Rare.
+Il Terreno e l'Oggetto sono carte Rare e occupano ciascuno uno dei posti del massimo delle Rare.
+
+Non c'è nessun vincolo tra la fazione del Terreno o dell'Oggetto e le fazioni delle creature del mazzo.
 
 La distribuzione "circa 10 Common, 7 Uncommon…" del regolamento è solo indicativa: **non** si valida.
 
@@ -75,9 +81,12 @@ Codici di errore (usati dal frontend):
 
 | Codice | Esempio di messaggio |
 |---|---|
-| `DECK_SIZE` | The deck has 38 cards, 40 are required |
-| `DECK_CREATURE_COUNT` | 26 creatures are required, there are 24 |
-| `DECK_SPECIAL_COUNT` | 13 Spell/Hidden cards are required, there are 14 |
+| `DECK_SIZE` | The deck has 28 cards, 30 are required |
+| `DECK_CREATURE_COUNT` | 20 creatures are required, there are 19 |
+| `DECK_SPELL_COUNT` | 6 Spells are required, there are 7 |
+| `DECK_HIDDEN_COUNT` | 2 Hidden cards are required, there is 1 |
+| `DECK_HIDDEN_SUBTYPE_LIMIT` | Too many SURVIVAL Hidden cards (3/2) |
+| `DECK_ITEM_COUNT` | Exactly 1 Item is required |
 | `DECK_TERRAIN_COUNT` | Exactly 1 Terrain is required |
 | `DECK_COPY_LIMIT` | Too many copies of 'Hounds' (2/1) |
 | `DECK_BALANCE_LIMIT` | Too many Legendary cards (3/2) |
@@ -128,7 +137,8 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - carta con `copy_limit` nullo → vale `deck_limit`;
 - carta originale e sua variante → le copie si sommano;
 - 2 Legendary diverse → ok; 3 → errore;
-- il Terreno conta nel massimo delle Rare;
+- per ogni categoria (creature, Spell, Hidden, Oggetti, Terreni) il numero esatto → ok; una in meno o una in più → errore;
+- il Terreno e l'Oggetto contano nel massimo delle Rare;
 - carta non posseduta → errore;
 - 3 copie, 2 riservate da uno scambio: 1 nel mazzo → ok; 2 → errore; chiuso lo scambio, 2 → ok;
 - mazzo con più errori → li restituisce tutti;

@@ -28,7 +28,7 @@ core/
 │   ├── CardDefinition      record: dati della carta come arrivano dall'API
 │   ├── CreatureInPlay      creatura sul campo: ATK, DEF attuale, modificatori, effetto
 │   ├── Faction             record (id, nome): le fazioni sono dati, non un enum
-│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno
+│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno, Oggetto
 │   └── MatchState          i due giocatori + numero round + log + random
 ├── rules/
 │   ├── RuleConfig          punti vita, limite round, versione: costruita dalla richiesta

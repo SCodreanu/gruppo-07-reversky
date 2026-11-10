@@ -22,7 +22,7 @@ Fazioni usate in tutti gli esempi (vedi [fazioni](../docs/fazioni/fazioni.md)):
 
 Bonus di fazione (tranne l'esempio 05): **+2 ATK** contro la fazione che si batte, **−1 ATK** contro quella che ti batte.
 Wound batte Dream, Invitation batte Archive, Archive batte Wound, Dream batte Invitation; Wound–Invitation e Archive–Dream sono neutre.
-Regole: il blocco `rules` di ogni richiesta, uguale in tutti gli esempi (rule set `1.0`: 30 punti vita, limite 100 round).
+Regole: il blocco `rules` di ogni richiesta, uguale in tutti gli esempi (rule set `1.0`: 30 punti vita, limite 75 round).
 Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'engine non ha valori predefiniti.
 
 ## Elenco
@@ -34,8 +34,8 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `03-morte-simultanea` | muoiono entrambe → nessun danno; mazzi finiti | `DRAW`, `BOTH_DECKS_EMPTY`, 2 round, PV 30–30 |
 | `04-bonus-fazione-attacco` | +2 e −1 ATK tra Wound e Dream; DEF finale esattamente 0 → nessun danno | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–30 |
 | `05-bonus-fazione-difesa` | `defBonus` applicato **una volta** a inizio scontro | `DRAW`, `BOTH_DECKS_EMPTY`, 3 round, PV 30–30 |
-| `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 100 round, PV 30–30 |
-| `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 100 round, PV 30–29 |
+| `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 75 round, PV 30–30 |
+| `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
 | `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 29–30 |
 | `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–0 |
@@ -74,10 +74,10 @@ SCP-1762 (Archive 3/4) parte con DEF 4 + 3 = 7 contro Squonk (Invitation 3/9).
 DEF dopo ogni round: 4/6 → 1/3 → −2/0 → muoiono entrambe al round 3.
 *Controprove:* senza bonus vince l'avversario in 2 round; se il bonus DEF venisse applicato a ogni round SCP-1762 non morirebbe mai.
 
-**06** — Kasa-obake (0/5) contro Zashiki-warashi (0/5), entrambe Dream: nessun danno, si arriva al round 100 a pari PV.
+**06** — Kasa-obake (0/5) contro Zashiki-warashi (0/5), entrambe Dream: nessun danno, si arriva al round 75 a pari PV.
 
 **07** — Shadowless Dog (3/1000) contro 2× Limping Scarecrow (0/200), tutte Invitation.
-Il primo Scarecrow muore al round 67 (200 − 201 = −1 → l'avversario perde 1 PV); il secondo al round 100 ha ancora 101 DEF.
+Il primo Scarecrow muore al round 67 (200 − 201 = −1 → l'avversario perde 1 PV); il secondo entra al round 68 e al round 75 ha ancora 176 DEF.
 Limite raggiunto: 30 contro 29 → vince lo sfidante.
 
 **08** — Mazzi da 10 creature senza effetti, seed `42`. Sfidante: Wound e Archive. Avversario: Invitation e Dream.

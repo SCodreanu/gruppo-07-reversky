@@ -51,7 +51,7 @@ public class RarityService {
 			throw new RaritySortingOrderAlreadyUsedException(request.sortingOrder());
 		}
 
-		Rarity createdRarity = rarityRepository.save(new Rarity(request.name(), request.deckLimit(), request.maxPerDeck(), request.maxAtk(), request.maxDef(), request.sortingOrder()));
+		Rarity createdRarity = rarityRepository.save(new Rarity(request.name(), request.deckLimit(), request.maxPerDeck(), request.sortingOrder()));
 		return RarityResponse.from(createdRarity);
 	}
 
@@ -71,7 +71,7 @@ public class RarityService {
 			throw new RarityNameAlreadyUsedException(request.name());
 		}
 
-		selectedRarity.update(request.name(), request.deckLimit(), request.maxPerDeck(), request.maxAtk(), request.maxDef());
+		selectedRarity.update(request.name(), request.deckLimit(), request.maxPerDeck());
 		return RarityResponse.from(selectedRarity);
 	}
 }

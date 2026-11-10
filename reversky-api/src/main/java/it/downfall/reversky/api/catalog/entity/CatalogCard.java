@@ -23,9 +23,11 @@ import lombok.NoArgsConstructor;
  * <p>
  * Le carte non si cancellano mai: si disattivano. Una variante (versione evento) ha
  * {@code variantOf} valorizzato e copia dall'originale tutti i campi di gioco
- * (vedi {@link #copyRulesFrom(CatalogCard)}), rarità compresa; cambia solo nome, immagine e testo di sapore.
+ * (vedi {@link #copyRulesFrom(CatalogCard)}), rarità e fazioni comprese; cambia solo nome, immagine e testo di sapore.
  * <p>
- * Le fazioni arrivano con #81.
+ * Fazioni: {@code faction} è obbligatoria per Creature, Terreni e Oggetti e vuota per Spell e Hidden;
+ * {@code secondaryFaction} è facoltativa (es. Mutant) e diversa dalla prima (docs/backoffice, "Carte").
+ * La modifica dal backoffice arriva con #81.
  */
 @Entity
 @Table(name = "catalog_cards")
@@ -45,7 +47,15 @@ public class CatalogCard {
 	@JoinColumn(name = "rarity_id", nullable = false)
 	private Rarity rarity;
 
-	// Niente unique = true: il nome è univoco solo tra le originali (indice parziale in V5)
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "faction_id", nullable = true)
+	private Faction faction;
+
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "secondary_faction_id", nullable = true)
+	private Faction secondaryFaction;
+
+	// Niente unique = true: il nome è univoco solo tra le originali (indice parziale uq_catalog_cards_base_name in V3)
 	@Column(nullable = false)
 	private String name;
 
@@ -84,11 +94,13 @@ public class CatalogCard {
 	 * Crea una carta. Oggi la usano solo i test (le carte arrivano da migrazione),
 	 * da API-14 la userà POST /admin/cards. Una carta nuova è sempre attiva.
 	 * <p>
-	 * Non controlla che la rarità sia ammessa per il tipo né le statistiche massime: lo fa il service.
+	 * Non controlla che rarità e fazioni siano ammesse per il tipo: lo fa il service.
 	 */
-	public CatalogCard(CatalogCard variantOf, Rarity rarity, String name, CardType type, CardSubtype subtype, String effectCode, String imagePath, String effectDescription, String flavorText, Integer atk, Integer def, Integer copyLimit) {
+	public CatalogCard(CatalogCard variantOf, Rarity rarity, Faction faction, Faction secondaryFaction, String name, CardType type, CardSubtype subtype, String effectCode, String imagePath, String effectDescription, String flavorText, Integer atk, Integer def, Integer copyLimit) {
 		this.variantOf = variantOf;
 		this.rarity = rarity;
+		this.faction = faction;
+		this.secondaryFaction = secondaryFaction;
 		this.name = name;
 		this.cardType = type;
 		this.cardSubtype = subtype;
@@ -119,9 +131,10 @@ public class CatalogCard {
 
 	/**
 	 * Campi di gioco: rarità, tipo, sottotipo, effetto (codice e testo), statistiche e limite di copie.
+	 * Le fazioni cambiano a parte, con {@link #changeFactions(Faction, Faction)}.
 	 * Su una variante non si chiama direttamente: si usa {@link #copyRulesFrom(CatalogCard)}.
 	 * <p>
-	 * I controlli (rarità ammessa per il tipo, statistiche entro i massimi della rarità) li fa il service.
+	 * I controlli (rarità e fazioni ammesse per il tipo) li fa il service.
 	 */
 	public void updateRules(Rarity rarity, CardType type, CardSubtype subtype, String effectCode, String effectDescription, Integer atk, Integer def, Integer copyLimit) {
 		this.rarity = rarity;
@@ -135,14 +148,24 @@ public class CatalogCard {
 	}
 
 	/**
-	 * Copia i campi di gioco dall'originale (docs/backoffice, regola 8).
+	 * Cambia le fazioni della carta. I controlli (fazione presente solo se il tipo la prevede,
+	 * seconda fazione diversa dalla prima) li fa il service.
+	 */
+	public void changeFactions(Faction faction, Faction secondaryFaction) {
+		this.faction = faction;
+		this.secondaryFaction = secondaryFaction;
+	}
+
+	/**
+	 * Copia i campi di gioco dall'originale, fazioni comprese (docs/backoffice, regola 8).
 	 * <p>
 	 * Usa i getter e non i campi: original può essere un proxy LAZY di Hibernate,
 	 * i cui campi sono vuoti finché non si chiama un suo metodo. La rarità copiata può essere a sua
 	 * volta un proxy: va bene, la variante salva solo il suo id.
 	 */
 	public void copyRulesFrom(CatalogCard original) {
-		updateRules(original.getRarity(),original.getCardType(), original.getCardSubtype(), original.getEffectCode(), original.getEffectDescription(), original.getAtk(), original.getDef(), original.getCopyLimit());
+		updateRules(original.getRarity(), original.getCardType(), original.getCardSubtype(), original.getEffectCode(), original.getEffectDescription(), original.getAtk(), original.getDef(), original.getCopyLimit());
+		changeFactions(original.getFaction(), original.getSecondaryFaction());
 	}
 
 	/**

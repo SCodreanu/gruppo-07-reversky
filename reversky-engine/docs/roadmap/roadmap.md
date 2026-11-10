@@ -34,7 +34,7 @@ Lezioni in classe: lunedì 9, 16, 23 (SAL) e 30 novembre. Martedì 8 dicembre è
 | **P2** — dopo le decisioni | effetti ambigui, effetti secondari dei Terreni, bilanciamento fine | si rimanda |
 
 Un effetto non implementato **non rompe nulla**: non è in `GET /api/v1/effects`, quindi il backoffice non lo può assegnare a una carta.
-Spell, Hidden e Terreni hanno sempre un effetto: finché il suo effetto non esiste, la carta non entra nel catalogo. Le creature possono non averne e fino a `ENG-23` non ne hanno.
+Spell, Hidden, Terreni e Oggetti hanno sempre un effetto: finché il suo effetto non esiste, la carta non entra nel catalogo. Le creature possono non averne e fino a `ENG-23` non ne hanno.
 Le meccaniche `P1` (Spell, Hidden, Terreni) sono state **approvate dal cliente** il 2 novembre (D-21).
 
 ## Sprint 3 — 2–8 novembre: preparazione
@@ -75,6 +75,7 @@ In questo sprint le creature non hanno effetti.
 | `ENG-19` | `DrawService`: Spell `DAMAGE`, `SHIELD`, `BURN` con i modificatori in attesa (D-10…D-13, D-34) e i codici `P1` delle Spell | A | L | `ENG-11`, `ENG-22` |
 | `ENG-20` | Zona Hidden e attivazione (D-15, D-16) e codici `P1` delle Hidden | A | M | `ENG-19` |
 | `ENG-21` | Terreni: bonus base (D-17, D-19) e codici dei quattro Terreni | A | S | `ENG-19` |
+| `ENG-33` | Oggetti (`ITEM`): effetto passivo come i Terreni (D-47, D-48), evento `ITEM_PLACED` e codici dei quattro Oggetti | A | S | `ENG-21` |
 | `ENG-14` | `GET /api/v1/effects`: elenco dei codici già implementati | B | S | `ENG-12`, `ENG-22` |
 | `ENG-15` | Swagger con springdoc 3.2.0, la stessa versione dell'API (D-41, serve l'ok del lead) | B | S | `ENG-12` |
 | `ENG-16` | `SimulationExamplesTest`: gli esempi 01–08, 10–12 e 90–95 di [`examples/`](../../examples/README.md) verdi | B | S | `ENG-11`, `ENG-12`, `ENG-22` |
@@ -89,7 +90,7 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
 |---|---|---|---|---|
-| `ENG-23` | Effetti delle creature: `CreatureEffect` con `onCombatStart` (D-31) e priorità (D-30), collegati al registro di `ENG-22`. Primi effetti `P1`: Hidebehind (esempio 09), Nurikabe, Kappa, SCP-096, SCP-2317, Smiler. A chiama i momenti dal `RoundResolver`, B scrive gli effetti | A + B | L | `ENG-22` |
+| `ENG-23` | Effetti delle creature: `CreatureEffect` con numero massimo di attivazioni (D-31) e priorità (D-30), collegati al registro di `ENG-22`. Primi effetti `P1`: Hidebehind (esempio 09), Nurikabe, Kappa, SCP-096, SCP-2317, Smiler. A chiama i momenti dal `RoundResolver`, B scrive gli effetti | A + B | L | `ENG-22` |
 | `ENG-25` | Effetti Theory of the Invitation e Theory of the Archive ([catalogo](../effetti/catalogo-effetti.md)): i `P1` entro il 30 | A | L | `ENG-22`, `ENG-23` |
 | `ENG-26` | Effetti Theory of the Wound e Theory of the Dream: i `P1` entro il 30 | B | L | `ENG-22`, `ENG-23` |
 | `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26` |

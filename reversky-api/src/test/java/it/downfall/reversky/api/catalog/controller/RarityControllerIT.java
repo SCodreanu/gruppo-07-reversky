@@ -53,18 +53,16 @@ class RarityControllerIT {
 	void findAll_withoutToken_returnsRarities() throws Exception {
 		// Arrange
 		int sortingOrder = ThreadLocalRandom.current().nextInt(1_000, 1_000_000_000);
-		RarityResponse rarity = rarityService.create(new RarityCreateRequest("Rarity " + uniqueSuffix(), 2, 5, null, 10, sortingOrder));
+		RarityResponse rarity = rarityService.create(new RarityCreateRequest("Rarity " + uniqueSuffix(), 2, null, sortingOrder));
 		String byId = "$[?(@.id == %d)]".formatted(rarity.id());
 
-		// Act + Assert: i massimi vuoti arrivano come null, non spariscono dal JSON
+		// Act + Assert: maxPerDeck vuoto arriva come null, non sparisce dal JSON
 		mockMvc.perform(get("/api/v1/rarities"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[*].id", hasItem(rarity.id())))
 			.andExpect(jsonPath(byId + ".name").value(rarity.name()))
 			.andExpect(jsonPath(byId + ".deckLimit").value(2))
-			.andExpect(jsonPath(byId + ".maxPerDeck").value(5))
-			.andExpect(jsonPath(byId).value(hasItem(hasEntry(equalTo("maxAtk"), nullValue()))))
-			.andExpect(jsonPath(byId + ".maxDef").value(10))
+			.andExpect(jsonPath(byId).value(hasItem(hasEntry(equalTo("maxPerDeck"), nullValue()))))
 			.andExpect(jsonPath(byId + ".sortingOrder").value(sortingOrder));
 	}
 

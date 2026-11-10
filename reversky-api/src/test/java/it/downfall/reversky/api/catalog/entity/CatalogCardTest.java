@@ -14,8 +14,12 @@ import org.junit.jupiter.api.Test;
 class CatalogCardTest {
 
 	// Rarità costruite senza database: qui servono solo come oggetti da confrontare
-	private static final Rarity COMMON = new Rarity("Common", 3, null, null, null, Rarity.COMMON_ORDER);
-	private static final Rarity UNCOMMON = new Rarity("Uncommon", 3, null, null, null, Rarity.UNCOMMON_ORDER);
+	private static final Rarity COMMON = new Rarity("Common", 3, null, Rarity.COMMON_ORDER);
+	private static final Rarity UNCOMMON = new Rarity("Uncommon", 3, null, Rarity.UNCOMMON_ORDER);
+
+	// Fazioni costruite senza database, come le rarità
+	private static final Faction INVITATION = new Faction("Invitation", "/images/factions/invitation.webp", null);
+	private static final Faction DREAM = new Faction("Dream", "/images/factions/dream.webp", null);
 
 	// --- costruttore e isVariant ---
 
@@ -58,7 +62,7 @@ class CatalogCardTest {
 	@DisplayName("Copying the rules takes every game field from the original")
 	void copyRulesFrom_original_copiesAllGameFields() {
 		// Arrange: originale Spell Uncommon, variante ancora creatura Common con valori diversi
-		CatalogCard original = new CatalogCard(null, UNCOMMON, "Original", CardType.SPELL, CardSubtype.BURN, "BURN_TWO",
+		CatalogCard original = new CatalogCard(null, UNCOMMON, null, null, "Original", CardType.SPELL, CardSubtype.BURN, "BURN_TWO",
 				"/images/original.webp", "Burns for 2", "Original flavor", null, null, 2);
 		CatalogCard variant = creature(original);
 
@@ -74,6 +78,25 @@ class CatalogCardTest {
 		assertThat(variant.getAtk()).isNull();
 		assertThat(variant.getDef()).isNull();
 		assertThat(variant.getCopyLimit()).isEqualTo(2);
+		assertThat(variant.getFaction()).isNull();
+		assertThat(variant.getSecondaryFaction()).isNull();
+	}
+
+	@Test
+	@DisplayName("Copying the rules takes both factions from the original")
+	void copyRulesFrom_twoFactions_copiesBoth() {
+		// Arrange: originale con due fazioni (es. Mutant), variante con una sola fazione diversa
+		CatalogCard original = new CatalogCard(null, COMMON, INVITATION, DREAM, "Hybrid", CardType.CREATURE, null, null,
+				"/images/hybrid.webp", null, null, 5, 6, null);
+		CatalogCard variant = creature(original);
+		variant.changeFactions(DREAM, null);
+
+		// Act
+		variant.copyRulesFrom(original);
+
+		// Assert
+		assertThat(variant.getFaction()).isSameAs(INVITATION);
+		assertThat(variant.getSecondaryFaction()).isSameAs(DREAM);
 	}
 
 	@Test
@@ -81,7 +104,7 @@ class CatalogCardTest {
 	void copyRulesFrom_original_keepsOwnDetails() {
 		// Arrange
 		CatalogCard original = creature(null);
-		CatalogCard variant = new CatalogCard(original, COMMON, "Event name", CardType.CREATURE, null, null,
+		CatalogCard variant = new CatalogCard(original, COMMON, INVITATION, null, "Event name", CardType.CREATURE, null, null,
 				"/images/event.webp", null, "Event flavor", 1, 1, null);
 
 		// Act
@@ -91,6 +114,24 @@ class CatalogCardTest {
 		assertThat(variant.getName()).isEqualTo("Event name");
 		assertThat(variant.getImagePath()).isEqualTo("/images/event.webp");
 		assertThat(variant.getFlavorText()).isEqualTo("Event flavor");
+	}
+
+	// --- changeFactions ---
+
+	@Test
+	@DisplayName("Changing the factions sets both, and null clears them")
+	void changeFactions_setsAndClears() {
+		// Arrange
+		CatalogCard card = creature(null);
+
+		// Act + Assert
+		card.changeFactions(DREAM, INVITATION);
+		assertThat(card.getFaction()).isSameAs(DREAM);
+		assertThat(card.getSecondaryFaction()).isSameAs(INVITATION);
+
+		card.changeFactions(null, null);
+		assertThat(card.getFaction()).isNull();
+		assertThat(card.getSecondaryFaction()).isNull();
 	}
 
 	// --- updateRules ---
@@ -156,9 +197,9 @@ class CatalogCardTest {
 		assertThat(card.isActive()).isTrue();
 	}
 
-	// Creatura Common valida con ATK 5 e DEF 6; variantOf null = originale
+	// Creatura Common della fazione INVITATION, valida con ATK 5 e DEF 6; variantOf null = originale
 	private CatalogCard creature(CatalogCard variantOf) {
-		return new CatalogCard(variantOf, COMMON, "Creature", CardType.CREATURE, null, null,
+		return new CatalogCard(variantOf, COMMON, INVITATION, null, "Creature", CardType.CREATURE, null, null,
 				"/images/creature.webp", null, "Flavor", 5, 6, null);
 	}
 }

@@ -6,7 +6,7 @@ import it.downfall.reversky.api.catalog.entity.Rarity;
 /**
  * Rarità restituita da GET /rarities e dagli endpoint di /admin/rarities.
  * <p>
- * I massimi a null significano "nessun limite".
+ * maxPerDeck a null significa "nessun limite".
  */
 public record RarityResponse(
 
@@ -22,12 +22,6 @@ public record RarityResponse(
 	@Schema(example = "5", description = "Null means no limit")
 	Integer maxPerDeck,
 
-	@Schema(example = "10", description = "Null means no limit")
-	Integer maxAtk,
-
-	@Schema(example = "10", description = "Null means no limit")
-	Integer maxDef,
-
 	@Schema(example = "3", description = "Position from common to rare")
 	Integer sortingOrder
 ) {
@@ -41,8 +35,6 @@ public record RarityResponse(
 			rarity.getName(),
 			rarity.getDeckLimit(),
 			rarity.getMaxPerDeck(),
-			rarity.getMaxAtk(),
-			rarity.getMaxDef(),
 			rarity.getSortingOrder());
 	}
 }

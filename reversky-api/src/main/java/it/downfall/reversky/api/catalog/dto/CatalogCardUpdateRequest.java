@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
  * Dati di una carta per PUT /admin/cards/{id} (docs/backoffice, "Carte").
  * <p>
  * Qui si controlla solo la forma dei singoli campi (400). Le regole che legano i campi al tipo
- * (statistiche, sottotipo, effetto, rarità e massimi della rarità) e quelle sulle varianti le
+ * (statistiche, sottotipo, effetto, rarità e fazione) e quelle sulle varianti le
  * controlla il service (422), perché
  * per una variante valgono sui valori copiati dall'originale e non su quelli della richiesta.
  * <p>

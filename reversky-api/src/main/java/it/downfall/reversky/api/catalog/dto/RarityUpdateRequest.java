@@ -26,14 +26,6 @@ public record RarityUpdateRequest(
 
 	@Schema(example = "5", description = "Empty means no limit")
 	@Min(value = 0, message = "Max per deck must not be negative")
-	Integer maxPerDeck,
-
-	@Schema(example = "10", description = "Empty means no limit")
-	@Min(value = 0, message = "Max ATK must not be negative")
-	Integer maxAtk,
-
-	@Schema(example = "10", description = "Empty means no limit")
-	@Min(value = 1, message = "Max DEF must be at least 1")
-	Integer maxDef
+	Integer maxPerDeck
 ) {
 }

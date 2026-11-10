@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 /**
  * Dati di una nuova rarità per POST /admin/rarities (docs/backoffice).
  * <p>
- * I massimi vuoti significano "nessun limite". sortingOrder si sceglie qui e non cambia più.
+ * maxPerDeck vuoto significa "nessun limite". sortingOrder si sceglie qui e non cambia più.
  */
 public record RarityCreateRequest(
 
@@ -27,14 +27,6 @@ public record RarityCreateRequest(
 	@Schema(example = "5", description = "Empty means no limit")
 	@Min(value = 0, message = "Max per deck must not be negative")
 	Integer maxPerDeck,
-
-	@Schema(example = "10", description = "Empty means no limit")
-	@Min(value = 0, message = "Max ATK must not be negative")
-	Integer maxAtk,
-
-	@Schema(example = "10", description = "Empty means no limit")
-	@Min(value = 1, message = "Max DEF must be at least 1")
-	Integer maxDef,
 
 	@Schema(example = "3", description = "Position from common to rare; cannot be changed later")
 	@NotNull(message = "Sorting order is required")

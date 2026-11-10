@@ -22,20 +22,28 @@ Percorso: `src/main/resources/db/migration/`
 
 Nome dei file: `V<numero>__<descrizione_in_snake_case>.sql`
 
-Migrazioni presenti:
+### Schema bloccato (baseline)
+
+Tutta la **struttura** del database si scrive in una volta sola, da [schema.dbml](schema.dbml), nel task API-70 (#141). Da lì in poi lo schema è **bloccato**: gli altri task trovano le tabelle già pronte e scrivono solo Java (entità, repository, service, controller), e `ddl-auto=validate` segnala subito un'entità che non corrisponde.
+
+Le vecchie `V1`–`V6` (una per task) non sono mai arrivate su `main` e vengono sostituite dalla baseline, una migrazione per area:
 
 ```
-V1__create_enums.sql                tutti gli enum dello schema
-V2__create_users_and_auth.sql       roles (con USER e ADMIN), users e le tre tabelle dei token
-V3__create_factions.sql             factions (nome univoco, emblema obbligatorio)
-V4__create_rarities.sql             rarities (nome e sorting_order univoci, CHECK sui limiti)
-V5__create_catalog_cards.sql        catalog_cards senza rarità e fazioni: CHECK su statistiche, sottotipo, effetto e
-                                    copy_limit, indice univoco parziale sul nome delle originali
-V6__add_rarity_to_catalog_cards.sql catalog_cards.rarity_id NOT NULL verso rarities, indici su (rarity_id) e
-                                    (is_active, rarity_id); fallisce se catalog_cards ha già righe. Le fazioni arrivano con #81
+V1__create_enums.sql                     tutti gli enum (compreso ITEM in card_type)
+V2__create_users_and_auth.sql            roles (con USER e ADMIN), users e le tre tabelle dei token
+V3__create_catalog.sql                   rarities, factions, faction_bonuses, rule_sets, tags, faction_tags,
+                                         catalog_cards, card_tags
+V4__create_inventory_and_packs.sql       inventories, credit_transactions, packs, pack_rarity_rules,
+                                         pack_bonus_rules, pack_tags, pack_inventory, pack_openings
+V5__create_collection_and_decks.sql      collection_cards, decks, deck_cards
+V6__create_friendships_and_trades.sql    friendships, trades, trade_offers
+V7__create_battles.sql                   battle_invites, battles, matchmaking_queue, player_ratings
+V8__create_audit_and_notifications.sql   audit_logs, notifications
 ```
 
-Non c'è un elenco fisso delle migrazioni future: **ogni task** che crea un'entità o un collegamento aggiunge la **propria** migrazione, con il primo numero libero. Ad esempio il task delle rarità crea `V<n>__create_rarities.sql` e il collegamento Carta ↔ Rarità `V<n>__add_rarity_to_catalog_cards.sql`. Lo schema finale resta quello di [schema.dbml](schema.dbml): le migrazioni ci arrivano un pezzo alla volta.
+Dopo il merge della baseline ogni sviluppatore cancella il volume del database locale: i checksum delle vecchie `V1`–`V6` non coincidono più.
+
+Alcune colonne obbligatorie collegano due entità che hanno task separati (es. `battle_invites.challenger_deck_id`, `battles.rule_set_id`, `matchmaking_queue.deck_id`): l'entità le mappa già nel suo task, e il task di collegamento aggiunge solo le regole.
 
 Dati inseriti con le migrazioni:
 
@@ -44,15 +52,18 @@ Dati inseriti con le migrazioni:
 | ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
 | rule set `1.0` attivo, rarità, fazioni, bonus di fazione | migrazione dedicata del task API-15 (#85) |
 | tag delle fazioni | migrazione del task API-13 (#83) |
-| catalogo iniziale e pacchetto base | migrazioni dedicate, quando il catalogo sarà deciso |
+| catalogo iniziale (120 carte) | migrazione dedicata del task API-55 (#125) |
+| pacchetto base | migrazione dedicata del task API-63 (#133) |
 | primo `ADMIN`, utenti, carte e collezioni di prova | task API-25 (#95), che decide anche come caricarli solo in sviluppo e test |
 
 ### Regole
 
-1. **Mai modificare una migrazione già su `main`.** Per correggere, crea una nuova migrazione.
+1. **Lo schema è bloccato.** Un cambiamento di struttura dopo la baseline si decide insieme e va in una migrazione **nuova**, con il primo numero libero, aggiornando `schema.dbml` nello stesso commit. Mai modificare una migrazione già su `main`.
 2. Una migrazione = un cambiamento logico.
 3. Prima di creare `V<n>`, fai `git pull` e guarda il numero più alto nella cartella. Se due branch usano lo stesso numero, chi unisce per secondo rinomina la propria migrazione prima del merge.
-4. I dati di riferimento e il catalogo iniziale vanno in migrazioni dedicate, mai insieme alla creazione delle tabelle. Unica eccezione: i ruoli in `V2`.
+4. I dati (riferimento, catalogo, pacchetto base, utenti di prova) vanno in migrazioni dedicate dopo la baseline, mai insieme alla creazione delle tabelle. Unica eccezione: i ruoli in `V2`.
+5. Un nuovo valore di un enum (`ALTER TYPE ... ADD VALUE`) aggiunto dopo la baseline va in una migrazione **da solo**: PostgreSQL non permette di usarlo (in un `CHECK` o in un `INSERT`) nella stessa transazione che lo aggiunge, e Flyway esegue ogni migrazione in una transazione.
+6. Nei `CHECK` su colonne nullable si scrive `IS NOT NULL` in modo esplicito: PostgreSQL accetta un controllo che vale `NULL`.
 
 ## Convenzioni (quelle usate dallo schema)
 
@@ -87,10 +98,10 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 | Tabella | Contenuto |
 |---|---|
 | `rule_sets` | **valori di gioco dal backoffice**, versionati, uno solo attivo: punti vita iniziali e limite di round (inviati all'engine), composizione del mazzo, crediti di benvenuto e di vittoria/pareggio (solo nelle partite `RANKED`) |
-| `rarities` | rarità con `deck_limit` (copie massime per carta), `max_per_deck` (bilanciamento del mazzo), `max_atk`/`max_def` (statistiche massime) e `sorting_order` |
+| `rarities` | rarità con `deck_limit` (copie massime per carta), `max_per_deck` (bilanciamento del mazzo) e `sorting_order`; nessun massimo di ATK e DEF |
 | `factions` | fazioni: nome, `emblem_path` (emblema) e `description` (testo mostrato ai giocatori, facoltativo) |
 | `faction_bonuses` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
-| `catalog_cards` | carte: tipo, `subtype` (solo Spell e Hidden), `effect_code`, rarità, fazione e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit` (nullo = solo il limite della rarità), `variant_of_id` (versione evento di un'altra carta), `is_active`, immagine, `effect_description`, `flavor_text`. Il nome è univoco tra le carte originali |
+| `catalog_cards` | carte: tipo (Creatura, Spell, Hidden, Terreno, Oggetto), `subtype` (solo Spell e Hidden), `effect_code`, rarità, fazione (obbligatoria per Creature, Terreni e Oggetti, nulla per Spell e Hidden, che sono condivise) e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit` (nullo = solo il limite della rarità), `variant_of_id` (versione evento di un'altra carta), `is_active`, immagine, `effect_description`, `flavor_text`. Il nome è univoco tra le carte originali |
 | `tags` / `card_tags` / `faction_tags` | etichette libere per carte e fazioni, usate dai filtri dei pacchetti |
 
 ### Collezione e mazzi → [collezione](../collezione/collezione.md), [mazzi](../mazzi/mazzi.md)
@@ -136,6 +147,12 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 |---|---|
 | `audit_logs` | ogni azione del backoffice, con valori prima/dopo in `jsonb` |
 
+### Notifiche
+
+| Tabella | Contenuto |
+|---|---|
+| `notifications` | notifiche di ogni utente (`type`, `payload` in `jsonb`, `read_at`), inviate anche con SSE |
+
 ## Effetti, sottotipi e tag
 
 Effetto e sottotipo di una carta sono **colonne** di `catalog_cards`, così il database ne garantisce le regole. L'API le invia all'engine come `effectCode` e `subtype`. (`effect_description` è solo il testo mostrato al giocatore.)
@@ -145,7 +162,8 @@ Effetto e sottotipo di una carta sono **colonne** di `catalog_cards`, così il d
 | Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta |
 | Sottotipo di una Spell | `subtype` | `DAMAGE`, `SHIELD` o `BURN` (obbligatorio) |
 | Sottotipo di una Hidden | `subtype` | `SURVIVAL` o `DAMAGE` (obbligatorio) |
-| Sottotipo di Creature e Terreni | `subtype` | sempre nullo |
+| Sottotipo di Creature, Terreni e Oggetti | `subtype` | sempre nullo |
+| Fazione | `faction_id` | obbligatoria per Creature, Terreni e Oggetti; sempre nulla per Spell e Hidden (`chk_catalog_cards_faction_matches_type`) |
 | Etichette | `tags` | libere, in maiuscolo (`^[A-Z0-9_]+$`), usate dai filtri dei pacchetti (`pack_tags`) |
 
 ## Mappatura JPA

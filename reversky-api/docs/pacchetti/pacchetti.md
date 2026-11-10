@@ -56,11 +56,13 @@ Mutant    |        250        | 2,5% (~1 ogni 40)
 
 Esempio: un pacchetto evento con tag `DREAM` contiene solo carte della Theory of the Dream (anche come seconda fazione).
 
-### Spell, Hidden e Terreni
+### Spell, Hidden, Terreni e Oggetti
 
 Sono carte del catalogo come le altre, con una loro rarità: escono negli slot della loro rarità. Per rispettare il regolamento:
 - Spell e Hidden hanno rarità **Common** o **Uncommon** → compaiono al posto di una Common/Uncommon;
-- i Terreni hanno rarità **Rare** → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
+- Terreni e Oggetti hanno rarità **Rare** → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
+
+Spell e Hidden non hanno fazione: in un pacchetto con `pack_tags` escono solo se hanno uno dei tag nei **tag propri** (i tag di fazione non valgono per loro). Un pacchetto evento con tag `DREAM` quindi non contiene Spell né Hidden, a meno che non siano etichettate anche loro.
 
 ## Acquisto
 
@@ -115,7 +117,7 @@ Se per la rarità di uno slot base non c'è nessuna carta valida (es. un pacchet
 1. scende alla rarità inferiore più vicina che ha una carta valida;
 2. se sotto non c'è niente (es. uno slot Common in un pacchetto evento che ha solo carte Rare), sale alla rarità superiore più vicina.
 
-Il ripiego non sceglie mai un Terreno: i Terreni escono solo dagli slot Rare. Il numero di carte del pacchetto non cambia.
+Il ripiego non sceglie mai un Terreno né un Oggetto: escono solo dagli slot Rare. Il numero di carte del pacchetto non cambia.
 
 Il backoffice rifiuta un pacchetto attivo se uno dei suoi slot base non troverebbe nessuna carta, neanche con il ripiego (vedi [backoffice](../backoffice/backoffice.md)). I bonus non ripiegano mai: se la loro rarità non ha carte, non scattano.
 
@@ -163,8 +165,8 @@ Risposta dell'apertura:
 - Con 100.000 aperture simulate le frequenze dei bonus si avvicinano a quelle configurate (test statistico con tolleranza).
 - Un pacchetto con `pack_tags` restituisce solo carte con quei tag (propri o della fazione).
 - Una variante esce solo da un pacchetto con uno dei suoi tag propri, mai da uno senza `pack_tags`.
-- Un Terreno non compare mai in uno slot Common/Uncommon.
+- Un Terreno o un Oggetto non compare mai in uno slot Common/Uncommon.
 - Un bonus di una rarità senza carte valide non scatta: lo slot resta della sua rarità base e `GET /packs` non elenca quel bonus.
 - Con più bonus riusciti che slot vincono i più rari, e il numero di carte non cambia.
-- Uno slot base senza carte della sua rarità scende alla rarità inferiore; se sotto non c'è niente, sale. Il numero di carte non cambia e il ripiego non sceglie mai un Terreno.
+- Uno slot base senza carte della sua rarità scende alla rarità inferiore; se sotto non c'è niente, sale. Il numero di carte non cambia e il ripiego non sceglie mai un Terreno né un Oggetto.
 - Uno slot che non trova nessuna carta → `422`: pacchetto ancora nell'inventario, collezione invariata, nessuna riga in `pack_openings`.

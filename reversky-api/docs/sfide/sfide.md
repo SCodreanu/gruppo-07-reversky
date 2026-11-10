@@ -17,7 +17,7 @@ Tabelle: `battle_invites`, `battles`, `matchmaking_queue`, `player_ratings`.
 
 ## Regolamento
 
-Esiste **un solo regolamento**: creature con abilità, Spell, Hidden e Terreni fanno tutti parte del gioco standard. Non ci sono varianti di regole da scegliere (decisione concordata con il cliente): `FRIENDLY` e `RANKED` cambiano solo come si trova l'avversario e se il rating si aggiorna, non le regole della partita.
+Esiste **un solo regolamento**: creature con abilità, Spell, Hidden, Terreni e Oggetti fanno tutti parte del gioco standard. Non ci sono varianti di regole da scegliere (decisione concordata con il cliente): `FRIENDLY` e `RANKED` cambiano solo come si trova l'avversario e se il rating si aggiorna, non le regole della partita.
 
 ## Amichevole: invito — `battle_invites`
 
@@ -107,7 +107,7 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
 ```json
 {
   "seed": 8812734650912,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factionBonuses": [ { "originFactionId": 2, "targetFactionId": 3, "atkBonus": 2, "defBonus": 0 } ],
   "rulesVersion": "1.0",
   "endReason": "LIFE_POINTS_ZERO",

@@ -30,6 +30,7 @@ import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
@@ -66,6 +67,9 @@ class AdminCardControllerIT {
 	@Autowired
 	private RarityRepository rarityRepository;
 
+	@Autowired
+	private FactionRepository factionRepository;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
 	@MockitoBean
@@ -75,7 +79,7 @@ class AdminCardControllerIT {
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository, rarityRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
 	}
 
 	// --- accesso ---
@@ -163,7 +167,7 @@ class AdminCardControllerIT {
 	void findAll_rarityId_returnsOnlyThatRarity() throws Exception {
 		// Arrange
 		String token = TestUsers.uniqueSuffix();
-		Rarity other = testCards.createRarity(null, null);
+		Rarity other = testCards.createRarity();
 		CatalogCard otherCard = testCards.deactivate(testCards.create("Other " + token, CardType.CREATURE, other));
 		testCards.create("Common " + token, CardType.CREATURE);
 
@@ -208,7 +212,7 @@ class AdminCardControllerIT {
 		// Arrange: rarità senza massimi, così ATK 13 e DEF 14 vanno bene qualunque sia il seed di Common
 		CatalogCard original = testCards.createCreature();
 		CatalogCard variant = testCards.createVariantOf(original);
-		Rarity newRarity = testCards.createRarity(null, null);
+		Rarity newRarity = testCards.createRarity();
 
 		// Act + Assert
 		putCard(original.getId(), body(original.getName(), CardType.CREATURE, newRarity.getId(), null, null, null, 13, 14, null))
@@ -334,18 +338,17 @@ class AdminCardControllerIT {
 	}
 
 	@Test
-	@DisplayName("ATK above the rarity maximum returns 422")
-	void update_atkAboveRarityMax_returns422() throws Exception {
-		// Arrange
-		CatalogCard card = testCards.createCreature();
-		Rarity rarity = testCards.createRarity(10, 12);
+	@DisplayName("A spell cannot become a creature until factions can be sent: 422")
+	void update_spellToCreature_returns422() throws Exception {
+		// Arrange: la Spell non ha fazione e PUT non la riceve ancora (#81)
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.CREATURE, rarity.getId(), null, null, null, 11, 12, null))
+		putCard(card.getId(), body(card.getName(), CardType.CREATURE, testCards.common().getId(), null, null, null, 7, 8, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"))
-			.andExpect(jsonPath("$.detail").value("ATK 11 exceeds the maximum of 10 for the rarity " + rarity.getName()));
-		assertThat(reload(card).getAtk()).isEqualTo(TestCards.CREATURE_ATK);
+			.andExpect(jsonPath("$.detail").value("A CREATURE card must have a faction"));
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.SPELL);
 	}
 
 	@Test

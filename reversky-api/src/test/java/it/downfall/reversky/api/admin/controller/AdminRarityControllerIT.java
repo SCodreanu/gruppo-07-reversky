@@ -97,7 +97,7 @@ class AdminRarityControllerIT {
 		String name = uniqueName();
 
 		// Act + Assert
-		mockMvc.perform(asUser(post(BASE_PATH)).contentType(MediaType.APPLICATION_JSON).content(createBody(name, 2, null, null, null, uniqueSortingOrder())))
+		mockMvc.perform(asUser(post(BASE_PATH)).contentType(MediaType.APPLICATION_JSON).content(createBody(name, 2, null, uniqueSortingOrder())))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 		assertThat(rarityRepository.existsByName(name)).isFalse();
@@ -110,7 +110,7 @@ class AdminRarityControllerIT {
 		RarityResponse rarity = createRarity(uniqueName());
 
 		// Act + Assert
-		mockMvc.perform(asUser(put(BASE_PATH + "/" + rarity.id())).contentType(MediaType.APPLICATION_JSON).content(updateBody(uniqueName(), 1, null, null, null)))
+		mockMvc.perform(asUser(put(BASE_PATH + "/" + rarity.id())).contentType(MediaType.APPLICATION_JSON).content(updateBody(uniqueName(), 1, null)))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 		assertThat(rarityRepository.findById(rarity.id()).orElseThrow().getName()).isEqualTo(rarity.name());
@@ -140,14 +140,14 @@ class AdminRarityControllerIT {
 		int sortingOrder = uniqueSortingOrder();
 
 		// Act + Assert
-		postRarity(createBody(name, 2, 5, 10, 12, sortingOrder))
+		postRarity(createBody(name, 2, 5, sortingOrder))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.id").isNumber())
 			.andExpect(jsonPath("$.name").value(name))
 			.andExpect(jsonPath("$.deckLimit").value(2))
 			.andExpect(jsonPath("$.maxPerDeck").value(5))
-			.andExpect(jsonPath("$.maxAtk").value(10))
-			.andExpect(jsonPath("$.maxDef").value(12))
+			.andExpect(jsonPath("$.maxAtk").doesNotExist())
+			.andExpect(jsonPath("$.maxDef").doesNotExist())
 			.andExpect(jsonPath("$.sortingOrder").value(sortingOrder));
 		assertThat(rarityRepository.existsByName(name)).isTrue();
 	}
@@ -155,8 +155,8 @@ class AdminRarityControllerIT {
 	@Test
 	@DisplayName("Missing name, deck limit and sorting order return 400 with the three fields")
 	void create_missingRequiredFields_returns400WithFields() throws Exception {
-		// Act + Assert: i massimi vuoti invece sono validi
-		postRarity(createBody("", null, null, null, null, null))
+		// Act + Assert: maxPerDeck vuoto invece è valido
+		postRarity(createBody("", null, null, null))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
 			.andExpect(jsonPath("$.errors[*].field", hasItems("name", "deckLimit", "sortingOrder")));
@@ -165,18 +165,18 @@ class AdminRarityControllerIT {
 	@Test
 	@DisplayName("Values below the minimums return 400 with every wrong field")
 	void create_valuesBelowMinimum_returns400WithFields() throws Exception {
-		// Act + Assert: deckLimit >= 1, maxPerDeck >= 0, maxAtk >= 0, maxDef >= 1, sortingOrder > 0
-		postRarity(createBody(uniqueName(), 0, -1, -1, 0, 0))
+		// Act + Assert: deckLimit >= 1, maxPerDeck >= 0, sortingOrder > 0
+		postRarity(createBody(uniqueName(), 0, -1, 0))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-			.andExpect(jsonPath("$.errors[*].field", hasItems("deckLimit", "maxPerDeck", "maxAtk", "maxDef", "sortingOrder")));
+			.andExpect(jsonPath("$.errors[*].field", hasItems("deckLimit", "maxPerDeck", "sortingOrder")));
 	}
 
 	@Test
 	@DisplayName("The lowest allowed values are accepted")
 	void create_minimumValues_returns201() throws Exception {
 		// Act + Assert: i limiti del DTO coincidono con i CHECK del database, quindi niente 500
-		postRarity(createBody(uniqueName(), 1, 0, 0, 1, uniqueSortingOrder()))
+		postRarity(createBody(uniqueName(), 1, 0, uniqueSortingOrder()))
 			.andExpect(status().isCreated());
 	}
 
@@ -188,7 +188,7 @@ class AdminRarityControllerIT {
 		createRarity(name);
 
 		// Act + Assert
-		postRarity(createBody(name, 2, null, null, null, uniqueSortingOrder()))
+		postRarity(createBody(name, 2, null, uniqueSortingOrder()))
 			.andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("RARITY_NAME_TAKEN"));
 	}
@@ -200,7 +200,7 @@ class AdminRarityControllerIT {
 		RarityResponse existing = createRarity(uniqueName());
 
 		// Act + Assert
-		postRarity(createBody(uniqueName(), 2, null, null, null, existing.sortingOrder()))
+		postRarity(createBody(uniqueName(), 2, null, existing.sortingOrder()))
 			.andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("RARITY_SORTING_ORDER_TAKEN"));
 	}
@@ -215,14 +215,12 @@ class AdminRarityControllerIT {
 		String newName = uniqueName();
 
 		// Act + Assert
-		putRarity(rarity.id(), updateBody(newName, 1, 3, 8, 9))
+		putRarity(rarity.id(), updateBody(newName, 1, 3))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(rarity.id()))
 			.andExpect(jsonPath("$.name").value(newName))
 			.andExpect(jsonPath("$.deckLimit").value(1))
 			.andExpect(jsonPath("$.maxPerDeck").value(3))
-			.andExpect(jsonPath("$.maxAtk").value(8))
-			.andExpect(jsonPath("$.maxDef").value(9))
 			.andExpect(jsonPath("$.sortingOrder").value(rarity.sortingOrder()));
 		Rarity saved = rarityRepository.findById(rarity.id()).orElseThrow();
 		assertThat(saved.getName()).isEqualTo(newName);
@@ -252,17 +250,17 @@ class AdminRarityControllerIT {
 		RarityResponse rarity = createRarity(uniqueName());
 
 		// Act + Assert
-		putRarity(rarity.id(), updateBody("", 0, null, null, 0))
+		putRarity(rarity.id(), updateBody("", 0, -1))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-			.andExpect(jsonPath("$.errors[*].field", hasItems("name", "deckLimit", "maxDef")));
+			.andExpect(jsonPath("$.errors[*].field", hasItems("name", "deckLimit", "maxPerDeck")));
 	}
 
 	@Test
 	@DisplayName("Updating a rarity that does not exist returns 404")
 	void update_unknownId_returns404() throws Exception {
 		// Act + Assert
-		putRarity(Integer.MAX_VALUE, updateBody(uniqueName(), 2, null, null, null))
+		putRarity(Integer.MAX_VALUE, updateBody(uniqueName(), 2, null))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.code").value("RARITY_NOT_FOUND"));
 	}
@@ -276,7 +274,7 @@ class AdminRarityControllerIT {
 		RarityResponse other = createRarity(uniqueName());
 
 		// Act + Assert
-		putRarity(other.id(), updateBody(takenName, 2, null, null, null))
+		putRarity(other.id(), updateBody(takenName, 2, null))
 			.andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("RARITY_NAME_TAKEN"));
 	}
@@ -324,7 +322,7 @@ class AdminRarityControllerIT {
 	}
 
 	private RarityResponse createRarity(String name) {
-		return rarityService.create(new RarityCreateRequest(name, 2, null, null, null, uniqueSortingOrder()));
+		return rarityService.create(new RarityCreateRequest(name, 2, null, uniqueSortingOrder()));
 	}
 
 	private static String uniqueName() {
@@ -337,15 +335,15 @@ class AdminRarityControllerIT {
 	}
 
 	// I null diventano il JSON null, come li manderebbe il frontend per "nessun limite"
-	private static String createBody(String name, Integer deckLimit, Integer maxPerDeck, Integer maxAtk, Integer maxDef, Integer sortingOrder) {
+	private static String createBody(String name, Integer deckLimit, Integer maxPerDeck, Integer sortingOrder) {
 		return """
-			{"name": "%s", "deckLimit": %s, "maxPerDeck": %s, "maxAtk": %s, "maxDef": %s, "sortingOrder": %s}
-			""".formatted(name, deckLimit, maxPerDeck, maxAtk, maxDef, sortingOrder);
+			{"name": "%s", "deckLimit": %s, "maxPerDeck": %s, "sortingOrder": %s}
+			""".formatted(name, deckLimit, maxPerDeck, sortingOrder);
 	}
 
-	private static String updateBody(String name, Integer deckLimit, Integer maxPerDeck, Integer maxAtk, Integer maxDef) {
+	private static String updateBody(String name, Integer deckLimit, Integer maxPerDeck) {
 		return """
-			{"name": "%s", "deckLimit": %s, "maxPerDeck": %s, "maxAtk": %s, "maxDef": %s}
-			""".formatted(name, deckLimit, maxPerDeck, maxAtk, maxDef);
+			{"name": "%s", "deckLimit": %s, "maxPerDeck": %s}
+			""".formatted(name, deckLimit, maxPerDeck);
 	}
 }

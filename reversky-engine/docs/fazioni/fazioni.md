@@ -104,6 +104,7 @@ Gli stessi casi, con il risultato completo, sono gli esempi `11` e `12` di [`exa
 
 - Le due fazioni di una carta devono essere **diverse** (`400 INVALID_CARD_FACTIONS`).
 - **Terreni:** una carta con due fazioni riceve il bonus del Terreno se **una delle due** è quella del Terreno (una volta sola).
+- **Spell e Hidden** non hanno fazione: sono condivise e non hanno bonus di fazione.
 - Due carte con due fazioni l'una contro l'altra: si sommano tutte e quattro le coppie.
 
 ## Nel codice

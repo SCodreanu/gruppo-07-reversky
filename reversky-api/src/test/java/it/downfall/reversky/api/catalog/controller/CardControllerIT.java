@@ -23,6 +23,7 @@ import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.support.TestCards;
@@ -50,6 +51,9 @@ class CardControllerIT {
 	@Autowired
 	private RarityRepository rarityRepository;
 
+	@Autowired
+	private FactionRepository factionRepository;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
 	@MockitoBean
@@ -59,7 +63,7 @@ class CardControllerIT {
 
 	@BeforeEach
 	void setUp() {
-		testCards = new TestCards(catalogCardRepository, rarityRepository);
+		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
 	}
 
 	// --- GET /cards ---
@@ -123,7 +127,7 @@ class CardControllerIT {
 	void findAll_rarityIdParameter_filtersByRarity() throws Exception {
 		// Arrange
 		String token = TestUsers.uniqueSuffix();
-		Rarity other = testCards.createRarity(null, null);
+		Rarity other = testCards.createRarity();
 		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE, other);
 		testCards.create("Common " + token, CardType.CREATURE);
 

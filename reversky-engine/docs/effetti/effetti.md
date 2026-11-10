@@ -55,6 +55,7 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 0. Entrata in campo (solo a inizio scontro)
      - bonus DEF di fazione
      - bonus del Terreno
+     - effetto dell'Oggetto (ordine rispetto al Terreno: D-48)
      - Hidden in attesa
      - onEnterPlay di entrambe le creature
 1. onRoundStart
@@ -71,7 +72,7 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 1. Prima per **priorità**: `NULLIFY` (effetti che annullano altri effetti) → `NORMAL`.
 2. A parità di priorità: prima la creatura dello **sfidante**, poi quella dell'avversario.
 
-Così l'ordine è sempre lo stesso e la partita è riproducibile. **[DA CONFERMARE]** con il team di game design.
+Così l'ordine è sempre lo stesso e la partita è riproducibile. Approvato dai DSG il 9 novembre (D-30).
 
 ### Effetti che annullano altri effetti
 
@@ -184,7 +185,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | — | — | — | nessuno ancora |
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni), con codici proposti, momenti e domande aperte, è nel [catalogo degli effetti](catalogo-effetti.md).
-Le modifiche al motore che gli effetti richiedono (es. `onCombatStart`, morti fuori dal round) sono in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).
+Le modifiche al motore che gli effetti richiedono (es. numero massimo di attivazioni, morti fuori dal round) sono in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).
 
 Effetti che richiedono chiarimenti prima di essere implementati **[DA CONFERMARE]**:
 - **Mothman**: "se sta per perdere la sfida… ribalta il risultato" — riguarda la partita intera o lo scontro? Cosa significa "scarto"?

@@ -55,7 +55,7 @@ src/main/java/it/downfall/reversky/engine/
 | Architettura e isolamento del core | [docs/architettura](docs/architettura/architettura.md) |
 | Regole base: round, danni, fine partita | [docs/regole-base](docs/regole-base/regole-base.md) |
 | Fazioni e bonus (da `faction_bonuses`) | [docs/fazioni](docs/fazioni/fazioni.md) |
-| Tipi di carta (Creature, Spell, Hidden, Terreni) | [docs/carte](docs/carte/carte.md) |
+| Tipi di carta (Creature, Spell, Hidden, Terreni, Oggetti) | [docs/carte](docs/carte/carte.md) |
 | Sistema degli effetti speciali | [docs/effetti](docs/effetti/effetti.md) |
 | Mescolamento, seed, riproducibilità | [docs/mescolamento](docs/mescolamento/mescolamento.md) |
 | Log della partita | [docs/log-partita](docs/log-partita/log-partita.md) |

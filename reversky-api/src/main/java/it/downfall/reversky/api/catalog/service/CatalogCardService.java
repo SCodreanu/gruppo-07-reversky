@@ -101,8 +101,7 @@ public class CatalogCardService {
 	 * @throws CatalogCardNotFoundException         se la carta non esiste
 	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale valida
 	 * @throws InvalidCardRarityException           se la rarità non esiste o non è ammessa per il tipo
-	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo o effetto non vanno con il tipo,
-	 *                                              o se ATK e DEF superano i massimi della rarità
+	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazione non vanno con il tipo
 	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
 	 */
 	@Transactional
@@ -116,7 +115,8 @@ public class CatalogCardService {
 			rarity = loadRarity(request.rarityId());
 
 			validateRules(request.type(), request.subtype(), request.effectCode(), request.atk(), request.def());
-			validateRarity(request.type(), rarity, request.atk(), request.def());
+			validateRarity(request.type(), rarity);
+			validateFaction(request.type(), card);
 		}
 
 		Integer excludedId = (original != null) ? original.getId() : card.getId();
@@ -127,6 +127,10 @@ public class CatalogCardService {
 			card.copyRulesFrom(original);
 		} else {
 			card.updateRules(rarity, request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
+			if (!request.type().hasFaction()) {
+				// Spell e Hidden sono condivise: una carta che lo diventa perde le fazioni
+				card.changeFactions(null, null);
+			}
 		}
 
 		card.updateDetails(request.name(), request.flavorText());
@@ -199,7 +203,7 @@ public class CatalogCardService {
 		return original;
 	}
 
-	// Stesse regole dei CHECK di V5, con i metodi di CardType
+	// Stesse regole dei CHECK di V3, con i metodi di CardType
 	private void validateRules(CardType type, CardSubtype subtype, String effectCode, Integer atk, Integer def) {
 		if (type.hasStats() && (atk == null || def == null)) {
 			throw CatalogCardRulesViolatedException.missingStats();
@@ -224,19 +228,19 @@ public class CatalogCardService {
 			.orElseThrow(() -> InvalidCardRarityException.notFound(rarityId));
 	}
 
-	// Regole 4 e 5 di docs/backoffice: rarità ammessa per il tipo, poi ATK e DEF entro i massimi.
-	// Si chiama dopo validateRules, così ATK e DEF ci sono solo per le creature.
-	private void validateRarity(CardType type, Rarity rarity, Integer atk, Integer def) {
+	// Regola 4 di docs/backoffice: rarità ammessa per il tipo
+	private void validateRarity(CardType type, Rarity rarity) {
 		if (!type.acceptsRarity(rarity)) {
 			throw InvalidCardRarityException.notAllowedForType(type, rarity);
 		}
+	}
 
-		if (rarity.exceedsMaxAtk(atk)) {
-			throw CatalogCardRulesViolatedException.atkAboveMax(atk, rarity);
-		}
-
-		if (rarity.exceedsMaxDef(def)) {
-			throw CatalogCardRulesViolatedException.defAboveMax(def, rarity);
+	// chk_catalog_cards_faction_matches_type. Le fazioni non si modificano ancora da PUT (arriva con #81):
+	// una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto perché non ha una fazione.
+	// Il caso opposto va bene: update toglie le fazioni.
+	private void validateFaction(CardType type, CatalogCard card) {
+		if (type.hasFaction() && card.getFaction() == null) {
+			throw CatalogCardRulesViolatedException.missingFaction(type);
 		}
 	}
 

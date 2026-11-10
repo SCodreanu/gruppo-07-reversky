@@ -126,11 +126,12 @@ Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i cre
 
 Catalogo (`catalog/`):
 
-- fazioni (migrazione `V3`): `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
-- rarità (migrazione `V4`): `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`);
-- carte (migrazione `V5`, senza fazioni e tag): `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
-- rarità delle carte (migrazione `V6`, task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome; ATK e DEF entro `max_atk` e `max_def` della rarità (nullo = nessun controllo).
+- fazioni: `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
+- rarità: `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`). Le rarità non hanno massimi di ATK e DEF (tolti con la baseline);
+- carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
+- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
+- fazioni delle carte: l'entità `CatalogCard` ha `faction` e `secondaryFaction` e `CardType` ha `ITEM`, come la baseline. `PUT /admin/cards` non riceve ancora le fazioni (#81): una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto (`422`), mentre una carta che diventa Spell o Hidden perde le fazioni.
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
-Lo schema confermato è in [schema.dbml](docs/database/schema.dbml); `V1`–`V6` sono allineate (a `catalog_cards` mancano ancora le colonne delle fazioni e l'indice `(rarity_id, faction_id)`, che aggiunge la migrazione di #81). Da qui in poi vale la regola 6: lo schema cambia solo con migrazioni nuove.
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.

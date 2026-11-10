@@ -58,30 +58,26 @@ class RarityServiceIT {
 		int sortingOrder = uniqueSortingOrder();
 
 		// Act
-		RarityResponse response = rarityService.create(new RarityCreateRequest(name, 2, 5, 10, 12, sortingOrder));
+		RarityResponse response = rarityService.create(new RarityCreateRequest(name, 2, 5, sortingOrder));
 
 		// Assert
 		assertThat(response.id()).isNotNull();
 		assertThat(response.name()).isEqualTo(name);
 		assertThat(response.deckLimit()).isEqualTo(2);
 		assertThat(response.maxPerDeck()).isEqualTo(5);
-		assertThat(response.maxAtk()).isEqualTo(10);
-		assertThat(response.maxDef()).isEqualTo(12);
 		assertThat(response.sortingOrder()).isEqualTo(sortingOrder);
 		assertThat(rarityRepository.findById(response.id())).isPresent();
 	}
 
 	@Test
-	@DisplayName("Empty maximums are saved as null: no limit")
-	void create_withoutMaximums_savesNulls() {
+	@DisplayName("An empty max per deck is saved as null: no limit")
+	void create_withoutMaxPerDeck_savesNull() {
 		// Act
-		RarityResponse response = rarityService.create(new RarityCreateRequest(uniqueName(), 1, null, null, null, uniqueSortingOrder()));
+		RarityResponse response = rarityService.create(new RarityCreateRequest(uniqueName(), 1, null, uniqueSortingOrder()));
 
 		// Assert
 		Rarity saved = rarityRepository.findById(response.id()).orElseThrow();
 		assertThat(saved.getMaxPerDeck()).isNull();
-		assertThat(saved.getMaxAtk()).isNull();
-		assertThat(saved.getMaxDef()).isNull();
 	}
 
 	@Test
@@ -147,16 +143,14 @@ class RarityServiceIT {
 		String newName = uniqueName();
 
 		// Act
-		RarityResponse response = rarityService.update(created.id(), new RarityUpdateRequest(newName, 1, null, 7, 9));
+		RarityResponse response = rarityService.update(created.id(), new RarityUpdateRequest(newName, 1, 4));
 
 		// Assert
 		assertThat(response.name()).isEqualTo(newName);
 		Rarity saved = rarityRepository.findById(created.id()).orElseThrow();
 		assertThat(saved.getName()).isEqualTo(newName);
 		assertThat(saved.getDeckLimit()).isEqualTo(1);
-		assertThat(saved.getMaxPerDeck()).isNull();
-		assertThat(saved.getMaxAtk()).isEqualTo(7);
-		assertThat(saved.getMaxDef()).isEqualTo(9);
+		assertThat(saved.getMaxPerDeck()).isEqualTo(4);
 	}
 
 	@Test
@@ -182,7 +176,7 @@ class RarityServiceIT {
 		RarityResponse created = rarityService.create(createRequest(name, uniqueSortingOrder()));
 
 		// Act
-		RarityResponse response = rarityService.update(created.id(), new RarityUpdateRequest(name, 3, null, null, null));
+		RarityResponse response = rarityService.update(created.id(), new RarityUpdateRequest(name, 3, null));
 
 		// Assert
 		assertThat(response.name()).isEqualTo(name);
@@ -235,10 +229,10 @@ class RarityServiceIT {
 	}
 
 	private static RarityCreateRequest createRequest(String name, int sortingOrder) {
-		return new RarityCreateRequest(name, 2, null, null, null, sortingOrder);
+		return new RarityCreateRequest(name, 2, null, sortingOrder);
 	}
 
 	private static RarityUpdateRequest updateRequest(String name) {
-		return new RarityUpdateRequest(name, 2, null, null, null);
+		return new RarityUpdateRequest(name, 2, null);
 	}
 }

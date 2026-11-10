@@ -10,7 +10,7 @@ import java.util.Set;
  * invece di un errore del database.
  * <p>
  * Ogni tipo conosce anche le rarità che ammette, come {@code sorting_order} (docs/backoffice,
- * regola 4): Spell e Hidden solo Common o Uncommon, i Terreni solo Rare, le creature qualsiasi.
+ * regola 4): Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, le creature qualsiasi.
  * Questa regola non ha un vincolo nel database e la controlla solo il service.
  */
 public enum CardType {
@@ -19,7 +19,8 @@ public enum CardType {
 	CREATURE(Set.of(), Set.of()),
 	TERRAIN(Set.of(), Set.of(Rarity.RARE_ORDER)),
 	SPELL(Set.of(CardSubtype.DAMAGE, CardSubtype.SHIELD, CardSubtype.BURN), Set.of(Rarity.COMMON_ORDER, Rarity.UNCOMMON_ORDER)),
-	HIDDEN(Set.of(CardSubtype.SURVIVAL, CardSubtype.DAMAGE), Set.of(Rarity.COMMON_ORDER, Rarity.UNCOMMON_ORDER));
+	HIDDEN(Set.of(CardSubtype.SURVIVAL, CardSubtype.DAMAGE), Set.of(Rarity.COMMON_ORDER, Rarity.UNCOMMON_ORDER)),
+	ITEM(Set.of(), Set.of(Rarity.RARE_ORDER));
 
 	private final Set<CardSubtype> allowedSubtypes;
 
@@ -65,6 +66,14 @@ public enum CardType {
 	 */
 	public boolean hasStats() {
 		return this == CREATURE;
+	}
+
+	/**
+	 * Spell e Hidden sono condivise tra le fazioni; Creature, Terreni e Oggetti hanno sempre una fazione
+	 * (chk_catalog_cards_faction_matches_type).
+	 */
+	public boolean hasFaction() {
+		return this != SPELL && this != HIDDEN;
 	}
 
 	/**
