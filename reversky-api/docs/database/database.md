@@ -52,7 +52,7 @@ Dati inseriti con le migrazioni:
 | ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
 | rule set `1.0` attivo, rarità, fazioni, bonus di fazione | migrazione dedicata del task API-15 (#85) |
 | tag delle fazioni | migrazione del task API-13 (#83) |
-| catalogo iniziale (120 carte) | migrazione dedicata del task API-55 (#125) |
+| catalogo iniziale (120 carte, dal *Catalogo completo 120 carte*, vedi [decisioni](../decisioni/decisioni.md)) | migrazione dedicata del task API-55 (#125) |
 | pacchetto base | migrazione dedicata del task API-63 (#133) |
 | primo `ADMIN`, utenti, carte e collezioni di prova | task API-25 (#95), che decide anche come caricarli solo in sviluppo e test |
 

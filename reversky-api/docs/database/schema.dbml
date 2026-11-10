@@ -15,7 +15,7 @@ Enum CardType {
   TERRAIN
   SPELL
   HIDDEN
-  ITEM [note: 'Oggetto: come il Terreno resta in gioco fino alla fine della partita con un effetto passivo.']
+  ITEM [note: 'Oggetto: come il Terreno viene messo accanto al mazzo; effetto monouso, poi si consuma (D-47).']
 }
 
 Enum CardSubtype {

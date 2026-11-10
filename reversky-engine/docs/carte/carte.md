@@ -28,7 +28,7 @@ Un mazzo è una `List<CardDefinition>` con **un elemento per copia**.
 
 Le rarità sono dati (tabella `rarities`): l'engine riceve nome e `rarityOrder` e confronta le rarità **solo tramite `rarityOrder`**, mai tramite il nome.
 
-Nel motore la rarità serve solo a qualche effetto (es. Bigfoot: "+2 contro carte di rarità superiore"; SCP-3000: "contro Keter, Thaumiel e Apollyon"). Corrispondenza con la classificazione della lore:
+Nel motore la rarità serve solo a qualche effetto (Bigfoot: "+2 ATK contro Rare o superiori, +1 DEF contro Common e Uncommon"; SCP-3000: "+3 ATK contro Rare o superiori"). Corrispondenza con la classificazione della lore:
 
 | Rarità | Classe della lore |
 |---|---|
@@ -38,11 +38,11 @@ Nel motore la rarità serve solo a qualche effetto (es. Bigfoot: "+2 contro cart
 | Mythic | Thaumiel |
 | Legendary | Apollyon |
 | Mutant | — |
-| Speciale (es. The Last Gift, edizione di Natale) | — (rarità da definire, D-23) |
+| Speciale (carte evento fuori dal catalogo di 120, es. The Last Gift) | — (rarità da definire, D-23) |
 
 La rarità **non** limita ATK e DEF: le carte personalizzate possono superare qualsiasi soglia (decisione del 9 novembre).
 
-Una carta può avere **due fazioni** (es. la Mutant Ashen Kitsune: Theory of the Dream × Theory of the Invitation) e prende vantaggi e svantaggi di entrambe: vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni).
+Una carta può avere **due fazioni** (le due Mutant del catalogo: The Rootbound Doppelganger, Theory of the Invitation × Theory of the Dream; The Stitched Corridor, Theory of the Wound × Theory of the Archive) e prende vantaggi e svantaggi di entrambe: vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni).
 
 ## Tipi di carta
 
@@ -59,7 +59,7 @@ public final class CreatureInPlay {
 	private int defense;                // DEF attuale
 	private final List<StatModifier> attackModifiers;
 	private CreatureEffect effect;      // null se la carta non ha effetto
-	private boolean effectDisabled;     // es. annullato da SCP-2521 o da The Rain Preacher
+	private boolean effectDisabled;     // es. annullato da SCP-2521 o da Il Predicatore sotto la Pioggia
 	private int roundsInCombat;         // per effetti "nei primi 2 round"
 	...
 }
@@ -74,13 +74,14 @@ Quando viene pescata si risolve in automatico, poi la carta viene **scartata** e
 
 | Sottotipo | Bersaglio | Esempi |
 |---|---|---|
-| `DAMAGE` | creatura avversaria in campo, subito | Bite of the Reverse (−3 ATK), Skin Fracture (−3 DEF), Dissolution (−2/−2) |
-| `SHIELD` | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Veil of the Anchored (+3 DEF), Registry Pact (+2 DEF/+1 ATK) |
-| `BURN` | vedi sotto | Call of the Rift, Reverse Fusion, Echo of the Forgotten |
+| `DAMAGE` (3) | creatura avversaria in campo, subito | Morso del Rovescio (−3 ATK), Frattura della Pelle (−3 DEF), Dissoluzione (−2/−2) |
+| `SHIELD` (6) | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Velo degli Ancorati (+3 DEF), Patto del Registro (+2 DEF/+1 ATK), SCP-500 (primo attacco −4 danni) |
+| `BURN` (3) | vedi sotto | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati |
 
-Regole proposte **[DA CONFERMARE]**:
-- I modificatori delle Spell durano finché la creatura resta in campo (D-12).
-- **Burn:** si rivela la carta successiva del mazzo. Se è una creatura, viene "fusa" con la creatura che il giocatore schiera: ATK e DEF si sommano (più l'eventuale bonus della Spell). Se non è una creatura, viene scartata.
+Le 12 Spell sono nel [catalogo degli effetti](../effetti/catalogo-effetti.md#spell). Una Spell si pesca solo quando la propria creatura è morta: quando il catalogo dice "creatura attiva" (SCP-109, SCP-458, Burn) si intende la **prossima** creatura del proprietario.
+
+- I modificatori delle Spell durano finché la creatura che li riceve resta in campo, anche negli scontri successivi (D-12, deciso il 10 novembre).
+- **[DA CONFERMARE] Burn** (testo del catalogo): si rivela la prossima carta del mazzo. Se è una creatura, la sua ATK e la sua DEF si aggiungono **temporaneamente** alla creatura del giocatore (più l'eventuale bonus della Spell); se è di un altro tipo viene scartata; con il mazzo vuoto non succede nulla. Restano da decidere se la creatura rivelata viene tolta dal mazzo e quanto dura il "temporaneamente" (D-13).
 
 ### Hidden (`HIDDEN`)
 
@@ -88,21 +89,30 @@ Quando viene pescata viene messa **coperta** nella zona Hidden del giocatore. Si
 
 | Sottotipo | Effetto | Esempi |
 |---|---|---|
-| `SURVIVAL` | aiuta la propria creatura | Last Sanctuary (+4 DEF), Survival Instinct (+2/+2), Remnants of Reality |
-| `DAMAGE` | indebolisce la creatura avversaria | Hostile Presence (−4 ATK), Echo Strike (−2/−2), Breaking Point |
+| `SURVIVAL` (4) | aiuta la propria creatura | Last Sanctuary (+4 DEF), Survival Instinct (+2/+2), Remnants of Reality, Unseen Exit |
+| `DAMAGE` (4) | indebolisce la creatura avversaria | Hostile Presence (−4 ATK), Echo Strike (−2/−2), Breaking Point, Static Interference |
 
-Attivazione (D-15, decisa il 9 novembre): una Hidden si attiva all'inizio del **prossimo scontro** del proprietario (cioè quando una nuova coppia di creature si affronta). Le Hidden `DAMAGE` si risolvono prima delle `SURVIVAL`.
+Attivazione (D-15, decisa il 9 novembre e modificata il 10):
+- una Hidden **con una condizione** (Unseen Exit, Static Interference) resta coperta finché la condizione si verifica, nel passo del round in cui si verifica;
+- le altre si attivano all'inizio del **prossimo scontro** del proprietario (cioè quando una nuova coppia di creature si affronta);
+- se più Hidden si attivano nello stesso momento, le `DAMAGE` si risolvono prima delle `SURVIVAL`.
+
+Il "non nel primo turno" del catalogo e la condizione esatta di ogni Hidden si fissano nella revisione degli effetti ([catalogo degli effetti](../effetti/catalogo-effetti.md#hidden)).
 
 ### Terreno (`TERRAIN`)
 
-Quando viene pescato viene messo **accanto al mazzo** e resta in gioco **fino alla fine della partita**: non può essere distrutto né scartato. Dà un bonus passivo a **tutte** le creature della sua fazione in campo, comprese quelle dell'avversario (D-17, decisa il 9 novembre).
+Quando viene pescato viene messo **accanto al mazzo** e resta in gioco finché un giocatore (lui o l'avversario) pesca un altro Terreno: in gioco c'è **un solo Terreno** alla volta, e quello nuovo sostituisce il precedente (D-19, decisa il 10 novembre). Dà un bonus passivo a **tutte** le creature della sua fazione in campo, comprese quelle dell'avversario (D-17, decisa il 9 novembre).
 
 | Terreno | Fazione | Effetto base |
 |---|---|---|
 | Echo Rift (Crepa Eco) | Theory of the Wound | +1 ATK |
 | Hollow Clearing (Crepa Radura) | Theory of the Invitation | +2 DEF |
-| Watching Rift (Crepa Occhio) | Theory of the Archive | +1 ATK e +1 DEF |
+| Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK e +1 DEF |
 | Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK |
+
+Ogni Terreno ha anche un effetto secondario, elencato nel [catalogo degli effetti](../effetti/catalogo-effetti.md#terreni): si rivede ora con le carte e si implementa dopo il bonus base (D-18).
+
+**[DA CONFERMARE]** Quando un Terreno viene sostituito, i suoi bonus si tolgono: l'ATK subito, la DEF con la regola dello scudo (si toglie solo la parte non ancora consumata dai danni, D-35).
 
 La fazione del Terreno è il suo `factionId`; l'effetto è il suo `effectCode`. Una creatura con due fazioni riceve il bonus se una delle due è quella del Terreno (una volta sola).
 
@@ -110,9 +120,16 @@ Il bonus DEF del Terreno si applica quando la creatura **entra in campo** (o sub
 
 ### Oggetto (`ITEM`)
 
-Funziona **come un Terreno**: quando viene pescato viene messo accanto al mazzo e resta in gioco **fino alla fine della partita**, senza poter essere distrutto né scartato. Ha una fazione (`factionId`), un effetto passivo (`effectCode`, obbligatorio) e rarità Rare. Ogni mazzo ne contiene uno (lo controlla l'API) e ogni fazione ne ha uno nel catalogo.
+Quando viene pescato viene messo **accanto al mazzo**, come un Terreno, e non può essere distrutto né scartato da altre carte. È **monouso** (D-47, decisa il 10 novembre): resta finché il suo effetto scatta una volta, sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma. Ha una fazione (`factionId`), un effetto (`effectCode`, obbligatorio) e rarità Rare. Ogni mazzo ne contiene uno (lo controlla l'API) e ogni fazione ne ha uno nel catalogo.
 
-**[DA CONFERMARE]** L'effetto di ciascuno dei 4 Oggetti (D-47) e l'ordine in cui si applicano Terreno e Oggetto quando sono entrambi in gioco (D-48). Implementazione: `ENG-33`.
+| Oggetto | Fazione | Effetto (catalogo) |
+|---|---|---|
+| Badge di Uscita Negata | Theory of the Wound | previene 2 danni dal primo attacco, poi si consuma |
+| Bussola dei Sentieri Falsi | Theory of the Invitation | +2 DEF per il primo round, poi si consuma |
+| Fascicolo Sigillato 0 | Theory of the Archive | annulla fino a 2 punti della prima penalità ATK/DEF, poi si consuma |
+| Campanello del Torii | Theory of the Dream | alla prima Hidden avversaria attivata +2 DEF, poi si consuma |
+
+**[DA CONFERMARE]** L'ordine rispetto al Terreno quando scattano insieme all'entrata (D-48). Implementazione: `ENG-33`.
 
 ### Carte condivise
 

@@ -105,8 +105,8 @@ Vedi [docs/mescolamento](docs/mescolamento/mescolamento.md).
 - I bonus percentuali si calcolano così: `value * percent / 100` (es. 20% di 13 = `13 * 20 / 100` = 2).
 
 ```java
-// Nurikabe: il primo attacco subito infligge il 50% dei danni, per difetto
-int reduced = damage / 2;   // 7 → 3
+// Skin-Stealers: DEF pari al 25% della DEF base avversaria, per difetto, massimo 3
+int gained = Math.min(3, opponentBaseDefense * 25 / 100);   // 13 → 3, 9 → 2
 ```
 
 ---
@@ -154,7 +154,8 @@ defense -= damage;
 
 // SÌ
 // Regolamento base, punto 5: il danno riduce la difesa in modo permanente
-// e non si rigenera. Solo Wendigo può ignorare questa regola (vedi WendigoEffect).
+// e non si rigenera. Solo gli effetti che curano possono ignorare questa regola
+// (es. Wendigo, The Bloodless Hound, tramite heal()).
 defense -= damage;
 ```
 
@@ -164,10 +165,10 @@ Obbligatorio su: tutte le classi pubbliche del core, tutti i metodi pubblici del
 
 ```java
 /**
- * Hidebehind — "Il primo attacco che subisce viene schivato".
+ * Hidebehind — "Previene 2 danni dal primo attacco ricevuto".
  * <p>
- * Il primo danno ricevuto nello scontro viene azzerato. Dal secondo round
- * l'effetto non ha più alcun impatto.
+ * Il primo attacco con danno maggiore di 0 viene ridotto di 2 (minimo 0).
+ * Dopo l'effetto non ha più alcun impatto.
  */
 public final class HidebehindEffect implements CreatureEffect { ... }
 ```

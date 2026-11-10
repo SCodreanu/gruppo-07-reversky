@@ -49,7 +49,7 @@ Tutti i documenti del gruppo (presi dal Drive) sono nella cartella [`docs/`](doc
 | [`docs/assets/fazioni`](<docs/assets/fazioni>) | simboli delle quattro fazioni (Theory of the Wound, of the Invitation, of the Archive, of the Dream) |
 | [`docs/assets/carte`](<docs/assets/carte>) | esempi di carte, una per rarità, più una carta speciale |
 
-Esempi di carte:
+Esempi di carte (illustrazioni precedenti al catalogo di 120 carte: nel catalogo Kitsune è Legendary, mentre Ashen Kitsune e The Last Gift non ci sono):
 
 | Rarità | Carta |
 |---|---|

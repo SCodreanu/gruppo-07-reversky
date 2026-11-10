@@ -75,7 +75,7 @@ In questo sprint le creature non hanno effetti.
 | `ENG-19` | `DrawService`: Spell `DAMAGE`, `SHIELD`, `BURN` con i modificatori in attesa (D-10…D-13, D-34) e i codici `P1` delle Spell | A | L | `ENG-11`, `ENG-22` |
 | `ENG-20` | Zona Hidden e attivazione (D-15, D-16) e codici `P1` delle Hidden | A | M | `ENG-19` |
 | `ENG-21` | Terreni: bonus base (D-17, D-19) e codici dei quattro Terreni | A | S | `ENG-19` |
-| `ENG-33` | Oggetti (`ITEM`): effetto passivo come i Terreni (D-47, D-48), evento `ITEM_PLACED` e codici dei quattro Oggetti | A | S | `ENG-21` |
+| `ENG-33` | Oggetti (`ITEM`): messi accanto al mazzo come i Terreni, effetto monouso (D-47, D-48), eventi `ITEM_PLACED` e `ITEM_CONSUMED` e codici dei quattro Oggetti | A | S | `ENG-21` |
 | `ENG-14` | `GET /api/v1/effects`: elenco dei codici già implementati | B | S | `ENG-12`, `ENG-22` |
 | `ENG-15` | Swagger con springdoc 3.2.0, la stessa versione dell'API (D-41, serve l'ok del lead) | B | S | `ENG-12` |
 | `ENG-16` | `SimulationExamplesTest`: gli esempi 01–08, 10–12 e 90–95 di [`examples/`](../../examples/README.md) verdi | B | S | `ENG-11`, `ENG-12`, `ENG-22` |

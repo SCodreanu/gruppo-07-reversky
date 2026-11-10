@@ -84,20 +84,20 @@ Riga Dream → Wound: atkBonus −1    attacco Kappa  = 6 − 1 = 5
 ### Carte con due fazioni
 
 Una carta può avere una **seconda fazione** facoltativa (`secondaryFactionId`, nel database `catalog_cards.secondary_faction_id`),
-per esempio le Mutant come Ashen Kitsune (Theory of the Dream × Theory of the Invitation). Decisione D-22:
+per esempio le due Mutant del catalogo: The Rootbound Doppelganger (Theory of the Invitation × Theory of the Dream) e The Stitched Corridor (Theory of the Wound × Theory of the Archive). Decisione D-22:
 la carta prende **sia i vantaggi sia gli svantaggi** di entrambe le fazioni.
 
 Regola: il bonus è la **somma su tutte le coppie** (fazione di chi attacca, fazione di chi difende). Vale per l'ATK e per la DEF,
 e vale anche quando è l'avversaria ad attaccare la carta con due fazioni.
 
 ```
-Ashen Fox (Dream + Invitation)  contro  Archive Puppet (Archive)
-  Ashen Fox:       Dream → Archive 0   + Invitation → Archive +2   = +2
-  Archive Puppet:  Archive → Dream 0   + Archive → Invitation −1   = −1
+Rootbound Doppelganger (Dream + Invitation)  contro  Archive Puppet (Archive)
+  Rootbound Doppelganger:  Dream → Archive 0   + Invitation → Archive +2   = +2
+  Archive Puppet:          Archive → Dream 0   + Archive → Invitation −1   = −1
 
-Ashen Fox (Dream + Invitation)  contro  Kodama (Dream)
-  Ashen Fox:       Dream → Dream 0     + Invitation → Dream −1     = −1
-  Kodama:          Dream → Dream 0     + Dream → Invitation +2     = +2
+Rootbound Doppelganger (Dream + Invitation)  contro  Kodama (Dream)
+  Rootbound Doppelganger:  Dream → Dream 0     + Invitation → Dream −1     = −1
+  Kodama:                  Dream → Dream 0     + Dream → Invitation +2     = +2
 ```
 
 Gli stessi casi, con il risultato completo, sono gli esempi `11` e `12` di [`examples/`](../../examples/README.md).

@@ -56,7 +56,7 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
      - bonus DEF di fazione
      - bonus del Terreno
      - effetto dell'Oggetto (ordine rispetto al Terreno: D-48)
-     - Hidden in attesa
+     - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL)
      - onEnterPlay di entrambe le creature
 1. onRoundStart
 2. Calcolo attacco: ATK base + bonus ATK di fazione + modificatori → modifyOutgoingAttack → minimo 0
@@ -67,6 +67,8 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 7. Morti: onDeath / onKill, poi danno al giocatore = DEF negativa della sconfitta (vedi regole-base)
 ```
 
+Le Hidden **con una condizione** (D-15, modificata il 10 novembre) non scattano al passo 0: restano coperte e si controllano nel passo in cui la loro condizione si può verificare (es. Unseen Exit al passo 3, quando un attacco ucciderebbe la creatura). In quale passo si controlla ciascuna si fissa con la revisione degli effetti.
+
 ### Più effetti nello stesso momento
 
 1. Prima per **priorità**: `NULLIFY` (effetti che annullano altri effetti) → `NORMAL`.
@@ -76,7 +78,7 @@ Così l'ordine è sempre lo stesso e la partita è riproducibile. Approvato dai 
 
 ### Effetti che annullano altri effetti
 
-The Rain Preacher, SCP-2521 e Baku disattivano l'effetto avversario. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
+Il Predicatore sotto la Pioggia, SCP-2521 e Baku disattivano l'effetto avversario (Il Custode delle Porte Incrociate ne annulla il prossimo effetto di entrata). Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
 
 ```java
 @Override
@@ -92,17 +94,19 @@ Se due effetti `NULLIFY` si incontrano, agisce prima quello dello sfidante e ann
 
 ### Effetto semplice: Hidebehind
 
-> Il primo attacco che subisce viene schivato (0 danni). Dal secondo round non ha più effetto.
+> Previene 2 danni dal primo attacco ricevuto. Dopo non ha più effetto.
 
 ```java
 /**
- * Hidebehind — il primo attacco subito nello scontro infligge 0 danni.
+ * Hidebehind — "Previene 2 danni dal primo attacco ricevuto".
  */
 public final class HidebehindEffect implements CreatureEffect {
 
 	public static final String CODE = "HIDEBEHIND";
 
-	private boolean dodgeUsed = false;
+	private static final int PREVENTED_DAMAGE = 2;
+
+	private boolean used = false;
 
 	@Override
 	public String code() {
@@ -111,21 +115,23 @@ public final class HidebehindEffect implements CreatureEffect {
 
 	@Override
 	public int modifyIncomingDamage(EffectContext ctx, int damage) {
-		if (!dodgeUsed) {
-			dodgeUsed = true;
-			ctx.log().effect(ctx.self(), "dodges the first attack");
-			return 0;
+		// D-33: conta il primo attacco con danno > 0 dopo l'entrata in campo
+		if (used || damage <= 0) {
+			return damage;
 		}
-		return damage;
+		used = true;
+		int reduced = Math.max(0, damage - PREVENTED_DAMAGE);
+		ctx.log().effect(ctx.self(), "prevents " + (damage - reduced) + " damage");
+		return reduced;
 	}
 }
 ```
 
-Nota: l'effetto ha uno **stato** (`dodgeUsed`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
+Nota: l'effetto ha uno **stato** (`used`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
 
 ### Effetto con soglia: SCP-096
 
-> Quando la sua difesa scende al 50% o meno del valore iniziale, ottiene +3 attacco per il resto dello scontro.
+> A metà DEF ottiene +2 ATK (metà = 50% o meno della DEF iniziale; la durata non è scritta, proposta: finché resta in campo).
 
 ```java
 @Override
@@ -133,16 +139,17 @@ public void afterDamage(EffectContext ctx, int damageTaken) {
 	CreatureInPlay self = ctx.self();
 	if (!enraged && self.defense() > 0 && self.defense() * 2 <= self.initialDefense()) {
 		enraged = true;
-		self.addAttackModifier(3, "Uncontrollable Rage");
+		self.addAttackModifier(2, "SCP-096");
 	}
 }
 ```
 
 ### Effetto alla morte: SCP-2317
 
-> Quando muore, infligge 4 danni alla creatura avversaria.
+> Alla morte infligge 4 danni alla creatura avversaria e dà +1 ATK alla prossima creatura alleata.
 
 Il danno può uccidere anche l'avversaria: le morti si ricontrollano dopo gli `onDeath`, quindi possono morire **entrambe** (e in quel caso nessun giocatore subisce danni).
+Il +1 ATK va nei modificatori in attesa del proprietario (D-34) e si applica alla sua prossima creatura che entra.
 
 ## Registro degli effetti
 
@@ -184,11 +191,11 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 |---|---|---|---|
 | — | — | — | nessuno ancora |
 
-L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni), con codici proposti, momenti e domande aperte, è nel [catalogo degli effetti](catalogo-effetti.md).
+L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e domande aperte, è nel [catalogo degli effetti](catalogo-effetti.md).
 Le modifiche al motore che gli effetti richiedono (es. numero massimo di attivazioni, morti fuori dal round) sono in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).
 
-Effetti che richiedono chiarimenti prima di essere implementati **[DA CONFERMARE]**:
-- **Mothman**: "se sta per perdere la sfida… ribalta il risultato" — riguarda la partita intera o lo scontro? Cosa significa "scarto"?
-- **Skin-Stealers**: "copia il 25% di difesa e attacco… solo per 1 turno" — turno = round o scontro?
-- **Wendigo**: "recupera 3 DEF" supera la DEF iniziale o si ferma al massimo?
-- **SCP-001**: "perde metà della DEF residua (per difetto)" a ogni round — con DEF 1 la perdita è 0, quindi l'effetto da solo non uccide mai: verificare che sia voluto.
+Effetti che richiedono chiarimenti prima di essere implementati **[DA CONFERMARE]** (l'elenco completo è nella colonna *Domande* del catalogo):
+- **La Regina dei Sentieri Perduti**: "sceglie" tra due effetti — il giocatore non prende decisioni, serve una regola fissa.
+- **Mothman** e **The Undying Blossom**: sopravvivono a un danno letale — serve un passo prima del controllo delle morti (D-36).
+- **Wendigo**: "recupera 3 DEF" supera la DEF iniziale? (The Bloodless Hound si ferma alla DEF base.)
+- **The Hollow Wyrm**: "se entrambi hanno un Terreno" non si verifica mai, perché in gioco c'è un solo Terreno (D-19).

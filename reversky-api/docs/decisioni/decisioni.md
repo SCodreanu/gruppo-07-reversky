@@ -15,9 +15,8 @@ Come si usa:
 
 | # | Domanda | Proposta | Blocca | Riferimento |
 |---|---|---|---|---|
-| Q-05 | **Catalogo iniziale**: la distribuzione è decisa (120 carte, vedi sotto), mancano nomi, illustrazioni ed effetti di ogni carta | ATK e DEF li propone il bilanciamento (API-64); nomi ed effetti dai DSG | #125, #106 | D-24 |
-| Q-23 | **Oggetti**: quale effetto passivo ha ciascuno dei 4 Oggetti (uno per fazione)? | come i Terreni: un bonus passivo che resta fino alla fine della partita; valori dal bilanciamento | ENG-33, #125 | [carte dell'engine](../../../reversky-engine/docs/carte/carte.md), D-47 |
-| Q-06 | **Carte speciali** (The Last Gift, edizione di Natale): rarità `Special`? | rarità `Special` con `sorting_order` 7, fuori dalle bustine normali | #85, #125 | D-23 |
+| Q-05 | **Catalogo iniziale**: distribuzione, nomi, rarità ed effetti sono nel *Catalogo completo 120 carte* (vedi sotto); gli effetti sono in revisione e mancano ATK, DEF, illustrazioni e i nomi inglesi delle carte ancora in italiano (D-44) | ATK, DEF ed effetti li propone il bilanciamento (API-64), con la revisione nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md); nomi inglesi dai DSG | #125, #106 | D-24 |
+| Q-06 | **Carte speciali** (The Last Gift, edizione di Natale, fuori dal catalogo di 120 carte): rarità `Special`? | rarità `Special` con `sorting_order` 7, fuori dalle bustine normali | #85, #125 | D-23 |
 | Q-07 | Le carte **disattivate** restano utilizzabili nei mazzi di chi le possiede? | sì | #98 | [mazzi](../mazzi/mazzi.md) |
 | Q-08 | Le **varianti** contano nel totale della barra di completamento della collezione? | no, conta solo la carta originale | #93 | [collezione](../collezione/collezione.md) |
 | Q-09 | Uno scambio deve avere **almeno una carta per lato** (niente regali)? | sì | #103 | [scambi](../scambi/scambi.md) |
@@ -38,7 +37,7 @@ Il bilanciamento lo fanno gli SWD (Tommaso con Claude), con le simulazioni dell'
 |---|---|---|---|---|
 | Q-11 | **Crediti di benvenuto** (`signup_bonus`) | 500 | #85, #87 | [crediti](../crediti/crediti.md) |
 | Q-12 | **Ricompense** delle classificate: vittoria e pareggio | 30 e 10 (le amichevoli non danno crediti) | #85, #115 | [crediti](../crediti/crediti.md) |
-| Q-13 | **Costo del pacchetto base** e sua composizione (slot e bonus) | nessuna: serve un valore per la migrazione del catalogo | #125 | [pacchetti](../pacchetti/pacchetti.md) |
+| Q-13 | **Costo del pacchetto base** e sua composizione (slot e bonus) | costo: nessuna proposta, serve un valore per la migrazione del catalogo. Composizione: il catalogo propone 7 carte, 3 Common, 2 Uncommon, 1 Rare garantita e 1 slot flessibile (Rare 82,5%, Mythic 10%, Legendary 5%, Mutant 2,5%). Con il modello attuale sono 2 slot Rare e i bonus Mythic 1000, Legendary 500, Mutant 250: stesse probabilità per singolo bonus, ma qui possono riuscirne due nello stesso pacchetto (circa 0,85%), nel catalogo al massimo uno | #125 | [pacchetti](../pacchetti/pacchetti.md) |
 | Q-14 | **Nuovi giocatori**: come ottengono un mazzo valido? Un mazzo da 30 carte richiede almeno 5 pacchetti da 7, e le classificate (unica fonte di crediti dopo la registrazione) richiedono un mazzo valido. Un `signup_bonus` troppo basso blocca il giocatore | `signup_bonus` sufficiente per un mazzo, oppure un pacchetto omaggio a quantità limitata (`cost = 0`), che però non garantisce una composizione valida | #85, #87 | [crediti](../crediti/crediti.md), [mazzi](../mazzi/mazzi.md) |
 | Q-15 | Serve un **credito da evento** (proposta al cliente)? | se sì, nuovo valore `EVENT_REWARD` in `credit_reason`, con una migrazione nuova | #86 | [crediti](../crediti/crediti.md) |
 
@@ -70,24 +69,29 @@ Priorità **Alta** (#41, chiusa). Dettagli nel [documento dell'engine](../../../
 | D-05 | Condizioni di fine partita 3–5 | come in `regole-base` | deciso |
 | D-08 | Morti fuori dal round | controllo delle morti dopo ogni fase | deciso |
 | D-10 | Spell o Hidden pescate (incoerenza nella bozza) | `SHIELD` in attesa e sommate sulla prossima creatura; `DAMAGE` subito sulla creatura avversaria; poi scartate | deciso |
-| D-15 | Attivazione delle Hidden | inizio del prossimo scontro, prima `DAMAGE` poi `SURVIVAL` | deciso |
+| D-15 | Attivazione delle Hidden | inizio del prossimo scontro, prima `DAMAGE` poi `SURVIVAL`; dal 10 novembre le Hidden con una condizione aspettano la condizione | deciso |
 | D-17 | A chi dà il bonus il Terreno | a tutte le creature della sua fazione in campo, anche avversarie | deciso |
 | D-30 | Ordine degli effetti contemporanei | `NULLIFY` prima, poi sfidante prima dell'avversario | deciso |
-| D-47 | Effetti degli Oggetti | proposta: bonus passivo per fazione | aperto |
+| D-47 | Effetti degli Oggetti | monouso, con gli effetti del catalogo (Q-23, 10 nov) | deciso |
 
 Decise tra gli SWD: D-31 (numero massimo di attivazioni per effetto, dettagli con il nuovo catalogo), D-34 (modificatori in attesa), D-35 (origine dei modificatori, con `ITEM`), D-41 (springdoc 3.2.0 nell'engine).
 
+Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [documento dell'engine](../../../reversky-engine/docs/decisioni-aperte/decisioni-aperte.md)): D-12, D-15 (modificata), D-16, D-18, **D-19** (in gioco c'è un solo Terreno: quello pescato dopo sostituisce il precedente), D-20, D-31, D-33, D-35, D-47. D-13 (Burn) è rimandato.
+
 ## Decise
 
-### Catalogo e mazzo (scheda di progettazione del 9 novembre)
+### Catalogo e mazzo (scheda di progettazione e catalogo di 120 carte, 9 novembre)
 
 | Decisione | Perché | Quando |
 |---|---|---|
 | Catalogo di **120 carte**: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni, 4 Oggetti | scheda di progettazione dei DSG | 9 nov |
-| Ogni fazione ha 25 carte: 23 Creature (Common 7, Uncommon 6, Rare 4, Mythic 3, Legendary 2, Mutant 1), 1 Terreno e 1 Oggetto | come sopra | 9 nov |
+| Il *Catalogo completo 120 carte* (bozza di game design del 9 novembre) **sostituisce** la scheda di progettazione e i documenti precedenti come fonte di nomi, rarità ed effetti delle carte. Gli effetti sono in revisione; elenco completo nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md) | è la versione più recente e completa | 10 nov |
+| Creature per fazione: Common 7, Uncommon 6 (7 per Archive e Dream), Rare 4, Mythic 3, Legendary 2, cioè 22 per Invitation e Wound e 23 per Archive e Dream; più **2 Mutant con due fazioni** (Invitation + Dream, Wound + Archive). Totali: Common 28, Uncommon 26, Rare 16, Mythic 12, Legendary 8, Mutant 2. Ogni fazione ha anche 1 Terreno e 1 Oggetto | dal catalogo di 120 carte, che ha spostato a Uncommon due delle quattro Mutant della scheda (D-20) | 10 nov |
 | Le 12 Spell e le 8 Hidden sono **condivise**: non hanno fazione (`faction_id` nullo, `chk_catalog_cards_faction_matches_type`) | come sopra | 9 nov |
 | Mazzo da **30 carte**: 20 Creature, 6 Spell, 2 Hidden, 1 Oggetto, 1 Terreno (chiude Q-01); in `rule_sets` `deck_specials` diventa `deck_spells` e `deck_hidden`, e si aggiunge `deck_items` | come sopra; i valori possono cambiare dopo il bilanciamento, solo dal backoffice | 9 nov |
-| Nuovo tipo di carta **Oggetto** (`ITEM`): come il Terreno resta in gioco fino alla fine della partita con un effetto passivo, ha una fazione, è Rare e occupa un posto delle Rare nel mazzo; non esce mai dal ripiego degli slot | scelta del team | 9 nov |
+| Nuovo tipo di carta **Oggetto** (`ITEM`): quando viene pescato si mette accanto al mazzo come il Terreno, ha una fazione, è Rare e occupa un posto delle Rare nel mazzo; non esce mai dal ripiego degli slot | scelta del team | 9 nov |
+| Oggetti **monouso** (chiude Q-23, D-47): l'Oggetto resta accanto al mazzo finché il suo effetto scatta una volta, sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma | come nel catalogo di 120 carte; un effetto permanente si sovrapporrebbe al Terreno | 10 nov |
+| Hidden per sottotipo: restano `max_hidden_survival` 2 e `max_hidden_damage` 1 (chiude Q-24). Con 2 Hidden nel mazzo l'unico vincolo reale è al massimo una Hidden `DAMAGE` | i valori venivano dal mazzo da 40 e restano validi come massimi | 10 nov |
 | Nessun vincolo tra la fazione del Terreno o dell'Oggetto e le creature del mazzo | la scheda non lo chiede | 9 nov |
 | Bilanciamento (limiti di copie, massimi per rarità nel mazzo, statistiche delle carte) a cura degli SWD | scelta di Tommaso | 9 nov |
 | **Niente massimi di ATK e DEF per rarità**: tolti `rarities.max_atk` e `max_def` (chiude Q-04) | le carte personalizzate possono superare qualsiasi soglia; il bilanciamento resta nelle statistiche di ogni carta | 9 nov |

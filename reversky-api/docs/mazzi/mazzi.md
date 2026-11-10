@@ -36,6 +36,7 @@ La composizione viene dalla scheda di progettazione del catalogo (mazzo da 30 su
 | Hidden con sottotipo `DAMAGE` (`max_hidden_damage`) | massimo 1 in totale |
 
 **[DA CONFERMARE]** I `deck_limit` qui sopra e i `max_per_deck` qui sotto: si decidono con il bilanciamento (API-64).
+I massimi delle Hidden per sottotipo vengono dal mazzo da 40 e restano (Q-24, deciso il 10 novembre): con 2 Hidden nel mazzo l'unico vincolo reale è "al massimo una Hidden `DAMAGE`".
 
 ### Bilanciamento (richiesto dal brief)
 
