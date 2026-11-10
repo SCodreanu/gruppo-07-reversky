@@ -2,13 +2,13 @@
 
 Elenco di **tutti** gli effetti delle carte, presi dal documento di lavoro (`docs/idee`, versione aggiornata) e dalla
 proposta al cliente del 2 novembre, tradotti in termini del motore: codice, momenti dell'interfaccia `CreatureEffect`
-(vedi [effetti](effetti.md)), stato da tenere e domande aperte. È il backlog delle issue `ENG-23`, `ENG-25`, `ENG-26`.
+(vedi [effetti](effetti.md)), stato da tenere e domande aperte. È il backlog delle issue `ENG-19`, `ENG-20`, `ENG-21`, `ENG-23`, `ENG-25`, `ENG-26`.
 
 > **Il catalogo è ancora da definire** (D-24): carte, statistiche e testi possono cambiare. Finché non è confermato, l'engine si sviluppa e si testa con **dati di prova**.
 > Ogni effetto si implementa quando la sua carta è confermata; la struttura (momenti, stato, pezzi di motore) vale comunque.
 
 - **Carta:** nel gioco tutto è in inglese (D-44). Dove la proposta o le carte illustrate non fissano ancora il nome, quello qui è un nome di lavoro tradotto.
-- **Codice:** proposta; diventa definitivo quando l'effetto è registrato in `EffectRegistry` e il backoffice lo usa nel tag `EFFECT_<CODICE>`.
+- **Codice:** proposta; diventa definitivo quando l'effetto è registrato in `EffectRegistry` e il backoffice lo assegna a una carta (`catalog_cards.effect_code`).
 - **Lotto:** `P1` = testo chiaro, si implementa subito; `P2` = serve una decisione o un pezzo di motore in più (vedi colonna *Domande*).
 - **Chi:** divisione tra i due sviluppatori — A = Theory of the Invitation + Theory of the Archive, B = Theory of the Wound + Theory of the Dream.
 - I riferimenti `D-xx` rimandano alle [decisioni aperte](../decisioni-aperte/decisioni-aperte.md).
@@ -84,7 +84,7 @@ Senza effetto (per i test base): **Ash Raven** (Common, 5/4 nella proposta — "
 
 ## Spell
 
-Si applicano appena pescate e poi vengono scartate (D-10). Bersaglio e durata: D-11, D-12, D-13.
+Le `DAMAGE` colpiscono subito la creatura avversaria in campo; le `SHIELD` restano in attesa e si sommano sulla prossima creatura del proprietario; poi vengono scartate (D-10, D-11, decise il 9 novembre). Durata e Burn: D-12, D-13.
 
 | Carta | Sottotipo | Codice | Effetto | Lotto |
 |---|---|---|---|---|
@@ -116,7 +116,7 @@ Messe coperte quando pescate, si attivano da sole (D-15), poi vengono scartate.
 
 ## Terreni
 
-Una Crepa per fazione. Restano in gioco fino alla fine. Bonus base `P1`, effetto secondario `P2` (D-17, D-18).
+Una Crepa per fazione. Restano in gioco fino alla fine e il bonus vale per tutte le creature della fazione in campo, anche avversarie (D-17). Bonus base `P1`, effetto secondario `P2` (D-18).
 
 | Carta | Fazione | Codice | Bonus base | Effetto secondario |
 |---|---|---|---|---|
@@ -127,13 +127,13 @@ Una Crepa per fazione. Restano in gioco fino alla fine. Bonus base `P1`, effetto
 
 ## Pezzi di motore richiesti dagli effetti
 
-Prima degli effetti `P1` serve il framework (`ENG-22`); prima dei `P2`, questi pezzi in più:
+Prima degli effetti di Spell, Hidden e Terreni serve il registro (`ENG-22`); prima di quelli delle creature serve anche `CreatureEffect` (`ENG-23`); prima dei `P2`, questi pezzi in più:
 
 | Pezzo | Serve a | Decisione |
 |---|---|---|
-| `onCombatStart(ctx)` nell'interfaccia e azzeramento dello stato "per scontro" | Hidebehind, Spearfinger, SCP-682, Nure-onna, The Unseen Matriarch, Hounds, Howlers… | D-31 |
+| Numero massimo di attivazioni per effetto (niente `onCombatStart`); gli effetti "per scontro" si riscrivono con il nuovo catalogo | Hidebehind, Spearfinger, SCP-682, Nure-onna, The Unseen Matriarch, Hounds, Howlers… | D-31 |
 | Controllo delle morti dopo ogni fase | SCP-173, The Gnawing Witness, The Null Witness, SCP-001, SCP-106, Nure-onna, Bell Witch, Wendigo, The Silent Shepherd, SCP-2317 | D-08 |
-| Modificatori in attesa nel `PlayerState` | Spell Scudo, Spell Danno senza bersaglio, Wendigo | D-34 |
+| Modificatori in attesa nel `PlayerState`, sommati sulla prossima creatura | Spell Scudo, Spell Danno senza bersaglio, Wendigo | D-34 |
 | `StatModifier` con origine, sospendibile | Kitsune, The Hollow Wyrm, The Null Witness, Remnants of Reality, Terreni secondari | D-35 |
 | Contatore delle creature perse nel `PlayerState` | The Drowned Memory | — |
 | `CreatureInPlay.heal()` e `PlayerState.heal()` | Wendigo, SCP-001 | limiti da decidere |

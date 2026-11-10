@@ -54,8 +54,8 @@ src/main/java/it/downfall/reversky/engine/
 |---|---|
 | Architettura e isolamento del core | [docs/architettura](docs/architettura/architettura.md) |
 | Regole base: round, danni, fine partita | [docs/regole-base](docs/regole-base/regole-base.md) |
-| Fazioni e bonus (da `faction_bonus`) | [docs/fazioni](docs/fazioni/fazioni.md) |
-| Tipi di carta (Creature, Spell, Hidden, Terreni) | [docs/carte](docs/carte/carte.md) |
+| Fazioni e bonus (da `faction_bonuses`) | [docs/fazioni](docs/fazioni/fazioni.md) |
+| Tipi di carta (Creature, Spell, Hidden, Terreni, Oggetti) | [docs/carte](docs/carte/carte.md) |
 | Sistema degli effetti speciali | [docs/effetti](docs/effetti/effetti.md) |
 | Mescolamento, seed, riproducibilità | [docs/mescolamento](docs/mescolamento/mescolamento.md) |
 | Log della partita | [docs/log-partita](docs/log-partita/log-partita.md) |
@@ -76,7 +76,7 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 3. **Un solo regolamento.** Abilità, Spell, Hidden e Terreni fanno parte del gioco standard: non esistono modalità alternative (decisione concordata con il cliente). Non introdurre flag o `if` per "disattivare" parti del regolamento.
 4. **Ogni regola ha un test.** Ogni effetto speciale ha un test. Un bug corretto ha un test che lo riproduce.
 5. **Nessun numero magico e nessun valore predefinito:** punti vita, limite di round, fazioni e bonus di fazione arrivano **nella richiesta**: sono dati del database dell'API, modificabili dal backoffice. Nel codice restano solo le regole che non sono numeri da bilanciare.
-6. **Il motore non valida i mazzi secondo il regolamento** (40 carte, copie…): lo fa l'API. L'engine controlla solo che i dati ricevuti siano coerenti.
+6. **Il motore non valida i mazzi secondo il regolamento** (numero di carte, copie…): lo fa l'API. L'engine controlla solo che i dati ricevuti siano coerenti.
 7. I punti segnati **[DA CONFERMARE]** nei documenti non sono decisioni definitive: chiedi prima di cambiarli. L'elenco completo, con le proposte, è in [docs/decisioni-aperte](docs/decisioni-aperte/decisioni-aperte.md).
 
 ## Come lavorare

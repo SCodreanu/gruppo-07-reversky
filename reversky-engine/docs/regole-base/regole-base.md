@@ -21,8 +21,8 @@ Tutto ciò che **non** è una costante del regolamento si modifica dal **backoff
 | Parametro | Dove sta | Valore del rule set `1.0` | Stato |
 |---|---|---|---|
 | Punti vita iniziali | `rule_sets.starting_life_points` | 30 | **[DA CONFERMARE] D-01** |
-| Limite di round totali | `rule_sets.max_rounds` | 100 | **[DA CONFERMARE] D-02** dopo le simulazioni |
-| Bonus e malus di fazione | tabella `faction_bonus` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
+| Limite di round totali | `rule_sets.max_rounds` | 75 | deciso (D-02, 9 novembre); si cambia dal backoffice |
+| Bonus e malus di fazione | tabella `faction_bonuses` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
 
 ```java
 /** Regole di una partita, costruite dal blocco {@code rules} della richiesta. Nessun valore predefinito. */
@@ -37,7 +37,7 @@ public record RuleConfig(String rulesVersion, int startingLifePoints, int maxRou
 ```
 
 Restano **nel codice** solo le regole che non sono numeri da bilanciare: l'ordine dei passi di un round, il danno al giocatore
-come DEF negativa, l'attacco minimo 0, l'ordine delle condizioni di fine partita. Nei test si usa `TestRules.standard()` (30, 100).
+come DEF negativa, l'attacco minimo 0, l'ordine delle condizioni di fine partita. Nei test si usa `TestRules.standard()` (30, 75).
 
 ## Svolgimento
 
@@ -91,7 +91,7 @@ int playerDamage = Math.max(0, -defeated.defense());
 Esempio: la DEF della sconfitta passa da 5 a −3 → il giocatore perde **3** punti vita.
 
 > Il brief dice "differenza tra il proprio attacco e la difesa residua della creatura sconfitta": con la difesa residua *prima* del colpo è lo stesso numero (8 − 5 = 3).
-> La bozza del regolamento per i giocatori propone invece 8 − (−3) = 11: va allineata, vedi **D-03** in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#regole-base).
+> La bozza del regolamento per i giocatori proponeva invece 8 − (−3) = 11: con **D-03** (decisa il 9 novembre) vale 3 e la bozza va allineata. Vedi [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#regole-base).
 
 La regola vale qualunque sia la causa della morte (attacco, effetti di fine round, effetti alla morte): conta la DEF finale.
 
@@ -99,7 +99,7 @@ La regola vale qualunque sia la causa della morte (attacco, effetti di fine roun
 
 - Quando una creatura muore, il suo proprietario pesca la carta successiva del mazzo.
 - La creatura sopravvissuta **resta in campo** con la DEF che le è rimasta.
-- Se si pesca una Spell, una Hidden o un Terreno, la carta viene risolta (vedi [carte](../carte/carte.md)) e si continua a pescare finché esce una creatura.
+- Se si pesca una Spell, una Hidden, un Terreno o un Oggetto, la carta viene risolta (vedi [carte](../carte/carte.md)) e si continua a pescare finché esce una creatura.
 
 ### Esempio completo (senza bonus di fazione)
 
@@ -126,7 +126,7 @@ Si controlla **dopo ogni round**, in quest'ordine:
 
 Il risultato è `CHALLENGER_WIN`, `OPPONENT_WIN` o `DRAW` (gli stessi valori dell'enum `BattleResult` del database).
 
-Le condizioni 3, 4 e 5 sono proposte del team **[DA CONFERMARE]**; servono perché il brief chiede una conclusione anche con mazzi esauriti o scontri infiniti (es. due creature con ATK 0).
+Le condizioni 3, 4 e 5 erano proposte del team, approvate dai DSG il 9 novembre (D-05); servono perché il brief chiede una conclusione anche con mazzi esauriti o scontri infiniti (es. due creature con ATK 0).
 
 ## Casi limite da testare
 

@@ -16,7 +16,7 @@ Simula una partita completa.
 ```json
 {
   "seed": 8812734650912,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factions": [
     { "id": 1, "name": "Theory of the Wound" },
     { "id": 2, "name": "Theory of the Invitation" },
@@ -72,15 +72,16 @@ Simula una partita completa.
 | `rules.startingLifePoints` | sì | ≥ 1 |
 | `rules.maxRounds` | sì | ≥ 1, limite di round **totali** della partita |
 | `factions` | sì | dalla tabella `factions` |
-| `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonus` |
+| `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonuses` |
 | `challenger`, `opponent` | sì | sfidante e avversario |
 | `deck` | sì | una voce **per ogni copia**, almeno una creatura |
-| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN` (enum `CardType`) |
+| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`) |
+| `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
 | `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
-| `subtype` | Spell e Hidden | ricavato dai tag: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
-| `effectCode` | no | ricavato dal tag `EFFECT_<CODICE>` (senza il prefisso) |
+| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
+| `effectCode` | Spell, Hidden, Terreni e Oggetti | `catalog_cards.effect_code`; facoltativo per le creature |
 
 ### Risposta `200 OK`
 
@@ -115,7 +116,7 @@ L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
 
 | Status | Quando |
 |---|---|
-| `400` | JSON non valido, campo mancante, mazzo senza creature, statistiche negative, fazione sconosciuta, bonus di fazione non valido, `effectCode` sconosciuto |
+| `400` | JSON non valido, campo mancante, mazzo senza creature, statistiche negative, fazione sconosciuta, bonus di fazione non valido, `effectCode` mancante o sconosciuto |
 | `500` | bug nel motore (non dovrebbe mai succedere: va segnalato con il seed per riprodurlo) |
 
 Formato: `ProblemDetail`, come nell'API.
@@ -127,11 +128,12 @@ I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce,
 | 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`) | `95` |
 | 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
 | 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa o `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) | `93` |
-| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId` | `94` |
+| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Spell o Hidden con una fazione | `94` |
 | 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
 | 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
 | 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype` | — |
-| 8 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
+| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` | — |
+| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
 
 ```json
 {
@@ -144,7 +146,7 @@ I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce,
 
 ## `GET /api/v1/effects`
 
-Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare i tag `EFFECT_*` delle carte.
+Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
 
 ```json
 [

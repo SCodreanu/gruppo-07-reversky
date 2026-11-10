@@ -1,6 +1,6 @@
 {
   "seed": 1,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factions": [
     { "id": 1, "name": "Theory of the Wound" },
     { "id": 2, "name": "Theory of the Invitation" },

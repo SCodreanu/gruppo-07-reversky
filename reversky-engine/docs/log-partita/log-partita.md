@@ -44,6 +44,7 @@ In JSON:
 | `HIDDEN_SET` | una Hidden viene messa coperta | — (la carta resta nascosta nel messaggio) |
 | `HIDDEN_TRIGGERED` | una Hidden si attiva | carta, effetto |
 | `TERRAIN_PLACED` | un Terreno entra in gioco | carta |
+| `ITEM_PLACED` | un Oggetto entra in gioco | carta |
 | `ROUND_STARTED` | inizio di un round | numero round |
 | `ATTACK_COMPUTED` | calcolo dell'attacco | ATK base, bonus ATK di fazione, modificatori, totale |
 | `DAMAGE_DEALT` | una creatura colpisce l'altra | sorgente, bersaglio, danni, DEF rimasta |

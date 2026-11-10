@@ -28,7 +28,7 @@ core/
 │   ├── CardDefinition      record: dati della carta come arrivano dall'API
 │   ├── CreatureInPlay      creatura sul campo: ATK, DEF attuale, modificatori, effetto
 │   ├── Faction             record (id, nome): le fazioni sono dati, non un enum
-│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno
+│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno, Oggetto
 │   └── MatchState          i due giocatori + numero round + log + random
 ├── rules/
 │   ├── RuleConfig          punti vita, limite round, versione: costruita dalla richiesta
@@ -90,7 +90,7 @@ spring.application.name=reversky-engine
 server.port=8081
 ```
 
-Nessun valore di gioco sta nella configurazione o nel codice dell'engine. Punti vita, limite di round e bonus di fazione arrivano in **ogni richiesta**, presi dal rule set attivo e dalla tabella `faction_bonus` dell'API, che si modificano dal backoffice (vedi [regole-base](../regole-base/regole-base.md#valori-rule-set)).
+Nessun valore di gioco sta nella configurazione o nel codice dell'engine. Punti vita, limite di round e bonus di fazione arrivano in **ogni richiesta**, presi dal rule set attivo e dalla tabella `faction_bonuses` dell'API, che si modificano dal backoffice (vedi [regole-base](../regole-base/regole-base.md#valori-rule-set)).
 La versione delle regole (`rulesVersion`) torna in ogni risultato: così nello storico si sa con quali regole è stata giocata una partita.
 
 `MatchSimulator.simulate(SimulationInput)` riceve le regole dentro `SimulationInput`: lo stesso simulatore (un solo bean) gioca partite con rule set diversi.

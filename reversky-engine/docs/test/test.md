@@ -35,7 +35,7 @@ I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto
 ```java
 class RoundResolverTest {
 
-	private final RuleConfig rules = TestRules.standard();   // 30 PV, 100 round, come il rule set 1.0
+	private final RuleConfig rules = TestRules.standard();   // 30 PV, 75 round, come il rule set 1.0
 
 	@Test
 	@DisplayName("Se muore solo una creatura, il suo proprietario perde punti vita pari alla DEF negativa")
@@ -97,6 +97,7 @@ void hidebehind_dodgesOnlyFirstAttack() {
 - [ ] Spell pescata: effetto applicato subito, carta scartata, si continua a pescare;
 - [ ] Hidden pescata: messa coperta, si attiva alla sua condizione;
 - [ ] Terreno pescato: resta in gioco fino alla fine e dà il bonus alle creature della sua fazione.
+- [ ] Oggetto pescato: resta in gioco fino alla fine e applica il suo effetto passivo (`ENG-33`).
 
 ### Determinismo
 - [ ] stesso seed → stesso `MatchResult`, log compreso;
