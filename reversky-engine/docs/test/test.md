@@ -60,16 +60,20 @@ class RoundResolverTest {
 
 ```java
 @Test
-@DisplayName("Hidebehind previene 2 danni solo dal primo attacco subito")
-void hidebehind_preventsTwoDamageOnlyOnFirstAttack() {
+@DisplayName("Hidebehind previene 2 danni dal primo attacco di ogni creatura avversaria")
+void hidebehind_preventsTwoDamageOnFirstAttackOfEachOpponent() {
 	CreatureInPlay hidebehind = TestCards.inPlay("Hidebehind", 5, 6, new HidebehindEffect());
-	EffectContext ctx = TestContexts.of(hidebehind);
+	CreatureInPlay faceling = TestCards.inPlay("Faceling", 7, 9);
+	CreatureInPlay dullers = TestCards.inPlay("Dullers", 7, 9);
 
-	int first = hidebehind.effect().modifyIncomingDamage(ctx, 7);
-	int second = hidebehind.effect().modifyIncomingDamage(ctx, 7);
+	int firstFromFaceling = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, faceling), 7);
+	int secondFromFaceling = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, faceling), 7);
+	int firstFromDullers = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, dullers), 7);
 
-	assertThat(first).isEqualTo(5);
-	assertThat(second).isEqualTo(7);
+	assertThat(firstFromFaceling).isEqualTo(5);
+	assertThat(secondFromFaceling).isEqualTo(7);
+	// nuova avversaria → lo scudo vale di nuovo
+	assertThat(firstFromDullers).isEqualTo(5);
 }
 ```
 

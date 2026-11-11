@@ -58,11 +58,11 @@ La distribuzione "circa 10 Common, 7 Uncommon…" del regolamento è solo indica
 ### Possesso e disponibilità
 
 - Per ogni carta: `quantità nel mazzo ≤ copie disponibili`, cioè le copie in `collection_cards` meno quelle riservate da uno scambio aperto (vedi [scambi](../scambi/scambi.md#copie-riservate)).
-- Le carte con `is_active = false` restano utilizzabili da chi le possiede **[DA CONFERMARE]**.
+- Le carte con `is_active = false` (disattivate dal backoffice) **non si possono usare**: un mazzo che ne contiene una non è valido finché non la si toglie (Q-07, deciso l'11 novembre). Chi la possiede la conserva nella collezione.
 
 ## Come si valida
 
-`DeckValidator` è una classe a sé, senza accesso al database: riceve il contenuto del mazzo (con rarità, tipo e sottotipo di ogni carta), i limiti e la collezione, e restituisce **tutti** gli errori trovati (non si ferma al primo). Così il frontend può mostrarli tutti insieme.
+`DeckValidator` è una classe a sé, senza accesso al database: riceve il contenuto del mazzo (con rarità, tipo, sottotipo e stato attivo di ogni carta), i limiti e la collezione, e restituisce **tutti** gli errori trovati (non si ferma al primo). Così il frontend può mostrarli tutti insieme.
 
 ```java
 public record DeckViolation(String code, String message, Integer cardId) { }
@@ -74,6 +74,7 @@ public List<DeckViolation> validate(Map<CatalogCard, Integer> deckCards, Map<Int
 	checkCopyLimits(deckCards, violations);
 	checkBalanceLimits(deckCards, violations);
 	checkOwnership(deckCards, availableByCardId, violations);
+	checkActiveCards(deckCards, violations);
 	return violations;
 }
 ```
@@ -92,6 +93,7 @@ Codici di errore (usati dal frontend):
 | `DECK_COPY_LIMIT` | Too many copies of 'Hounds' (2/1) |
 | `DECK_BALANCE_LIMIT` | Too many Legendary cards (3/2) |
 | `DECK_NOT_OWNED` | You have 1 available copy of 'Kappa', the deck contains 2 |
+| `DECK_INACTIVE_CARD` | 'Kappa' is no longer available and must be removed from the deck |
 
 ## Quando si valida
 
@@ -141,6 +143,7 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - per ogni categoria (creature, Spell, Hidden, Oggetti, Terreni) il numero esatto → ok; una in meno o una in più → errore;
 - il Terreno e l'Oggetto contano nel massimo delle Rare;
 - carta non posseduta → errore;
+- carta disattivata (`is_active = false`) → errore `DECK_INACTIVE_CARD`; riattivata → ok;
 - 3 copie, 2 riservate da uno scambio: 1 nel mazzo → ok; 2 → errore; chiuso lo scambio, 2 → ok;
 - mazzo con più errori → li restituisce tutti;
 - eliminazione di un mazzo usato in un invito `PENDING` → `409`;

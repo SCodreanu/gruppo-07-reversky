@@ -101,8 +101,8 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
 |---|---|---|---|---|
-| `ENG-25` / `ENG-26` | Effetti `P2` **solo se decisi entro il 30 novembre** | A / B | M | D-xx |
-| `ENG-27` | Effetti secondari dei Terreni, se decisi (D-18) | A | M | `ENG-21` |
+| `ENG-25` / `ENG-26` | Effetti `P2` (tutti decisi l'11 novembre, servono i pezzi di motore del [catalogo](../effetti/catalogo-effetti.md#pezzi-di-motore-richiesti-dagli-effetti)) | A / B | M | D-xx |
+| `ENG-27` | Effetti secondari dei Terreni, decisi l'11 novembre (D-18) | A | M | `ENG-21` |
 | `ENG-28` | Report di bilanciamento con gli effetti, dopo le modifiche dei DSG alle statistiche | B | S | `ENG-26` |
 | `ENG-29` | Casi limite e correzione bug; Javadoc su tutto il core pubblico | A + B | M | `ENG-25`, `ENG-26` |
 | `ENG-30` | rule set `1.0` caricato nel database dell'API con i valori decisi; documenti aggiornati (tabella effetti, regole-base, decisioni chiuse) | A + B | S | `API-15`, `ENG-03` |

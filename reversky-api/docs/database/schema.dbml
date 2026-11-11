@@ -505,7 +505,7 @@ Table player_ratings {
   draws int [not null, default: 0]
 
   Indexes {
-    rating      // classifica [DA CONFERMARE]: serve solo a lei
+    rating      // creato dalla baseline per la classifica, che non si fa (Q-10): non serve, si può togliere con una migrazione nuova decisa insieme
   }
 
   Checks {

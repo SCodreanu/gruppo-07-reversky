@@ -38,12 +38,15 @@ In JSON:
 | `type` | Quando | `data` principale |
 |---|---|---|
 | `MATCH_STARTED` | inizio | punti vita iniziali |
-| `CARD_DRAWN` | un giocatore pesca | carta |
+| `CARD_DRAWN` | un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07) | carta |
 | `CREATURE_ENTERED` | una creatura entra in campo | carta, ATK, DEF |
 | `SPELL_RESOLVED` | una Spell viene risolta e scartata | carta, effetto, bersaglio |
+| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13) | Spell, carta rivelata, bonus applicato (nessuno se non è una creatura) |
 | `HIDDEN_SET` | una Hidden viene messa coperta | — (la carta resta nascosta nel messaggio) |
 | `HIDDEN_TRIGGERED` | una Hidden si attiva | carta, effetto |
 | `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | carta, Terreno sostituito se c'era |
+| `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | Terreno, causa (carta che lo ha tolto) |
+| `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | carta che sposta, carta spostata, nuova posizione |
 | `ITEM_PLACED` | un Oggetto entra in gioco | carta |
 | `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47) | carta, effetto, creatura |
 | `ROUND_STARTED` | inizio di un round | numero round |

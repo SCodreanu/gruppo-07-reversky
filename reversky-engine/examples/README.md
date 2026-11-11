@@ -38,7 +38,7 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
 | `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
-| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–0 |
+| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–(−5) |
 | `11-doppia-fazione-vantaggio` | carta con due fazioni: prende il bonus della seconda fazione | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–28 |
 | `12-doppia-fazione-svantaggio` | carta con due fazioni: subisce anche lo svantaggio della seconda fazione | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
 | `90-errore-effetto-sconosciuto` | `effectCode` scritto male (`HIDEBEHND`) | `400`, `UNKNOWN_EFFECT` |
@@ -116,7 +116,7 @@ Finché `HIDEBEHIND` non è nell'`EffectRegistry` questa richiesta deve dare `40
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).
-`finalLifePoints` è 0 e non −5 (proposta D-43); nel log `PLAYER_DAMAGED` riporta comunque 35 danni.
+`finalLifePoints` è −5 (D-43: il risultato riporta il valore vero); nel log `PLAYER_DAMAGED` riporta 35 danni.
 
 **11** — Rootbound Doppelganger (Mutant, Dream **e** Invitation, 6/10) contro Archive Puppet (Archive 6/6).
 Si sommano tutte le coppie di fazioni (vedi [fazioni](../docs/fazioni/fazioni.md#carte-con-due-fazioni)):

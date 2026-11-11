@@ -15,12 +15,7 @@ Come si usa:
 
 | # | Domanda | Proposta | Blocca | Riferimento |
 |---|---|---|---|---|
-| Q-05 | **Catalogo iniziale**: distribuzione, nomi, rarità ed effetti sono nel *Catalogo completo 120 carte* (vedi sotto); gli effetti sono in revisione e mancano ATK, DEF, illustrazioni e i nomi inglesi delle carte ancora in italiano (D-44) | ATK, DEF ed effetti li propone il bilanciamento (API-64), con la revisione nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md); nomi inglesi dai DSG | #125, #106 | D-24 |
-| Q-06 | **Carte speciali** (The Last Gift, edizione di Natale, fuori dal catalogo di 120 carte): rarità `Special`? | rarità `Special` con `sorting_order` 7, fuori dalle bustine normali | #85, #125 | D-23 |
-| Q-07 | Le carte **disattivate** restano utilizzabili nei mazzi di chi le possiede? | sì | #98 | [mazzi](../mazzi/mazzi.md) |
-| Q-08 | Le **varianti** contano nel totale della barra di completamento della collezione? | no, conta solo la carta originale | #93 | [collezione](../collezione/collezione.md) |
-| Q-09 | Uno scambio deve avere **almeno una carta per lato** (niente regali)? | sì | #103 | [scambi](../scambi/scambi.md) |
-| Q-10 | **Classifica** (`GET /rankings` e posizione in `/rankings/me`): si fa? | probabilmente no; se sì, ordinata per `rating` decrescente e poi `user_id`, senza account disattivati | #116 | [sfide](../sfide/sfide.md) |
+| Q-05 | **Catalogo iniziale**: distribuzione, nomi, rarità ed effetti sono nel *Catalogo completo 120 carte* (vedi sotto); gli effetti sono decisi (revisione dell'11 novembre) e mancano ATK, DEF, illustrazioni e i nomi inglesi delle carte ancora in italiano (D-44) | ATK e DEF li propone il bilanciamento (API-64); gli effetti decisi sono nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md); nomi inglesi dai DSG | #125, #106 | D-24 |
 
 ### Bilanciamento (SWD, task API-64)
 
@@ -37,7 +32,7 @@ Il bilanciamento lo fanno gli SWD (Tommaso con Claude), con le simulazioni dell'
 |---|---|---|---|---|
 | Q-11 | **Crediti di benvenuto** (`signup_bonus`) | 500 | #85, #87 | [crediti](../crediti/crediti.md) |
 | Q-12 | **Ricompense** delle classificate: vittoria e pareggio | 30 e 10 (le amichevoli non danno crediti) | #85, #115 | [crediti](../crediti/crediti.md) |
-| Q-13 | **Costo del pacchetto base** e sua composizione (slot e bonus) | costo: nessuna proposta, serve un valore per la migrazione del catalogo. Composizione: il catalogo propone 7 carte, 3 Common, 2 Uncommon, 1 Rare garantita e 1 slot flessibile (Rare 82,5%, Mythic 10%, Legendary 5%, Mutant 2,5%). Con il modello attuale sono 2 slot Rare e i bonus Mythic 1000, Legendary 500, Mutant 250: stesse probabilità per singolo bonus, ma qui possono riuscirne due nello stesso pacchetto (circa 0,85%), nel catalogo al massimo uno | #125 | [pacchetti](../pacchetti/pacchetti.md) |
+| Q-13 | **Costo del pacchetto base** e sua composizione (slot e bonus) | costo: **si decide più avanti** (11 novembre); serve un valore per la migrazione del catalogo. Composizione: il catalogo propone 7 carte, 3 Common, 2 Uncommon, 1 Rare garantita e 1 slot flessibile (Rare 82,5%, Mythic 10%, Legendary 5%, Mutant 2,5%). Con il modello attuale sono 2 slot Rare e i bonus Mythic 1000, Legendary 500, Mutant 250: stesse probabilità per singolo bonus, ma qui possono riuscirne due nello stesso pacchetto (circa 0,85%), nel catalogo al massimo uno | #125 | [pacchetti](../pacchetti/pacchetti.md) |
 | Q-14 | **Nuovi giocatori**: come ottengono un mazzo valido? Un mazzo da 30 carte richiede almeno 5 pacchetti da 7, e le classificate (unica fonte di crediti dopo la registrazione) richiedono un mazzo valido. Un `signup_bonus` troppo basso blocca il giocatore | `signup_bonus` sufficiente per un mazzo, oppure un pacchetto omaggio a quantità limitata (`cost = 0`), che però non garantisce una composizione valida | #85, #87 | [crediti](../crediti/crediti.md), [mazzi](../mazzi/mazzi.md) |
 | Q-15 | Serve un **credito da evento** (proposta al cliente)? | se sì, nuovo valore `EVENT_REWARD` in `credit_reason`, con una migrazione nuova | #86 | [crediti](../crediti/crediti.md) |
 
@@ -54,7 +49,6 @@ Il bilanciamento lo fanno gli SWD (Tommaso con Claude), con le simulazioni dell'
 |---|---|---|---|---|
 | Q-19 | **Inserimenti contemporanei duplicati** (due nomi uguali nello stesso istante): oggi passano il controllo nel service e la violazione del vincolo diventa `500` | un gestore di `DataIntegrityViolationException` in `GlobalExceptionHandler` che risponde `409`, in un task a parte | #100, #128 | [api-rest](../api-rest/api-rest.md) |
 | Q-20 | **Username senza distinzione tra maiuscole e minuscole**: da fare nel codice o con un indice su `LOWER(username)`? Un controllo solo nel codice non ferma due registrazioni contemporanee | nel codice, più avanti (scelta non confermata in modo esplicito) | — | [autenticazione](../autenticazione/autenticazione.md) |
-| Q-21 | **Autenticazione dell'engine** in produzione | header `X-Engine-Key` da variabile d'ambiente, solo se c'è un deploy pubblico | #105 | D-40 |
 | Q-22 | `schema.dbml` non è mai stato verificato da uno strumento: va aperto e salvato di nuovo in dbdiagram.io | farlo con la baseline: le migrazioni reali lo verificano | #141, #131 | [database](../database/database.md) |
 
 ### Decisioni del motore portate ai DSG il 9 novembre
@@ -63,20 +57,20 @@ Priorità **Alta** (#41, chiusa). Dettagli nel [documento dell'engine](../../../
 
 | ID | Tema | Esito | Stato |
 |---|---|---|---|
-| D-01 | Punti vita iniziali | proposta 30 | aperto |
+| D-01 | Punti vita iniziali | resta 30 nel rule set `1.0` e si ricontrolla con la simulazione (11 nov) | aperto |
 | D-02 | Limite di round | 75 round totali: valore iniziale del rule set `1.0` (`max_rounds`) | deciso |
 | D-03 | Danno al giocatore (incoerenza tra brief e bozza) | DEF negativa: 8 contro DEF 5 → 3 | deciso |
 | D-05 | Condizioni di fine partita 3–5 | come in `regole-base` | deciso |
 | D-08 | Morti fuori dal round | controllo delle morti dopo ogni fase | deciso |
 | D-10 | Spell o Hidden pescate (incoerenza nella bozza) | `SHIELD` in attesa e sommate sulla prossima creatura; `DAMAGE` subito sulla creatura avversaria; poi scartate | deciso |
-| D-15 | Attivazione delle Hidden | inizio del prossimo scontro, prima `DAMAGE` poi `SURVIVAL`; dal 10 novembre le Hidden con una condizione aspettano la condizione | deciso |
+| D-15 | Attivazione delle Hidden | inizio del prossimo scontro, prima `DAMAGE` poi `SURVIVAL`; dal 10 novembre le Hidden con una condizione aspettano la condizione; dall'11 novembre una Hidden della pescata iniziale non si attiva nel primo scontro | deciso |
 | D-17 | A chi dà il bonus il Terreno | a tutte le creature della sua fazione in campo, anche avversarie | deciso |
 | D-30 | Ordine degli effetti contemporanei | `NULLIFY` prima, poi sfidante prima dell'avversario | deciso |
 | D-47 | Effetti degli Oggetti | monouso, con gli effetti del catalogo (Q-23, 10 nov) | deciso |
 
 Decise tra gli SWD: D-31 (numero massimo di attivazioni per effetto, dettagli con il nuovo catalogo), D-34 (modificatori in attesa), D-35 (origine dei modificatori, con `ITEM`), D-41 (springdoc 3.2.0 nell'engine).
 
-Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [documento dell'engine](../../../reversky-engine/docs/decisioni-aperte/decisioni-aperte.md)): D-12, D-15 (modificata), D-16, D-18, **D-19** (in gioco c'è un solo Terreno: quello pescato dopo sostituisce il precedente), D-20, D-31, D-33, D-35, D-47. D-13 (Burn) è rimandato.
+Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [documento dell'engine](../../../reversky-engine/docs/decisioni-aperte/decisioni-aperte.md)): D-12, D-15 (modificata), D-16, D-18, **D-19** (in gioco c'è un solo Terreno: quello pescato dopo sostituisce il precedente), D-20, D-31, D-33, D-35, D-47. D-13 (Burn) è stato deciso l'11 novembre, con la revisione degli effetti.
 
 ## Decise
 
@@ -85,7 +79,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Decisione | Perché | Quando |
 |---|---|---|
 | Catalogo di **120 carte**: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni, 4 Oggetti | scheda di progettazione dei DSG | 9 nov |
-| Il *Catalogo completo 120 carte* (bozza di game design del 9 novembre) **sostituisce** la scheda di progettazione e i documenti precedenti come fonte di nomi, rarità ed effetti delle carte. Gli effetti sono in revisione; elenco completo nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md) | è la versione più recente e completa | 10 nov |
+| Il *Catalogo completo 120 carte* (bozza di game design del 9 novembre) **sostituisce** la scheda di progettazione e i documenti precedenti come fonte di nomi, rarità ed effetti delle carte. Gli effetti sono stati rivisti carta per carta e decisi l'11 novembre; elenco completo nel [catalogo degli effetti](../../../reversky-engine/docs/effetti/catalogo-effetti.md) | è la versione più recente e completa | 10 nov |
 | Creature per fazione: Common 7, Uncommon 6 (7 per Archive e Dream), Rare 4, Mythic 3, Legendary 2, cioè 22 per Invitation e Wound e 23 per Archive e Dream; più **2 Mutant con due fazioni** (Invitation + Dream, Wound + Archive). Totali: Common 28, Uncommon 26, Rare 16, Mythic 12, Legendary 8, Mutant 2. Ogni fazione ha anche 1 Terreno e 1 Oggetto | dal catalogo di 120 carte, che ha spostato a Uncommon due delle quattro Mutant della scheda (D-20) | 10 nov |
 | Le 12 Spell e le 8 Hidden sono **condivise**: non hanno fazione (`faction_id` nullo, `chk_catalog_cards_faction_matches_type`) | come sopra | 9 nov |
 | Mazzo da **30 carte**: 20 Creature, 6 Spell, 2 Hidden, 1 Oggetto, 1 Terreno (chiude Q-01); in `rule_sets` `deck_specials` diventa `deck_spells` e `deck_hidden`, e si aggiunge `deck_items` | come sopra; i valori possono cambiare dopo il bilanciamento, solo dal backoffice | 9 nov |
@@ -146,6 +140,18 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | `audit_logs` non contiene mai `password_hash` né token; chiavi composte scritte come `"2:3"` | le righe di audit non si cancellano |
 | Lucchetti sempre sulle righe di `inventories` in ordine crescente di `user_id` | evita i deadlock negli scambi e nei pareggi |
 | `deck_cards` e `trade_offers` si aggiornano riga per riga, mai svuotando e reinserendo | Hibernate esegue gli insert prima dei delete e viola la chiave |
+
+### Punti da confermare chiusi l'11 novembre
+
+| Decisione | Perché | Quando |
+|---|---|---|
+| **Carte speciali** (The Last Gift, edizione di Natale): rarità `Special` con `sorting_order` 7, fuori dalle bustine normali; per gli effetti che confrontano le rarità è la più alta (Q-06, D-23) | non è una delle sei rarità del catalogo | 11 nov |
+| Le carte **disattivate** (`is_active = false`) **non** si possono usare nei mazzi: un mazzo che ne contiene una non è valido (`DECK_INACTIVE_CARD`) finché non la si toglie; chi la possiede la conserva (Q-07) | il backoffice deve poter togliere una carta dal gioco | 11 nov |
+| Le **varianti** non contano nel totale della barra di completamento: conta solo la carta originale (Q-08) | cambiano solo la grafica | 11 nov |
+| Uno scambio può avere **un lato vuoto**: si può regalare una carta o chiederne una senza dare nulla; serve almeno una carta in totale (Q-09) | scelta del team | 11 nov |
+| **Nessuna classifica pubblica**: niente `GET /rankings` né posizione; `GET /rankings/me` mostra rating e statistiche classificate. L'indice su `player_ratings.rating` della baseline non serve più (si può togliere con una migrazione nuova, decisa insieme) (Q-10) | fuori dal perimetro della fase 1 | 11 nov |
+| **Autenticazione dell'engine**: header `X-Engine-Key` da variabile d'ambiente, solo se l'engine viene esposto fuori dalla rete privata (Q-21, D-40) | in rete privata solo l'API lo raggiunge | 11 nov |
+| Punti vita (D-01), limiti del mazzo (Q-02, Q-03) e crediti (Q-11, Q-12) **restano le proposte**: si usano nei dati iniziali e si ricontrollano con la simulazione o con i Digital Strategist; il costo del pacchetto (Q-13) si decide più avanti | servono i dati del bilanciamento | 11 nov |
 
 ### Regolamento e valori di gioco
 

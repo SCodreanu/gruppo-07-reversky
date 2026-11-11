@@ -90,7 +90,7 @@ Risposta (un elemento):
 ```
 
 Altri endpoint:
-- `GET /api/v1/collection/summary` → carte uniche possedute sul totale del catalogo, per rarità (barra di completamento). Se le varianti contino nel totale è **[DA CONFERMARE]**;
+- `GET /api/v1/collection/summary` → carte uniche possedute sul totale del catalogo, per rarità (barra di completamento). Le varianti **non** contano nel totale: conta solo la carta originale, e possedere una variante vale come possedere la sua originale (Q-08, deciso l'11 novembre);
 - `GET /api/v1/users/{id}/collection` → carte di un altro utente (solo carte e quantità), per preparare uno scambio.
 
 ## Test minimi

@@ -46,7 +46,7 @@ Campi:
 
 ### Regole
 
-1. **Le carte non si cancellano mai.** Gli utenti le possiedono e lo storico le usa: si **disattivano**. Una carta disattivata non esce più dai pacchetti ma resta nelle collezioni.
+1. **Le carte non si cancellano mai.** Gli utenti le possiedono e lo storico le usa: si **disattivano**. Una carta disattivata non esce più dai pacchetti e non si può usare nei mazzi (Q-07), ma resta nelle collezioni.
 2. **Effetti.** L'effetto di una carta è `catalog_cards.effect_code` (al massimo uno). Il codice **deve esistere nell'engine**: gli effetti sono codice Java, il backoffice può solo assegnare un effetto già implementato. L'elenco dei codici validi si ottiene dall'engine (`GET /api/v1/effects`).
 3. **Sottotipi.** Una Spell deve avere uno tra `DAMAGE`, `SHIELD`, `BURN`; una Hidden uno tra `SURVIVAL`, `DAMAGE`; le altre carte nessuno. Lo garantisce il vincolo `chk_catalog_cards_subtype_matches_type`.
 4. **Rarità coerenti con i pacchetti.** Spell e Hidden devono essere Common o Uncommon, Terreni e Oggetti Rare (vedi [pacchetti](../pacchetti/pacchetti.md)); le creature accettano qualsiasi rarità. Le rarità si riconoscono dal `sorting_order` e **mai dal nome** (il nome si modifica dal backoffice, l'ordine no; anche l'engine le confronta solo con `rarityOrder`): Common = 1, Uncommon = 2, Rare = 3 (`Rarity.COMMON_ORDER`, `UNCOMMON_ORDER`, `RARE_ORDER`). Il seed delle rarità (#85) deve usare questi valori. La regola non ha un vincolo nel database: la controlla solo il service.
@@ -191,7 +191,7 @@ Ogni azione del backoffice salva una riga:
 - Carta con `effectCode` inesistente nell'engine → `422`.
 - Modifica di una carta originale → le sue varianti ricevono gli stessi valori.
 - `variantOfId` che indica una variante → `422`.
-- Carta disattivata → non esce più dai pacchetti, ma resta in collezione.
+- Carta disattivata → non esce più dai pacchetti e rende non validi i mazzi che la contengono, ma resta in collezione.
 - Attivazione di un pacchetto con uno slot base che nessuna carta può riempire → `422`.
 - Bonus di rarità non più alta di tutti gli slot base → `422`.
 - Disattivazione di un utente in coda classificata → ticket rimosso.

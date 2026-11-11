@@ -68,7 +68,7 @@ L'API trasforma `give` in righe con `user_id = richiedente` e `receive` in righe
 
 Controlli:
 - niente scambi con se stessi (`chk_trades_no_self_trade`);
-- almeno una carta per lato **[DA CONFERMARE]**;
+- almeno una carta **in totale**; un lato può essere vuoto, quindi si può regalare una carta o chiederne una senza dare nulla (Q-09, deciso l'11 novembre);
 - quantità > 0, nessuna carta ripetuta nello stesso lato;
 - blocca la riga `inventories` di chi propone;
 - chi propone ha abbastanza copie **disponibili** delle carte che dà, altrimenti `422`;
@@ -161,6 +161,7 @@ Un utente non partecipante che chiede uno scambio riceve `404`.
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.
 - Controproposta: le offerte vecchie spariscono, il turno passa all'altro.
 - Accettazione fuori turno → `409`.
+- Scambio con un lato vuoto (regalo o richiesta) → ok; scambio senza nessuna carta → `422`.
 - Con 3 copie, offrirne 2 in uno scambio e altre 2 in un secondo → il secondo riceve `422`.
 - Due proposte contemporanee sulle stesse copie → una sola riesce.
 - Ritiro o rifiuto di uno scambio → le copie tornano subito disponibili.

@@ -288,8 +288,7 @@ L'engine restituisce `CHALLENGER_WIN`, `OPPONENT_WIN` o `DRAW`, gli stessi valor
 | `GET` | `/api/v1/battles` | partite giocate, paginate; filtro opzionale `mode` (`FRIENDLY`, `RANKED`) |
 | `GET` | `/api/v1/battles/{id}` | dettaglio con log round per round |
 | `POST` | `/api/v1/battles/{id}/retry` | rilancia una simulazione non completata |
-| `GET` | `/api/v1/rankings` | **[DA CONFERMARE]** classifica per rating, paginata (solo chi ha giocato almeno una classificata): probabilmente non verrà inclusa |
-| `GET` | `/api/v1/rankings/me` | il mio rating e le statistiche classificate; la posizione **[DA CONFERMARE]**, solo se si fa la classifica |
+| `GET` | `/api/v1/rankings/me` | il mio rating e le statistiche classificate; non c'è una classifica pubblica né una posizione (Q-10, deciso l'11 novembre) |
 
 Elemento dello storico:
 

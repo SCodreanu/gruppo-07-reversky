@@ -102,11 +102,11 @@ Vedi [docs/mescolamento](docs/mescolamento/mescolamento.md).
 - Si usano solo **interi** (`int`). Niente `double` per statistiche e danni.
 - "Arrotondato per difetto" = divisione intera; con numeri che possono essere negativi usa `Math.floorDiv`.
 - Gli attacchi effettivi non scendono mai sotto 0: `Math.max(0, attack)`.
-- I bonus percentuali si calcolano così: `value * percent / 100` (es. 20% di 13 = `13 * 20 / 100` = 2).
+- I bonus percentuali si calcolano così: `value * percent / 100` (es. Il Direttore dell'Edificio, 40% di 13 = `13 * 40 / 100` = 5, poi massimo 4).
 
 ```java
-// Skin-Stealers: DEF pari al 25% della DEF base avversaria, per difetto, massimo 3
-int gained = Math.min(3, opponentBaseDefense * 25 / 100);   // 13 → 3, 9 → 2
+// Skin-Stealers: DEF pari alla metà della DEF base avversaria, per difetto, massimo 4
+int gained = Math.min(4, opponentBaseDefense / 2);   // 13 → 4, 7 → 3
 ```
 
 ---
@@ -165,10 +165,10 @@ Obbligatorio su: tutte le classi pubbliche del core, tutti i metodi pubblici del
 
 ```java
 /**
- * Hidebehind — "Previene 2 danni dal primo attacco ricevuto".
+ * Hidebehind — "Previene 2 danni dal primo attacco di ogni creatura avversaria".
  * <p>
- * Il primo attacco con danno maggiore di 0 viene ridotto di 2 (minimo 0).
- * Dopo l'effetto non ha più alcun impatto.
+ * Il primo attacco con danno maggiore di 0 di ogni avversaria viene ridotto di 2 (minimo 0).
+ * Contro la stessa avversaria non si ripete; contro una nuova avversaria vale di nuovo.
  */
 public final class HidebehindEffect implements CreatureEffect { ... }
 ```

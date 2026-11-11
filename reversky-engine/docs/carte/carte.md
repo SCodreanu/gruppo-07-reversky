@@ -28,7 +28,7 @@ Un mazzo è una `List<CardDefinition>` con **un elemento per copia**.
 
 Le rarità sono dati (tabella `rarities`): l'engine riceve nome e `rarityOrder` e confronta le rarità **solo tramite `rarityOrder`**, mai tramite il nome.
 
-Nel motore la rarità serve solo a qualche effetto (Bigfoot: "+2 ATK contro Rare o superiori, +1 DEF contro Common e Uncommon"; SCP-3000: "+3 ATK contro Rare o superiori"). Corrispondenza con la classificazione della lore:
+Nel motore la rarità serve solo a qualche effetto (Bigfoot: "contro Rare o superiori +4 ATK e 2 danni in meno da ogni loro attacco, contro Common e Uncommon +2 ATK"; SCP-3000: "contro Rare o superiori subisce metà dei danni dai loro attacchi"; SCP-2521: ruba l'effetto solo a una Rare o inferiore; La Regina dei Sentieri Perduti: sposta in fondo al mazzo avversario la creatura di rarità più alta). Corrispondenza con la classificazione della lore:
 
 | Rarità | Classe della lore |
 |---|---|
@@ -59,7 +59,7 @@ public final class CreatureInPlay {
 	private int defense;                // DEF attuale
 	private final List<StatModifier> attackModifiers;
 	private CreatureEffect effect;      // null se la carta non ha effetto
-	private boolean effectDisabled;     // es. annullato da SCP-2521 o da Il Predicatore sotto la Pioggia
+	private boolean effectDisabled;     // es. annullato da SCP-2521 o da Il Predicatore sotto la Pioggia (finché resta in campo)
 	private int roundsInCombat;         // per effetti "nei primi 2 round"
 	...
 }
@@ -74,14 +74,14 @@ Quando viene pescata si risolve in automatico, poi la carta viene **scartata** e
 
 | Sottotipo | Bersaglio | Esempi |
 |---|---|---|
-| `DAMAGE` (3) | creatura avversaria in campo, subito | Morso del Rovescio (−3 ATK), Frattura della Pelle (−3 DEF), Dissoluzione (−2/−2) |
-| `SHIELD` (6) | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Velo degli Ancorati (+3 DEF), Patto del Registro (+2 DEF/+1 ATK), SCP-500 (primo attacco −4 danni) |
-| `BURN` (3) | vedi sotto | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati |
+| `DAMAGE` (3) | creatura avversaria in campo, subito | Morso del Rovescio (−3 ATK), Frattura della Pelle (−5 DEF), Dissoluzione (−2/−2) |
+| `SHIELD` (6) | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Velo degli Ancorati (+5 DEF), Patto del Registro (+2 DEF/+1 ATK), SCP-500 (primo danno −4), SCP-458 (+2 DEF a due creature di fila) |
+| `BURN` (3) | la prossima carta del mazzo, se è una creatura (vedi sotto) | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati |
 
-Le 12 Spell sono nel [catalogo degli effetti](../effetti/catalogo-effetti.md#spell). Una Spell si pesca solo quando la propria creatura è morta: quando il catalogo dice "creatura attiva" (SCP-109, SCP-458, Burn) si intende la **prossima** creatura del proprietario.
+Le 12 Spell sono nel [catalogo degli effetti](../effetti/catalogo-effetti.md#spell). Una Spell si pesca solo quando la propria creatura è morta: quando il catalogo dice "creatura attiva" si intende la **prossima** creatura del proprietario.
 
 - I modificatori delle Spell durano finché la creatura che li riceve resta in campo, anche negli scontri successivi (D-12, deciso il 10 novembre).
-- **[DA CONFERMARE] Burn** (testo del catalogo): si rivela la prossima carta del mazzo. Se è una creatura, la sua ATK e la sua DEF si aggiungono **temporaneamente** alla creatura del giocatore (più l'eventuale bonus della Spell); se è di un altro tipo viene scartata; con il mazzo vuoto non succede nulla. Restano da decidere se la creatura rivelata viene tolta dal mazzo e quanto dura il "temporaneamente" (D-13).
+- **Burn** (D-13, decisa l'11 novembre, *Nessuna carta persa*): si rivela la prossima carta del mazzo del proprietario. Se è una creatura, è proprio la prossima creatura che verrà pescata ed **entra con il bonus fisso** della Burn (modificatore in attesa, D-34); se non è una creatura **non si scarta nulla** e la carta resta al suo posto; con il mazzo vuoto non succede nulla. Evento di log `BURN_REVEALED`.
 
 ### Hidden (`HIDDEN`)
 
@@ -89,30 +89,31 @@ Quando viene pescata viene messa **coperta** nella zona Hidden del giocatore. Si
 
 | Sottotipo | Effetto | Esempi |
 |---|---|---|
-| `SURVIVAL` (4) | aiuta la propria creatura | Last Sanctuary (+4 DEF), Survival Instinct (+2/+2), Remnants of Reality, Unseen Exit |
-| `DAMAGE` (4) | indebolisce la creatura avversaria | Hostile Presence (−4 ATK), Echo Strike (−2/−2), Breaking Point, Static Interference |
+| `SURVIVAL` (4) | aiuta la propria creatura | Last Sanctuary (+5 DEF), Survival Instinct (+2 ATK/+1 DEF), Remnants of Reality, Unseen Exit |
+| `DAMAGE` (4) | indebolisce la creatura avversaria | Hostile Presence (−5 ATK nel primo round), Echo Strike (−2/−2), Breaking Point, Static Interference |
 
 Attivazione (D-15, decisa il 9 novembre e modificata il 10):
-- una Hidden **con una condizione** (Unseen Exit, Static Interference) resta coperta finché la condizione si verifica, nel passo del round in cui si verifica;
-- le altre si attivano all'inizio del **prossimo scontro** del proprietario (cioè quando una nuova coppia di creature si affronta);
+- una Hidden **con una condizione** (Remnants of Reality: quando la propria creatura riceve una penalità; Unseen Exit: quando un attacco ucciderebbe la propria creatura) resta coperta finché la condizione si verifica, nel passo del round in cui si verifica;
+- le altre si attivano all'inizio del **prossimo scontro** del proprietario (cioè quando una nuova coppia di creature si affronta), contro la creatura avversaria in campo in quel momento;
+- una Hidden pescata nella pescata iniziale **non si attiva nel primo scontro** ("non nel primo turno" del catalogo, regola adottata l'11 novembre);
 - se più Hidden si attivano nello stesso momento, le `DAMAGE` si risolvono prima delle `SURVIVAL`.
 
-Il "non nel primo turno" del catalogo e la condizione esatta di ogni Hidden si fissano nella revisione degli effetti ([catalogo degli effetti](../effetti/catalogo-effetti.md#hidden)).
+Durate: "nello scontro corrente" = finché una delle due creature muore; "prima del calcolo dello scontro" (Hidden `DAMAGE`) = il malus ATK vale solo il primo round, il danno alla DEF è permanente. Dettagli nel [catalogo degli effetti](../effetti/catalogo-effetti.md#hidden).
 
 ### Terreno (`TERRAIN`)
 
-Quando viene pescato viene messo **accanto al mazzo** e resta in gioco finché un giocatore (lui o l'avversario) pesca un altro Terreno: in gioco c'è **un solo Terreno** alla volta, e quello nuovo sostituisce il precedente (D-19, decisa il 10 novembre). Dà un bonus passivo a **tutte** le creature della sua fazione in campo, comprese quelle dell'avversario (D-17, decisa il 9 novembre).
+Quando viene pescato viene messo **accanto al mazzo** e resta in gioco finché un giocatore (lui o l'avversario) pesca un altro Terreno: in gioco c'è **un solo Terreno** alla volta, e quello nuovo sostituisce il precedente (D-19, decisa il 10 novembre). Può anche essere tolto da un effetto: The Null Witness lo rimuove se l'ha pescato l'avversario, The Hollow Wyrm lo **inghiotte** chiunque l'abbia pescato (anche un Terreno pescato mentre il Wyrm è in campo, che allora non si piazza). Evento di log `TERRAIN_REMOVED`, con la causa. Dà un bonus passivo a **tutte** le creature della sua fazione in campo, comprese quelle dell'avversario (D-17, decisa il 9 novembre).
 
-| Terreno | Fazione | Effetto base |
-|---|---|---|
-| Echo Rift (Crepa Eco) | Theory of the Wound | +1 ATK |
-| Hollow Clearing (Crepa Radura) | Theory of the Invitation | +2 DEF |
-| Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK e +1 DEF |
-| Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK |
+| Terreno | Fazione | Effetto base | Effetto secondario |
+|---|---|---|---|
+| Echo Rift (Crepa Eco) | Theory of the Wound | +1 ATK | la prima volta che ogni creatura viene ferita in uno scontro, +1 ATK per il resto dello scontro |
+| Hollow Clearing (Crepa Radura) | Theory of the Invitation | +2 DEF | ogni penalità DEF ricevuta è ridotta di 1 |
+| Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK e +1 DEF | la prima Spell `DAMAGE` subita in uno scontro fa 1 punto in meno (prima dalla DEF, poi dall'ATK) |
+| Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK | all'inizio di ogni scontro 1 danno alla creatura avversaria (danno da effetto) |
 
-Ogni Terreno ha anche un effetto secondario, elencato nel [catalogo degli effetti](../effetti/catalogo-effetti.md#terreni): si rivede ora con le carte e si implementa dopo il bonus base (D-18).
+I quattro Terreni valgono circa 3,5 PS per creatura della loro fazione (revisione dell'11 novembre). Gli effetti secondari sono decisi e si implementano dopo il bonus base (D-18).
 
-**[DA CONFERMARE]** Quando un Terreno viene sostituito, i suoi bonus si tolgono: l'ATK subito, la DEF con la regola dello scudo (si toglie solo la parte non ancora consumata dai danni, D-35).
+Quando un Terreno esce (sostituito, rimosso o inghiottito), i suoi bonus si tolgono: l'ATK subito, la DEF con la regola dello scudo (si toglie solo la parte non ancora consumata dai danni, D-35), quindi l'uscita di un Terreno non uccide mai (D-19, deciso l'11 novembre).
 
 La fazione del Terreno è il suo `factionId`; l'effetto è il suo `effectCode`. Una creatura con due fazioni riceve il bonus se una delle due è quella del Terreno (una volta sola).
 
@@ -122,14 +123,16 @@ Il bonus DEF del Terreno si applica quando la creatura **entra in campo** (o sub
 
 Quando viene pescato viene messo **accanto al mazzo**, come un Terreno, e non può essere distrutto né scartato da altre carte. È **monouso** (D-47, decisa il 10 novembre): resta finché il suo effetto scatta una volta, sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma. Ha una fazione (`factionId`), un effetto (`effectCode`, obbligatorio) e rarità Rare. Ogni mazzo ne contiene uno (lo controlla l'API) e ogni fazione ne ha uno nel catalogo.
 
-| Oggetto | Fazione | Effetto (catalogo) |
+| Oggetto | Fazione | Effetto (revisione dell'11 novembre) |
 |---|---|---|
-| Badge di Uscita Negata | Theory of the Wound | previene 2 danni dal primo attacco, poi si consuma |
-| Bussola dei Sentieri Falsi | Theory of the Invitation | +2 DEF per il primo round, poi si consuma |
-| Fascicolo Sigillato 0 | Theory of the Archive | annulla fino a 2 punti della prima penalità ATK/DEF, poi si consuma |
-| Campanello del Torii | Theory of the Dream | alla prima Hidden avversaria attivata +2 DEF, poi si consuma |
+| Badge di Uscita Negata | Theory of the Wound | la prima volta che la creatura del proprietario morirebbe, resta con 1 DEF |
+| Bussola dei Sentieri Falsi | Theory of the Invitation | uno scudo di 2 DEF all'inizio di ognuno dei primi tre round del prossimo scontro |
+| Fascicolo Sigillato 0 | Theory of the Archive | annulla del tutto il primo effetto di creatura, Spell o Hidden avversaria che colpirebbe la creatura del proprietario |
+| Campanello del Torii | Theory of the Dream | annulla la prima Hidden nemica che starebbe per attivarsi |
 
-**[DA CONFERMARE]** L'ordine rispetto al Terreno quando scattano insieme all'entrata (D-48). Implementazione: `ENG-33`.
+La fazione dell'Oggetto non limita il suo effetto: vale per qualunque creatura del proprietario.
+
+Quando scattano insieme all'entrata, prima il Terreno e poi l'Oggetto (D-48, deciso l'11 novembre). Implementazione: `ENG-33`.
 
 ### Carte condivise
 
