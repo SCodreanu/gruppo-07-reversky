@@ -5,8 +5,8 @@ Elenco di **tutti** gli effetti delle 120 carte, tradotti in termini del motore:
 
 **Fonte:** il *Catalogo completo 120 carte* (bozza di game design del 9 novembre), che **sostituisce** il documento di lavoro (`docs/idee`) e la proposta al cliente del 2 novembre,
 con gli effetti decisi nella **revisione carta per carta del 10 e 11 novembre** ([revisione degli effetti](../bilanciamento/revisione-effetti.md)): lì ci sono, per ogni carta, l'effetto originale, il motivo del cambiamento, il valore e le interazioni.
-La struttura (quante carte per tipo, fazione e rarità) è decisa (D-24). Gli **effetti sono decisi**; le statistiche ATK/DEF non sono ancora definite e si fissano con la simulazione.
-Finché le statistiche mancano, l'engine si sviluppa e si testa con **dati di prova** ([`examples/`](../../examples/README.md)).
+La struttura (quante carte per tipo, fazione e rarità) è decisa (D-24). Gli **effetti sono decisi**; il bilanciamento del 12 e 13 novembre ha cambiato i numeri di 13 effetti (già riportati qui sotto) e ha fissato ATK, DEF e PS di ogni carta nel [catalogo finale](../bilanciamento/catalogo-finale.csv), da confermare con il motore vero (`ENG-28`).
+L'engine si sviluppa e si testa con **dati di prova** ([`examples/`](../../examples/README.md)).
 
 - **Carta:** nome come nel catalogo; tra parentesi il nome inglese di lavoro usato finora, dove esiste. Il gioco è in inglese (D-44): i nomi definitivi li danno i DSG.
 - **Effetto:** l'effetto deciso nella revisione; in corsivo il nome di lavoro dell'effetto, se ne ha uno.
@@ -63,11 +63,11 @@ Common senza effetto: Squonk, Fuoco fatuo (Will-o'-the-Wisp), Corvo di Cenere (A
 | Spearfinger | Rare | `SPEARFINGER` | il primo attacco contro ogni nuova creatura avversaria fa +2 | `modifyOutgoingAttack` | ultima avversaria | P1 | è un bonus ATK |
 | Bell Witch | Rare | `BELL_WITCH` | *Infestazione che resta*: all'inizio del secondo round 2 danni all'avv., una volta; quando muore, la prossima creatura avversaria entra con −2 DEF | `onRoundStart`, `onDeath` | `used` | P1 | D-08, D-34 |
 | Il Predicatore sotto la Pioggia (The Rain Preacher) | Rare | `RAIN_PREACHER` | *Sermone che cancella*: all'entrata annulla l'effetto dell'avv. finché resta in campo; se non ha effetto, ha invece −2 ATK finché resta in campo | `onEnterPlay` (`NULLIFY`) | — | P2 | regola degli effetti annullati ([effetti](effetti.md#effetti-annullati)) |
-| The Bloodless Hound | Rare | `BLOODLESS_HOUND` | *Drenaggio senza sangue*: dopo ogni suo attacco che infligge danni recupera metà dei danni inflitti (per difetto), senza superare la DEF all'entrata; dopo un'eliminazione recupera altri 2 | `afterDamage`, `onKill` | — | P2 | `heal()` con tetto alla DEF all'entrata |
+| The Bloodless Hound | Rare | `BLOODLESS_HOUND` | *Drenaggio senza sangue*: dopo ogni suo attacco che infligge danni recupera metà dei danni inflitti (per difetto), senza superare la DEF all'entrata; dopo un'eliminazione recupera altri 4 | `afterDamage`, `onKill` | — | P2 | `heal()` con tetto alla DEF all'entrata |
 | Mothman | Mythic | `MOTHMAN` | *Disastro annunciato*: all'entrata, e ogni volta che una creatura avversaria entra mentre Mothman è in campo, quella creatura subisce 3 danni | `onEnterPlay`, entrata avversaria | — | P1 | controllo all'entrata delle creature avversarie; D-08 |
 | Bigfoot | Mythic | `BIGFOOT` | *Ammazzagiganti*: contro Rare o superiori +4 ATK e 2 danni in meno da ogni loro attacco; contro Common e Uncommon +2 ATK | `modifyOutgoingAttack`, `modifyIncomingDamage` | — | P1 | `rarityOrder`, Mutant sopra Legendary (D-20); si controlla contro ogni avversaria |
 | The Thorned Matriarch | Mythic | `THORNED_MATRIARCH` | *Offerta di rovi*: all'inizio di ogni round, se la sua DEF è più alta di quella avversaria, sacrifica 2 DEF e infligge 4 danni all'avv. | `onRoundStart` | — | P1 | D-08 |
-| Wendigo | Legendary | `WENDIGO` | *Insaziabile*: a fine round avv. −1 DEF più 1 per ogni nemica eliminata da Wendigo, massimo 3; ogni eliminazione fa recuperare 3 DEF, fino alla DEF all'entrata | `onRoundEnd`, `onKill` | eliminazioni | P2 | `heal()`; conta anche un'eliminazione fatta dal drenaggio; D-08 |
+| Wendigo | Legendary | `WENDIGO` | *Insaziabile*: a fine round avv. −3 DEF più 1 per ogni nemica eliminata da Wendigo, massimo 6; ogni eliminazione fa recuperare 5 DEF, fino alla DEF all'entrata | `onRoundEnd`, `onKill` | eliminazioni | P2 | `heal()`; conta anche un'eliminazione fatta dal drenaggio; D-08 |
 | La Regina dei Sentieri Perduti | Legendary | `QUEEN_OF_LOST_PATHS` | *Sentieri deviati*: all'entrata e a ogni eliminazione guarda le prossime tre creature del mazzo avversario e manda quella di rarità più alta in fondo al mazzo (a parità, quella che verrebbe pescata prima); all'entrata anche avv. −2 DEF | `onEnterPlay`, `onKill` | — | P2 | modifica dell'ordine del mazzo avversario; evento `DECK_REORDERED`. Valore stimato: prima carta da controllare con la simulazione |
 
 ## Theory of the Archive — SCP (A)
@@ -83,14 +83,14 @@ Common senza effetto: SCP-131 (Eye Pods), SCP-999 (Tickle Monster), SCP-1762 (He
 | SCP-053 (The Young Girl) | Uncommon | `SCP_053` | *Paranoia*: all'entrata avv. −3 DEF; l'avv. ha +2 ATK nel primo round | `onEnterPlay` | round dello scontro | P1 | il −3 è danno da effetto (D-08) |
 | SCP-2006 (Too Spooky) | Uncommon | `SCP_2006` | *Imitazione*: all'entrata, se l'ATK base dell'avv. è più alto del suo, prende quell'ATK base finché resta in campo | `onEnterPlay` | — | P1 | confronto sui valori base (`CardDefinition.atk`); a parità non cambia nulla |
 | The Index Maw | Uncommon | `INDEX_MAW` | all'entrata +2 DEF finché resta in campo | `onEnterPlay` | — | P1 | come Il Raccoglitore di Orme |
-| SCP-106 (Old Man) | Rare | `SCP_106` | *Riflesso più forte*: riflette 2 danni all'attaccante per ciascuno dei primi due attacchi subiti | `afterDamage` | attacchi subiti | P1 | conta solo un attacco con danno > 0 (D-33); D-08 |
-| SCP-682 (Hard-to-Destroy Reptile) | Rare | `SCP_682` | *Adattamento*: ogni attacco subito riduce di 2 i danni degli attacchi successivi, cumulativo, massimo −4 | `modifyIncomingDamage`, `afterDamage` | attacchi subiti | P1 | — |
+| SCP-106 (Old Man) | Rare | `SCP_106` | *Riflesso più forte*: riflette 3 danni all'attaccante per ciascuno dei primi due attacchi subiti | `afterDamage` | attacchi subiti | P1 | conta solo un attacco con danno > 0 (D-33); D-08 |
+| SCP-682 (Hard-to-Destroy Reptile) | Rare | `SCP_682` | *Adattamento*: ogni attacco subito riduce di 2 i danni degli attacchi successivi, massimo −2 (quindi −2 a ogni attacco dopo il primo) | `modifyIncomingDamage`, `afterDamage` | attacchi subiti | P1 | — |
 | SCP-2521 | Rare | `SCP_2521` | *Abilità rubata*: all'entrata annulla l'effetto dell'avv. finché resta in campo; se l'avv. è Rare o inferiore, SCP-2521 usa quell'effetto come proprio finché resta in campo | `onEnterPlay` (`NULLIFY`) | effetto rubato | P2 | effetto rubato: nuova istanza dal registro collegata a un'altra creatura |
 | The Drowned Memory | Rare | `DROWNED_MEMORY` | *Memoria profonda*: all'entrata +1 DEF per ogni creatura alleata già eliminata (massimo +4) e +1 ATK se sono almeno 3, finché resta in campo | `onEnterPlay` | — | P1 | contatore delle creature perse (M-07) |
 | SCP-2317 (A Door in the Woods) | Mythic | `SCP_2317` | quando muore, 4 danni all'avv. e +1 ATK alla prossima propria creatura | `onDeath` | — | P1 | possono morire entrambe (D-08); +1 ATK in attesa (D-34), finché la prossima creatura resta in campo |
 | SCP-3000 (Anantashesha) | Mythic | `SCP_3000` | *Pelle abissale*: +2 ATK finché resta in campo; contro Rare o superiori subisce metà dei danni dai loro attacchi (per difetto) | `modifyOutgoingAttack`, `modifyIncomingDamage` | — | P1 | prima le sottrazioni, poi la metà; il danno da effetto non si dimezza. Nel catalogo, dopo questa carta, c'è una riga orfana ("previene 2 danni dal primo attacco — Nessun effetto"): da segnalare a chi cura il catalogo |
 | The Null Witness | Mythic | `NULL_WITNESS` | *Protocollo di cancellazione*: all'entrata 4 danni all'avv., che perde i suoi modificatori temporanei; il Terreno in gioco viene rimosso se l'ha pescato l'avversario. Resta in campo | `onEnterPlay` | — | P2 | rimozione del Terreno (D-19); evento `TERRAIN_REMOVED`; D-38 chiusa |
-| SCP-001 (When Day Breaks) | Legendary | `SCP_001` | *Alba piena*: all'entrata 3 danni, poi 3 danni a inizio round per i 3 round seguenti, alla creatura avversaria in campo in quel momento | `onEnterPlay`, `onRoundStart` | round rimanenti | P1 | i round si contano dall'entrata di SCP-001: se l'avv. muore prima, i colpi restanti vanno alla nuova avversaria; D-08 |
+| SCP-001 (When Day Breaks) | Legendary | `SCP_001` | *Alba piena*: all'entrata 4 danni, poi 4 danni a inizio round per i 3 round seguenti, alla creatura avversaria in campo in quel momento | `onEnterPlay`, `onRoundStart` | round rimanenti | P1 | i round si contano dall'entrata di SCP-001: se l'avv. muore prima, i colpi restanti vanno alla nuova avversaria; D-08 |
 | SCP-3999 (I Am At The Center Of Everything That Happens To Me) | Legendary | `SCP_3999` | *Riscrittura della realtà*: all'entrata e ogni due round (nel suo 3°, 5°, … round in campo) l'avv. perde tutti i bonus ATK e DEF, da qualunque fonte, e torna ai valori base (i danni restano); ogni volta SCP-3999 ottiene +1 ATK, massimo +3 | `onEnterPlay`, `onRoundStart` | round in campo | P2 | rimozione di tutti gli `StatModifier` positivi (D-35), DEF con la regola dello scudo; il bonus di fazione resta |
 
 ## Theory of the Wound — Backrooms (B)
@@ -112,7 +112,7 @@ Common senza effetto: Dullers, Crawlers, Faceling, Cercatore di Moquette, Ronzio
 | Hounds | Mythic | `HOUNDS` | *Odore del sangue*: +4 ATK contro ogni creatura avversaria già ferita (DEF più bassa della sua DEF all'entrata) | `modifyOutgoingAttack` | — | P1 | — |
 | Deathmoths | Mythic | `DEATHMOTHS` | *Divoratrici di luce*: all'entrata avv. −2 ATK finché resta in campo e perde fino a 2 punti dei suoi bonus ATK, anche quelli ricevuti dopo | `onEnterPlay` | — | P2 | come L'Addetto alle Uscite (D-35) |
 | Il Custode delle Porte Incrociate | Mythic | `CROSSED_DOORS_KEEPER` | *Inviolabile*: gli effetti delle creature avversarie non lo colpiscono (niente danni da effetto, malus, annullamenti; gli attacchi sì); +2 ATK contro creature che hanno un effetto | filtro sul bersaglio, `modifyOutgoingAttack` | — | P2 | Spell, Hidden, Terreni e Oggetti avversari lo colpiscono normalmente; **non** è un effetto `NULLIFY` |
-| Smiler | Legendary | `SMILER` | *Sorriso nel buio*: per ogni round in cui sopravvive, +1 ATK (massimo +3) e l'avv. −1 ATK (massimo −3) | `onRoundEnd` | round sopravvissuti, malus sull'avv. | P1 | il +1 resta contro le nuove avversarie; il malus resta sulla creatura che l'ha ricevuto e riparte da 0 contro una nuova avversaria |
+| Smiler | Legendary | `SMILER` | *Sorriso nel buio*: per ogni round in cui sopravvive, +2 ATK (massimo +6) e l'avv. −2 ATK (massimo −4) | `onRoundEnd` | round sopravvissuti, malus sull'avv. | P1 | il bonus resta contro le nuove avversarie; il malus resta sulla creatura che l'ha ricevuto e riparte da 0 contro una nuova avversaria |
 | The Hollow Wyrm | Legendary | `HOLLOW_WYRM` | *Divoratore di Crepe*: all'entrata inghiotte il Terreno in gioco, chiunque l'abbia pescato (scartato) e ottiene +3 ATK e +3 DEF finché resta in campo; un Terreno pescato mentre è in campo viene inghiottito allo stesso modo; senza Terreno all'entrata, 4 danni all'avv. | `onEnterPlay`, arrivo di un Terreno | — | P2 | rimozione del Terreno (D-19, regola dello scudo); evento `TERRAIN_REMOVED` |
 
 ## Theory of the Dream — Yokai (B)
@@ -121,11 +121,11 @@ Common senza effetto: Kasa-obake, Chōchin-obake, Zashiki-warashi, Kodama, Tanuk
 
 | Carta | Rarità | Codice | Effetto | Momenti | Stato | Lotto | Note |
 |---|---|---|---|---|---|---|---|
-| Kappa | Uncommon | `KAPPA` | +2 ATK nel primo round | `modifyOutgoingAttack` | round dall'entrata | P1 | D-31 |
+| Kappa | Uncommon | `KAPPA` | +3 ATK nel primo round | `modifyOutgoingAttack` | round dall'entrata | P1 | D-31 |
 | Nurikabe | Uncommon | `NURIKABE` | previene 2 danni dal primo attacco di ogni creatura avversaria | `modifyIncomingDamage` | ultima avversaria | P1 | come Hidebehind |
 | Noppera-bō | Uncommon | `NOPPERA_BO` | all'entrata avv. −2 ATK nel primo round e −1 nel secondo | `onEnterPlay` | round dello scontro | P1 | come Howlers |
 | Rokurokubi | Uncommon | `ROKUROKUBI` | all'entrata avv. −1 DEF e −1 DEF alla prossima creatura avversaria che entra | `onEnterPlay` | — | P1 | come Cervo Bianco (D-08, D-34) |
-| The Threadbound Doll | Uncommon | `THREADBOUND_DOLL` | quando muore, 2 danni all'avv. | `onDeath` | — | P1 | D-08 |
+| The Threadbound Doll | Uncommon | `THREADBOUND_DOLL` | quando muore, 4 danni all'avv. | `onDeath` | — | P1 | D-08 |
 | L'Ombra del Torii | Uncommon | `TORII_SHADOW` | all'entrata +3 DEF se c'è il Terreno della Theory of the Dream, altrimenti +2, finché resta in campo | `onEnterPlay` | — | P1 | il Terreno di chiunque (D-17), controllato solo all'entrata |
 | The Masked Bloom | Uncommon | `MASKED_BLOOM` | all'entrata avv. −2 ATK nel primo round e −1 nel secondo | `onEnterPlay` | round dello scontro | P1 | come Howlers |
 | Yuki-onna | Rare | `YUKI_ONNA` | *Congelata*: all'entrata l'avv. non attacca nel primo round (il suo attacco è 0) | `onEnterPlay` | round dello scontro | P1 | — |
@@ -135,7 +135,7 @@ Common senza effetto: Kasa-obake, Chōchin-obake, Zashiki-warashi, Kodama, Tanuk
 | Baku | Mythic | `BAKU` | *Divoratore di incubi*: finché Baku è in campo, ogni volta che l'effetto di una creatura avversaria sta per attivarsi, Baku lo divora (non avviene) e ottiene +2 DEF | prima dell'attivazione di un effetto avversario (`NULLIFY`) | avversarie già divorate | P2 | un effetto continuo viene divorato alla prima applicazione e resta spento per quella creatura; +2 DEF al massimo una volta per creatura avversaria; non tocca Spell, Hidden, Terreni e Oggetti |
 | The Unseen Matriarch | Mythic | `UNSEEN_MATRIARCH` | *Velo spezzato*: la prima volta che la **sua** DEF scende a metà o meno, l'avv. subisce danni pari alla DEF che ha perso (massimo 8) e −1 ATK finché resta in campo | `afterDamage` e controllo dopo ogni fase | `used` | P1 | DEF persa = DEF all'entrata meno DEF attuale (lo scudo non conta); solo se è ancora viva; D-08 |
 | The Undying Blossom | Mythic | `UNDYING_BLOSSOM` | *Maledizione cremisi*: una volta, quando subirebbe un danno letale, resta con 4 DEF e perde i suoi bonus temporanei; l'avv. subisce 3 danni | `afterDamage` (prima del controllo morti) | `used` | P2 | vale contro ogni danno letale (attacco, effetto, Spell, Hidden, Terreno, Oggetto); morte doppia: lei resta, l'altra muore; D-36 |
-| Shuten-dōji | Legendary | `SHUTEN_DOJI` | dopo ogni danno DEF subito +2 ATK cumulativi, massimo +8 | `afterDamage` | `bonus` | P1 | contano anche i danni degli effetti; il bonus resta contro le nuove avversarie |
+| Shuten-dōji | Legendary | `SHUTEN_DOJI` | dopo ogni danno DEF subito +4 ATK cumulativi, massimo +12 | `afterDamage` | `bonus` | P1 | contano anche i danni degli effetti; il bonus resta contro le nuove avversarie |
 | Kitsune | Legendary | `KITSUNE` | *Mille forme*: finché sono entrambe in campo copia l'effetto dell'avv. (l'avv. tiene il suo); se copia qualcosa, +3 DEF; sigilla inoltre fino a 3 punti di bonus ATK dell'avv. finché resta in campo | `onEnterPlay`, entrata avversaria | effetto copiato | P2 | stesso pezzo di SCP-2521 senza annullare l'originale; la copia parte come appena entrata; non copia Il Custode né un'altra Kitsune; il bonus di fazione non si sigilla (D-35) |
 
 ## Mutant — due fazioni
@@ -160,7 +160,7 @@ Una Spell si pesca solo quando la propria creatura è morta: la "creatura attiva
 | Velo degli Ancorati (Veil of the Anchored) | `SHIELD` | `VEIL_OF_ANCHORED` | +5 DEF | P1 |
 | Patto del Registro (Registry Pact) | `SHIELD` | `REGISTRY_PACT` | +2 DEF, +1 ATK | P1 |
 | Armatura della Pioggia (Rain Armor) | `SHIELD` | `RAIN_ARMOR` | +2 ATK | P1 |
-| SCP-500 · Pillola di Emergenza | `SHIELD` | `SCP_500` | la prossima creatura subisce 4 danni in meno dal **primo danno di qualunque tipo** (attacco o effetto) | P1 (D-33) |
+| SCP-500 · Pillola di Emergenza | `SHIELD` | `SCP_500` | la prossima creatura subisce 5 danni in meno dal **primo danno di qualunque tipo** (attacco o effetto) | P1 (D-33) |
 | SCP-109 · Acqua Infinita | `SHIELD` | `SCP_109` | *Borraccia*: +2 DEF; una volta, quando la creatura scende a metà DEF o meno, recupera 3 DEF (fino alla DEF all'entrata) | P2 (M-06, `heal()`) |
 | SCP-458 · Pizza Senza Fine | `SHIELD` | `SCP_458` | *Fette da dividere*: +2 DEF alla prossima creatura e +2 DEF a quella dopo | P1 (D-34) |
 | Richiamo della Crepa (Call of the Rift) | `BURN` | `CRACK_CALL` | se la carta rivelata è una creatura, entra con +2 ATK e +2 DEF; altrimenti nulla | P1 (D-13) |
@@ -188,11 +188,11 @@ Senza fazione. Valore di ognuna circa 4–5 PS. Messe coperte quando pescate, po
 | Last Sanctuary | `SURVIVAL` | `LAST_SANCTUARY` | propria creatura +5 DEF nello scontro corrente | P1 |
 | Survival Instinct | `SURVIVAL` | `SURVIVAL_INSTINCT` | +2 ATK, +1 DEF nello scontro corrente | P1 |
 | Remnants of Reality | `SURVIVAL` | `REMNANTS_OF_REALITY` | **con condizione**: quando la propria creatura riceve una penalità, annulla fino a 5 punti di penalità (prima quella che l'ha attivata, poi quelle già presenti, in ordine), senza superare i valori di prima; i punti avanzati si perdono | P2 (D-15, D-35, `heal()`) |
-| Unseen Exit | `SURVIVAL` | `UNSEEN_EXIT` | **con condizione**: quando un **attacco** avversario ucciderebbe la propria creatura, previene 3 danni (controllo al passo 3, dopo tutte le altre riduzioni) | P2 (D-15) |
+| Unseen Exit | `SURVIVAL` | `UNSEEN_EXIT` | **con condizione**: quando un **attacco** avversario ucciderebbe la propria creatura, previene 5 danni (controllo al passo 3, dopo tutte le altre riduzioni) | P2 (D-15) |
 | Hostile Presence | `DAMAGE` | `HOSTILE_PRESENCE` | avv. −5 ATK nel primo round dello scontro | P1 |
 | Echo Strike | `DAMAGE` | `ECHO_STRIKE` | avv. −2 ATK nel primo round e −2 DEF | P1 |
-| Breaking Point | `DAMAGE` | `BREAKING_POINT` | *Spezzata*: se l'avv. ha 5 DEF o meno, la sua DEF scende a 0 e muore, senza danni al giocatore; altrimenti −3 DEF | P1 (D-16) |
-| Static Interference | `DAMAGE` | `STATIC_INTERFERENCE` | **senza condizione**: sospende fino a 3 punti di bonus ATK dell'avv. per tutto lo scontro; se non ne ha, 3 danni all'avv. | P2 (D-35) |
+| Breaking Point | `DAMAGE` | `BREAKING_POINT` | *Spezzata*: se l'avv. ha 7 DEF o meno, la sua DEF scende a 0 e muore, senza danni al giocatore; altrimenti −4 DEF | P1 (D-16) |
+| Static Interference | `DAMAGE` | `STATIC_INTERFERENCE` | **senza condizione**: sospende fino a 5 punti di bonus ATK dell'avv. per tutto lo scontro; se non ne ha, 5 danni all'avv. | P2 (D-35) |
 
 ## Terreni
 

@@ -63,14 +63,14 @@ In JSON:
 #1  round 0  MATCH_STARTED     Match started — 30 life points each
 #2  round 0  CREATURE_ENTERED  Challenger plays Crawlers (ATK 4, DEF 5)
 #3  round 0  CREATURE_ENTERED  Opponent plays Kappa (ATK 6, DEF 7)
-#4  round 0  EFFECT_TRIGGERED  Kappa: +2 ATK in the first round
+#4  round 0  EFFECT_TRIGGERED  Kappa: +3 ATK in the first round
 #5  round 1  ROUND_STARTED     Round 1
 #6  round 1  ATTACK_COMPUTED   Crawlers attacks with 6 (4 base, +2 faction)
-#7  round 1  ATTACK_COMPUTED   Kappa attacks with 7 (6 base, −1 faction, +2 effect)
+#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 effect)
 #8  round 1  DAMAGE_DEALT      Crawlers deals 6 damage to Kappa (DEF 1)
-#9  round 1  DAMAGE_DEALT      Kappa deals 7 damage to Crawlers (DEF −2)
+#9  round 1  DAMAGE_DEALT      Kappa deals 8 damage to Crawlers (DEF −3)
 #10 round 1  CREATURE_DIED     Crawlers is destroyed
-#11 round 1  PLAYER_DAMAGED    Challenger loses 2 life points (28 left)
+#11 round 1  PLAYER_DAMAGED    Challenger loses 3 life points (27 left)
 ...
 ```
 

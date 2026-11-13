@@ -75,7 +75,7 @@ Quando viene pescata si risolve in automatico, poi la carta viene **scartata** e
 | Sottotipo | Bersaglio | Esempi |
 |---|---|---|
 | `DAMAGE` (3) | creatura avversaria in campo, subito | Morso del Rovescio (−3 ATK), Frattura della Pelle (−5 DEF), Dissoluzione (−2/−2) |
-| `SHIELD` (6) | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Velo degli Ancorati (+5 DEF), Patto del Registro (+2 DEF/+1 ATK), SCP-500 (primo danno −4), SCP-458 (+2 DEF a due creature di fila) |
+| `SHIELD` (6) | la **prossima** propria creatura che entra in campo, sommata alle altre in attesa | Velo degli Ancorati (+5 DEF), Patto del Registro (+2 DEF/+1 ATK), SCP-500 (primo danno −5), SCP-458 (+2 DEF a due creature di fila) |
 | `BURN` (3) | la prossima carta del mazzo, se è una creatura (vedi sotto) | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati |
 
 Le 12 Spell sono nel [catalogo degli effetti](../effetti/catalogo-effetti.md#spell). Una Spell si pesca solo quando la propria creatura è morta: quando il catalogo dice "creatura attiva" si intende la **prossima** creatura del proprietario.
