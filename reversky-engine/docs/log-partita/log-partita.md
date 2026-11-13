@@ -38,13 +38,17 @@ In JSON:
 | `type` | Quando | `data` principale |
 |---|---|---|
 | `MATCH_STARTED` | inizio | punti vita iniziali |
-| `CARD_DRAWN` | un giocatore pesca | carta |
+| `CARD_DRAWN` | un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07) | carta |
 | `CREATURE_ENTERED` | una creatura entra in campo | carta, ATK, DEF |
 | `SPELL_RESOLVED` | una Spell viene risolta e scartata | carta, effetto, bersaglio |
+| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13) | Spell, carta rivelata, bonus applicato (nessuno se non è una creatura) |
 | `HIDDEN_SET` | una Hidden viene messa coperta | — (la carta resta nascosta nel messaggio) |
 | `HIDDEN_TRIGGERED` | una Hidden si attiva | carta, effetto |
-| `TERRAIN_PLACED` | un Terreno entra in gioco | carta |
+| `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | carta, Terreno sostituito se c'era |
+| `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | Terreno, causa (carta che lo ha tolto) |
+| `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | carta che sposta, carta spostata, nuova posizione |
 | `ITEM_PLACED` | un Oggetto entra in gioco | carta |
+| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47) | carta, effetto, creatura |
 | `ROUND_STARTED` | inizio di un round | numero round |
 | `ATTACK_COMPUTED` | calcolo dell'attacco | ATK base, bonus ATK di fazione, modificatori, totale |
 | `DAMAGE_DEALT` | una creatura colpisce l'altra | sorgente, bersaglio, danni, DEF rimasta |
@@ -59,7 +63,7 @@ In JSON:
 #1  round 0  MATCH_STARTED     Match started — 30 life points each
 #2  round 0  CREATURE_ENTERED  Challenger plays Crawlers (ATK 4, DEF 5)
 #3  round 0  CREATURE_ENTERED  Opponent plays Kappa (ATK 6, DEF 7)
-#4  round 0  EFFECT_TRIGGERED  Kappa: Water Strength, +3 ATK for 2 rounds
+#4  round 0  EFFECT_TRIGGERED  Kappa: +3 ATK in the first round
 #5  round 1  ROUND_STARTED     Round 1
 #6  round 1  ATTACK_COMPUTED   Crawlers attacks with 6 (4 base, +2 faction)
 #7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 effect)

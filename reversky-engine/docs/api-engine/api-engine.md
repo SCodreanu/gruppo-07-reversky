@@ -105,9 +105,9 @@ Simula una partita completa.
 |---|---|
 | `result` | `CHALLENGER_WIN`, `OPPONENT_WIN`, `DRAW` (uguali all'enum `BattleResult` del database) |
 | `endReason` | `LIFE_POINTS_ZERO`, `BOTH_LIFE_POINTS_ZERO`, `NO_CREATURES_LEFT`, `BOTH_DECKS_EMPTY`, `ROUND_LIMIT` |
-| `totalRounds` | round risolti; la preparazione (round 0) non conta **[DA CONFERMARE] D-42** |
-| `finalLifePoints` | minimo 0, anche se l'ultimo danno porta sotto zero **[DA CONFERMARE] D-43** |
-| `creaturesDefeated` | creature **avversarie** distrutte da quel giocatore; in una morte simultanea contano per entrambi **[DA CONFERMARE] D-42** |
+| `totalRounds` | round risolti; la preparazione (round 0) non conta (D-42) |
+| `finalLifePoints` | valore vero, **può essere negativo** se l'ultimo danno porta sotto zero (D-43) |
+| `creaturesDefeated` | creature **avversarie** morte mentre affrontavano quel giocatore, per qualunque causa (attacco, effetto, Spell, Hidden); in una morte simultanea contano per entrambi (D-42) |
 | `log` | vedi [log-partita](../log-partita/log-partita.md) |
 
 L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
@@ -162,5 +162,5 @@ arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /a
 
 ## Note
 
-- Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. In produzione si aggiunge una chiave condivisa nell'header **[DA CONFERMARE]**.
+- Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. Se l'engine viene esposto fuori dalla rete privata si aggiunge una chiave condivisa nell'header `X-Engine-Key`, letta da una variabile d'ambiente (D-40).
 - Ogni endpoint va documentato anche in Swagger (springdoc), come nell'API.

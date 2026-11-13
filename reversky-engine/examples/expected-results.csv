@@ -7,7 +7,7 @@ file,status,result,endReason,totalRounds,challengerLifePoints,opponentLifePoints
 06-stallo-limite-round.json,200,DRAW,ROUND_LIMIT,75,30,30,0,0,
 07-limite-round-con-vincitore.json,200,CHALLENGER_WIN,ROUND_LIMIT,75,30,29,1,0,
 08-partita-completa-seed-42.json,200,CHALLENGER_WIN,NO_CREATURES_LEFT,14,30,27,10,9,
-10-punti-vita-a-zero.json,200,CHALLENGER_WIN,LIFE_POINTS_ZERO,1,30,0,1,0,
+10-punti-vita-a-zero.json,200,CHALLENGER_WIN,LIFE_POINTS_ZERO,1,30,-5,1,0,
 11-doppia-fazione-vantaggio.json,200,CHALLENGER_WIN,NO_CREATURES_LEFT,1,30,28,1,0,
 12-doppia-fazione-svantaggio.json,200,OPPONENT_WIN,NO_CREATURES_LEFT,2,24,30,0,1,
 90-errore-effetto-sconosciuto.json,400,,,,,,,,UNKNOWN_EFFECT

@@ -75,7 +75,7 @@ In questo sprint le creature non hanno effetti.
 | `ENG-19` | `DrawService`: Spell `DAMAGE`, `SHIELD`, `BURN` con i modificatori in attesa (D-10…D-13, D-34) e i codici `P1` delle Spell | A | L | `ENG-11`, `ENG-22` |
 | `ENG-20` | Zona Hidden e attivazione (D-15, D-16) e codici `P1` delle Hidden | A | M | `ENG-19` |
 | `ENG-21` | Terreni: bonus base (D-17, D-19) e codici dei quattro Terreni | A | S | `ENG-19` |
-| `ENG-33` | Oggetti (`ITEM`): effetto passivo come i Terreni (D-47, D-48), evento `ITEM_PLACED` e codici dei quattro Oggetti | A | S | `ENG-21` |
+| `ENG-33` | Oggetti (`ITEM`): messi accanto al mazzo come i Terreni, effetto monouso (D-47, D-48), eventi `ITEM_PLACED` e `ITEM_CONSUMED` e codici dei quattro Oggetti | A | S | `ENG-21` |
 | `ENG-14` | `GET /api/v1/effects`: elenco dei codici già implementati | B | S | `ENG-12`, `ENG-22` |
 | `ENG-15` | Swagger con springdoc 3.2.0, la stessa versione dell'API (D-41, serve l'ok del lead) | B | S | `ENG-12` |
 | `ENG-16` | `SimulationExamplesTest`: gli esempi 01–08, 10–12 e 90–95 di [`examples/`](../../examples/README.md) verdi | B | S | `ENG-11`, `ENG-12`, `ENG-22` |
@@ -101,8 +101,8 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
 |---|---|---|---|---|
-| `ENG-25` / `ENG-26` | Effetti `P2` **solo se decisi entro il 30 novembre** | A / B | M | D-xx |
-| `ENG-27` | Effetti secondari dei Terreni, se decisi (D-18) | A | M | `ENG-21` |
+| `ENG-25` / `ENG-26` | Effetti `P2` (tutti decisi l'11 novembre, servono i pezzi di motore del [catalogo](../effetti/catalogo-effetti.md#pezzi-di-motore-richiesti-dagli-effetti)) | A / B | M | D-xx |
+| `ENG-27` | Effetti secondari dei Terreni, decisi l'11 novembre (D-18) | A | M | `ENG-21` |
 | `ENG-28` | Report di bilanciamento con gli effetti, dopo le modifiche dei DSG alle statistiche | B | S | `ENG-26` |
 | `ENG-29` | Casi limite e correzione bug; Javadoc su tutto il core pubblico | A + B | M | `ENG-25`, `ENG-26` |
 | `ENG-30` | rule set `1.0` caricato nel database dell'API con i valori decisi; documenti aggiornati (tabella effetti, regole-base, decisioni chiuse) | A + B | S | `API-15`, `ENG-03` |

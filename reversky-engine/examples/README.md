@@ -7,7 +7,7 @@ Servono a tre cose:
 2. fare da **test di accettazione** automatici (`SimulationExamplesTest`, vedi [docs/test](../docs/test/test.md));
 3. capire le regole con numeri concreti prima di scrivere il codice.
 
-> **Dati di prova (mock).** Il catalogo delle carte è ancora da definire: nomi, `id` e statistiche qui sono inventati per i test.
+> **Dati di prova (mock).** I nomi vengono dal catalogo di 120 carte (alcuni nella traduzione inglese di lavoro), ma `id` e statistiche sono inventati per i test, e le carte che nel catalogo hanno un effetto qui ne sono prive, tranne Hidebehind nell'esempio 09.
 > Alcuni valori (es. DEF 1000 nell'esempio 07) sono fuori dai limiti di rarità apposta: l'engine non valida i limiti, lo fa l'API.
 > Come nel gioco, i nomi sono in inglese.
 
@@ -37,8 +37,8 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 75 round, PV 30–30 |
 | `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
-| `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 29–30 |
-| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–0 |
+| `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–(−5) |
 | `11-doppia-fazione-vantaggio` | carta con due fazioni: prende il bonus della seconda fazione | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–28 |
 | `12-doppia-fazione-svantaggio` | carta con due fazioni: subisce anche lo svantaggio della seconda fazione | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
 | `90-errore-effetto-sconosciuto` | `effectCode` scritto male (`HIDEBEHND`) | `400`, `UNKNOWN_EFFECT` |
@@ -108,30 +108,31 @@ Dopo il round 14 l'avversario non ha più creature, lo sfidante ha ancora Duller
 Con lo stesso file e seed `43` il risultato cambia (PV finali 27–23): utile per il test "seed diverso → partita diversa".
 
 **09** — Hidebehind (Invitation 4/6, `HIDEBEHIND`) contro Faceling (Wound 7/9), fazioni neutre.
-Round 1: l'attacco di Faceling viene schivato (Hidebehind resta a 6), Faceling 9 − 4 = 5.
-Round 2: Hidebehind 6 − 7 = −1 (muore), Faceling 1. Lo sfidante perde 1 PV.
-*Controprova:* senza effetto Hidebehind muore già al round 1.
+Round 1: Hidebehind previene 2 dei 7 danni di Faceling (6 − 5 = 1), Faceling 9 − 4 = 5.
+Round 2: Hidebehind 1 − 7 = −6 (muore), Faceling 1. Lo sfidante perde 6 PV.
+*Controprova:* senza effetto Hidebehind muore già al round 1 con DEF −1 e lo sfidante perde 1 PV.
+Il caso mostra un effetto collaterale della regola del danno: sopravvivere un round in più con poca DEF può costare **più** punti vita.
 Finché `HIDEBEHIND` non è nell'`EffectRegistry` questa richiesta deve dare `400 UNKNOWN_EFFECT`.
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).
-`finalLifePoints` è 0 e non −5 (proposta D-43); nel log `PLAYER_DAMAGED` riporta comunque 35 danni.
+`finalLifePoints` è −5 (D-43: il risultato riporta il valore vero); nel log `PLAYER_DAMAGED` riporta 35 danni.
 
-**11** — Ashen Fox (Mutant, Dream **e** Invitation, 6/10) contro Archive Puppet (Archive 6/6).
+**11** — Rootbound Doppelganger (Mutant, Dream **e** Invitation, 6/10) contro Archive Puppet (Archive 6/6).
 Si sommano tutte le coppie di fazioni (vedi [fazioni](../docs/fazioni/fazioni.md#carte-con-due-fazioni)):
 
-- Ashen Fox attacca con 6 + (Dream → Archive 0) + (Invitation → Archive **+2**) = 8;
+- Rootbound Doppelganger attacca con 6 + (Dream → Archive 0) + (Invitation → Archive **+2**) = 8;
 - Archive Puppet attacca con 6 + (Archive → Dream 0) + (Archive → Invitation **−1**) = 5.
 
-Round 1: Archive Puppet 6 − 8 = −2 (muore, l'avversario perde 2 PV); Ashen Fox 10 − 5 = 5.
+Round 1: Archive Puppet 6 − 8 = −2 (muore, l'avversario perde 2 PV); Rootbound Doppelganger 10 − 5 = 5.
 *Controprova:* con la sola fazione Dream entrambe attaccano con 6: Archive Puppet finisce a 0 e nessuno perde PV.
 
-**12** — Ashen Fox (Dream e Invitation, 6/10) contro Kodama (Dream 6/11).
+**12** — Rootbound Doppelganger (Dream e Invitation, 6/10) contro Kodama (Dream 6/11).
 
-- Ashen Fox attacca con 6 + (Dream → Dream 0) + (Invitation → Dream **−1**) = 5;
+- Rootbound Doppelganger attacca con 6 + (Dream → Dream 0) + (Invitation → Dream **−1**) = 5;
 - Kodama attacca con 6 + (Dream → Dream 0) + (Dream → Invitation **+2**) = 8.
 
-DEF dopo ogni round: 2/6 → **−6**/1. Ashen Fox muore, lo sfidante perde 6 PV.
+DEF dopo ogni round: 2/6 → **−6**/1. Rootbound Doppelganger muore, lo sfidante perde 6 PV.
 *Controprova:* con la sola fazione Dream nessun bonus: muoiono entrambe al round 2 e finisce `DRAW`.
 
 ## Log minimo atteso (esempio 01)

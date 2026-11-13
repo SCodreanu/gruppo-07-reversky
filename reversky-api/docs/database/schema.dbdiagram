@@ -50,7 +50,7 @@
         "y": 186
       },
       {
-        "name": "faction_bonus",
+        "name": "faction_bonuses",
         "schemaName": "public",
         "x": 569.07001953125,
         "y": 410
@@ -180,6 +180,24 @@
         "schemaName": "public",
         "x": 1150.1251953125,
         "y": 1887
+      },
+      {
+        "name": "rule_sets",
+        "schemaName": "public",
+        "x": 12,
+        "y": 2797
+      },
+      {
+        "name": "credit_transactions",
+        "schemaName": "public",
+        "x": 572,
+        "y": 2797
+      },
+      {
+        "name": "pack_openings",
+        "schemaName": "public",
+        "x": 1132,
+        "y": 2797
       }
     ],
     "tableGroupCollapseStates": [],
@@ -255,7 +273,7 @@
         "secondFieldNames": [
           "origin_faction_id"
         ],
-        "secondTableName": "faction_bonus",
+        "secondTableName": "faction_bonuses",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
@@ -270,7 +288,7 @@
         "secondFieldNames": [
           "target_faction_id"
         ],
-        "secondTableName": "faction_bonus",
+        "secondTableName": "faction_bonuses",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
@@ -697,13 +715,13 @@
       },
       {
         "firstFieldNames": [
-          "id"
+          "user_id"
         ],
         "firstTableName": "inventories",
         "firstSchemaName": "public",
         "firstRelation": "1",
         "secondFieldNames": [
-          "inventory_id"
+          "user_id"
         ],
         "secondTableName": "pack_inventory",
         "secondSchemaName": "public",
@@ -832,32 +850,107 @@
       },
       {
         "firstFieldNames": [
-          "challenger_deck_id"
-        ],
-        "firstTableName": "battle_invites",
-        "firstSchemaName": "public",
-        "firstRelation": "*",
-        "secondFieldNames": [
           "id"
         ],
-        "secondTableName": "decks",
+        "firstTableName": "packs",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "pack_id"
+        ],
+        "secondTableName": "pack_openings",
         "secondSchemaName": "public",
-        "secondRelation": "1",
+        "secondRelation": "*",
         "checkPoints": []
       },
       {
         "firstFieldNames": [
-          "deck_id"
-        ],
-        "firstTableName": "matchmaking_queue",
-        "firstSchemaName": "public",
-        "firstRelation": "*",
-        "secondFieldNames": [
           "id"
         ],
-        "secondTableName": "decks",
+        "firstTableName": "factions",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "secondary_faction_id"
+        ],
+        "secondTableName": "catalog_cards",
         "secondSchemaName": "public",
-        "secondRelation": "1",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "created_by_id"
+        ],
+        "secondTableName": "rule_sets",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "rule_sets",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "rule_set_id"
+        ],
+        "secondTableName": "battles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "pack_openings",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "credit_transactions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "catalog_cards",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "variant_of_id"
+        ],
+        "secondTableName": "catalog_cards",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
         "checkPoints": []
       }
     ]

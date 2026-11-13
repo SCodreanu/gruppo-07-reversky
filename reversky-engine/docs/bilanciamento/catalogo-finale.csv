@@ -1,0 +1,121 @@
+nome,tipo,sottotipo,fazione,seconda_fazione,rarita,atk,def,codice_effetto,effetto,ps_effetto,valore_v
+Squonk,Creatura,,Invitation,,Common,4,12,,,,22.0
+Fuoco fatuo,Creatura,,Invitation,,Common,6,7,,,,22.0
+Corvo di Cenere,Creatura,,Invitation,,Common,7,6,,,,23.5
+Cane Senz'Ombra,Creatura,,Invitation,,Common,5,9,,,,21.5
+Spaventapasseri Zoppo,Creatura,,Invitation,,Common,4,12,,,,22.0
+The Coal Crawler,Creatura,,Invitation,,Common,5,9,,,,21.5
+Le Falene della Miniera,Creatura,,Invitation,,Common,4,12,,,,22.0
+Wampus Cat,Creatura,,Invitation,,Uncommon,4,11,WAMPUS_CAT,Sguardo della follia: all'entrata avv. −1 ATK finché resta in campo,2.3,23.3
+Hidebehind,Creatura,,Invitation,,Uncommon,6,5,HIDEBEHIND,previene 2 danni dal primo attacco di ogni creatura avversaria,2.6,22.6
+Il Pastore Muto,Creatura,,Invitation,,Uncommon,4,11,SILENT_SHEPHERD,"Custode del gregge: quando muore, la prossima creatura del proprietario entra con +2 DEF",2.5,23.5
+Cervo Bianco,Creatura,,Invitation,,Uncommon,5,8,WHITE_STAG,all'entrata avv. −1 DEF e −1 DEF alla prossima creatura avversaria che entra,2.4,22.9
+The Nameless Caller,Creatura,,Invitation,,Uncommon,4,10,NAMELESS_CALLER,"Voci dei dispersi: all'entrata 1 danno all'avv. per ogni creatura avversaria già morta nella partita, massimo 3",3.6,23.6
+Il Raccoglitore di Orme,Creatura,,Invitation,,Uncommon,4,11,FOOTPRINT_GATHERER,all'entrata +2 DEF finché resta in campo,1.9,22.9
+Spearfinger,Creatura,,Invitation,,Rare,5,7,SPEARFINGER,il primo attacco contro ogni nuova creatura avversaria fa +2,3.1,22.6
+Bell Witch,Creatura,,Invitation,,Rare,4,8,BELL_WITCH,"Infestazione che resta: all'inizio del secondo round 2 danni all'avv., una volta; quando muore, la prossima creatura avversaria entra con −2 DEF",4.5,22.5
+Il Predicatore sotto la Pioggia,Creatura,,Invitation,,Rare,4,10,RAIN_PREACHER,"Sermone che cancella: all'entrata annulla l'effetto dell'avv. finché resta in campo; se non ha effetto, ha invece −2 ATK finché resta in campo",3.5,23.5
+The Bloodless Hound,Creatura,,Invitation,,Rare,5,6,BLOODLESS_HOUND,"Drenaggio senza sangue: dopo ogni suo attacco che infligge danni recupera metà dei danni inflitti (per difetto), senza superare la DEF all'entrata; dopo un'eliminazione recupera altri 4",3.4,21.9
+Mothman,Creatura,,Invitation,,Mythic,4,7,MOTHMAN,"Disastro annunciato: all'entrata, e ogni volta che una creatura avversaria entra mentre Mothman è in campo, quella creatura subisce 3 danni",5.8,22.8
+Bigfoot,Creatura,,Invitation,,Mythic,4,6,BIGFOOT,Ammazzagiganti: contro Rare o superiori +4 ATK e 2 danni in meno da ogni loro attacco; contro Common e Uncommon +2 ATK,6.6,22.6
+The Thorned Matriarch,Creatura,,Invitation,,Mythic,3,12,THORNED_MATRIARCH,"Offerta di rovi: all'inizio di ogni round, se la sua DEF è più alta di quella avversaria, sacrifica 2 DEF e infligge 4 danni all'avv.",6.5,26.0
+Wendigo,Creatura,,Invitation,,Legendary,4,7,WENDIGO,"Insaziabile: a fine round avv. −3 DEF più 1 per ogni nemica eliminata da Wendigo, massimo 6; ogni eliminazione fa recuperare 5 DEF, fino alla DEF all'entrata",7.4,24.4
+La Regina dei Sentieri Perduti,Creatura,,Invitation,,Legendary,5,10,QUEEN_OF_LOST_PATHS,"Sentieri deviati: all'entrata e a ogni eliminazione guarda le prossime tre creature del mazzo avversario e manda quella di rarità più alta in fondo al mazzo (a parità, quella che verrebbe pescata prima); all'entrata anche avv. −2 DEF",0.0,22.5
+SCP-131,Creatura,,Archive,,Common,4,12,,,,22.0
+SCP-999,Creatura,,Archive,,Common,4,12,,,,22.0
+SCP-1762,Creatura,,Archive,,Common,6,7,,,,22.0
+Pupazzo da Archivio,Creatura,,Archive,,Common,5,9,,,,21.5
+Tazza Eterna,Creatura,,Archive,,Common,5,9,,,,21.5
+Il Timbro di Nessuno,Creatura,,Archive,,Common,7,6,,,,23.5
+La Falena del Fascicolo Rosso,Creatura,,Archive,,Common,4,12,,,,22.0
+SCP-173,Creatura,,Archive,,Uncommon,6,6,SCP_173,all'entrata 2 danni all'avv.,1.6,22.6
+SCP-096,Creatura,,Archive,,Uncommon,4,10,SCP_096,Il volto visto: la prima creatura avversaria che lo ferisce viene marchiata; +3 ATK contro quella creatura,2.5,22.5
+SCP-049,Creatura,,Archive,,Uncommon,4,10,SCP_049,all'entrata avv. −2 ATK nel primo round e −1 nel secondo,2.6,22.6
+Il Collezionista di Nomi,Creatura,,Archive,,Uncommon,4,10,NAME_COLLECTOR,all'entrata avv. −1 DEF e −1 DEF alla prossima creatura avversaria che entra,2.6,22.6
+SCP-053,Creatura,,Archive,,Uncommon,3,14,SCP_053,Paranoia: all'entrata avv. −3 DEF; l'avv. ha +2 ATK nel primo round,3.0,24.5
+SCP-2006,Creatura,,Archive,,Uncommon,4,10,SCP_2006,"Imitazione: all'entrata, se l'ATK base dell'avv. è più alto del suo, prende quell'ATK base finché resta in campo",1.8,21.8
+The Index Maw,Creatura,,Archive,,Uncommon,7,4,INDEX_MAW,all'entrata +2 DEF finché resta in campo,1.9,23.4
+SCP-106,Creatura,,Archive,,Rare,4,9,SCP_106,Riflesso più forte: riflette 3 danni all'attaccante per ciascuno dei primi due attacchi subiti,3.1,22.1
+SCP-682,Creatura,,Archive,,Rare,4,9,SCP_682,"Adattamento: ogni attacco subito riduce di 2 i danni degli attacchi successivi, massimo −2 (quindi −2 a ogni attacco dopo il primo)",3.5,22.5
+SCP-2521,Creatura,,Archive,,Rare,4,9,SCP_2521,"Abilità rubata: all'entrata annulla l'effetto dell'avv. finché resta in campo; se l'avv. è Rare o inferiore, SCP-2521 usa quell'effetto come proprio finché resta in campo",4.5,23.5
+The Drowned Memory,Creatura,,Archive,,Rare,4,7,DROWNED_MEMORY,"Memoria profonda: all'entrata +1 DEF per ogni creatura alleata già eliminata (massimo +4) e +1 ATK se sono almeno 3, finché resta in campo",5.4,22.4
+SCP-2317,Creatura,,Archive,,Mythic,5,5,SCP_2317,"quando muore, 4 danni all'avv. e +1 ATK alla prossima propria creatura",4.6,22.1
+SCP-3000,Creatura,,Archive,,Mythic,4,7,SCP_3000,Pelle abissale: +2 ATK finché resta in campo; contro Rare o superiori subisce metà dei danni dai loro attacchi (per difetto),6.5,23.5
+The Null Witness,Creatura,,Archive,,Mythic,4,8,NULL_WITNESS,"Protocollo di cancellazione: all'entrata 4 danni all'avv., che perde i suoi modificatori temporanei; il Terreno in gioco viene rimosso se l'ha pescato l'avversario. Resta in campo",5.2,23.2
+SCP-001,Creatura,,Archive,,Legendary,3,6,SCP_001,"Alba piena: all'entrata 4 danni, poi 4 danni a inizio round per i 3 round seguenti, alla creatura avversaria in campo in quel momento",11.4,24.9
+SCP-3999,Creatura,,Archive,,Legendary,3,11,SCP_3999,"Riscrittura della realtà: all'entrata e ogni due round (nel suo 3°, 5°, … round in campo) l'avv. perde tutti i bonus ATK e DEF, da qualunque fonte, e torna ai valori base (i danni restano); ogni volta SCP-3999 ottiene +1 ATK, massimo +3",8.6,27.1
+Dullers,Creatura,,Wound,,Common,5,9,,,,21.5
+Crawlers,Creatura,,Wound,,Common,5,9,,,,21.5
+Faceling,Creatura,,Wound,,Common,6,7,,,,22.0
+Cercatore di Moquette,Creatura,,Wound,,Common,5,9,,,,21.5
+Ronzio Giallo,Creatura,,Wound,,Common,7,6,,,,23.5
+L'Ascensore Senza Pulsanti,Creatura,,Wound,,Common,4,12,,,,22.0
+L'Inquilino del Soffitto,Creatura,,Wound,,Common,4,12,,,,22.0
+Howlers,Creatura,,Wound,,Uncommon,5,7,HOWLERS,all'entrata avv. −2 ATK nel primo round e −1 nel secondo,2.2,21.7
+Wretches,Creatura,,Wound,,Uncommon,4,9,WRETCHES,"Furia del ferito: la prima volta che viene ferito, +2 ATK finché resta in campo",3.6,22.6
+Cartellino Sbiadito,Creatura,,Wound,,Uncommon,6,6,FADED_TAG,all'entrata avv. −1 DEF e −1 DEF alla prossima creatura avversaria che entra,1.5,22.5
+Sala d'Attesa Vivente,Creatura,,Wound,,Uncommon,3,14,LIVING_WAITING_ROOM,previene 2 danni dal primo attacco di ogni creatura avversaria,3.6,25.1
+The Gnawing Witness,Creatura,,Wound,,Uncommon,7,5,GNAWING_WITNESS,all'entrata 2 danni all'avv.,1.3,23.8
+L'Addetto alle Uscite,Creatura,,Wound,,Uncommon,5,8,EXIT_CLERK,"Indicazioni cancellate: all'entrata l'avv. perde fino a 2 punti dei suoi bonus ATK finché resta in campo, compresi quelli che riceve dopo; se non ne ha, −1 ATK nel primo round",1.5,22.0
+Skin-Stealers,Creatura,,Wound,,Rare,5,6,SKIN_STEALERS,"Pelle rubata: all'entrata ottiene DEF pari alla metà della DEF base avversaria (per difetto, massimo 4) finché resta in campo",3.3,21.8
+Il Doppio di Servizio,Creatura,,Wound,,Rare,4,7,SERVICE_DOUBLE,Doppio turno: +3 ATK nei primi due round dopo l'entrata,5.0,22.0
+Il Direttore dell'Edificio,Creatura,,Wound,,Rare,4,9,BUILDING_DIRECTOR,"Demolizione: all'entrata danni all'avv. pari al 40% della sua DEF base (per difetto, massimo 4)",3.2,22.2
+L'Operatore della Stanza 0,Creatura,,Wound,,Rare,4,8,ROOM_ZERO_OPERATOR,"Linee incrociate: all'entrata, la prossima Hidden avversaria che si attiva funziona come se fosse del proprietario dell'Operatore",5.3,23.3
+Hounds,Creatura,,Wound,,Mythic,6,6,HOUNDS,Odore del sangue: +4 ATK contro ogni creatura avversaria già ferita (DEF più bassa della sua DEF all'entrata),2.0,23.0
+Deathmoths,Creatura,,Wound,,Mythic,4,8,DEATHMOTHS,"Divoratrici di luce: all'entrata avv. −2 ATK finché resta in campo e perde fino a 2 punti dei suoi bonus ATK, anche quelli ricevuti dopo",5.0,23.0
+Il Custode delle Porte Incrociate,Creatura,,Wound,,Mythic,4,8,CROSSED_DOORS_KEEPER,"Inviolabile: gli effetti delle creature avversarie non lo colpiscono (niente danni da effetto, malus, annullamenti; gli attacchi sì); +2 ATK contro creature che hanno un effetto",4.3,22.3
+Smiler,Creatura,,Wound,,Legendary,3,8,SMILER,"Sorriso nel buio: per ogni round in cui sopravvive, +2 ATK (massimo +6) e l'avv. −2 ATK (massimo −4)",10.1,25.6
+The Hollow Wyrm,Creatura,,Wound,,Legendary,4,5,HOLLOW_WYRM,"Divoratore di Crepe: all'entrata inghiotte il Terreno in gioco, chiunque l'abbia pescato (scartato) e ottiene +3 ATK e +3 DEF finché resta in campo; un Terreno pescato mentre è in campo viene inghiottito allo stesso modo; senza Terreno all'entrata, 4 danni all'avv.",6.3,21.3
+Kasa-obake,Creatura,,Dream,,Common,5,9,,,,21.5
+Chochin-obake,Creatura,,Dream,,Common,6,7,,,,22.0
+Zashiki-warashi,Creatura,,Dream,,Common,4,12,,,,22.0
+Kodama,Creatura,,Dream,,Common,4,12,,,,22.0
+Tanuki del Tempio,Creatura,,Dream,,Common,5,9,,,,21.5
+The Bone Lantern,Creatura,,Dream,,Common,7,6,,,,23.5
+La Sposa delle Campane,Creatura,,Dream,,Common,4,12,,,,22.0
+Kappa,Creatura,,Dream,,Uncommon,6,6,KAPPA,+3 ATK nel primo round,2.1,23.1
+Nurikabe,Creatura,,Dream,,Uncommon,4,10,NURIKABE,previene 2 danni dal primo attacco di ogni creatura avversaria,3.0,23.0
+Noppera-bō,Creatura,,Dream,,Uncommon,4,10,NOPPERA_BO,all'entrata avv. −2 ATK nel primo round e −1 nel secondo,2.6,22.6
+Rokurokubi,Creatura,,Dream,,Uncommon,7,5,ROKUROKUBI,all'entrata avv. −1 DEF e −1 DEF alla prossima creatura avversaria che entra,1.2,23.7
+The Threadbound Doll,Creatura,,Dream,,Uncommon,6,6,THREADBOUND_DOLL,"quando muore, 4 danni all'avv.",1.8,22.8
+L'Ombra del Torii,Creatura,,Dream,,Uncommon,3,15,TORII_SHADOW,"all'entrata +3 DEF se c'è il Terreno della Theory of the Dream, altrimenti +2, finché resta in campo",2.0,24.5
+The Masked Bloom,Creatura,,Dream,,Uncommon,4,10,MASKED_BLOOM,all'entrata avv. −2 ATK nel primo round e −1 nel secondo,2.5,22.5
+Yuki-onna,Creatura,,Dream,,Rare,4,8,YUKI_ONNA,Congelata: all'entrata l'avv. non attacca nel primo round (il suo attacco è 0),4.5,22.5
+Jorōgumo,Creatura,,Dream,,Rare,4,7,JOROGUMO,Doppia illusione: previene 3 danni da ciascuno dei primi due attacchi subiti,5.3,22.3
+Nure-onna,Creatura,,Dream,,Rare,7,5,NURE_ONNA,"Ogni vittima: una volta per ogni creatura avversaria, quando la sua DEF scende a metà o meno, 3 danni",0.6,23.1
+The Face Collector,Creatura,,Dream,,Rare,4,7,FACE_COLLECTOR,"Forza presa in prestito: ruba 2 ATK nel primo round e 1 ATK nel secondo (l'avv. ha il malus, The Face Collector lo stesso bonus)",4.9,21.9
+Baku,Creatura,,Dream,,Mythic,4,8,BAKU,"Divoratore di incubi: finché Baku è in campo, ogni volta che l'effetto di una creatura avversaria sta per attivarsi, Baku lo divora (non avviene) e ottiene +2 DEF",4.3,22.3
+The Unseen Matriarch,Creatura,,Dream,,Mythic,4,8,UNSEEN_MATRIARCH,"Velo spezzato: la prima volta che la sua DEF scende a metà o meno, l'avv. subisce danni pari alla DEF che ha perso (massimo 8) e −1 ATK finché resta in campo",4.5,22.5
+The Undying Blossom,Creatura,,Dream,,Mythic,4,5,UNDYING_BLOSSOM,"Maledizione cremisi: una volta, quando subirebbe un danno letale, resta con 4 DEF e perde i suoi bonus temporanei; l'avv. subisce 3 danni",8.0,23.0
+Shuten-dōji,Creatura,,Dream,,Legendary,3,9,SHUTEN_DOJI,"dopo ogni danno DEF subito +4 ATK cumulativi, massimo +12",10.1,26.6
+Kitsune,Creatura,,Dream,,Legendary,4,6,KITSUNE,"Mille forme: finché sono entrambe in campo copia l'effetto dell'avv. (l'avv. tiene il suo); se copia qualcosa, +3 DEF; sigilla inoltre fino a 3 punti di bonus ATK dell'avv. finché resta in campo",7.2,23.2
+The Rootbound Doppelganger,Creatura,,Invitation,Dream,Mutant,4,6,ROOTBOUND_DOPPELGANGER,Imboscata a ogni vittima: contro ogni creatura avversaria previene 3 danni dal suo primo attacco e le dà −2 ATK per i suoi due round seguenti,7.9,23.9
+The Stitched Corridor,Creatura,,Wound,Archive,Mutant,4,6,STITCHED_CORRIDOR,"Battito per ogni vittima: contro ogni creatura avversaria, 2 danni quando entra (o quando entra il Corridor) e il suo primo attacco fa 3 danni in meno",7.4,23.4
+Morso del Rovescio,Spell,DAMAGE,,,,,,BITE_OF_REVERSE,avv. −3 ATK,4.9,
+Frattura della Pelle,Spell,DAMAGE,,,,,,SKIN_FRACTURE,avv. −5 DEF,4.9,
+Dissoluzione,Spell,DAMAGE,,,,,,DISSOLUTION,"avv. −2 ATK, −2 DEF",4.7,
+Velo degli Ancorati,Spell,SHIELD,,,,,,VEIL_OF_ANCHORED,+5 DEF,5.1,
+Patto del Registro,Spell,SHIELD,,,,,,REGISTRY_PACT,"+2 DEF, +1 ATK",4.7,
+Armatura della Pioggia,Spell,SHIELD,,,,,,RAIN_ARMOR,+2 ATK,4.2,
+SCP-500,Spell,SHIELD,,,,,,SCP_500,la prossima creatura subisce 5 danni in meno dal primo danno di qualunque tipo (attacco o effetto),3.5,
+SCP-109,Spell,SHIELD,,,,,,SCP_109,"Borraccia: +2 DEF; una volta, quando la creatura scende a metà DEF o meno, recupera 3 DEF (fino alla DEF all'entrata)",4.8,
+SCP-458,Spell,SHIELD,,,,,,SCP_458,Fette da dividere: +2 DEF alla prossima creatura e +2 DEF a quella dopo,4.0,
+Richiamo della Crepa,Spell,BURN,,,,,,CRACK_CALL,"se la carta rivelata è una creatura, entra con +2 ATK e +2 DEF; altrimenti nulla",4.9,
+Fusione del Rovescio,Spell,BURN,,,,,,REVERSE_FUSION,"se la carta rivelata è una creatura, entra con +2 ATK e +1 DEF; altrimenti la prossima creatura ottiene comunque +1 ATK",4.5,
+Eco dei Dimenticati,Spell,BURN,,,,,,FORGOTTEN_ECHO,"se la carta rivelata è una creatura, entra con +2 ATK e +1 DEF; altrimenti la prossima creatura ottiene comunque +2 DEF",4.5,
+Last Sanctuary,Hidden,SURVIVAL,,,,,,LAST_SANCTUARY,propria creatura +5 DEF nello scontro corrente,3.7,
+Survival Instinct,Hidden,SURVIVAL,,,,,,SURVIVAL_INSTINCT,"+2 ATK, +1 DEF nello scontro corrente",3.2,
+Remnants of Reality,Hidden,SURVIVAL,,,,,,REMNANTS_OF_REALITY,"con condizione: quando la propria creatura riceve una penalità, annulla fino a 5 punti di penalità (prima quella che l'ha attivata, poi quelle già presenti, in ordine), senza superare i valori di prima; i punti avanzati si perdono",2.5,
+Unseen Exit,Hidden,SURVIVAL,,,,,,UNSEEN_EXIT,"con condizione: quando un attacco avversario ucciderebbe la propria creatura, previene 5 danni (controllo al passo 3, dopo tutte le altre riduzioni)",3.9,
+Hostile Presence,Hidden,DAMAGE,,,,,,HOSTILE_PRESENCE,avv. −5 ATK nel primo round dello scontro,3.2,
+Echo Strike,Hidden,DAMAGE,,,,,,ECHO_STRIKE,avv. −2 ATK nel primo round e −2 DEF,3.1,
+Breaking Point,Hidden,DAMAGE,,,,,,BREAKING_POINT,"Spezzata: se l'avv. ha 7 DEF o meno, la sua DEF scende a 0 e muore, senza danni al giocatore; altrimenti −4 DEF",3.8,
+Static Interference,Hidden,DAMAGE,,,,,,STATIC_INTERFERENCE,"senza condizione: sospende fino a 5 punti di bonus ATK dell'avv. per tutto lo scontro; se non ne ha, 5 danni all'avv.",3.5,
+Echo Rift,Terreno,,Wound,,Rare,,,ECHO_RIFT,"bonus base +1 ATK; Eco delle ferite: la prima volta che ogni creatura viene ferita in uno scontro, +1 ATK per il resto di quello scontro",4.2,
+Hollow Clearing,Terreno,,Invitation,,Rare,,,HOLLOW_CLEARING,bonus base +2 DEF; Ogni penalità: ogni penalità DEF che ricevono è ridotta di 1,3.8,
+Watching Rift,Terreno,,Archive,,Rare,,,WATCHING_RIFT,"bonus base +1 ATK, +1 DEF; la prima Spell DAMAGE subita da ogni creatura in uno scontro fa 1 punto in meno in totale (si toglie prima dalla DEF, poi dall'ATK)",4.9,
+Devouring Abyss,Terreno,,Dream,,Rare,,,DEVOURING_ABYSS,bonus base +1 ATK; all'inizio di ogni scontro ogni creatura infligge 1 danno all'avv. (danno da effetto),5.3,
+Badge di Uscita Negata,Oggetto,,Wound,,Rare,,,DENIED_EXIT_BADGE,"Nessuna uscita: la prima volta che la creatura del proprietario morirebbe, per qualunque danno, resta con 1 DEF",4.5,
+Bussola dei Sentieri Falsi,Oggetto,,Invitation,,Rare,,,FALSE_PATHS_COMPASS,"Strada lunga: all'inizio del prossimo scontro, uno scudo di 2 DEF all'inizio di ognuno dei primi tre round (si rinnova, non si somma)",3.3,
+Fascicolo Sigillato 0,Oggetto,,Archive,,Rare,,,SEALED_FILE_ZERO,"Censurato: il primo effetto di creatura, Spell o Hidden avversaria che colpirebbe la creatura del proprietario viene annullato del tutto (non gli attacchi, non i Terreni)",2.9,
+Campanello del Torii,Oggetto,,Dream,,Rare,,,TORII_BELL,"Campana d'allarme: quando la prima Hidden nemica starebbe per attivarsi, viene annullata (scartata senza effetto)",2.7,

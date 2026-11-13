@@ -60,16 +60,20 @@ class RoundResolverTest {
 
 ```java
 @Test
-@DisplayName("Hidebehind azzera solo il primo attacco subito")
-void hidebehind_dodgesOnlyFirstAttack() {
+@DisplayName("Hidebehind previene 2 danni dal primo attacco di ogni creatura avversaria")
+void hidebehind_preventsTwoDamageOnFirstAttackOfEachOpponent() {
 	CreatureInPlay hidebehind = TestCards.inPlay("Hidebehind", 5, 6, new HidebehindEffect());
-	EffectContext ctx = TestContexts.of(hidebehind);
+	CreatureInPlay faceling = TestCards.inPlay("Faceling", 7, 9);
+	CreatureInPlay dullers = TestCards.inPlay("Dullers", 7, 9);
 
-	int first = hidebehind.effect().modifyIncomingDamage(ctx, 7);
-	int second = hidebehind.effect().modifyIncomingDamage(ctx, 7);
+	int firstFromFaceling = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, faceling), 7);
+	int secondFromFaceling = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, faceling), 7);
+	int firstFromDullers = hidebehind.effect().modifyIncomingDamage(TestContexts.of(hidebehind, dullers), 7);
 
-	assertThat(first).isZero();
-	assertThat(second).isEqualTo(7);
+	assertThat(firstFromFaceling).isEqualTo(5);
+	assertThat(secondFromFaceling).isEqualTo(7);
+	// nuova avversaria → lo scudo vale di nuovo
+	assertThat(firstFromDullers).isEqualTo(5);
 }
 ```
 
@@ -95,9 +99,10 @@ void hidebehind_dodgesOnlyFirstAttack() {
 
 ### Carte speciali
 - [ ] Spell pescata: effetto applicato subito, carta scartata, si continua a pescare;
-- [ ] Hidden pescata: messa coperta, si attiva alla sua condizione;
-- [ ] Terreno pescato: resta in gioco fino alla fine e dà il bonus alle creature della sua fazione.
-- [ ] Oggetto pescato: resta in gioco fino alla fine e applica il suo effetto passivo (`ENG-33`).
+- [ ] Hidden pescata: messa coperta; senza condizione si attiva all'inizio del prossimo scontro del proprietario, con una condizione quando la condizione si verifica (D-15);
+- [ ] Terreno pescato: dà il bonus alle creature della sua fazione di entrambi i giocatori; un secondo Terreno, di chiunque, lo sostituisce e i suoi bonus si tolgono (D-17, D-19);
+- [ ] Oggetto pescato: resta accanto al mazzo, scatta una volta sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma (D-47, `ENG-33`);
+- [ ] DEF temporanea: assorbe i danni per prima; alla scadenza su una creatura danneggiata la creatura non muore (D-35).
 
 ### Determinismo
 - [ ] stesso seed → stesso `MatchResult`, log compreso;

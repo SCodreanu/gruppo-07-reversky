@@ -100,6 +100,7 @@ La regola vale qualunque sia la causa della morte (attacco, effetti di fine roun
 - Quando una creatura muore, il suo proprietario pesca la carta successiva del mazzo.
 - La creatura sopravvissuta **resta in campo** con la DEF che le è rimasta.
 - Se si pesca una Spell, una Hidden, un Terreno o un Oggetto, la carta viene risolta (vedi [carte](../carte/carte.md)) e si continua a pescare finché esce una creatura.
+- Se nel mazzo restano solo carte non creatura, si risolvono tutte in ordine e poi si controlla la fine della partita (condizione 3 o 4, D-06).
 
 ### Esempio completo (senza bonus di fazione)
 

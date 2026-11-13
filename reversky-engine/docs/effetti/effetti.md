@@ -55,9 +55,11 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 0. Entrata in campo (solo a inizio scontro)
      - bonus DEF di fazione
      - bonus del Terreno
-     - effetto dell'Oggetto (ordine rispetto al Terreno: D-48)
-     - Hidden in attesa
-     - onEnterPlay di entrambe le creature
+     - effetto dell'Oggetto (dopo il Terreno, D-48)
+     - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL)
+     - onEnterPlay di entrambe le creature, poi gli effetti che guardano
+       l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…)
+     - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
 1. onRoundStart
 2. Calcolo attacco: ATK base + bonus ATK di fazione + modificatori → modifyOutgoingAttack → minimo 0
 3. Calcolo danno ricevuto: modifyIncomingDamage della creatura colpita
@@ -67,6 +69,19 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 7. Morti: onDeath / onKill, poi danno al giocatore = DEF negativa della sconfitta (vedi regole-base)
 ```
 
+Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08): una creatura uccisa da un danno da effetto prima del passo 4 non attacca.
+
+Le Hidden **con una condizione** (D-15) non scattano al passo 0: restano coperte e si controllano quando la loro condizione si può verificare: Unseen Exit al passo 3 (un attacco ucciderebbe la creatura, dopo tutte le altre riduzioni), Remnants of Reality dopo ogni penalità ricevuta. Una Hidden pescata nella pescata iniziale non si attiva nel primo scontro.
+
+### Danno da effetto
+
+Il danno inflitto da un effetto, una Spell, una Hidden, un Terreno o un Oggetto è una **perdita permanente di DEF**, non un attacco: non passa da `modifyIncomingDamage`, non attiva gli effetti che reagiscono agli attacchi (SCP-106, SCP-682, Unseen Exit) e non conta come "primo attacco". Può uccidere fuori dal passo 4 (D-08). Lo riducono solo gli effetti che parlano di penalità o di danni da effetto (Hollow Clearing, Remnants of Reality, Fascicolo Sigillato 0).
+
+### Soglie
+
+- **Ferita** = perdita reale di DEF sopra 0, dopo gli scudi.
+- **Metà DEF** = DEF ≤ 50% della DEF all'entrata, bonus compresi; si controlla dopo ogni fase in cui la DEF cambia, solo se la creatura è ancora viva.
+
 ### Più effetti nello stesso momento
 
 1. Prima per **priorità**: `NULLIFY` (effetti che annullano altri effetti) → `NORMAL`.
@@ -74,9 +89,14 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 
 Così l'ordine è sempre lo stesso e la partita è riproducibile. Approvato dai DSG il 9 novembre (D-30).
 
-### Effetti che annullano altri effetti
+### Effetti annullati
 
-The Rain Preacher, SCP-2521 e Baku disattivano l'effetto avversario. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
+Il Predicatore sotto la Pioggia e SCP-2521 annullano l'effetto della creatura avversaria **finché resta in campo**; Baku divora ogni attivazione di un effetto avversario **finché Baku è in campo**. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
+
+Regola degli effetti annullati:
+- un effetto annullato **non scatta** più (nessun momento dell'interfaccia viene chiamato);
+- i suoi **bonus ATK sono sospesi** finché resta annullato;
+- la **DEF già guadagnata resta**.
 
 ```java
 @Override
@@ -88,21 +108,26 @@ public void onEnterPlay(EffectContext ctx) {
 
 Se due effetti `NULLIFY` si incontrano, agisce prima quello dello sfidante e annulla l'altro.
 
+Il Custode delle Porte Incrociate **non** è un effetto `NULLIFY`: è immune agli effetti delle creature avversarie (filtro sul bersaglio), quindi non li spegne ma non ne subisce le conseguenze. Spell, Hidden, Terreni e Oggetti avversari lo colpiscono normalmente.
+
 ## Esempi
 
 ### Effetto semplice: Hidebehind
 
-> Il primo attacco che subisce viene schivato (0 danni). Dal secondo round non ha più effetto.
+> Previene 2 danni dal primo attacco di ogni creatura avversaria che affronta.
 
 ```java
 /**
- * Hidebehind — il primo attacco subito nello scontro infligge 0 danni.
+ * Hidebehind — "Previene 2 danni dal primo attacco di ogni creatura avversaria".
  */
 public final class HidebehindEffect implements CreatureEffect {
 
 	public static final String CODE = "HIDEBEHIND";
 
-	private boolean dodgeUsed = false;
+	private static final int PREVENTED_DAMAGE = 2;
+
+	/** Ultima avversaria contro cui lo scudo è già stato usato. */
+	private CreatureInPlay shieldUsedAgainst;
 
 	@Override
 	public String code() {
@@ -111,38 +136,48 @@ public final class HidebehindEffect implements CreatureEffect {
 
 	@Override
 	public int modifyIncomingDamage(EffectContext ctx, int damage) {
-		if (!dodgeUsed) {
-			dodgeUsed = true;
-			ctx.log().effect(ctx.self(), "dodges the first attack");
-			return 0;
+		CreatureInPlay attacker = ctx.opponent();
+		// D-33: conta il primo attacco con danno > 0 di ogni avversaria
+		if (attacker == shieldUsedAgainst || damage <= 0) {
+			return damage;
 		}
-		return damage;
+		shieldUsedAgainst = attacker;
+		int reduced = Math.max(0, damage - PREVENTED_DAMAGE);
+		ctx.log().effect(ctx.self(), "prevents " + (damage - reduced) + " damage");
+		return reduced;
 	}
 }
 ```
 
-Nota: l'effetto ha uno **stato** (`dodgeUsed`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
+Nota: l'effetto ha uno **stato** (`shieldUsedAgainst`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
 
-### Effetto con soglia: SCP-096
+### Effetto con soglia: The Unseen Matriarch
 
-> Quando la sua difesa scende al 50% o meno del valore iniziale, ottiene +3 attacco per il resto dello scontro.
+> La prima volta che la sua DEF scende a metà o meno, la creatura avversaria subisce danni pari alla DEF che ha perso (massimo 8) e −1 ATK finché resta in campo.
 
 ```java
 @Override
 public void afterDamage(EffectContext ctx, int damageTaken) {
 	CreatureInPlay self = ctx.self();
-	if (!enraged && self.defense() > 0 && self.defense() * 2 <= self.initialDefense()) {
-		enraged = true;
-		self.addAttackModifier(3, "Uncontrollable Rage");
+	if (used || self.defense() <= 0 || self.defense() * 2 > self.initialDefense()) {
+		return;
 	}
+	used = true;
+	int lost = Math.min(MAX_DAMAGE, self.initialDefense() - self.defense());
+	ctx.opponent().takeEffectDamage(lost, CODE);
+	ctx.opponent().addAttackModifier(-1, CODE);
+	ctx.log().effect(self, "deals " + lost + " damage to " + ctx.opponent().name());
 }
 ```
 
+La stessa soglia si controlla anche dopo le altre fasi in cui la DEF cambia (danni da effetto all'entrata, a inizio o fine round), non solo in `afterDamage`.
+
 ### Effetto alla morte: SCP-2317
 
-> Quando muore, infligge 4 danni alla creatura avversaria.
+> Alla morte infligge 4 danni alla creatura avversaria e dà +1 ATK alla prossima creatura alleata.
 
 Il danno può uccidere anche l'avversaria: le morti si ricontrollano dopo gli `onDeath`, quindi possono morire **entrambe** (e in quel caso nessun giocatore subisce danni).
+Il +1 ATK va nei modificatori in attesa del proprietario (D-34) e si applica alla sua prossima creatura che entra.
 
 ## Registro degli effetti
 
@@ -154,7 +189,7 @@ public final class EffectRegistry {
 	public static EffectRegistry withAllEffects() {
 		EffectRegistry registry = new EffectRegistry();
 		registry.register(HidebehindEffect.CODE, HidebehindEffect::new);
-		registry.register(Scp096Effect.CODE, Scp096Effect::new);
+		registry.register(UnseenMatriarchEffect.CODE, UnseenMatriarchEffect::new);
 		// ...
 		return registry;
 	}
@@ -184,11 +219,6 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 |---|---|---|---|
 | — | — | — | nessuno ancora |
 
-L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni), con codici proposti, momenti e domande aperte, è nel [catalogo degli effetti](catalogo-effetti.md).
-Le modifiche al motore che gli effetti richiedono (es. numero massimo di attivazioni, morti fuori dal round) sono in [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).
-
-Effetti che richiedono chiarimenti prima di essere implementati **[DA CONFERMARE]**:
-- **Mothman**: "se sta per perdere la sfida… ribalta il risultato" — riguarda la partita intera o lo scontro? Cosa significa "scarto"?
-- **Skin-Stealers**: "copia il 25% di difesa e attacco… solo per 1 turno" — turno = round o scontro?
-- **Wendigo**: "recupera 3 DEF" supera la DEF iniziale o si ferma al massimo?
-- **SCP-001**: "perde metà della DEF residua (per difetto)" a ogni round — con DEF 1 la perdita è 0, quindi l'effetto da solo non uccide mai: verificare che sia voluto.
+L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).
+Gli effetti sono stati decisi nella [revisione carta per carta](../bilanciamento/revisione-effetti.md) del 10 e 11 novembre: lì ci sono, per ogni carta, i dettagli di motore e le interazioni.
+Le modifiche al motore che gli effetti richiedono (es. numero massimo di attivazioni, morti fuori dal round) sono nei [pezzi di motore](catalogo-effetti.md#pezzi-di-motore-richiesti-dagli-effetti) e nelle [decisioni aperte](../decisioni-aperte/decisioni-aperte.md#effetti).

@@ -23,6 +23,14 @@ services:
       timeout: 5s
       retries: 10
 
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    expose:
+      - "1025"                               # SMTP, raggiungibile solo dall'API
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"      # email ricevute: http://localhost:8025
+
   engine:
     build: ./reversky-engine
     restart: unless-stopped
@@ -41,6 +49,8 @@ services:
         condition: service_healthy
       engine:
         condition: service_started
+      mailpit:
+        condition: service_started
     environment:
       SERVER_PORT: 8080
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-reversky}
@@ -48,6 +58,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reversky}
       REVERSKY_ENGINE_BASEURL: http://engine:8081              # reversky.engine.base-url
       REVERSKY_SECURITY_JWTSECRET: ${JWT_SECRET:-dev-only-secret-change-me-at-least-32-chars}  # reversky.security.jwt-secret
+      SPRING_MAIL_HOST: mailpit                                # spring.mail.host
+      SPRING_MAIL_PORT: 1025                                   # spring.mail.port
     ports:
       - "${API_PORT:-8080}:8080"
 
