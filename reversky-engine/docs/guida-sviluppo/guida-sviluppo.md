@@ -97,25 +97,29 @@ class FactionMatrixTest {
 	private static final int WOUND = 1;   // Theory of the Wound
 	private static final int DREAM = 4;   // Theory of the Dream
 
+	// La matrice lavora su liste di fazioni, una o due per carta (docs/fazioni, "Carte con due fazioni")
+	private static final List<Integer> ONLY_WOUND = List.of(WOUND);
+	private static final List<Integer> ONLY_DREAM = List.of(DREAM);
+
 	private final FactionMatrix matrix = new FactionMatrix(List.of(
 			new FactionBonus(WOUND, DREAM, 2, 0)));
 
 	@Test
 	@DisplayName("Una coppia con una riga di bonus restituisce il bonus della riga")
 	void atkBonus_pairWithRow_returnsRowBonus() {
-		assertThat(matrix.atkBonus(WOUND, DREAM)).isEqualTo(2);
+		assertThat(matrix.atkBonus(ONLY_WOUND, ONLY_DREAM)).isEqualTo(2);
 	}
 
 	@Test
 	@DisplayName("La direzione opposta, senza riga, non ha bonus")
 	void atkBonus_reversePairWithoutRow_returnsZero() {
-		assertThat(matrix.atkBonus(DREAM, WOUND)).isZero();
+		assertThat(matrix.atkBonus(ONLY_DREAM, ONLY_WOUND)).isZero();
 	}
 
 	@Test
 	@DisplayName("Una fazione contro se stessa non ha bonus")
 	void atkBonus_sameFaction_returnsZero() {
-		assertThat(matrix.atkBonus(DREAM, DREAM)).isZero();
+		assertThat(matrix.atkBonus(ONLY_DREAM, ONLY_DREAM)).isZero();
 	}
 }
 ```
