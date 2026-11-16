@@ -239,6 +239,20 @@ class SimulationInputValidatorTest {
 		assertFailsWith(input(deck(CRAWLERS, hidden), deck(KAPPA)), ErrorCode.INVALID_CARD_FACTIONS);
 	}
 
+	@Test
+	@DisplayName("Terreno od Oggetto con una seconda fazione → INVALID_CARD_FACTIONS: solo le creature ne hanno due")
+	void validate_terrainOrItemWithSecondFaction_invalidCardFactions() {
+		// Arrange
+		CardDefinition terrain = new CardDefinition(90, "Echo Rift", CardType.TERRAIN, "Rare", 3, WOUND, ARCHIVE,
+				null, null, null, "ECHO_RIFT");
+		CardDefinition item = new CardDefinition(95, "Campanello del Torii", CardType.ITEM, "Rare", 3, DREAM,
+				INVITATION, null, null, null, "TORII_BELL");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, terrain), deck(KAPPA)), ErrorCode.INVALID_CARD_FACTIONS);
+		assertFailsWith(input(deck(CRAWLERS, item), deck(KAPPA)), ErrorCode.INVALID_CARD_FACTIONS);
+	}
+
 	// ---- 5. NO_CREATURES_IN_DECK ----
 
 	@Test
@@ -267,6 +281,18 @@ class SimulationInputValidatorTest {
 				.doesNotThrowAnyException();
 	}
 
+	@Test
+	@DisplayName("ATK e DEF su una carta non creatura (Spell con ATK 3, DEF 4) si ignorano: l'engine non li legge")
+	void validate_statsOnNonCreature_ignored() {
+		// Arrange
+		CardDefinition spellWithStats = new CardDefinition(70, "Veil of the Anchored", CardType.SPELL, "Uncommon",
+				2, null, null, 3, 4, CardSubtype.SHIELD, "VEIL_OF_ANCHORED");
+
+		// Act + Assert
+		assertThatCode(() -> validator.validate(input(deck(CRAWLERS, spellWithStats), deck(KAPPA))))
+				.doesNotThrowAnyException();
+	}
+
 	// ---- 7. MISSING_SUBTYPE ----
 
 	@Test
@@ -281,6 +307,45 @@ class SimulationInputValidatorTest {
 		// Act + Assert
 		assertFailsWith(input(deck(CRAWLERS, spell), deck(KAPPA)), ErrorCode.MISSING_SUBTYPE);
 		assertFailsWith(input(deck(CRAWLERS, hidden), deck(KAPPA)), ErrorCode.MISSING_SUBTYPE);
+	}
+
+	@Test
+	@DisplayName("Spell con SURVIVAL → MISSING_SUBTYPE: una Spell è DAMAGE, SHIELD o BURN")
+	void validate_spellWithHiddenSubtype_missingSubtype() {
+		// Arrange
+		CardDefinition spell = new CardDefinition(70, "Veil of the Anchored", CardType.SPELL, "Uncommon", 2, null,
+				null, null, null, CardSubtype.SURVIVAL, "VEIL_OF_ANCHORED");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, spell), deck(KAPPA)), ErrorCode.MISSING_SUBTYPE);
+	}
+
+	@Test
+	@DisplayName("Hidden con SHIELD o BURN → MISSING_SUBTYPE: una Hidden è SURVIVAL o DAMAGE")
+	void validate_hiddenWithSpellSubtype_missingSubtype() {
+		// Arrange
+		CardDefinition shield = new CardDefinition(80, "Last Sanctuary", CardType.HIDDEN, "Rare", 3, null, null,
+				null, null, CardSubtype.SHIELD, "LAST_SANCTUARY");
+		CardDefinition burn = new CardDefinition(80, "Last Sanctuary", CardType.HIDDEN, "Rare", 3, null, null,
+				null, null, CardSubtype.BURN, "LAST_SANCTUARY");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, shield), deck(KAPPA)), ErrorCode.MISSING_SUBTYPE);
+		assertFailsWith(input(deck(CRAWLERS, burn), deck(KAPPA)), ErrorCode.MISSING_SUBTYPE);
+	}
+
+	@Test
+	@DisplayName("DAMAGE vale sia per le Spell sia per le Hidden")
+	void validate_damageOnSpellAndHidden_doesNotThrow() {
+		// Arrange
+		CardDefinition spell = new CardDefinition(93, "Bite of the Reverse", CardType.SPELL, "Uncommon", 2, null,
+				null, null, null, CardSubtype.DAMAGE, "BITE_OF_REVERSE");
+		CardDefinition hidden = new CardDefinition(109, "Hostile Presence", CardType.HIDDEN, "Uncommon", 2, null,
+				null, null, null, CardSubtype.DAMAGE, "HOSTILE_PRESENCE");
+
+		// Act + Assert
+		assertThatCode(() -> validator.validate(input(deck(CRAWLERS, spell, hidden), deck(KAPPA))))
+				.doesNotThrowAnyException();
 	}
 
 	// ---- 8. MISSING_EFFECT ----
@@ -303,6 +368,20 @@ class SimulationInputValidatorTest {
 		assertFailsWith(input(deck(CRAWLERS, hidden), deck(KAPPA)), ErrorCode.MISSING_EFFECT);
 		assertFailsWith(input(deck(CRAWLERS, terrain), deck(KAPPA)), ErrorCode.MISSING_EFFECT);
 		assertFailsWith(input(deck(CRAWLERS, item), deck(KAPPA)), ErrorCode.MISSING_EFFECT);
+	}
+
+	@Test
+	@DisplayName("effectCode vuoto o di soli spazi → MISSING_EFFECT, come se mancasse")
+	void validate_blankEffectCode_missingEffect() {
+		// Arrange
+		CardDefinition empty = new CardDefinition(90, "Echo Rift", CardType.TERRAIN, "Rare", 3, WOUND, null, null,
+				null, null, "");
+		CardDefinition spaces = new CardDefinition(70, "Veil of the Anchored", CardType.SPELL, "Uncommon", 2, null,
+				null, null, null, CardSubtype.SHIELD, "   ");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, empty), deck(KAPPA)), ErrorCode.MISSING_EFFECT);
+		assertFailsWith(input(deck(CRAWLERS, spaces), deck(KAPPA)), ErrorCode.MISSING_EFFECT);
 	}
 
 	@Test

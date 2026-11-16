@@ -10,9 +10,9 @@ package it.downfall.reversky.engine.core.validation;
 public enum ErrorCode {
 
 	/**
-	 * 1. Dato mancante o fuori dai limiti: regole mancanti o con valori minori di 1, giocatore mancante, mazzo
-	 * vuoto, carta senza tipo o senza nome, fazione ripetuta. Nello strato {@code web} lo segnala anche la Bean
-	 * Validation.
+	 * 1. Dato mancante o fuori dai limiti: regole mancanti, senza versione o con valori minori di 1, giocatore
+	 * mancante, mazzo vuoto, carta senza tipo o senza nome, fazione ripetuta. Nello strato {@code web} lo segnala
+	 * anche la Bean Validation.
 	 */
 	VALIDATION_FAILED,
 
@@ -23,8 +23,8 @@ public enum ErrorCode {
 	INVALID_FACTION_BONUS,
 
 	/**
-	 * 4. Seconda fazione uguale alla principale; Creatura, Terreno od Oggetto senza fazione; Spell o Hidden con una
-	 * fazione.
+	 * 4. Seconda fazione uguale alla principale; Creatura, Terreno od Oggetto senza fazione; Terreno od Oggetto con
+	 * una seconda fazione; Spell o Hidden con una fazione.
 	 */
 	INVALID_CARD_FACTIONS,
 
@@ -34,10 +34,13 @@ public enum ErrorCode {
 	/** 6. Creatura senza ATK o DEF, con ATK minore di 0 o DEF minore di 1. */
 	INVALID_STATS,
 
-	/** 7. Spell o Hidden senza sottotipo. */
+	/**
+	 * 7. Spell o Hidden senza sottotipo, o con un sottotipo che non esiste per il suo tipo (Spell: {@code DAMAGE},
+	 * {@code SHIELD}, {@code BURN}; Hidden: {@code SURVIVAL}, {@code DAMAGE}).
+	 */
 	MISSING_SUBTYPE,
 
-	/** 8. Spell, Hidden, Terreno od Oggetto senza codice effetto. */
+	/** 8. Spell, Hidden, Terreno od Oggetto senza codice effetto, o con un codice vuoto. */
 	MISSING_EFFECT,
 
 	/** 9. Codice effetto che non esiste nel registro degli effetti (ENG-22). */

@@ -126,14 +126,14 @@ Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'
 
 | Ordine | `code` | Quando | Esempio |
 |---|---|---|---|
-| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`); stesso `id` ripetuto in `factions` | `95` |
+| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante, con `rulesVersion` vuota o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`); stesso `id` ripetuto in `factions` | `95` |
 | 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
 | 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa, `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) o due righe per la stessa coppia (`originFactionId`, `targetFactionId`) | `93` |
-| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Spell o Hidden con una fazione | `94` |
+| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Terreno od Oggetto con `secondaryFactionId` (solo le creature hanno due fazioni); Spell o Hidden con una fazione | `94` |
 | 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
-| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
-| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype` | — |
-| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` | — |
+| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 (`atk` e `def` sulle altre carte si ignorano) | — |
+| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype`, o con un `subtype` che non esiste per il tipo (Spell: `DAMAGE`, `SHIELD`, `BURN`; Hidden: `SURVIVAL`, `DAMAGE`) | — |
+| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
 | 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
 
 ```json

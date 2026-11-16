@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import it.downfall.reversky.engine.core.model.CardDefinition;
+import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
 import it.downfall.reversky.engine.core.model.Faction;
 import it.downfall.reversky.engine.core.model.PlayerInput;
@@ -27,6 +28,12 @@ import it.downfall.reversky.engine.core.rules.FactionBonus;
 public final class SimulationInputValidator {
 
 	/**
+	 * Crea il validatore. Non ha stato: la stessa istanza controlla qualsiasi numero di input.
+	 */
+	public SimulationInputValidator() {
+	}
+
+	/**
 	 * Controlla l'input.
 	 *
 	 * @param input input della simulazione
@@ -40,10 +47,25 @@ public final class SimulationInputValidator {
 		checkCreaturesInDecks(input);
 		checkEachCard(input, SimulationInputValidator::hasInvalidStats, ErrorCode.INVALID_STATS,
 				card -> "ATK o DEF non validi sulla carta " + card.cardId() + " (ATK almeno 0, DEF almeno 1)");
-		checkEachCard(input, card -> isShared(card.type()) && card.subtype() == null, ErrorCode.MISSING_SUBTYPE,
-				card -> "Sottotipo mancante sulla carta " + card.cardId());
-		checkEachCard(input, card -> card.type() != CardType.CREATURE && card.effectCode() == null,
+		checkEachCard(input, SimulationInputValidator::hasInvalidSubtype, ErrorCode.MISSING_SUBTYPE,
+				card -> "Sottotipo mancante o non valido per una carta " + card.type() + ": carta " + card.cardId());
+		checkEachCard(input, card -> card.type() != CardType.CREATURE && isBlank(card.effectCode()),
 				ErrorCode.MISSING_EFFECT, card -> "Codice effetto mancante sulla carta " + card.cardId());
+	}
+
+	/**
+	 * La gestione delle carte pescate (ENG-19, ENG-20) sceglie cosa fare dal sottotipo: un sottotipo che non
+	 * esiste per quel tipo di carta prenderebbe una strada sbagliata senza errori. Le altre carte non leggono il
+	 * sottotipo, quindi non si controlla.
+	 */
+	private static boolean hasInvalidSubtype(CardDefinition card) {
+		if (card.type() == CardType.SPELL) {
+			return card.subtype() == null || card.subtype() == CardSubtype.SURVIVAL;
+		}
+		if (card.type() == CardType.HIDDEN) {
+			return card.subtype() != CardSubtype.SURVIVAL && card.subtype() != CardSubtype.DAMAGE;
+		}
+		return false;
 	}
 
 	/** Controllo 1: dati obbligatori presenti, mazzi non vuoti, nessuna fazione ripetuta. */
@@ -114,7 +136,11 @@ public final class SimulationInputValidator {
 			// Spell e Hidden sono condivise tra le fazioni (docs/api-engine): nessuna fazione, nemmeno la seconda
 			return hasAnyFaction;
 		}
-		return card.factionId() == null || card.factionId().equals(card.secondaryFactionId());
+		if (card.factionId() == null || card.factionId().equals(card.secondaryFactionId())) {
+			return true;
+		}
+		// Solo le creature possono avere due fazioni (D-22): il bonus del Terreno lavora su una fazione sola
+		return card.type() != CardType.CREATURE && card.secondaryFactionId() != null;
 	}
 
 	/** Controllo 5: ogni mazzo ha almeno una creatura. */
@@ -132,6 +158,7 @@ public final class SimulationInputValidator {
 
 	private static boolean hasInvalidStats(CardDefinition card) {
 		if (card.type() != CardType.CREATURE) {
+			// ATK e DEF di una carta non creatura si ignorano: l'engine non li legge
 			return false;
 		}
 		return card.attack() == null || card.defense() == null || card.attack() < 0 || card.defense() < 1;
@@ -153,6 +180,10 @@ public final class SimulationInputValidator {
 
 	private static boolean isShared(CardType type) {
 		return type == CardType.SPELL || type == CardType.HIDDEN;
+	}
+
+	private static boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 
 	private static boolean isUnknown(Integer factionId, Set<Integer> known) {

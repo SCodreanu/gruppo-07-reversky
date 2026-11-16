@@ -10,6 +10,7 @@ public class InvalidSimulationInputException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
+	/** Codice dell'errore, restituito all'API nel campo {@code code} del {@code ProblemDetail}. */
 	private final ErrorCode code;
 
 	/**
