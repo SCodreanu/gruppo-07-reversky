@@ -30,7 +30,8 @@ public record RuleConfig(String rulesVersion, int startingLifePoints, int maxRou
 
 	public RuleConfig {
 		if (startingLifePoints < 1 || maxRounds < 1) {
-			throw new InvalidSimulationInputException("Regole non valide");
+			// Stesso codice della Bean Validation nello strato web (docs/api-engine, controllo 1)
+			throw new InvalidSimulationInputException(ErrorCode.VALIDATION_FAILED, "Regole non valide: ...");
 		}
 	}
 }

@@ -42,6 +42,10 @@ core/
 │   ├── CreatureEffect      interfaccia con i "momenti" in cui un effetto può agire
 │   ├── EffectRegistry      codice effetto → implementazione
 │   └── impl/               un file per effetto (HidebehindEffect, WendigoEffect…)
+├── validation/
+│   ├── SimulationInputValidator  controlla l'input nell'ordine dei codici di errore di api-engine
+│   ├── ErrorCode                 i codici di errore del contratto, nell'ordine dei controlli
+│   └── InvalidSimulationInputException  input incoerente, diventa 400 nello strato web
 └── log/
     ├── MatchLog            lista ordinata di eventi
     └── MatchEvent          record di un evento
