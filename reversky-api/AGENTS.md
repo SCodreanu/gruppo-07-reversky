@@ -58,6 +58,7 @@ src/main/java/it/downfall/reversky/api/
 ├── user/          utenti e ruoli
 ├── inventory/     crediti e pacchetti da aprire
 ├── catalog/       carte, rarità, fazioni, bonus di fazione, tag
+├── ruleset/       regole di gioco versionate (rule set attivo, GET /rules)
 ├── pack/          pacchetti: acquisto e apertura
 ├── collection/    carte possedute
 ├── deck/          mazzi e validazione
@@ -131,6 +132,10 @@ Catalogo (`catalog/`):
 - carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
 - rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
 - fazioni delle carte: l'entità `CatalogCard` ha `faction` e `secondaryFaction` e `CardType` ha `ITEM`, come la baseline. `PUT /admin/cards` non riceve ancora le fazioni (#81): una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto (`422`), mentre una carta che diventa Spell o Hidden perde le fazioni.
+
+Regole di gioco (`ruleset/`):
+
+- `GET /api/v1/rules` pubblico (rule set attivo, senza i bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo arriva con il seed di #85.
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 

@@ -125,7 +125,7 @@ public class DeckController {
 | Utente | `GET /users/me`, `GET /users/{id}/collection` |
 | Inventario | `GET /inventory`, `POST /inventory/packs/{packId}/open` |
 | Carte | `GET /cards`, `GET /cards/{id}`, `GET /rarities`, `GET /factions` |
-| Regole | `GET /rules` (rule set attivo e bonus di fazione, per la pagina del regolamento) |
+| Regole | `GET /rules` (rule set attivo e bonus di fazione, per la pagina del regolamento; per ora solo il rule set, i bonus arrivano con `faction_bonuses`) |
 | Pacchetti | `GET /packs`, `POST /packs/{id}/purchase` |
 | Collezione | `GET /collection`, `GET /collection/summary` |
 | Mazzi | `GET/POST /decks`, `GET/PUT/DELETE /decks/{id}`, `POST /decks/validate`, `GET /decks/rules` |
