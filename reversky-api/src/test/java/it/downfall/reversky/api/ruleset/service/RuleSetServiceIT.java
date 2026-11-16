@@ -60,7 +60,6 @@ class RuleSetServiceIT {
 	@Autowired
 	private TestUsers testUsers;
 
-	// Non serve al test: stessa configurazione degli altri IT, così Spring riusa il contesto
 	@MockitoBean
 	private EmailSender emailSender;
 
@@ -295,9 +294,11 @@ class RuleSetServiceIT {
 		// Act
 		RuleSetPublicResponse response = ruleSetService.findActive();
 
-		// Assert
+		// Assert: factionBonuses è un campo nuovo della response (matrice di bonus); si ignora
+		// esplicitamente perché RuleSetRequest non lo ha e non ha senso confrontarlo qui
 		assertThat(response)
 			.usingRecursiveComparison()
+			.ignoringFields("factionBonuses")
 			.isEqualTo(request(created.version()));
 	}
 
