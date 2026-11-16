@@ -43,6 +43,13 @@ class MatchStateTest {
 	}
 
 	@Test
+	@DisplayName("Ogni stato ha il suo log, che parte vuoto")
+	void log_newStateHasEmptyLog() {
+		assertThat(state.log().events()).isEmpty();
+		assertThat(new MatchState(challenger, opponent, new Random(42)).log()).isNotSameAs(state.log());
+	}
+
+	@Test
 	@DisplayName("La partita parte dal round 0 (preparazione) e i round contano da 1")
 	void startNextRound_countsFromOne() {
 		assertThat(state.round()).isZero();
