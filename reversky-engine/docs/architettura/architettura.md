@@ -26,10 +26,11 @@ Java puro. Contiene **tutte** le regole. Nessuna dipendenza da Spring, Lombok o 
 core/
 ├── model/
 │   ├── CardDefinition      record: dati della carta come arrivano dall'API
-│   ├── CreatureInPlay      creatura sul campo: ATK, DEF attuale, modificatori, effetto
+│   ├── CreatureInPlay      creatura sul campo: ATK, DEF permanente più scudi, modificatori, effetto
+│   ├── StatModifier        modificatore con origine, lato, durata e sospensione (D-35)
 │   ├── Faction             record (id, nome): le fazioni sono dati, non un enum
-│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Terreno, Oggetto
-│   └── MatchState          i due giocatori + numero round + log + random
+│   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Oggetto
+│   └── MatchState          i due giocatori + numero round + log + random + il Terreno in gioco (uno solo, D-19)
 ├── rules/
 │   ├── RuleConfig          punti vita, limite round, versione: costruita dalla richiesta
 │   └── FactionMatrix       bonus ATK/DEF tra fazioni, costruita dai dati della richiesta

@@ -55,9 +55,9 @@ In campo diventa un `CreatureInPlay`:
 ```java
 public final class CreatureInPlay {
 	private final CardDefinition card;
-	private final int initialDefense;   // serve agli effetti "quando scende al 50%"
-	private int defense;                // DEF attuale
-	private final List<StatModifier> attackModifiers;
+	private int initialDefense;         // DEF all'entrata, bonus compresi (M-06): "quando scende al 50%"
+	private int permanentDefense;       // DEF che i danni riducono in modo permanente
+	private final List<StatModifier> modifiers;   // ATK e scudi di DEF temporanea, con origine e durata (D-35)
 	private CreatureEffect effect;      // null se la carta non ha effetto
 	private boolean effectDisabled;     // es. annullato da SCP-2521 o da Il Predicatore sotto la Pioggia (finché resta in campo)
 	private int roundsInCombat;         // per effetti "nei primi 2 round"

@@ -3,6 +3,8 @@ package it.downfall.reversky.engine.support;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
+import it.downfall.reversky.engine.core.model.CreatureInPlay;
+import it.downfall.reversky.engine.core.model.Side;
 
 /**
  * Carte di prova in una riga.
@@ -72,6 +74,17 @@ public final class TestCards {
 			String rarity, int attack, int defense, String effectCode) {
 		return new CardDefinition(cardId, name, CardType.CREATURE, rarity, rarityOrder(rarity), factionId,
 				secondaryFactionId, attack, defense, null, effectCode);
+	}
+
+	/**
+	 * Creatura già in campo, senza modificatori.
+	 *
+	 * @param card carta della creatura
+	 * @param side proprietario
+	 * @return la creatura in campo
+	 */
+	public static CreatureInPlay inPlay(CardDefinition card, Side side) {
+		return new CreatureInPlay(card, side);
 	}
 
 	/**
