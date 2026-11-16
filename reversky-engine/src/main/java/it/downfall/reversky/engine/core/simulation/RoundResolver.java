@@ -17,6 +17,8 @@ import it.downfall.reversky.engine.core.rules.RuleConfig;
  */
 public final class RoundResolver {
 
+	// TODO(@tommasofatticcioni): per ora nessun passo usa le regole; il costruttore segue quello di docs/test.
+	// Usarle nei passi che ne avranno bisogno, oppure toglierle da qui e da docs/test (ENG-22, #60)
 	private final RuleConfig rules;
 	private final FactionMatrix factionMatrix;
 
