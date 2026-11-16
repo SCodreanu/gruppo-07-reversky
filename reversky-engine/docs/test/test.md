@@ -28,7 +28,13 @@ I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto
 - Nome che descrive la regola: `metodo_condizione_risultatoAtteso` o `@DisplayName` in italiano.
 - Struttura **Arrange / Act / Assert**.
 - Mazzi **non mescolati** nei test di regola: si costruiscono in un ordine preciso così si sa chi pesca cosa. Per i test di partita completa si usa un seed fisso.
-- Classi di supporto in `src/test/java/.../support/`: `TestRules` (rule set di prova), `TestCards` (creature pronte), `TestDecks`, `TestInputs`.
+- Classi di supporto in `src/test/java/.../support/`:
+  - `TestRules`: rule set di prova (`standard()` = 30 punti vita, 75 round; `of(...)` per valori scelti dal test);
+  - `TestFactions`: id delle quattro fazioni come negli esempi (`WOUND` 1, `INVITATION` 2, `ARCHIVE` 3, `DREAM` 4), bonus di D-04 (`standardBonuses()`, `standardMatrix()`) e `noBonuses()`;
+  - `TestCards`: creature, Spell, Hidden, Terreni e Oggetti in una riga (`cardId` 0 se non serve un id);
+  - `TestDecks`: mazzi piccoli in ordine (`of(...)`) e un mazzo completo da 30 carte per fazione con le carte del catalogo (`full(fazione)`), controllato da `TestDecksTest`;
+  - `TestInputs`: `SimulationInput` con regole, fazioni e bonus standard;
+  - `TestStates` e le creature in campo (`TestCards.inPlay`) arrivano con `ENG-05`, quando esistono `MatchState` e `CreatureInPlay`.
 
 ### Esempio: regola del danno al giocatore
 
