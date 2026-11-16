@@ -3,6 +3,10 @@ package it.downfall.reversky.engine.core.validation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static it.downfall.reversky.engine.support.TestFactions.ARCHIVE;
+import static it.downfall.reversky.engine.support.TestFactions.DREAM;
+import static it.downfall.reversky.engine.support.TestFactions.INVITATION;
+import static it.downfall.reversky.engine.support.TestFactions.WOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +23,9 @@ import it.downfall.reversky.engine.core.model.PlayerInput;
 import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.rules.FactionBonus;
 import it.downfall.reversky.engine.core.rules.RuleConfig;
+import it.downfall.reversky.engine.support.TestCards;
+import it.downfall.reversky.engine.support.TestFactions;
+import it.downfall.reversky.engine.support.TestRules;
 
 /**
  * Test di {@link SimulationInputValidator}: un test per ogni codice di errore di docs/api-engine ("Errori") e per
@@ -27,32 +34,21 @@ import it.downfall.reversky.engine.core.rules.RuleConfig;
  */
 class SimulationInputValidatorTest {
 
-	private static final int WOUND = 1;
-	private static final int INVITATION = 2;
-	private static final int ARCHIVE = 3;
-	private static final int DREAM = 4;
 	private static final int UNKNOWN = 99;
 
-	private static final List<Faction> FACTIONS = List.of(
-			new Faction(WOUND, "Theory of the Wound"),
-			new Faction(INVITATION, "Theory of the Invitation"),
-			new Faction(ARCHIVE, "Theory of the Archive"),
-			new Faction(DREAM, "Theory of the Dream"));
-	private static final List<FactionBonus> BONUSES = List.of(
-			new FactionBonus(WOUND, DREAM, 2, 0),
-			new FactionBonus(DREAM, WOUND, -1, 0));
-	private static final RuleConfig RULES = new RuleConfig("1.0", 30, 75);
+	private static final List<Faction> FACTIONS = TestFactions.all();
+	private static final List<FactionBonus> BONUSES = TestFactions.standardBonuses();
+	private static final RuleConfig RULES = TestRules.standard();
 
 	private static final CardDefinition CRAWLERS = creature(4, WOUND, null, 4, 5);
 	private static final CardDefinition KAPPA = creature(401, DREAM, null, 6, 7);
-	private static final CardDefinition VEIL = new CardDefinition(70, "Veil of the Anchored", CardType.SPELL,
-			"Uncommon", 2, null, null, null, null, CardSubtype.SHIELD, "VEIL_OF_ANCHORED");
-	private static final CardDefinition LAST_SANCTUARY = new CardDefinition(80, "Last Sanctuary", CardType.HIDDEN,
-			"Rare", 3, null, null, null, null, CardSubtype.SURVIVAL, "LAST_SANCTUARY");
-	private static final CardDefinition ECHO_RIFT = new CardDefinition(90, "Echo Rift", CardType.TERRAIN,
-			"Rare", 3, WOUND, null, null, null, null, "ECHO_RIFT");
-	private static final CardDefinition TORII_BELL = new CardDefinition(95, "Campanello del Torii", CardType.ITEM,
-			"Rare", 3, DREAM, null, null, null, null, "TORII_BELL");
+	private static final CardDefinition VEIL = TestCards.spell(70, "Veil of the Anchored", CardSubtype.SHIELD,
+			"VEIL_OF_ANCHORED");
+	private static final CardDefinition LAST_SANCTUARY = TestCards.hidden(80, "Last Sanctuary",
+			CardSubtype.SURVIVAL, "LAST_SANCTUARY");
+	private static final CardDefinition ECHO_RIFT = TestCards.terrain(90, "Echo Rift", WOUND, "ECHO_RIFT");
+	private static final CardDefinition TORII_BELL = TestCards.item(95, "Campanello del Torii", DREAM,
+			"TORII_BELL");
 
 	private final SimulationInputValidator validator = new SimulationInputValidator();
 
