@@ -22,11 +22,14 @@ public record RuleSetSummaryResponse(
 	Instant createdAt
 ) {
 
+	/**
+	 * Converte l'entità nel DTO.
+	 */
 	public static RuleSetSummaryResponse from(RuleSet ruleSet) {
 		return new RuleSetSummaryResponse(
 			ruleSet.getId(),
 			ruleSet.getVersion(),
-			ruleSet.getIsActive(),
+			ruleSet.isActive(),
 			ruleSet.getCreatedAt());
 	}
 }

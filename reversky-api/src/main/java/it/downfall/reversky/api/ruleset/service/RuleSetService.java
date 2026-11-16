@@ -1,17 +1,20 @@
 package it.downfall.reversky.api.ruleset.service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import it.downfall.reversky.api.ruleset.dto.RuleSetCreateRequest;
 import it.downfall.reversky.api.ruleset.dto.RuleSetPublicResponse;
+import it.downfall.reversky.api.ruleset.dto.RuleSetRequest;
 import it.downfall.reversky.api.ruleset.dto.RuleSetResponse;
 import it.downfall.reversky.api.ruleset.dto.RuleSetSummaryResponse;
-import it.downfall.reversky.api.ruleset.dto.RuleSetUpdateRequest;
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
 import it.downfall.reversky.api.ruleset.exception.NoActiveRuleSetException;
+import it.downfall.reversky.api.ruleset.exception.RuleSetActivationConflictException;
 import it.downfall.reversky.api.ruleset.exception.RuleSetInUseException;
 import it.downfall.reversky.api.ruleset.exception.RuleSetNotFoundException;
 import it.downfall.reversky.api.ruleset.exception.RuleSetRulesViolatedException;
@@ -22,23 +25,20 @@ import lombok.RequiredArgsConstructor;
 /**
  * Regole di gioco versionate (docs/backoffice, "Regole di gioco — rule_sets").
  * <p>
- * Validazioni (equivalenti ai CHECK del database, che comunque restano come rete di sicurezza):
- * <ul>
- *   <li>{@code version} univoca ({@link RuleSetVersionAlreadyUsedException});</li>
- *   <li>{@code startingLifePoints}, {@code maxRounds} ≥ 1 (annotazioni DTO);</li>
- *   <li>creature + spell + hidden + items + terrains = {@code deckSize}
- *       ({@link RuleSetRulesViolatedException});</li>
- *   <li>crediti ≥ 0 (annotazioni DTO);</li>
- *   <li>PUT solo su un rule set mai usato ({@link RuleSetInUseException}).</li>
- * </ul>
+ * I controlli ripetono i CHECK del database, che restano come rete di sicurezza: version univoca,
+ * punti vita e round ≥ 1 e crediti ≥ 0 (annotazioni del DTO), somma delle parti del mazzo uguale a
+ * deckSize (qui). Una versione già usata da una partita non si modifica.
  */
 @Service
 @RequiredArgsConstructor
 public class RuleSetService {
 
 	private final RuleSetRepository ruleSetRepository;
+	private final Clock clock;
 
-	/** GET /admin/rule-sets: tutte le versioni, la più recente in cima. */
+	/**
+	 * Tutte le versioni, la più recente per prima (GET /admin/rule-sets).
+	 */
 	@Transactional(readOnly = true)
 	public List<RuleSetSummaryResponse> findAll() {
 		return ruleSetRepository.findAllByOrderByIdDesc()
@@ -47,22 +47,34 @@ public class RuleSetService {
 			.toList();
 	}
 
-	/** POST /admin/rule-sets: nasce disattivato. */
+	/**
+	 * La versione attiva, per la pagina del regolamento (GET /rules).
+	 *
+	 * @throws NoActiveRuleSetException se nessuna versione è attiva
+	 */
+	@Transactional(readOnly = true)
+	public RuleSetPublicResponse findActive() {
+		return ruleSetRepository.findByIsActiveTrue()
+			.map(RuleSetPublicResponse::from)
+			.orElseThrow(() -> new NoActiveRuleSetException());
+	}
+
+	/**
+	 * Crea una nuova versione, disattivata.
+	 *
+	 * @param createdById admin che la crea; per ora sempre nullo (il backoffice non registra ancora l'autore)
+	 * @throws RuleSetRulesViolatedException      se le parti del mazzo non sommano a deckSize
+	 * @throws RuleSetVersionAlreadyUsedException se la versione è già usata
+	 */
 	@Transactional
-	public RuleSetResponse create(RuleSetCreateRequest request, Integer createdById) {
+	public RuleSetResponse create(RuleSetRequest request, Integer createdById) {
+		validateDeckParts(request);
+
 		if (ruleSetRepository.existsByVersion(request.version())) {
 			throw new RuleSetVersionAlreadyUsedException(request.version());
 		}
 
-		validateDeckSum(
-			request.deckCreatures(),
-			request.deckSpells(),
-			request.deckHidden(),
-			request.deckItems(),
-			request.deckTerrains(),
-			request.deckSize());
-
-		RuleSet created = ruleSetRepository.save(new RuleSet(
+		RuleSet createdRuleSet = ruleSetRepository.save(new RuleSet(
 			request.version(),
 			request.startingLifePoints(),
 			request.maxRounds(),
@@ -77,34 +89,37 @@ public class RuleSetService {
 			request.signupBonus(),
 			request.winReward(),
 			request.drawReward(),
+			Instant.now(clock),
 			createdById));
 
-		return RuleSetResponse.from(created);
+		return RuleSetResponse.from(createdRuleSet);
 	}
 
-	/** PUT /admin/rule-sets/{id}: solo se non è mai stato usato da una partita. */
+	/**
+	 * Modifica una versione mai usata da una partita. Anche la versione attiva si può modificare,
+	 * finché nessuna partita l'ha usata.
+	 *
+	 * @throws RuleSetNotFoundException           se il rule set non esiste
+	 * @throws RuleSetInUseException              se una partita l'ha già usato
+	 * @throws RuleSetRulesViolatedException      se le parti del mazzo non sommano a deckSize
+	 * @throws RuleSetVersionAlreadyUsedException se la versione è già usata da un altro rule set
+	 */
 	@Transactional
-	public RuleSetResponse update(Integer id, RuleSetUpdateRequest request) {
-		RuleSet selected = ruleSetRepository.findById(id)
-			.orElseThrow(RuleSetNotFoundException::new);
+	public RuleSetResponse update(Integer id, RuleSetRequest request) {
+		RuleSet selectedRuleSet = ruleSetRepository.findById(id)
+			.orElseThrow(() -> new RuleSetNotFoundException());
 
 		if (ruleSetRepository.isUsedByBattle(id)) {
 			throw new RuleSetInUseException();
 		}
 
+		validateDeckParts(request);
+
 		if (ruleSetRepository.existsByVersionAndIdNot(request.version(), id)) {
 			throw new RuleSetVersionAlreadyUsedException(request.version());
 		}
 
-		validateDeckSum(
-			request.deckCreatures(),
-			request.deckSpells(),
-			request.deckHidden(),
-			request.deckItems(),
-			request.deckTerrains(),
-			request.deckSize());
-
-		selected.update(
+		selectedRuleSet.update(
 			request.version(),
 			request.startingLifePoints(),
 			request.maxRounds(),
@@ -120,45 +135,54 @@ public class RuleSetService {
 			request.winReward(),
 			request.drawReward());
 
-		return RuleSetResponse.from(selected);
+		return RuleSetResponse.from(selectedRuleSet);
 	}
 
 	/**
-	 * POST /admin/rule-sets/{id}/activate: in una sola transazione disattiva l'eventuale
-	 * attivo precedente e attiva il nuovo, così l'indice parziale non viene mai violato.
-	 * Se il rule set è già attivo, l'operazione è idempotente.
+	 * Rende attiva una versione e disattiva la precedente, nella stessa transazione.
+	 * Attivare la versione già attiva non cambia niente.
+	 * <p>
+	 * La versione attiva viene bloccata: due attivazioni contemporanee si mettono in fila e vince
+	 * l'ultima. Se nessuna versione era attiva non c'è niente da bloccare, e la seconda attivazione
+	 * viola {@code uq_rule_sets_one_active}: diventa un 409 invece di un 500.
+	 *
+	 * @throws RuleSetNotFoundException           se il rule set non esiste
+	 * @throws RuleSetActivationConflictException se un'altra attivazione è avvenuta nello stesso momento
 	 */
 	@Transactional
 	public RuleSetResponse activate(Integer id) {
-		RuleSet toActivate = ruleSetRepository.findById(id)
-			.orElseThrow(RuleSetNotFoundException::new);
+		RuleSet ruleSetToActivate = ruleSetRepository.findById(id)
+			.orElseThrow(() -> new RuleSetNotFoundException());
 
-		if (Boolean.TRUE.equals(toActivate.getIsActive())) {
-			return RuleSetResponse.from(toActivate);
+		if (ruleSetToActivate.isActive()) {
+			return RuleSetResponse.from(ruleSetToActivate);
 		}
 
-		ruleSetRepository.deactivateAllActiveExcept(id);
-		toActivate.activate();
+		// La disattivazione va scritta prima dell'attivazione, altrimenti per un attimo
+		// ci sarebbero due righe attive e l'indice parziale rifiuterebbe l'UPDATE.
+		ruleSetRepository.findActiveForUpdate().ifPresent(previousRuleSet -> {
+			previousRuleSet.deactivate();
+			ruleSetRepository.flush();
+		});
 
-		return RuleSetResponse.from(toActivate);
+		ruleSetToActivate.activate();
+		try {
+			ruleSetRepository.flush();
+		} catch (DataIntegrityViolationException ex) {
+			throw new RuleSetActivationConflictException();
+		}
+
+		return RuleSetResponse.from(ruleSetToActivate);
 	}
 
-	/** GET /rules: la versione attiva. */
-	@Transactional(readOnly = true)
-	public RuleSetPublicResponse findActive() {
-		return ruleSetRepository.findByIsActiveTrue()
-			.map(RuleSetPublicResponse::from)
-			.orElseThrow(NoActiveRuleSetException::new);
-	}
+	private void validateDeckParts(RuleSetRequest request) {
+		int partsSum = request.deckCreatures() + request.deckSpells() + request.deckHidden()
+			+ request.deckItems() + request.deckTerrains();
 
-	// --- supporto ---
-
-	private void validateDeckSum(int creatures, int spells, int hidden, int items, int terrains, int deckSize) {
-		int sum = creatures + spells + hidden + items + terrains;
-		if (sum != deckSize) {
+		if (partsSum != request.deckSize()) {
 			throw new RuleSetRulesViolatedException(
-				"Creatures + Spells + Hidden + Items + Terrains (" + sum
-					+ ") must equal the deck size (" + deckSize + ")");
+				"Creatures + Spells + Hidden + Items + Terrains (" + partsSum
+					+ ") must equal the deck size (" + request.deckSize() + ")");
 		}
 	}
 }

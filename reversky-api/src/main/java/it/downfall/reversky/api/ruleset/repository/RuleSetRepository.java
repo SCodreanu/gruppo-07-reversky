@@ -4,38 +4,38 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
+import jakarta.persistence.LockModeType;
 
 /**
  * Accesso alla tabella {@code rule_sets}.
  */
 public interface RuleSetRepository extends JpaRepository<RuleSet, Integer> {
 
-	/** Elenco per GET /admin/rule-sets: più recenti per primi. */
-	List<RuleSet> findAllByOrderByIdDesc();
+	// Elenco per GET /admin/rule-sets: la versione più recente per prima
+	public List<RuleSet> findAllByOrderByIdDesc();
 
-	/** Regola attiva corrente (GET /rules). */
-	Optional<RuleSet> findByIsActiveTrue();
+	// Versione attiva (GET /rules)
+	public Optional<RuleSet> findByIsActiveTrue();
 
-	/** Creazione: la versione è già usata? */
-	boolean existsByVersion(String version);
+	// Attivazione: blocca la versione attiva, così due attivazioni contemporanee si mettono in fila
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT r FROM RuleSet r WHERE r.isActive = true")
+	public Optional<RuleSet> findActiveForUpdate();
 
-	/** Modifica: la versione è già usata da un rule set DIVERSO? */
-	boolean existsByVersionAndIdNot(String version, Integer id);
+	// Creazione: la versione è già usata?
+	public boolean existsByVersion(String version);
 
-	/**
-	 * Disattiva tutti gli eventuali attivi diversi da {@code id}. Così quando
-	 * {@code toActivate.activate()} viene flushato, l'indice parziale non è violato.
-	 */
-	@Modifying(flushAutomatically = true)
-	@Query("UPDATE RuleSet r SET r.isActive = false WHERE r.isActive = true AND r.id <> :id")
-	void deactivateAllActiveExcept(@Param("id") Integer id);
+	// Modifica: la versione è già usata da un rule set DIVERSO?
+	public boolean existsByVersionAndIdNot(String version, Integer id);
 
-	/** Un rule set già usato da una partita non si può più modificare (docs/backoffice). */
-	@Query(value = "SELECT COUNT(*) > 0 FROM battles WHERE rule_set_id = :id", nativeQuery = true)
-	boolean isUsedByBattle(@Param("id") Integer id);
+	// Una versione già usata da una partita non si modifica (docs/backoffice).
+	// Query nativa perché l'entità Battle non esiste ancora: quando arriverà battle/, il controllo
+	// passerà a un metodo del suo service (CodingRequirements §4, niente repository di altre funzionalità).
+	@Query(value = "SELECT EXISTS (SELECT 1 FROM battles WHERE rule_set_id = :id)", nativeQuery = true)
+	public boolean isUsedByBattle(@Param("id") Integer id);
 }

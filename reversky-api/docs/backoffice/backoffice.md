@@ -12,6 +12,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
   - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
   - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80); le fazioni sono nell'entità ma `PUT` non le riceve ancora (task #81), e i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
+  - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
 
 ## Carte — `catalog_cards`
 
@@ -124,6 +125,26 @@ Ogni modifica e ogni attivazione va in `audit_logs`.
 
 Le partite già giocate non cambiano: ognuna salva il proprio `rule_set_id` e una copia delle regole e dei bonus di fazione usati.
 Un mazzo valido con il vecchio rule set può diventare non valido con il nuovo: lo segnala il campo `valid` (vedi [mazzi](../mazzi/mazzi.md)).
+
+### Comportamento già implementato
+
+- `POST` e `PUT` ricevono lo stesso corpo (`RuleSetRequest`), con tutti i campi obbligatori. Una nuova versione nasce **disattivata**.
+- `GET /admin/rule-sets` restituisce `id`, `version`, `isActive` e `createdAt` di ogni versione, la più recente per prima (`id` decrescente); `POST`, `PUT` e `activate` restituiscono il rule set completo.
+- Anche la versione attiva si può modificare con `PUT`, finché nessuna partita l'ha usata.
+- `activate` risponde `200` con il rule set ed è idempotente (attivare la versione già attiva non cambia niente). Blocca la versione attiva, quindi due attivazioni contemporanee si mettono in fila e vince l'ultima; se non c'era nessuna versione attiva, la seconda riceve `409` e basta ripeterla.
+- `GET /rules` (pubblico, senza token) restituisce i valori della versione attiva senza `id`, `isActive`, `createdAt` e `createdById`; `404` se nessuna versione è attiva (prima del seed di #85). I bonus di fazione previsti da [api-rest](../api-rest/api-rest.md) si aggiungeranno quando esisterà `faction_bonuses`.
+- Il controllo "mai usata da una partita" legge `battles` con una query nativa, perché l'entità `Battle` non esiste ancora: con `battle/` passerà al suo service.
+
+I controlli avvengono prima di modificare il rule set, in questo ordine:
+
+| Caso | Status | `code` |
+|---|---|---|
+| campi mancanti o fuori dai limiti del DTO (versione vuota o oltre 20 caratteri, punti vita, round, carte totali e creature < 1, altre parti del mazzo, massimi delle Hidden e crediti < 0) | `400` | `VALIDATION_FAILED` |
+| rule set inesistente (`PUT`, `activate`) | `404` | `RULE_SET_NOT_FOUND` |
+| solo `PUT`: rule set già usato da una partita | `409` | `RULE_SET_IN_USE` |
+| creature + Spell + Hidden + Oggetti + Terreni diverso da `deckSize` | `422` | `RULE_SET_RULES_VIOLATED` |
+| versione già usata da un altro rule set | `409` | `RULE_SET_VERSION_TAKEN` |
+| solo `activate`: un'altra attivazione nello stesso momento, senza una versione attiva da bloccare | `409` | `RULE_SET_ACTIVATION_CONFLICT` |
 
 ## Pacchetti
 

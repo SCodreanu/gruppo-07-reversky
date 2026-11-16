@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
  * Regole di gioco attive, per i client (docs/backoffice, "Regole di gioco").
  * <p>
  * Endpoint pubblico: SecurityConfig non richiede token su GET /rules.
+ * <p>
+ * docs/api-rest prevede anche i bonus di fazione: si aggiungeranno quando esisterà {@code faction_bonuses}.
  */
 @Tag(name = "Rules", description = "Game rules currently in effect")
 @RestController

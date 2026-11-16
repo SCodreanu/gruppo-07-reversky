@@ -19,43 +19,43 @@ public record RuleSetResponse(
 	@Schema(example = "true")
 	Boolean isActive,
 
-	@Schema(example = "20")
+	@Schema(example = "30")
 	Integer startingLifePoints,
 
-	@Schema(example = "10")
+	@Schema(example = "75")
 	Integer maxRounds,
 
 	@Schema(example = "30")
 	Integer deckSize,
 
-	@Schema(example = "15")
+	@Schema(example = "20")
 	Integer deckCreatures,
 
-	@Schema(example = "5")
+	@Schema(example = "6")
 	Integer deckSpells,
 
-	@Schema(example = "4")
+	@Schema(example = "2")
 	Integer deckHidden,
 
-	@Schema(example = "3")
+	@Schema(example = "1")
 	Integer deckItems,
 
-	@Schema(example = "3")
+	@Schema(example = "1")
 	Integer deckTerrains,
 
 	@Schema(example = "2")
 	Integer maxHiddenSurvival,
 
-	@Schema(example = "3")
+	@Schema(example = "1")
 	Integer maxHiddenDamage,
 
-	@Schema(example = "100")
+	@Schema(example = "500")
 	Integer signupBonus,
 
-	@Schema(example = "50")
+	@Schema(example = "30")
 	Integer winReward,
 
-	@Schema(example = "20")
+	@Schema(example = "10")
 	Integer drawReward,
 
 	Instant createdAt,
@@ -64,11 +64,14 @@ public record RuleSetResponse(
 	Integer createdById
 ) {
 
+	/**
+	 * Converte l'entità nel DTO.
+	 */
 	public static RuleSetResponse from(RuleSet ruleSet) {
 		return new RuleSetResponse(
 			ruleSet.getId(),
 			ruleSet.getVersion(),
-			ruleSet.getIsActive(),
+			ruleSet.isActive(),
 			ruleSet.getStartingLifePoints(),
 			ruleSet.getMaxRounds(),
 			ruleSet.getDeckSize(),

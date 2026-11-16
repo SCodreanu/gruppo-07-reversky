@@ -135,3 +135,7 @@ Rarità in `TestCards` (task #80):
 - Per lo stesso motivo i test sulle rarità (`RarityServiceIT`, `AdminRarityControllerIT`, `RarityControllerIT`) usano `sorting_order` casuali ≥ 1000 e lasciano liberi 1, 2 e 3. Così `@Import` resta `{TestcontainersConfiguration.class, TestUsers.class}` come negli altri IT e Spring riusa lo stesso contesto (e lo stesso container); con un `@Import` diverso ne avvierebbe un secondo. Esempi in `CatalogCardServiceIT`.
 
 Le carte non si cancellano mai, quindi restano nel database tra un test e l'altro: le ricerche dei test filtrano per un token univoco nel nome (`TestUsers.uniqueSuffix()`).
+
+`TestRuleSets` crea rule set di prova: `request(version)` con i valori del rule set `1.0`, `requestWithDeck(...)` per una composizione diversa, `toJson(request)` per i test HTTP, `create()` con una versione univoca (`uniqueVersion()`) e `markUsedByBattle(id)` per un rule set già usato da una partita. Come `TestCards` **non** è un `@TestComponent`: si crea con `new TestRuleSets(ruleSetService, ruleSetRepository, jdbcTemplate, testUsers)`.
+
+Il rule set attivo è uno solo per tutto il database e altre funzionalità lo leggono (crediti di benvenuto, mazzi, sfide). Un test che attiva o disattiva rule set chiama `rememberActive()` in `@BeforeEach` e `restoreActive()` in `@AfterEach`, così il rule set attivo prima del test (il seed di #85) torna attivo per gli altri test. Esempi in `RuleSetServiceIT`.

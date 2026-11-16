@@ -17,10 +17,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.downfall.reversky.api.common.config.OpenApiConfig;
-import it.downfall.reversky.api.ruleset.dto.RuleSetCreateRequest;
+import it.downfall.reversky.api.ruleset.dto.RuleSetRequest;
 import it.downfall.reversky.api.ruleset.dto.RuleSetResponse;
 import it.downfall.reversky.api.ruleset.dto.RuleSetSummaryResponse;
-import it.downfall.reversky.api.ruleset.dto.RuleSetUpdateRequest;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +28,6 @@ import lombok.RequiredArgsConstructor;
  * Regole di gioco dal backoffice (docs/backoffice, "Regole di gioco — rule_sets").
  * <p>
  * Solo ADMIN: lo garantisce SecurityConfig con la regola su /api/v1/admin/**.
- * <p>
- * TODO: popolare {@code createdById} con l'utente autenticato appena il claim è
- * disponibile (la colonna è nullable, quindi per ora il valore resta null).
  */
 @Tag(name = "Admin: rule sets", description = "Backoffice management of the game rule sets")
 @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
@@ -62,7 +58,8 @@ public class AdminRuleSetController {
 	@ApiResponse(responseCode = "409", description = "Version already used")
 	@ApiResponse(responseCode = "422", description = "Deck parts do not match deckSize")
 	@PostMapping
-	public ResponseEntity<RuleSetResponse> create(@Valid @RequestBody RuleSetCreateRequest request) {
+	public ResponseEntity<RuleSetResponse> create(@Valid @RequestBody RuleSetRequest request) {
+		// TODO(@antoninoconsolato-its): passare l'id dell'admin dal token invece di null, insieme ad audit_logs (docs/backoffice)
 		return ResponseEntity.status(HttpStatus.CREATED).body(ruleSetService.create(request, null));
 	}
 
@@ -76,7 +73,7 @@ public class AdminRuleSetController {
 	@ApiResponse(responseCode = "409", description = "Rule set already used by a battle, or version already used")
 	@ApiResponse(responseCode = "422", description = "Deck parts do not match deckSize")
 	@PutMapping("/{id}")
-	public ResponseEntity<RuleSetResponse> update(@PathVariable Integer id, @Valid @RequestBody RuleSetUpdateRequest request) {
+	public ResponseEntity<RuleSetResponse> update(@PathVariable Integer id, @Valid @RequestBody RuleSetRequest request) {
 		return ResponseEntity.ok(ruleSetService.update(id, request));
 	}
 
@@ -86,6 +83,7 @@ public class AdminRuleSetController {
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@ApiResponse(responseCode = "404", description = "Rule set not found")
+	@ApiResponse(responseCode = "409", description = "Another rule set was activated at the same time")
 	@PostMapping("/{id}/activate")
 	public ResponseEntity<RuleSetResponse> activate(@PathVariable Integer id) {
 		return ResponseEntity.ok(ruleSetService.activate(id));

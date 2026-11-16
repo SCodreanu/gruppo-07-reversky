@@ -32,7 +32,7 @@ public class RuleSet {
 	private String version;
 
 	@Column(name = "is_active", nullable = false)
-	private Boolean isActive;
+	private boolean isActive;
 
 	@Column(name = "starting_life_points", nullable = false)
 	private Integer startingLifePoints;
@@ -76,10 +76,17 @@ public class RuleSet {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 
-	/** Nullo finché il chiamante non lo popola. */
-	@Column(name = "created_by_id")
+	/**
+	 * Admin che ha creato la versione: resta nullo finché il backoffice non registra l'autore.
+	 */
+	@Column(name = "created_by_id", updatable = false)
 	private Integer createdById;
 
+	/**
+	 * Nuova versione, sempre disattivata: si attiva con {@link #activate()}.
+	 *
+	 * @param createdAt istante di creazione, dal {@code Clock} del service
+	 */
 	public RuleSet(
 			String version,
 			Integer startingLifePoints,
@@ -95,27 +102,19 @@ public class RuleSet {
 			Integer signupBonus,
 			Integer winReward,
 			Integer drawReward,
+			Instant createdAt,
 			Integer createdById) {
-		this.version = version;
-		this.isActive = Boolean.FALSE;
-		this.startingLifePoints = startingLifePoints;
-		this.maxRounds = maxRounds;
-		this.deckSize = deckSize;
-		this.deckCreatures = deckCreatures;
-		this.deckSpells = deckSpells;
-		this.deckHidden = deckHidden;
-		this.deckItems = deckItems;
-		this.deckTerrains = deckTerrains;
-		this.maxHiddenSurvival = maxHiddenSurvival;
-		this.maxHiddenDamage = maxHiddenDamage;
-		this.signupBonus = signupBonus;
-		this.winReward = winReward;
-		this.drawReward = drawReward;
-		this.createdAt = Instant.now();
+		update(version, startingLifePoints, maxRounds, deckSize, deckCreatures, deckSpells, deckHidden, deckItems,
+			deckTerrains, maxHiddenSurvival, maxHiddenDamage, signupBonus, winReward, drawReward);
+		this.isActive = false;
+		this.createdAt = createdAt;
 		this.createdById = createdById;
 	}
 
-	/** PUT /admin/rule-sets/{id}: si può modificare solo un rule set mai usato. */
+	/**
+	 * Modifica dal backoffice (PUT /admin/rule-sets/{id}): il service la permette solo su una versione
+	 * mai usata da una partita. Si salva da sola alla fine della transazione.
+	 */
 	public void update(
 			String version,
 			Integer startingLifePoints,
@@ -147,8 +146,15 @@ public class RuleSet {
 		this.drawReward = drawReward;
 	}
 
-	/** Attivazione: fa scattare {@code uq_rule_sets_one_active}. */
+	/**
+	 * Va chiamato solo dopo aver disattivato e salvato la versione attiva, altrimenti il flush
+	 * viola {@code uq_rule_sets_one_active}.
+	 */
 	public void activate() {
-		this.isActive = Boolean.TRUE;
+		this.isActive = true;
+	}
+
+	public void deactivate() {
+		this.isActive = false;
 	}
 }
