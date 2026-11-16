@@ -121,13 +121,14 @@ L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
 
 Formato: `ProblemDetail`, come nell'API.
 
-I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore:
+I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore.
+Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'avversario, nell'ordine del mazzo ricevuto:
 
 | Ordine | `code` | Quando | Esempio |
 |---|---|---|---|
-| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`) | `95` |
+| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`); stesso `id` ripetuto in `factions` | `95` |
 | 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
-| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa o `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) | `93` |
+| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa, `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) o due righe per la stessa coppia (`originFactionId`, `targetFactionId`) | `93` |
 | 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Spell o Hidden con una fazione | `94` |
 | 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
 | 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
