@@ -11,14 +11,16 @@ import it.downfall.reversky.engine.core.model.CardType;
  * stesso id). Le carte del catalogo in {@link TestDecks} usano invece il numero di riga di
  * {@code docs/bilanciamento/catalogo-finale.csv}, così si ritrovano.
  * <p>
- * Rarità: Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6 [DA ALLINEARE con il seed delle
- * rarità dell'API, che ancora non esiste]. Spell e Hidden non hanno una rarità nel catalogo: qui sono Uncommon,
- * come Veil of the Anchored in docs/api-engine. Terreni e Oggetti sono Rare.
+ * Rarità: Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6. Spell e Hidden sono Uncommon, come Veil
+ * of the Anchored in docs/api-engine; Terreni e Oggetti sono Rare. Sono valori scritti a mano che fanno le veci
+ * della risposta dell'API: i dati veri arrivano con i seed Flyway delle rarità e del catalogo (vedi i TODO).
  */
 public final class TestCards {
 
 	private static final int NO_ID = 0;
 	private static final String COMMON = "Common";
+	// TODO(@tommasofatticcioni): rarità di Spell e Hidden scritta a mano, il catalogo non la dà ancora;
+	// sostituire con quella del catalogo in Flyway (API-55, #125)
 	private static final String SHARED_CARD_RARITY = "Uncommon";
 	private static final String RARE = "Rare";
 
@@ -133,6 +135,8 @@ public final class TestCards {
 	 * @return da 1 (Common) a 6 (Mutant)
 	 */
 	public static int rarityOrder(String rarity) {
+		// TODO(@tommasofatticcioni): ordini scritti a mano al posto di rarities.sorting_order; allinearli al seed
+		// delle rarità in Flyway (API-15, #85)
 		return switch (rarity) {
 			case "Common" -> 1;
 			case "Uncommon" -> 2;
