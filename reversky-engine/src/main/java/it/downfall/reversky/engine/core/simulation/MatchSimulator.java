@@ -28,6 +28,7 @@ import it.downfall.reversky.engine.core.validation.SimulationInputValidator;
  */
 public final class MatchSimulator {
 
+	private final EffectRegistry effects;
 	private final SimulationInputValidator validator;
 	private final DrawService drawService;
 
@@ -37,6 +38,7 @@ public final class MatchSimulator {
 	 * @param effects registro degli effetti: per il gioco {@link EffectRegistry#withAllEffects()}
 	 */
 	public MatchSimulator(EffectRegistry effects) {
+		this.effects = effects;
 		this.validator = new SimulationInputValidator(effects);
 		this.drawService = new DrawService(effects);
 	}
@@ -57,7 +59,7 @@ public final class MatchSimulator {
 		validator.validate(input);
 		RuleConfig rules = input.rules();
 		MatchState state = prepare(input);
-		RoundResolver resolver = new RoundResolver(new FactionMatrix(input.factionBonuses()));
+		RoundResolver resolver = new RoundResolver(new FactionMatrix(input.factionBonuses()), effects);
 		EndConditionChecker checker = new EndConditionChecker(rules);
 
 		state.log().matchStarted(rules.startingLifePoints());

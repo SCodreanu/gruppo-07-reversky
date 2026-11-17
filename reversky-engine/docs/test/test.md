@@ -52,7 +52,7 @@ class RoundResolverTest {
 				TestCards.creature("B", TestFactions.ARCHIVE, 4, 5));  // avversario
 
 		// Act
-		new RoundResolver(TestFactions.noBonuses()).resolve(state);
+		new RoundResolver(TestFactions.noBonuses(), EffectRegistry.withAllEffects()).resolve(state);
 
 		// Assert
 		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(2);

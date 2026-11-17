@@ -14,6 +14,7 @@ import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.SetHidden;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestEffects;
@@ -31,6 +32,8 @@ class DrawServiceTest {
 	private static final CardDefinition KAPPA = TestCards.creature("Kappa", TestFactions.ARCHIVE, 6, 4);
 	private static final CardDefinition VEIL = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD,
 			"VEIL_OF_ANCHORED");
+	private static final CardDefinition SANCTUARY = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL,
+			"LAST_SANCTUARY");
 	private static final CardDefinition FRACTURE = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE,
 			"SKIN_FRACTURE");
 
@@ -91,13 +94,45 @@ class DrawServiceTest {
 	}
 
 	@Test
-	@DisplayName("Hidden, Terreni e Oggetti per ora si registrano con CARD_DRAWN e si scartano (ENG-20, 21 e 33)")
-	void drawCreature_otherSpecialCards_loggedAndSkipped() {
+	@DisplayName("D-15: una Hidden pescata è coperta (senza nome nel log), pronta dal prossimo scontro")
+	void drawCreature_hidden_setFaceDown() {
+		// Arrange: sono già iniziati 3 scontri
+		MatchState state = TestStates.withDecks(List.of(SANCTUARY, CRAWLERS), List.of());
+		for (int combat = 0; combat < 3; combat++) {
+			state.startNextCombat();
+		}
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert
+		assertThat(state.challenger().hiddenZone()).containsExactly(new SetHidden(SANCTUARY, 4));
+		assertThat(state.log().events()).extracting(MatchEvent::type)
+				.containsExactly(EventType.HIDDEN_SET, EventType.CREATURE_ENTERED);
+		assertThat(state.log().events().getFirst().message()).isEqualTo("Challenger sets a Hidden card");
+		assertThat(state.log().events().getFirst().data()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("D-15: una Hidden della pescata iniziale salta il primo scontro, è pronta dal secondo")
+	void drawCreature_hiddenInInitialDraw_readyFromSecondCombat() {
+		// Arrange: nessuno scontro ancora iniziato
+		MatchState state = TestStates.withDecks(List.of(SANCTUARY, CRAWLERS), List.of());
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert
+		assertThat(state.challenger().hiddenZone()).containsExactly(new SetHidden(SANCTUARY, 2));
+	}
+
+	@Test
+	@DisplayName("Terreni e Oggetti per ora si registrano con CARD_DRAWN e si scartano (ENG-21, ENG-33)")
+	void drawCreature_terrainAndItem_loggedAndSkipped() {
 		// Arrange
-		CardDefinition sanctuary = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUARY");
 		CardDefinition rift = TestCards.terrain(113, "Echo Rift", TestFactions.WOUND, "ECHO_RIFT");
 		CardDefinition bell = TestCards.item(120, "Torii Bell", TestFactions.DREAM, "TORII_BELL");
-		List<CardDefinition> deck = List.of(sanctuary, rift, bell, CRAWLERS);
+		List<CardDefinition> deck = List.of(rift, bell, CRAWLERS);
 		MatchState state = TestStates.withDecks(deck, List.of());
 		DrawService withStubs = new DrawService(TestEffects.stubsFor(deck));
 
@@ -106,7 +141,7 @@ class DrawServiceTest {
 
 		// Assert
 		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
-				EventType.CARD_DRAWN, EventType.CARD_DRAWN, EventType.CREATURE_ENTERED);
+				EventType.CARD_DRAWN, EventType.CREATURE_ENTERED);
 		assertThat(state.terrain()).isEmpty();
 		assertThat(state.challenger().item()).isEmpty();
 	}

@@ -65,7 +65,7 @@ public final class MatchLog {
 	}
 
 	/**
-	 * {@code CARD_DRAWN}: pescata di una Spell, una Hidden, un Terreno o un Oggetto (per le creature c'è
+	 * {@code CARD_DRAWN}: pescata di una Spell, un Terreno o un Oggetto (per le creature c'è
 	 * {@link #creatureEntered}, D-07).
 	 *
 	 * @param side giocatore che pesca

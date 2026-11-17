@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /**
  * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, modificatori in attesa
- * della prossima creatura, Oggetto accanto al mazzo e creature avversarie sconfitte.
+ * della prossima creatura, zona Hidden, Oggetto accanto al mazzo e creature avversarie sconfitte.
  */
 public final class PlayerState {
 
@@ -20,6 +20,8 @@ public final class PlayerState {
 	private CardDefinition item;
 	/** Modificatori in attesa (D-34): la posizione 0 è per la prossima creatura, la 1 per quella dopo, e così via. */
 	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
+	/** Zona Hidden (D-15): le Hidden coperte, nell'ordine in cui sono state pescate. */
+	private final List<SetHidden> hiddenZone = new ArrayList<>();
 	private int creaturesDefeated;
 
 	/**
@@ -213,6 +215,36 @@ public final class PlayerState {
 	 */
 	public List<PendingModifier> takePendingModifiers() {
 		return pendingModifiers.isEmpty() ? List.of() : List.copyOf(pendingModifiers.removeFirst());
+	}
+
+	/**
+	 * Mette una Hidden coperta nella zona Hidden (D-15).
+	 *
+	 * @param hidden la Hidden e lo scontro da cui può attivarsi
+	 */
+	public void setHidden(SetHidden hidden) {
+		hiddenZone.add(hidden);
+	}
+
+	/**
+	 * Hidden coperte, nell'ordine in cui sono state pescate.
+	 *
+	 * @return copia non modificabile
+	 */
+	public List<SetHidden> hiddenZone() {
+		return List.copyOf(hiddenZone);
+	}
+
+	/**
+	 * Toglie una Hidden dalla zona: si è attivata e si scarta (D-15).
+	 *
+	 * @param hidden la Hidden da togliere
+	 * @throws IllegalStateException se non è nella zona
+	 */
+	public void discardHidden(SetHidden hidden) {
+		if (!hiddenZone.remove(hidden)) {
+			throw new IllegalStateException(side + " non ha la Hidden " + hidden.card().name());
+		}
 	}
 
 	/**

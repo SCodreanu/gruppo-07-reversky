@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
+import it.downfall.reversky.engine.support.TestStates;
 
 /**
  * Test di {@link MatchState}: giocatori per lato, round e un solo Terreno in gioco (D-19).
@@ -81,5 +82,18 @@ class MatchStateTest {
 		assertThat(state.terrain()).isEmpty();
 		assertThatThrownBy(() -> state.placeTerrain(TestCards.creature("Crawlers", TestFactions.WOUND, 4, 5),
 				Side.CHALLENGER)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("Gli scontri si contano da 1: 0 durante la pescata iniziale")
+	void startNextCombat_countsFromOne() {
+		// Arrange
+		MatchState state = TestStates.withDecks(List.of(), List.of());
+
+		// Act + Assert
+		assertThat(state.combatsStarted()).isZero();
+		assertThat(state.startNextCombat()).isEqualTo(1);
+		assertThat(state.startNextCombat()).isEqualTo(2);
+		assertThat(state.combatsStarted()).isEqualTo(2);
 	}
 }

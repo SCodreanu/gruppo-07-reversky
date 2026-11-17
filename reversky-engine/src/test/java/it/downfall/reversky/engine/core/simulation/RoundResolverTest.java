@@ -9,14 +9,17 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.log.EventType;
 import it.downfall.reversky.engine.core.log.MatchEvent;
 import it.downfall.reversky.engine.core.model.CardDefinition;
+import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
 import it.downfall.reversky.engine.core.model.ModifierSource;
 import it.downfall.reversky.engine.core.model.PendingModifier;
+import it.downfall.reversky.engine.core.model.SetHidden;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.model.StatModifier;
 import it.downfall.reversky.engine.core.rules.FactionBonus;
@@ -33,9 +36,11 @@ import it.downfall.reversky.engine.support.TestStates;
 class RoundResolverTest {
 
 	private static final int ARCHIVE = TestFactions.ARCHIVE;
+	private static final CardDefinition SANCTUARY = hidden("Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUARY");
+	private static final CardDefinition PRESENCE = hidden("Hostile Presence", CardSubtype.DAMAGE, "HOSTILE_PRESENCE");
 
-	private final RoundResolver noBonuses = new RoundResolver(TestFactions.noBonuses());
-	private final RoundResolver standard = new RoundResolver(TestFactions.standardMatrix());
+	private final RoundResolver noBonuses = resolver(TestFactions.noBonuses());
+	private final RoundResolver standard = resolver(TestFactions.standardMatrix());
 
 	@Test
 	@DisplayName("Attacco simultaneo: 8/6 contro 4/9, le due DEF scendono nello stesso round (9 − 8 = 1, 6 − 4 = 2)")
@@ -200,7 +205,7 @@ class RoundResolverTest {
 	@DisplayName("Bonus DEF di fazione (esempio 05): +3 una sola volta a inizio scontro, non a ogni round")
 	void startCombat_defenseBonus_appliedOnce() {
 		// Arrange: Archive → Invitation defBonus 3, nessun bonus ATK
-		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
+		RoundResolver resolver = resolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -220,7 +225,7 @@ class RoundResolverTest {
 	@DisplayName("Il bonus DEF di fazione si registra con EFFECT_TRIGGERED solo se è maggiore di 0")
 	void startCombat_defenseBonus_loggedOnlyWhenPositive() {
 		// Arrange
-		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
+		RoundResolver resolver = resolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -240,7 +245,7 @@ class RoundResolverTest {
 	@DisplayName("La DEF all'entrata si fissa a inizio del primo scontro, bonus compresi (M-06)")
 	void startCombat_recordsInitialDefenseWithBonus() {
 		// Arrange
-		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
+		RoundResolver resolver = resolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -257,7 +262,7 @@ class RoundResolverTest {
 	@DisplayName("D-34: i modificatori in attesa arrivano dopo il bonus DEF di fazione (4 + 3 − 5 = 2, non morta)")
 	void startCombat_pendingAfterFactionBonus() {
 		// Arrange: Skin Fracture pescata dall'avversario quando lo sfidante non aveva creature in campo
-		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
+		RoundResolver resolver = resolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -336,6 +341,82 @@ class RoundResolverTest {
 	}
 
 	@Test
+	@DisplayName("D-15: a inizio scontro si attivano le Hidden pronte, prima DAMAGE e poi SURVIVAL, e si scartano")
+	void startCombat_readyHidden_damageBeforeSurvival() {
+		// Arrange: lo sfidante ha una SURVIVAL pescata prima di una DAMAGE, l'avversario una DAMAGE
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		state.challenger().setHidden(new SetHidden(SANCTUARY, 1));
+		state.challenger().setHidden(new SetHidden(hidden("Echo Strike", CardSubtype.DAMAGE, "ECHO_STRIKE"), 1));
+		state.opponent().setHidden(new SetHidden(PRESENCE, 1));
+
+		// Act
+		noBonuses.startCombat(state);
+
+		// Assert: DAMAGE dello sfidante, DAMAGE dell'avversario, poi SURVIVAL dello sfidante
+		assertThat(state.log().events()).extracting(event -> event.data().get("card"))
+				.containsExactly("Echo Strike", "Hostile Presence", "Last Sanctuary");
+		assertThat(state.challenger().hiddenZone()).isEmpty();
+		assertThat(state.opponent().hiddenZone()).isEmpty();
+		assertThat(challenger(state).attack()).isEqualTo(3);
+		assertThat(challenger(state).defense()).isEqualTo(11);
+		assertThat(opponent(state).defense()).isEqualTo(7);
+	}
+
+	@Test
+	@DisplayName("D-15: una Hidden non ancora pronta (pescata iniziale) resta coperta e si attiva allo scontro dopo")
+	void startCombat_hiddenNotReady_waitsForItsCombat() {
+		// Arrange: pronta dal secondo scontro
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		SetHidden sanctuary = new SetHidden(SANCTUARY, 2);
+		state.challenger().setHidden(sanctuary);
+
+		// Act + Assert
+		noBonuses.startCombat(state);
+		assertThat(state.challenger().hiddenZone()).containsExactly(sanctuary);
+		assertThat(challenger(state).defense()).isEqualTo(6);
+		noBonuses.startCombat(state);
+		assertThat(state.challenger().hiddenZone()).isEmpty();
+		assertThat(challenger(state).defense()).isEqualTo(11);
+	}
+
+	@Test
+	@DisplayName("Una Hidden DAMAGE che uccide ferma l'inizio dello scontro: le altre aspettano lo scontro dopo")
+	void startCombat_hiddenKills_remainingHiddenWait() {
+		// Arrange: Breaking Point dello sfidante porta a 0 la DEF 6 di B; la SURVIVAL dell'avversario aspetta
+		MatchState state = TestStates.inCombat(creature("A", 8, 9), creature("B", 4, 6));
+		state.challenger().setHidden(new SetHidden(hidden("Breaking Point", CardSubtype.DAMAGE, "BREAKING_POINT"), 1));
+		SetHidden instinct = new SetHidden(hidden("Survival Instinct", CardSubtype.SURVIVAL, "SURVIVAL_INSTINCT"), 1);
+		state.opponent().setHidden(instinct);
+
+		// Act
+		noBonuses.startCombat(state);
+
+		// Assert: B muore con DEF 0, l'avversario non perde punti vita; la Hidden dell'avversario è ancora coperta
+		assertThat(state.opponent().creature()).isEmpty();
+		assertThat(state.opponent().lifePoints()).isEqualTo(TestRules.STARTING_LIFE_POINTS);
+		assertThat(state.challenger().creaturesDefeated()).isEqualTo(1);
+		assertThat(state.opponent().hiddenZone()).containsExactly(instinct);
+		assertThat(types(state)).containsExactly(EventType.HIDDEN_TRIGGERED, EventType.CREATURE_DIED);
+		assertThat(challenger(state).hasStartedCombat()).isTrue();
+	}
+
+	@Test
+	@DisplayName("Hostile Presence: −5 ATK solo nel primo round dello scontro (8 → 3, poi di nuovo 8)")
+	void hostilePresence_firstRoundOnly() {
+		// Arrange
+		MatchState state = TestStates.inCombat(creature("A", 8, 30), creature("B", 1, 30));
+		state.opponent().setHidden(new SetHidden(PRESENCE, 1));
+		noBonuses.startCombat(state);
+
+		// Act
+		noBonuses.resolve(state);
+		noBonuses.resolve(state);
+
+		// Assert
+		assertThat(attackTotals(state)).containsExactly(3, 1, 8, 1);
+	}
+
+	@Test
 	@DisplayName("Ordine degli eventi (log minimo dell'esempio 01): round, due attacchi, due danni, morte, danno al giocatore")
 	void resolve_eventsInRuleOrder() {
 		// Arrange
@@ -399,6 +480,14 @@ class RoundResolverTest {
 		// Act + Assert
 		assertThatThrownBy(() -> noBonuses.resolve(state)).isInstanceOf(IllegalStateException.class);
 		assertThatThrownBy(() -> noBonuses.startCombat(state)).isInstanceOf(IllegalStateException.class);
+	}
+
+	private static CardDefinition hidden(String name, CardSubtype subtype, String code) {
+		return TestCards.hidden(105, name, subtype, code);
+	}
+
+	private static RoundResolver resolver(FactionMatrix factionMatrix) {
+		return new RoundResolver(factionMatrix, EffectRegistry.withAllEffects());
 	}
 
 	private static CardDefinition creature(String name, int attack, int defense) {
