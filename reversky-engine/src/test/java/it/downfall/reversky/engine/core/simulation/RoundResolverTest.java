@@ -16,6 +16,7 @@ import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
 import it.downfall.reversky.engine.core.model.ModifierSource;
+import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.model.StatModifier;
 import it.downfall.reversky.engine.core.rules.FactionBonus;
@@ -250,6 +251,88 @@ class RoundResolverTest {
 		// Assert
 		assertThat(challenger(state).initialDefense()).isEqualTo(7);
 		assertThat(opponent(state).initialDefense()).isEqualTo(9);
+	}
+
+	@Test
+	@DisplayName("D-34: i modificatori in attesa arrivano dopo il bonus DEF di fazione (4 + 3 − 5 = 2, non morta)")
+	void startCombat_pendingAfterFactionBonus() {
+		// Arrange: Skin Fracture pescata dall'avversario quando lo sfidante non aveva creature in campo
+		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
+				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
+		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
+				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
+		state.challenger().addPendingModifier(
+				new PendingModifier("Skin Fracture", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 5));
+
+		// Act
+		resolver.startCombat(state);
+
+		// Assert
+		assertThat(challenger(state).defense()).isEqualTo(2);
+		assertThat(challenger(state).initialDefense()).isEqualTo(2);
+		assertThat(state.challenger().pendingModifiers()).isEmpty();
+		assertThat(state.log().events()).extracting(MatchEvent::message).containsExactly(
+				"SCP-1762: +3 DEF faction bonus (DEF 7)",
+				"SCP-1762: −5 DEF from Skin Fracture (ATK 3, DEF 2)");
+	}
+
+	@Test
+	@DisplayName("I modificatori in attesa vanno prima allo sfidante, poi all'avversario, e si sommano tutti")
+	void startCombat_pendingBothSides_challengerFirst() {
+		// Arrange
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		state.opponent().addPendingModifier(
+				new PendingModifier("Veil of the Anchored", ModifierSource.SPELL, Side.OPPONENT, 0, 5, 0));
+		state.opponent().addPendingModifier(
+				new PendingModifier("Rain Armor", ModifierSource.SPELL, Side.OPPONENT, 2, 0, 0));
+		state.challenger().addPendingModifier(
+				new PendingModifier("Bite of the Reverse", ModifierSource.SPELL, Side.OPPONENT, -3, 0, 0));
+
+		// Act
+		noBonuses.startCombat(state);
+
+		// Assert
+		assertThat(challenger(state).attack()).isEqualTo(5);
+		assertThat(opponent(state).attack()).isEqualTo(6);
+		assertThat(opponent(state).defense()).isEqualTo(14);
+		assertThat(state.log().events()).extracting(MatchEvent::side)
+				.containsExactly(Side.CHALLENGER, Side.OPPONENT, Side.OPPONENT);
+	}
+
+	@Test
+	@DisplayName("Una creatura sopravvissuta non riceve i modificatori in attesa: aspettano la prossima creatura")
+	void startCombat_survivor_pendingWaits() {
+		// Arrange: A ha già avuto il suo primo scontro
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		noBonuses.startCombat(state);
+		PendingModifier slice = new PendingModifier("SCP-458", ModifierSource.SPELL, Side.CHALLENGER, 0, 2, 0);
+		state.challenger().addPendingModifier(slice);
+
+		// Act
+		noBonuses.startCombat(state);
+
+		// Assert
+		assertThat(challenger(state).defense()).isEqualTo(6);
+		assertThat(state.challenger().pendingModifiers()).containsExactly(slice);
+	}
+
+	@Test
+	@DisplayName("D-08: un danno in attesa letale uccide a inizio scontro (4 − 7 = −3): il proprietario perde 3 PV")
+	void startCombat_lethalPending_deathBeforeTheRound() {
+		// Arrange
+		MatchState state = TestStates.inCombat(creature("A", 8, 4), creature("B", 4, 9));
+		state.challenger().addPendingModifier(
+				new PendingModifier("Skin Fracture", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 7));
+
+		// Act
+		noBonuses.startCombat(state);
+
+		// Assert: nessun round giocato, B resta in campo con la DEF all'entrata fissata
+		assertThat(state.challenger().creature()).isEmpty();
+		assertThat(state.challenger().lifePoints()).isEqualTo(TestRules.STARTING_LIFE_POINTS - 3);
+		assertThat(state.opponent().creaturesDefeated()).isEqualTo(1);
+		assertThat(opponent(state).hasStartedCombat()).isTrue();
+		assertThat(state.round()).isZero();
 	}
 
 	@Test

@@ -124,6 +124,16 @@ public final class CreatureInPlay {
 	}
 
 	/**
+	 * Indica se la creatura ha già avuto un inizio di scontro, cioè se la sua DEF all'entrata è fissata. Una creatura
+	 * appena entrata in campo non l'ha ancora avuto: riceve i modificatori in attesa del proprietario (D-34).
+	 *
+	 * @return {@code true} dopo {@link #recordInitialDefense()}
+	 */
+	public boolean hasStartedCombat() {
+		return initialDefenseRecorded;
+	}
+
+	/**
 	 * Fissa la DEF all'entrata alla DEF attuale. Si chiama alla fine dell'inizio del primo scontro della creatura,
 	 * quando i bonus d'entrata sono stati applicati; le chiamate successive non cambiano nulla.
 	 */

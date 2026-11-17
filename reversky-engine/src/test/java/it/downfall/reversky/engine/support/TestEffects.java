@@ -13,9 +13,9 @@ import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.SimulationInput;
 
 /**
- * Registri degli effetti per i test che usano Spell, Hidden, Terreni od Oggetti prima che il loro effetto vero
- * esista: ogni codice è registrato con un effetto finto che non fa niente, così l'input supera il controllo
- * {@code UNKNOWN_EFFECT} e la partita si gioca come senza effetti.
+ * Registri degli effetti per i test che usano Spell, Hidden, Terreni od Oggetti il cui effetto vero non esiste ancora:
+ * quei codici sono registrati con un effetto finto che non fa niente, così l'input supera il controllo
+ * {@code UNKNOWN_EFFECT} e la carta si gioca senza effetto.
  */
 public final class TestEffects {
 
@@ -40,7 +40,22 @@ public final class TestEffects {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry stubsFor(List<CardDefinition> cards) {
-		EffectRegistry registry = new EffectRegistry();
+		return addStubs(new EffectRegistry(), cards);
+	}
+
+	/**
+	 * Registro del gioco ({@link EffectRegistry#withAllEffects()}) più un effetto finto per ogni codice delle carte
+	 * non creatura dei due mazzi che il gioco non ha ancora: gli effetti già implementati sono quelli veri.
+	 *
+	 * @param input input della simulazione
+	 * @return un nuovo registro
+	 */
+	public static EffectRegistry gameWithStubsFor(SimulationInput input) {
+		return addStubs(EffectRegistry.withAllEffects(),
+				Stream.concat(input.challenger().deck().stream(), input.opponent().deck().stream()).toList());
+	}
+
+	private static EffectRegistry addStubs(EffectRegistry registry, List<CardDefinition> cards) {
 		cards.stream()
 				.filter(card -> card.effectCode() != null && registry.appliesTo(card.effectCode()).isEmpty())
 				.forEach(card -> register(registry, card));

@@ -80,7 +80,10 @@ Quando viene pescata si risolve in automatico, poi la carta viene **scartata** e
 
 Le 12 Spell sono nel [catalogo degli effetti](../effetti/catalogo-effetti.md#spell). Una Spell si pesca solo quando la propria creatura è morta: quando il catalogo dice "creatura attiva" si intende la **prossima** creatura del proprietario.
 
-- I modificatori delle Spell durano finché la creatura che li riceve resta in campo, anche negli scontri successivi (D-12, deciso il 10 novembre).
+- I modificatori delle Spell durano finché la creatura che li riceve resta in campo, anche negli scontri successivi (D-12, deciso il 10 novembre). La DEF in più è uno **scudo** con origine `SPELL` (D-35): fa gli stessi conti di una DEF permanente, ma gli effetti la riconoscono dall'origine (deciso il 17 novembre).
+- I modificatori in attesa (D-34) si applicano all'inizio del primo scontro della creatura, **dopo il bonus DEF di fazione** e prima di Terreno e Oggetto (deciso il 17 novembre): una Frattura della Pelle in attesa (−5 DEF) su una creatura con DEF 5 e +1 DEF di fazione la lascia a 1. Se un danno in attesa uccide la creatura, lo scontro finisce prima di cominciare (D-08) e il suo proprietario pesca di nuovo.
+- Una Spell `DAMAGE` può uccidere subito la creatura avversaria, anche quella appena pescata dall'avversario: la morte ha le conseguenze di sempre (danno al giocatore con la DEF negativa, creatura sconfitta per chi ha pescato la Spell) e il proprietario pesca di nuovo.
+- Implementazione (`ENG-19`): `DrawService` risolve le Spell alla pescata; le 10 Spell `P1` sono nella tabella *Effetti implementati* di [effetti](../effetti/effetti.md#effetti-implementati).
 - **Burn** (D-13, decisa l'11 novembre, *Nessuna carta persa*): si rivela la prossima carta del mazzo del proprietario. Se è una creatura, è proprio la prossima creatura che verrà pescata ed **entra con il bonus fisso** della Burn (modificatore in attesa, D-34); se non è una creatura **non si scarta nulla** e la carta resta al suo posto; con il mazzo vuoto non succede nulla. Evento di log `BURN_REVEALED`.
 
 ### Hidden (`HIDDEN`)

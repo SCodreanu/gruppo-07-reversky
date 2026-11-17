@@ -141,6 +141,58 @@ class PlayerStateTest {
 		assertThat(player.creaturesDefeated()).isEqualTo(2);
 	}
 
+	@Test
+	@DisplayName("peekCard guarda la prima carta senza pescarla; vuoto a mazzo finito")
+	void peekCard_doesNotDraw() {
+		// Arrange
+		PlayerState player = player(List.of(VEIL, CRAWLERS));
+
+		// Act + Assert
+		assertThat(player.peekCard()).contains(VEIL);
+		assertThat(player.deck()).containsExactly(VEIL, CRAWLERS);
+		assertThat(player(List.of()).peekCard()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("D-34: i modificatori in attesa si sommano sulla prossima creatura, in ordine di arrivo, e si tolgono")
+	void pendingModifiers_accumulateThenTaken() {
+		// Arrange
+		PlayerState player = player(List.of());
+		PendingModifier veil = pending("Veil of the Anchored", 0, 5);
+		PendingModifier pact = pending("Registry Pact", 1, 2);
+
+		// Act
+		player.addPendingModifier(veil);
+		player.addPendingModifier(pact);
+
+		// Assert
+		assertThat(player.pendingModifiers()).containsExactly(veil, pact);
+		assertThat(player.takePendingModifiers()).containsExactly(veil, pact);
+		assertThat(player.pendingModifiers()).isEmpty();
+		assertThat(player.takePendingModifiers()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("SCP-458: il modificatore per la creatura dopo la prossima passa alla prossima quando la prima entra")
+	void pendingModifiers_secondPositionShifts() {
+		// Arrange
+		PlayerState player = player(List.of());
+		PendingModifier first = pending("SCP-458", 0, 2);
+		PendingModifier second = pending("SCP-458", 0, 2);
+		player.addPendingModifier(1, second);
+		player.addPendingModifier(0, first);
+
+		// Act + Assert
+		assertThat(player.takePendingModifiers()).containsExactly(first);
+		assertThat(player.pendingModifiers()).containsExactly(second);
+		assertThat(player.takePendingModifiers()).containsExactly(second);
+		assertThatThrownBy(() -> player.addPendingModifier(-1, first)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	private static PendingModifier pending(String card, int attack, int shield) {
+		return new PendingModifier(card, ModifierSource.SPELL, Side.CHALLENGER, attack, shield, 0);
+	}
+
 	private static PlayerState player(List<CardDefinition> deck) {
 		return new PlayerState(Side.CHALLENGER, 7, 30, deck);
 	}

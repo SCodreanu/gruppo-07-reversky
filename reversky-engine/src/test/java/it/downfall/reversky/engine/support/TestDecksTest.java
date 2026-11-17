@@ -56,8 +56,8 @@ class TestDecksTest {
 	void full_isValidEngineInput(int factionId) {
 		// Arrange
 		SimulationInput input = TestInputs.of(TestDecks.full(factionId), TestDecks.full(TestFactions.WOUND));
-		// Effetti finti per i codici di Spell, Hidden, Terreni e Oggetti, finché non ci sono quelli veri
-		SimulationInputValidator validator = new SimulationInputValidator(TestEffects.stubsFor(input));
+		// Effetti finti per i codici di Hidden, Terreni e Oggetti, finché non ci sono quelli veri
+		SimulationInputValidator validator = new SimulationInputValidator(TestEffects.gameWithStubsFor(input));
 
 		// Act + Assert
 		assertThatCode(() -> validator.validate(input)).doesNotThrowAnyException();

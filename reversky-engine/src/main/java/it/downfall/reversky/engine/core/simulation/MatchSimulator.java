@@ -8,8 +8,6 @@ import java.util.Random;
 
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
-import it.downfall.reversky.engine.core.model.CardType;
-import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchResult;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlayerInput;
@@ -31,6 +29,7 @@ import it.downfall.reversky.engine.core.validation.SimulationInputValidator;
 public final class MatchSimulator {
 
 	private final SimulationInputValidator validator;
+	private final DrawService drawService;
 
 	/**
 	 * Crea il simulatore.
@@ -39,6 +38,7 @@ public final class MatchSimulator {
 	 */
 	public MatchSimulator(EffectRegistry effects) {
 		this.validator = new SimulationInputValidator(effects);
+		this.drawService = new DrawService(effects);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public final class MatchSimulator {
 	 * non si gioca e il giro dopo pesca chi ha il campo vuoto. Un campo vuoto che non si può riempire è sempre una
 	 * condizione di fine (3 o 4), quindi il ciclo non gira a vuoto.
 	 */
-	private static MatchEnd playUntilEnd(MatchState state, RoundResolver resolver, EndConditionChecker checker) {
+	private MatchEnd playUntilEnd(MatchState state, RoundResolver resolver, EndConditionChecker checker) {
 		while (true) {
 			boolean challengerDrew = refill(state, state.challenger());
 			boolean opponentDrew = refill(state, state.opponent());
@@ -101,42 +101,26 @@ public final class MatchSimulator {
 			if (end.isPresent()) {
 				return end.get();
 			}
+			if (!bothInPlay(state)) {
+				// Una Spell dell'avversario ha ucciso la creatura appena pescata (D-08): si ripesca al giro dopo
+				continue;
+			}
 			if (challengerDrew || opponentDrew) {
 				resolver.startCombat(state);
 			}
-			if (state.challenger().hasCreature() && state.opponent().hasCreature()) {
+			if (bothInPlay(state)) {
 				resolver.resolve(state);
 			}
 		}
 	}
 
 	/** Se il campo del giocatore è vuoto, pesca la creatura successiva. */
-	private static boolean refill(MatchState state, PlayerState player) {
-		return !player.hasCreature() && drawCreature(state, player);
+	private boolean refill(MatchState state, PlayerState player) {
+		return !player.hasCreature() && drawService.drawCreature(state, player);
 	}
 
-	/**
-	 * Pesca finché esce una creatura e la mette in campo (regole-base, "Pescare"). Le altre carte pescate prima si
-	 * registrano e si scartano; se nel mazzo restano solo carte non creatura si pescano tutte (D-06).
-	 *
-	 * @return {@code true} se una creatura è entrata in campo
-	 */
-	private static boolean drawCreature(MatchState state, PlayerState player) {
-		Optional<CardDefinition> drawn = player.drawCard();
-		while (drawn.isPresent()) {
-			CardDefinition card = drawn.get();
-			if (card.type() == CardType.CREATURE) {
-				CreatureInPlay creature = new CreatureInPlay(card, player.side());
-				player.placeCreature(creature);
-				state.log().creatureEntered(creature);
-				return true;
-			}
-			// TODO(@tommasofatticcioni): per ora Spell, Hidden, Terreni e Oggetti si scartano senza effetto;
-			// vanno risolti con ENG-19 (#57), ENG-20 (#58), ENG-21 (#59) ed ENG-33 (#140)
-			state.log().cardDrawn(player.side(), card);
-			drawn = player.drawCard();
-		}
-		return false;
+	private static boolean bothInPlay(MatchState state) {
+		return state.challenger().hasCreature() && state.opponent().hasCreature();
 	}
 
 	private static PlayerResult result(PlayerState player) {

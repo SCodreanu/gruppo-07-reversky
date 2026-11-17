@@ -10,6 +10,7 @@ import it.downfall.reversky.engine.core.model.BattleResult;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.EndReason;
+import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.Side;
 
 /**
@@ -313,11 +314,43 @@ public final class MatchLog {
 		return side == Side.CHALLENGER ? "Challenger" : "Opponent";
 	}
 
-	private static String number(int value) {
+	/**
+	 * Un modificatore in attesa come nei messaggi del log (es. {@code +2 ATK, +2 DEF} o {@code −5 DEF}).
+	 *
+	 * @param modifier il modificatore
+	 * @return il testo
+	 */
+	public static String describe(PendingModifier modifier) {
+		List<String> parts = new ArrayList<>();
+		if (modifier.attack() != 0) {
+			parts.add(signed(modifier.attack()) + " ATK");
+		}
+		if (modifier.shield() > 0) {
+			parts.add(signed(modifier.shield()) + " DEF");
+		}
+		if (modifier.damage() > 0) {
+			parts.add(signed(-modifier.damage()) + " DEF");
+		}
+		return String.join(", ", parts);
+	}
+
+	/**
+	 * Un numero come nei messaggi del log: i negativi con il segno meno tipografico (es. {@code −3}).
+	 *
+	 * @param value il numero
+	 * @return il testo
+	 */
+	public static String number(int value) {
 		return value < 0 ? MINUS + Integer.toString(-value) : Integer.toString(value);
 	}
 
-	private static String signed(int value) {
+	/**
+	 * Un bonus o un malus come nei messaggi del log: sempre con il segno (es. {@code +2}, {@code −3}).
+	 *
+	 * @param value il valore
+	 * @return il testo
+	 */
+	public static String signed(int value) {
 		return value < 0 ? number(value) : "+" + value;
 	}
 }
