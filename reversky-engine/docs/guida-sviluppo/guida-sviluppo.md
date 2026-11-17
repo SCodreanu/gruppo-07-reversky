@@ -57,7 +57,7 @@ $r.log | Format-Table round, type, side, message
 
 Con IntelliJ o VS Code (*REST Client*) apri [`examples/simulazioni.http`](../../examples/simulazioni.http) e lancia le richieste con ▶.
 
-Quando c'è springdoc (issue `ENG-15`): Swagger UI su `http://localhost:8081/swagger-ui.html`.
+Swagger UI su `http://localhost:8081/swagger-ui.html` (springdoc, D-41), il documento OpenAPI su `http://localhost:8081/v3/api-docs`.
 
 ## 4. Lanciare i test
 

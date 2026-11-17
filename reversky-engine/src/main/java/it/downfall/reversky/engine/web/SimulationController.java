@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.downfall.reversky.engine.core.model.MatchResult;
 import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.simulation.MatchSimulator;
@@ -21,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * Fa solo DTO → core → {@link MatchSimulator} → core → DTO (CodingRequirements §4): le regole stanno nel core.
  */
 @Slf4j
+@Tag(name = "Simulations", description = "Match simulation")
 @RestController
 @RequestMapping("/api/v1/simulations")
 @RequiredArgsConstructor
@@ -37,6 +41,14 @@ public class SimulationController {
 	 * @throws InvalidSimulationInputException se l'input non è coerente (400)
 	 * @throws SimulationFailedException       se la simulazione fallisce per un bug (500, con il seed nel log)
 	 */
+	@Operation(summary = "Simulate a match", description = "Plays a full match with no player decisions and returns "
+			+ "the result with the round-by-round log. The same request with the same seed always gives the same match. "
+			+ "The checks run in a fixed order and the first one that fails is returned (see the code field).")
+	@ApiResponse(responseCode = "200", description = "Match simulated")
+	@ApiResponse(responseCode = "400", description = "Invalid input: malformed JSON, missing field, unknown faction, "
+			+ "invalid faction bonus, invalid card factions, deck without creatures, invalid stats, missing subtype, "
+			+ "missing or unknown effect")
+	@ApiResponse(responseCode = "500", description = "Bug in the engine: the seed is in the engine log")
 	@PostMapping
 	public SimulationResponse simulate(@Valid @RequestBody SimulationRequest request) {
 		SimulationInput input = mapper.toCore(request);

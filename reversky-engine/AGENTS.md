@@ -23,6 +23,7 @@ Il brief richiede che il motore sia **un componente Java isolato e coperto da te
 | Build | Gradle (wrapper incluso) |
 | Test | JUnit 5, AssertJ |
 | Utility | Lombok (solo nello strato `web`) |
+| Documentazione REST | springdoc-openapi 3.2.0, Swagger UI su `/swagger-ui.html` (solo nello strato `web`) |
 | Database | **nessuno** |
 
 ## Comandi
