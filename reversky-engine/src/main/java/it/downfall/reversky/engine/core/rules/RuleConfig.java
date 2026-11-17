@@ -25,12 +25,12 @@ public record RuleConfig(String rulesVersion, int startingLifePoints, int maxRou
 	 */
 	public RuleConfig {
 		if (rulesVersion == null || rulesVersion.isBlank()) {
-			throw new InvalidSimulationInputException(ErrorCode.VALIDATION_FAILED, "Versione delle regole mancante");
+			throw new InvalidSimulationInputException(ErrorCode.VALIDATION_FAILED, "Missing rules version");
 		}
 		if (startingLifePoints < 1 || maxRounds < 1) {
 			throw new InvalidSimulationInputException(ErrorCode.VALIDATION_FAILED,
-					"Regole non valide: punti vita iniziali " + startingLifePoints + ", limite di round " + maxRounds
-							+ " (minimo 1)");
+					"Invalid rules: starting life points " + startingLifePoints + ", max rounds " + maxRounds
+							+ " (minimum 1)");
 		}
 	}
 }

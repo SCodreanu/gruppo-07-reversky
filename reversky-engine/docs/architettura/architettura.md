@@ -61,7 +61,8 @@ Spring Boot. Contiene solo:
   `SimulationResponse`, `PlayerResultResponse`, `MatchEventResponse`;
 - `SimulationMapper` (DTO ↔ core: copia i campi, `atk`/`def` diventano `attack`/`defense`, nessuna regola);
 - `EngineConfiguration` che crea i bean del core (`MatchSimulator`, `EffectRegistry`);
-- `GlobalExceptionHandler`.
+- `GlobalExceptionHandler`: ogni errore diventa un `ProblemDetail` con `code` (400 per l'input, 500 `INTERNAL_ERROR` per un bug);
+- `SimulationFailedException`: avvolge un bug della simulazione con il seed, che finisce nel log tecnico per riprodurre la partita.
 
 ```java
 @Configuration
