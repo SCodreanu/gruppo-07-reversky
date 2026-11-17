@@ -56,8 +56,10 @@ core/
 
 Spring Boot. Contiene solo:
 - `SimulationController` (`POST /api/v1/simulations`, `GET /api/v1/effects`);
-- DTO di richiesta/risposta con le annotazioni di validazione;
-- `SimulationMapper` (DTO ↔ core);
+- DTO di richiesta/risposta in `web/dto` (record con le annotazioni di validazione e i messaggi in inglese, come nell'API):
+  `SimulationRequest`, `RulesRequest`, `FactionRequest`, `FactionBonusRequest`, `PlayerRequest`, `CardRequest`,
+  `SimulationResponse`, `PlayerResultResponse`, `MatchEventResponse`;
+- `SimulationMapper` (DTO ↔ core: copia i campi, `atk`/`def` diventano `attack`/`defense`, nessuna regola);
 - `EngineConfiguration` che crea i bean del core (`MatchSimulator`, `EffectRegistry`);
 - `GlobalExceptionHandler`.
 

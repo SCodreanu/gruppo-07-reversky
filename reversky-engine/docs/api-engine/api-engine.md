@@ -74,13 +74,17 @@ Simula una partita completa.
 | `factions` | sì | dalla tabella `factions` |
 | `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonuses` |
 | `challenger`, `opponent` | sì | sfidante e avversario |
+| `userId` | sì | id dell'utente nell'API, restituito uguale nel risultato |
 | `deck` | sì | una voce **per ogni copia**, almeno una creatura |
-| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`) |
+| `cardId` | sì | id della carta nel catalogo |
+| `name` | sì | nome della carta, in inglese: è quello che compare nel log |
+| `rarity` | sì | nome della rarità (`rarities.name`) |
+| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`); un valore che non esiste rende il JSON non valido |
 | `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
 | `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
-| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
+| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL`; un valore che non esiste rende il JSON non valido |
 | `effectCode` | Spell, Hidden, Terreni e Oggetti | `catalog_cards.effect_code`; facoltativo per le creature |
 
 ### Risposta `200 OK`
