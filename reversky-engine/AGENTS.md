@@ -89,7 +89,7 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 
 ## Stato attuale
 
-Esistono il modello del core, la validazione dell'input, i bonus di fazione, lo stato della partita, il log, la risoluzione dei round (senza effetti), il controllo delle morti dopo ogni fase (D-08), le condizioni di fine partita e il `MatchSimulator`, esposto da `POST /api/v1/simulations` nello strato `web`.
+Esistono il modello del core, la validazione dell'input, i bonus di fazione, lo stato della partita, il log, la risoluzione dei round (senza effetti), il controllo delle morti dopo ogni fase (D-08), le condizioni di fine partita e il `MatchSimulator`, esposto da `POST /api/v1/simulations` nello strato `web`; `GET /api/v1/effects` elenca gli effetti registrati.
 Esiste il registro degli effetti (`EffectRegistry`), con le interfacce degli effetti di Spell, Hidden, Terreni e Oggetti: una di queste carte con un codice non registrato dà `400 UNKNOWN_EFFECT`.
 Sono implementate le Spell `P1`, le Hidden `P1`, il bonus base dei Terreni e i quattro Oggetti (`DrawService`, modificatori in attesa, zona Hidden, `TerrainService`, `ItemService`); gli effetti secondari dei Terreni arrivano con `ENG-27`. Le Spell e le Hidden `P2` non sono ancora registrate e danno `400 UNKNOWN_EFFECT`. Fino a `ENG-23` il codice di una creatura non si controlla e la creatura gioca senza effetto. I documenti in `docs/` descrivono anche le parti che mancano.
 

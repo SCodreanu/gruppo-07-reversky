@@ -172,6 +172,8 @@ Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERN
 ## `GET /api/v1/effects`
 
 Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
+Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
+L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono con `ENG-23`.
 
 ```json
 [
