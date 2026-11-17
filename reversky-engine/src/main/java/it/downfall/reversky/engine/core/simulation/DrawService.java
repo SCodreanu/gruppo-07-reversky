@@ -19,7 +19,9 @@ import it.downfall.reversky.engine.core.model.SetHidden;
  * avversaria: le morti si controllano subito dopo (D-08).</li>
  * <li>Hidden: si mette coperta nella zona Hidden e si attiverà all'inizio del prossimo scontro del proprietario; una
  * Hidden della pescata iniziale salta il primo scontro (D-15).</li>
- * <li>Terreni e Oggetti: per ora si registrano e si scartano (ENG-21, ENG-33).</li>
+ * <li>Terreno: entra in gioco e sostituisce quello già in gioco (D-19); il suo bonus va subito alle creature in
+ * campo della sua fazione (D-17).</li>
+ * <li>Oggetti: per ora si registrano e si scartano (ENG-33).</li>
  * </ul>
  * Se nel mazzo restano solo carte non creatura si risolvono tutte (D-06); la fine della partita la controlla il
  * simulatore.
@@ -27,6 +29,7 @@ import it.downfall.reversky.engine.core.model.SetHidden;
 public final class DrawService {
 
 	private final EffectRegistry effects;
+	private final TerrainService terrains;
 	private final DeathResolver deaths = new DeathResolver();
 
 	/**
@@ -36,6 +39,7 @@ public final class DrawService {
 	 */
 	public DrawService(EffectRegistry effects) {
 		this.effects = effects;
+		this.terrains = new TerrainService(effects);
 	}
 
 	/**
@@ -62,10 +66,11 @@ public final class DrawService {
 				state.log().cardDrawn(player.side(), card);
 				if (card.type() == CardType.SPELL) {
 					resolveSpell(state, player, card);
+				} else if (card.type() == CardType.TERRAIN) {
+					terrains.place(state, player, card);
 				}
 			}
-			// TODO(@tommasofatticcioni): per ora Terreni e Oggetti si scartano senza effetto;
-			// vanno risolti con ENG-21 (#59) ed ENG-33 (#140)
+			// TODO(@tommasofatticcioni): per ora gli Oggetti si scartano senza effetto; vanno risolti con ENG-33 (#140)
 			drawn = player.drawCard();
 		}
 		return false;

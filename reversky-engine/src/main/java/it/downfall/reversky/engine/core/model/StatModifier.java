@@ -14,7 +14,8 @@ public final class StatModifier {
 
 	private static final int RANK_ROUNDS = 0;
 	private static final int RANK_COMBAT = 1;
-	private static final int RANK_IN_PLAY = 2;
+	private static final int RANK_TERRAIN = 2;
+	private static final int RANK_IN_PLAY = 3;
 
 	private final ModifierSource source;
 	private final Side side;
@@ -213,7 +214,8 @@ public final class StatModifier {
 
 	/**
 	 * Ordine in cui gli scudi assorbono i danni: prima quelli che scadono prima (a round, con meno round rimasti),
-	 * poi quelli fino a fine scontro, poi quelli finché la creatura resta in campo.
+	 * poi quelli fino a fine scontro, poi quello del Terreno (sparisce quando il Terreno esce, che può succedere in
+	 * ogni momento: deciso il 17 novembre), poi gli altri finché la creatura resta in campo.
 	 *
 	 * @return chiave di ordinamento, più bassa = assorbe prima
 	 */
@@ -221,7 +223,7 @@ public final class StatModifier {
 		return switch (durationKind) {
 			case ROUNDS -> ((long) RANK_ROUNDS << 32) + remainingRounds;
 			case UNTIL_COMBAT_END -> (long) RANK_COMBAT << 32;
-			case WHILE_IN_PLAY -> (long) RANK_IN_PLAY << 32;
+			case WHILE_IN_PLAY -> (long) (source == ModifierSource.TERRAIN ? RANK_TERRAIN : RANK_IN_PLAY) << 32;
 		};
 	}
 }

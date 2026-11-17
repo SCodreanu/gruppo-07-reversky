@@ -401,6 +401,32 @@ class RoundResolverTest {
 	}
 
 	@Test
+	@DisplayName("Passo 0: bonus DEF di fazione, modificatori in attesa, Terreno, poi Hidden (docs/effetti)")
+	void startCombat_stepZeroOrder() {
+		// Arrange: Hollow Clearing in gioco (Invitation, +2 DEF); Squonk nuova con Veil in attesa e una Hidden pronta
+		RoundResolver resolver = resolver(new FactionMatrix(List.of(
+				new FactionBonus(TestFactions.INVITATION, ARCHIVE, 0, 1))));
+		MatchState state = TestStates.inCombat(TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9),
+				TestCards.creature("SCP-131", ARCHIVE, 8, 6));
+		state.placeTerrain(TestCards.terrain(114, "Hollow Clearing", TestFactions.INVITATION, "HOLLOW_CLEARING"),
+				Side.OPPONENT);
+		state.challenger().addPendingModifier(
+				new PendingModifier("Veil of the Anchored", ModifierSource.SPELL, Side.CHALLENGER, 0, 5, 0));
+		state.challenger().setHidden(new SetHidden(SANCTUARY, 1));
+
+		// Act
+		resolver.startCombat(state);
+
+		// Assert: 9 + 1 + 5 + 2 + 5 = 22, fissata come DEF all'entrata
+		assertThat(state.log().events()).extracting(MatchEvent::message).containsExactly(
+				"Squonk: +1 DEF faction bonus (DEF 10)",
+				"Squonk: +5 DEF from Veil of the Anchored (ATK 3, DEF 15)",
+				"Squonk: +2 DEF from Hollow Clearing (ATK 3, DEF 17)",
+				"Last Sanctuary triggers");
+		assertThat(challenger(state).initialDefense()).isEqualTo(22);
+	}
+
+	@Test
 	@DisplayName("Hostile Presence: −5 ATK solo nel primo round dello scontro (8 → 3, poi di nuovo 8)")
 	void hostilePresence_firstRoundOnly() {
 		// Arrange

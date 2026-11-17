@@ -22,6 +22,8 @@ public final class CreatureInPlay {
 	private int permanentDefense;
 	private int initialDefense;
 	private boolean initialDefenseRecorded;
+	/** Il Terreno in gioco che le ha dato il bonus (D-17), o {@code null}: il bonus si riceve una volta per Terreno. */
+	private PlacedTerrain terrainBonus;
 
 	/**
 	 * Mette in campo una creatura con la DEF del catalogo.
@@ -234,5 +236,40 @@ public final class CreatureInPlay {
 				.toList());
 		shields.sort(Comparator.comparingLong(StatModifier::expiryRank));
 		return shields;
+	}
+
+	/**
+	 * Indica se la creatura ha già ricevuto il bonus di un Terreno messo in gioco. Conta la singola messa in gioco
+	 * (stesso oggetto), non la carta: il bonus si riceve una volta sola anche se lo scudo del Terreno si consuma.
+	 *
+	 * @param terrain il Terreno in gioco
+	 * @return {@code true} se ha già il bonus di quel Terreno
+	 */
+	public boolean hasTerrainBonusFrom(PlacedTerrain terrain) {
+		return terrainBonus == terrain;
+	}
+
+	/**
+	 * Ricorda che la creatura ha ricevuto il bonus di un Terreno (i modificatori li aggiunge chi chiama).
+	 *
+	 * @param terrain il Terreno in gioco
+	 */
+	public void recordTerrainBonus(PlacedTerrain terrain) {
+		this.terrainBonus = terrain;
+	}
+
+	/**
+	 * Il Terreno esce: si tolgono i suoi modificatori, l'ATK subito e dello scudo solo la parte non ancora consumata
+	 * (D-19, D-35), quindi l'uscita di un Terreno non uccide mai.
+	 *
+	 * @return {@code true} se la creatura aveva il bonus di un Terreno
+	 */
+	public boolean loseTerrainBonus() {
+		if (terrainBonus == null) {
+			return false;
+		}
+		removeModifiers(ModifierSource.TERRAIN);
+		terrainBonus = null;
+		return true;
 	}
 }

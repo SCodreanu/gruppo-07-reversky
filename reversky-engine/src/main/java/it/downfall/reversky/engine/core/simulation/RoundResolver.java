@@ -18,10 +18,10 @@ import it.downfall.reversky.engine.core.rules.FactionMatrix;
  * Risolve l'inizio di uno scontro e i round, nell'ordine dei passi di docs/effetti ("Ordine di risoluzione di un
  * round"), che fa parte delle regole: non si cambia senza aggiornare quel documento.
  * <p>
- * Passi già presenti: 0 (bonus DEF di fazione, modificatori in attesa e Hidden), 2 (calcolo dell'attacco), 4 (danni
- * simultanei) e 7 (morti e danno al giocatore, con il {@link DeathResolver}). Gli altri passi arrivano con gli
- * effetti, i Terreni e gli Oggetti (ENG-21…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima
- * lo sfidante e poi l'avversario.
+ * Passi già presenti: 0 (bonus DEF di fazione, modificatori in attesa, bonus del Terreno e Hidden), 2 (calcolo
+ * dell'attacco), 4 (danni simultanei) e 7 (morti e danno al giocatore, con il {@link DeathResolver}). Gli altri passi
+ * arrivano con gli effetti delle creature e gli Oggetti (ENG-23, ENG-33). Quando una cosa riguarda entrambi i
+ * giocatori, prima lo sfidante e poi l'avversario.
  */
 public final class RoundResolver {
 
@@ -30,6 +30,7 @@ public final class RoundResolver {
 
 	private final FactionMatrix factionMatrix;
 	private final EffectRegistry effects;
+	private final TerrainService terrains;
 	private final DeathResolver deaths = new DeathResolver();
 
 	/**
@@ -41,6 +42,7 @@ public final class RoundResolver {
 	public RoundResolver(FactionMatrix factionMatrix, EffectRegistry effects) {
 		this.factionMatrix = factionMatrix;
 		this.effects = effects;
+		this.terrains = new TerrainService(effects);
 	}
 
 	/**
@@ -50,6 +52,8 @@ public final class RoundResolver {
 	 * <li>Ogni creatura riceve il bonus DEF di fazione contro la nuova avversaria (docs/fazioni): una volta per
 	 * scontro, come DEF permanente.</li>
 	 * <li>Ogni creatura al suo primo scontro riceve i modificatori in attesa del proprietario (D-34), prima lo
+	 * sfidante.</li>
+	 * <li>Ogni creatura della fazione del Terreno in gioco che non ha ancora il suo bonus lo riceve (D-17), prima lo
 	 * sfidante.</li>
 	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
 	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
@@ -70,6 +74,8 @@ public final class RoundResolver {
 		applyPendingModifiers(state.challenger(), challenger, state.log());
 		applyPendingModifiers(state.opponent(), opponent, state.log());
 		if (!deaths.resolve(state)) {
+			terrains.applyBonus(state, challenger);
+			terrains.applyBonus(state, opponent);
 			triggerHiddenCards(state, combat);
 		}
 		state.challenger().creature().ifPresent(CreatureInPlay::recordInitialDefense);
