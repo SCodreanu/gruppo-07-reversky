@@ -30,6 +30,7 @@ core/
 │   ├── StatModifier        modificatore con origine, lato, durata e sospensione (D-35)
 │   ├── PendingModifier     modificatore in attesa della prossima creatura di un giocatore (D-34)
 │   ├── SetHidden           Hidden coperta nella zona Hidden, con lo scontro da cui può attivarsi (D-15)
+│   ├── RoundStartShield    scudo programmato a inizio round (Bussola dei Sentieri Falsi)
 │   ├── Faction             record (id, nome): le fazioni sono dati, non un enum
 │   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Oggetto
 │   └── MatchState          i due giocatori + numero round + log + random + il Terreno in gioco (uno solo, D-19)
@@ -42,6 +43,7 @@ core/
 │   ├── DeathResolver       morti e danno al giocatore (DEF negativa), dopo ogni fase che toglie DEF (D-08)
 │   ├── DrawService         pesca finché esce una creatura; risolve le Spell, mette coperte le Hidden
 │   ├── TerrainService      mette in gioco il Terreno (uno solo, D-19) e dà o toglie il suo bonus (D-17)
+│   ├── ItemService         Oggetti accanto al mazzo, che scattano una volta nel loro momento (D-47)
 │   └── EndConditionChecker controlla se e come finisce la partita
 ├── effect/
 │   ├── CardEffect          interfaccia chiusa degli effetti di Spell, Hidden, Terreni e Oggetti, una per tipo

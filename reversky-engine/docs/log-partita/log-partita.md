@@ -48,7 +48,7 @@ In JSON:
 | `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | `card`, `cause` | `Echo Rift is removed by The Null Witness` |
 | `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | `source`, `card`, `position` (da 1) | `La Regina dei Sentieri Perduti moves Kappa to position 3` |
 | `ITEM_PLACED` | un Oggetto entra in gioco | `card` | `Challenger places Campanello del Torii` |
-| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47) | `card`, `effect`, `creature` | `Campanello del Torii is used on Kappa` |
+| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47); se annulla una Spell o una Hidden, subito dopo c'è il suo `SPELL_RESOLVED` o `HIDDEN_TRIGGERED` con `effect` `cancelled` | `card`, `effect` (es. `stays at 1 DEF`, `cancels Skin Fracture`), `creature` | `Campanello del Torii is used on Kappa` |
 | `ROUND_STARTED` | inizio di un round | `round` | `Round 1` |
 | `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `total` | `Crawlers attacks with 6 (4 base, +2 faction)` |
 | `DAMAGE_DEALT` | una creatura colpisce l'altra | `source`, `target`, `amount`, `targetDefense` | `Crawlers deals 6 damage to Kappa (DEF 1)` |

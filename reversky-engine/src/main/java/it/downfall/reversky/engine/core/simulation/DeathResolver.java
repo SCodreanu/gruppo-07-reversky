@@ -20,13 +20,20 @@ import it.downfall.reversky.engine.core.model.Side;
  * modificatori che duravano fino a fine scontro;</li>
  * <li>se muoiono entrambe nello stesso controllo, nessun giocatore perde punti vita.</li>
  * </ul>
+ * Prima di togliere una creatura, un Badge di Uscita Negata del proprietario la può salvare (D-36): allora non muore,
+ * e se l'altra muore lo stesso è una morte singola, con il danno al giocatore.
  */
 public final class DeathResolver {
 
+	private final ItemService items;
+
 	/**
 	 * Crea il controllo. Non ha stato: la stessa istanza serve qualsiasi partita.
+	 *
+	 * @param items Oggetti, per il Badge di Uscita Negata
 	 */
-	public DeathResolver() {
+	public DeathResolver(ItemService items) {
+		this.items = items;
 	}
 
 	/**
@@ -38,7 +45,10 @@ public final class DeathResolver {
 	public boolean resolve(MatchState state) {
 		List<CreatureInPlay> dead = new ArrayList<>();
 		for (Side side : Side.values()) {
-			state.player(side).creature().filter(CreatureInPlay::isDead).ifPresent(dead::add);
+			state.player(side).creature()
+					.filter(CreatureInPlay::isDead)
+					.filter(creature -> !items.saveFromDeath(state, creature))
+					.ifPresent(dead::add);
 		}
 		if (dead.isEmpty()) {
 			return false;

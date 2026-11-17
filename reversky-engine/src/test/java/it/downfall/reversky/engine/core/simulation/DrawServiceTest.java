@@ -33,6 +33,8 @@ class DrawServiceTest {
 	private static final CardDefinition KAPPA = TestCards.creature("Kappa", TestFactions.ARCHIVE, 6, 4);
 	private static final CardDefinition VEIL = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD,
 			"VEIL_OF_ANCHORED");
+	private static final CardDefinition SEALED_FILE = TestCards.item(119, "Fascicolo Sigillato 0", TestFactions.ARCHIVE,
+			"SEALED_FILE_ZERO");
 	private static final CardDefinition SANCTUARY = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL,
 			"LAST_SANCTUARY");
 	private static final CardDefinition FRACTURE = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE,
@@ -149,21 +151,57 @@ class DrawServiceTest {
 	}
 
 	@Test
-	@DisplayName("Gli Oggetti per ora si registrano con CARD_DRAWN e si scartano (ENG-33)")
-	void drawCreature_item_loggedAndSkipped() {
+	@DisplayName("D-47: un Oggetto pescato resta accanto al mazzo, non si scarta e non conta come creatura")
+	void drawCreature_item_placedNextToDeck() {
 		// Arrange
-		CardDefinition bell = TestCards.item(120, "Torii Bell", TestFactions.DREAM, "TORII_BELL");
-		List<CardDefinition> deck = List.of(bell, CRAWLERS);
-		MatchState state = TestStates.withDecks(deck, List.of());
-		DrawService withStubs = new DrawService(TestEffects.stubsFor(deck));
+		CardDefinition bell = TestCards.item(120, "Campanello del Torii", TestFactions.DREAM, "TORII_BELL");
+		MatchState state = TestStates.withDecks(List.of(bell, CRAWLERS), List.of());
 
 		// Act
-		withStubs.drawCreature(state, state.challenger());
+		draws.drawCreature(state, state.challenger());
 
 		// Assert
+		assertThat(state.challenger().items()).containsExactly(bell);
+		assertThat(state.challenger().creature()).map(CreatureInPlay::name).contains("Crawlers");
 		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
-				EventType.CREATURE_ENTERED);
-		assertThat(state.challenger().item()).isEmpty();
+				EventType.ITEM_PLACED, EventType.CREATURE_ENTERED);
+	}
+
+	@Test
+	@DisplayName("Fascicolo Sigillato 0 annulla del tutto una Spell DAMAGE che colpirebbe la creatura protetta")
+	void drawCreature_damageSpellOnSealedFile_cancelled() {
+		// Arrange: Kappa dell'avversario è protetta dal Fascicolo
+		MatchState state = TestStates.withDecks(List.of(FRACTURE, CRAWLERS), List.of());
+		CreatureInPlay kappa = new CreatureInPlay(KAPPA, Side.OPPONENT);
+		state.opponent().placeCreature(kappa);
+		state.opponent().placeItem(SEALED_FILE);
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert
+		assertThat(kappa.defense()).isEqualTo(4);
+		assertThat(state.opponent().items()).isEmpty();
+		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
+				EventType.ITEM_CONSUMED, EventType.SPELL_RESOLVED, EventType.CREATURE_ENTERED);
+		assertThat(state.log().events().get(1).data()).containsEntry("effect", "cancels Skin Fracture");
+		assertThat(state.log().events().get(2).data()).containsEntry("effect", "cancelled");
+	}
+
+	@Test
+	@DisplayName("Fascicolo Sigillato 0 non ferma una Spell del proprietario né una Spell SHIELD avversaria")
+	void drawCreature_shieldSpell_notCancelled() {
+		// Arrange
+		MatchState state = TestStates.withDecks(List.of(VEIL, CRAWLERS), List.of());
+		state.opponent().placeCreature(new CreatureInPlay(KAPPA, Side.OPPONENT));
+		state.opponent().placeItem(SEALED_FILE);
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert
+		assertThat(state.opponent().items()).containsExactly(SEALED_FILE);
+		assertThat(state.challenger().pendingModifiers()).hasSize(1);
 	}
 
 	@Test

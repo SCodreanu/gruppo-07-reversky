@@ -124,11 +124,26 @@ class PlayerStateTest {
 
 		// Act + Assert
 		player.placeItem(TORII_BELL);
-		assertThat(player.item()).contains(TORII_BELL);
-		player.consumeItem();
-		assertThat(player.item()).isEmpty();
-		assertThatThrownBy(player::consumeItem).isInstanceOf(IllegalStateException.class);
+		assertThat(player.items()).containsExactly(TORII_BELL);
+		player.consumeItem(TORII_BELL);
+		assertThat(player.items()).isEmpty();
+		assertThatThrownBy(() -> player.consumeItem(TORII_BELL)).isInstanceOf(IllegalStateException.class);
 		assertThatThrownBy(() -> player.placeItem(VEIL)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("Con due Oggetti non se ne perde nessuno: restano nell'ordine di pescata")
+	void item_twoItems_bothKept() {
+		// Arrange
+		PlayerState player = player(List.of());
+		CardDefinition badge = TestCards.item(117, "Badge di Uscita Negata", TestFactions.WOUND, "DENIED_EXIT_BADGE");
+
+		// Act
+		player.placeItem(TORII_BELL);
+		player.placeItem(badge);
+
+		// Assert
+		assertThat(player.items()).containsExactly(TORII_BELL, badge);
 	}
 
 	@Test

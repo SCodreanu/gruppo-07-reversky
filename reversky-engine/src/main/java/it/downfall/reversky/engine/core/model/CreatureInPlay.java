@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Creatura in campo: la carta, la DEF che le resta e i modificatori (docs/carte, "Creatura").
@@ -24,6 +25,8 @@ public final class CreatureInPlay {
 	private boolean initialDefenseRecorded;
 	/** Il Terreno in gioco che le ha dato il bonus (D-17), o {@code null}: il bonus si riceve una volta per Terreno. */
 	private PlacedTerrain terrainBonus;
+	/** Scudo a inizio round programmato da un Oggetto (Bussola dei Sentieri Falsi), o {@code null}. */
+	private RoundStartShield roundStartShield;
 
 	/**
 	 * Mette in campo una creatura con la DEF del catalogo.
@@ -227,6 +230,8 @@ public final class CreatureInPlay {
 	 */
 	public void endCombat() {
 		modifiers.removeIf(StatModifier::endCombat);
+		// "nei primi round dello scontro": se lo scontro finisce prima, i round restanti si perdono
+		roundStartShield = null;
 	}
 
 	private List<StatModifier> shieldsInAbsorbOrder() {
@@ -271,5 +276,45 @@ public final class CreatureInPlay {
 		removeModifiers(ModifierSource.TERRAIN);
 		terrainBonus = null;
 		return true;
+	}
+
+	/**
+	 * La creatura sopravvive a un danno letale e resta con la DEF data (Badge di Uscita Negata, D-36): la DEF
+	 * permanente diventa quella che serve perché, con gli scudi rimasti, la DEF sia proprio quella.
+	 *
+	 * @param defense DEF con cui resta, almeno 1
+	 * @throws IllegalArgumentException se {@code defense} è minore di 1
+	 */
+	public void surviveWith(int defense) {
+		if (defense < 1) {
+			throw new IllegalArgumentException("Per sopravvivere serve almeno 1 DEF: " + defense);
+		}
+		permanentDefense = defense - modifiers.stream().mapToInt(StatModifier::shieldValue).sum();
+	}
+
+	/**
+	 * Programma uno scudo all'inizio di ognuno dei prossimi round dello scontro (D-35): ogni round lo scudo torna al
+	 * suo valore, non si somma. Finisce con lo scontro.
+	 *
+	 * @param shield programma dello scudo
+	 */
+	public void scheduleRoundStartShield(RoundStartShield shield) {
+		this.roundStartShield = shield;
+	}
+
+	/**
+	 * Inizio di un round (passo 1): se c'è uno scudo programmato, la creatura riceve lo scudo per questo round.
+	 *
+	 * @return lo scudo dato, o vuoto se non ce n'era uno
+	 */
+	public Optional<StatModifier> startRound() {
+		if (roundStartShield == null) {
+			return Optional.empty();
+		}
+		StatModifier shield = StatModifier.shield(roundStartShield.source(), roundStartShield.side(),
+				roundStartShield.amount(), ModifierDuration.rounds(1));
+		modifiers.add(shield);
+		roundStartShield = roundStartShield.next();
+		return Optional.of(shield);
 	}
 }

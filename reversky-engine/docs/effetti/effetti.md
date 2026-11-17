@@ -63,7 +63,7 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
      - onEnterPlay di entrambe le creature, poi gli effetti che guardano
        l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…)
      - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
-1. onRoundStart
+1. onRoundStart (e lo scudo della Bussola dei Sentieri Falsi, nei primi tre round del suo scontro)
 2. Calcolo attacco: ATK base + bonus ATK di fazione + modificatori → modifyOutgoingAttack → minimo 0
 3. Calcolo danno ricevuto: modifyIncomingDamage della creatura colpita
 4. Applicazione SIMULTANEA dei danni
@@ -255,9 +255,14 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base | fatto, `TerrainServiceTest` |
 | `WATCHING_RIFT` | Watching Rift (Crepa Occhi) | Terreno, bonus base | fatto, `TerrainServiceTest` |
 | `DEVOURING_ABYSS` | Devouring Abyss (Crepa Cavità) | Terreno, bonus base | fatto, `TerrainServiceTest` |
+| `DENIED_EXIT_BADGE` | Badge di Uscita Negata | Oggetto, controllo delle morti | fatto, `ItemServiceTest` |
+| `FALSE_PATHS_COMPASS` | Bussola dei Sentieri Falsi | Oggetto, inizio scontro e inizio round | fatto, `ItemServiceTest` |
+| `SEALED_FILE_ZERO` | Fascicolo Sigillato 0 | Oggetto, Spell o Hidden avversaria in arrivo | fatto per Spell e Hidden, `ItemServiceTest` |
+| `TORII_BELL` | Campanello del Torii | Oggetto, Hidden avversaria in arrivo | fatto, `ItemServiceTest` |
 
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
 I Terreni hanno solo il bonus base (`BaseTerrainEffect`); gli effetti secondari arrivano con `ENG-27`.
+Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla per ora Spell e Hidden, gli effetti delle creature arrivano con `ENG-23`. Valgono i testi del catalogo finché D-25 è aperta.
 Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).

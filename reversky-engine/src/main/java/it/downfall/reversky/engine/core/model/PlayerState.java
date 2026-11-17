@@ -17,11 +17,12 @@ public final class PlayerState {
 	private final Deque<CardDefinition> deck;
 	private int lifePoints;
 	private CreatureInPlay creature;
-	private CardDefinition item;
 	/** Modificatori in attesa (D-34): la posizione 0 è per la prossima creatura, la 1 per quella dopo, e così via. */
 	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
 	/** Zona Hidden (D-15): le Hidden coperte, nell'ordine in cui sono state pescate. */
 	private final List<SetHidden> hiddenZone = new ArrayList<>();
+	/** Oggetti accanto al mazzo non ancora consumati (D-47), nell'ordine in cui sono stati pescati. */
+	private final List<CardDefinition> items = new ArrayList<>();
 	private int creaturesDefeated;
 
 	/**
@@ -248,16 +249,17 @@ public final class PlayerState {
 	}
 
 	/**
-	 * Oggetto accanto al mazzo, in attesa di scattare (D-47).
+	 * Oggetti accanto al mazzo, in attesa di scattare (D-47). Un mazzo ne ha uno (lo controlla l'API), ma l'engine non
+	 * ne perde nessuno se ne arrivano di più.
 	 *
-	 * @return l'Oggetto, o vuoto se non c'è o si è già consumato
+	 * @return copia non modificabile, nell'ordine di pescata; vuota se non ce ne sono o si sono consumati
 	 */
-	public Optional<CardDefinition> item() {
-		return Optional.ofNullable(item);
+	public List<CardDefinition> items() {
+		return List.copyOf(items);
 	}
 
 	/**
-	 * Mette un Oggetto accanto al mazzo.
+	 * Mette un Oggetto accanto al mazzo. Non si può distruggere né scartare: esce solo quando si consuma (D-47).
 	 *
 	 * @param newItem carta di tipo {@code ITEM}
 	 * @throws IllegalArgumentException se la carta non è un Oggetto
@@ -266,19 +268,19 @@ public final class PlayerState {
 		if (newItem.type() != CardType.ITEM) {
 			throw new IllegalArgumentException("Non è un Oggetto: carta " + newItem.cardId());
 		}
-		item = newItem;
+		items.add(newItem);
 	}
 
 	/**
-	 * L'Oggetto ha applicato il suo effetto e si consuma (D-47).
+	 * Un Oggetto ha applicato il suo effetto e si consuma (D-47).
 	 *
-	 * @throws IllegalStateException se non c'è un Oggetto
+	 * @param item l'Oggetto
+	 * @throws IllegalStateException se l'Oggetto non è accanto al mazzo
 	 */
-	public void consumeItem() {
-		if (item == null) {
-			throw new IllegalStateException(side + " non ha un Oggetto da consumare");
+	public void consumeItem(CardDefinition item) {
+		if (!items.remove(item)) {
+			throw new IllegalStateException(side + " non ha l'Oggetto " + item.name());
 		}
-		item = null;
 	}
 
 	/**

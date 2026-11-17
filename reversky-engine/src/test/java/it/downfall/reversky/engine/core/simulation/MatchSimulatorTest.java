@@ -262,6 +262,24 @@ class MatchSimulatorTest {
 	}
 
 	@Test
+	@DisplayName("D-47: un Oggetto pescato resta accanto al mazzo; il Badge salva Eternal Cup al round 1, poi è DRAW")
+	void simulate_itemDrawn_badgeSavesOnce() {
+		// Arrange: con il seed 1 l'avversario pesca il Badge prima di Eternal Cup. Round 1: Eternal Cup 5 − 8 = −3,
+		// il Badge la lascia a 1. Round 2: Eternal Cup 1 − 8 = −7, SCP-131 2 − 4 = −2: muoiono entrambe
+		CardDefinition badge = TestCards.item(117, "Badge di Uscita Negata", WOUND, "DENIED_EXIT_BADGE");
+		SimulationInput input = TestInputs.of(1L, List.of(creature(301, "SCP-131", ARCHIVE, 8, 6)),
+				List.of(badge, creature(305, "Eternal Cup", ARCHIVE, 4, 5)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert
+		assertResult(result, BattleResult.DRAW, EndReason.BOTH_DECKS_EMPTY, 2, 30, 30, 1, 1);
+		assertThat(result.log()).extracting(MatchEvent::type).contains(EventType.ITEM_PLACED,
+				EventType.ITEM_CONSUMED);
+	}
+
+	@Test
 	@DisplayName("Una Spell dell'avversario uccide la creatura appena pescata dallo sfidante: lo sfidante ripesca")
 	void simulate_spellKillsCreatureJustDrawn_ownerDrawsAgain() {
 		// Arrange: con il seed 5 l'avversario pesca nell'ordine dato. Round 1: 5/4 contro 5/5, muoiono entrambe.

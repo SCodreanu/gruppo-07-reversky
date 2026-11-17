@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.log.EventType;
 import it.downfall.reversky.engine.core.log.MatchEvent;
 import it.downfall.reversky.engine.core.model.CardDefinition;
@@ -27,7 +28,7 @@ import it.downfall.reversky.engine.support.TestStates;
  */
 class DeathResolverTest {
 
-	private final DeathResolver deaths = new DeathResolver();
+	private final DeathResolver deaths = new DeathResolver(new ItemService(EffectRegistry.withAllEffects()));
 
 	@Test
 	@DisplayName("Nessuna creatura morta: niente cambia e lo scontro continua")
