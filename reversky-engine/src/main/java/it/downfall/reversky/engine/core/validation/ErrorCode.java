@@ -43,6 +43,9 @@ public enum ErrorCode {
 	/** 8. Spell, Hidden, Terreno od Oggetto senza codice effetto, o con un codice vuoto. */
 	MISSING_EFFECT,
 
-	/** 9. Codice effetto che non esiste nel registro degli effetti (ENG-22). */
+	/**
+	 * 9. Codice effetto che non esiste nel registro degli effetti, o che appartiene a un altro tipo di carta (es. il
+	 * codice di un Terreno su una Spell).
+	 */
 	UNKNOWN_EFFECT
 }

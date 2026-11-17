@@ -69,7 +69,9 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 7. Morti: onDeath / onKill, poi danno al giocatore = DEF negativa della sconfitta (vedi regole-base)
 ```
 
-Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08): una creatura uccisa da un danno da effetto prima del passo 4 non attacca.
+Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08), con il `DeathResolver`: una creatura uccisa da un danno da effetto prima del passo 4 non attacca.
+Se una creatura muore prima del passo 4, il round si interrompe: **il round conta** (in `totalRounds` e per il limite di round, come il suo `ROUND_STARTED` nel log), nessuno attacca e i modificatori a round della sopravvissuta scadono come a fine round (deciso il 17 novembre).
+Lo stesso controllo vale fuori dai round: una Spell pescata o una Hidden all'inizio dello scontro possono uccidere, e la morte ha le stesse conseguenze (danno al giocatore, creatura sconfitta, fine dello scontro). Se all'inizio dello scontro resta una sola creatura, il round non si gioca e chi ha il campo vuoto pesca di nuovo.
 
 Le Hidden **con una condizione** (D-15) non scattano al passo 0: restano coperte e si controllano quando la loro condizione si può verificare: Unseen Exit al passo 3 (un attacco ucciderebbe la creatura, dopo tutte le altre riduzioni), Remnants of Reality dopo ogni penalità ricevuta. Una Hidden pescata nella pescata iniziale non si attiva nel primo scontro.
 
@@ -179,27 +181,41 @@ La stessa soglia si controlla anche dopo le altre fasi in cui la DEF cambia (dan
 Il danno può uccidere anche l'avversaria: le morti si ricontrollano dopo gli `onDeath`, quindi possono morire **entrambe** (e in quel caso nessun giocatore subisce danni).
 Il +1 ATK va nei modificatori in attesa del proprietario (D-34) e si applica alla sua prossima creatura che entra.
 
+## Effetti di Spell, Hidden, Terreni e Oggetti
+
+Le carte che non sono creature hanno un'interfaccia per tipo, sotto l'interfaccia chiusa `CardEffect` (in `core/effect`), con solo i momenti che servono a quel tipo (ENG-22):
+
+| Interfaccia | Momento | Chi la chiama |
+|---|---|---|
+| `SpellEffect` | `resolve(ctx)`: una volta, quando la Spell viene pescata, poi la carta si scarta | `ENG-19` |
+| `HiddenEffect` | `trigger(ctx)`: una volta, quando la Hidden si attiva, poi la carta si scarta | `ENG-20` |
+| `TerrainEffect` | `attackBonus()` e `defenseBonus()`: il bonus base, applicato dal motore alle creature della fazione | `ENG-21` |
+| `ItemEffect` | nessuno per ora: i momenti degli Oggetti arrivano con `ENG-33` | `ENG-33` |
+
+Gli effetti `P2` aggiungono i loro momenti all'interfaccia del loro tipo (es. le condizioni di Unseen Exit e Remnants of Reality, gli effetti secondari dei Terreni).
+`EffectContext` dà la partita (`state()`), il giocatore che possiede la carta (`owner()`), il suo avversario (`opponent()`), la carta (`card()`) e il log (`log()`).
+
 ## Registro degli effetti
 
+`EffectRegistry` collega ogni codice al **tipo di carta** a cui appartiene e alla classe che lo implementa. Un codice vale per un solo tipo di carta: il codice di un Terreno su una Spell è un errore dell'input (`UNKNOWN_EFFECT`, come un codice che non esiste).
+
 ```java
-public final class EffectRegistry {
-
-	private final Map<String, Supplier<CreatureEffect>> factories = new LinkedHashMap<>();
-
-	public static EffectRegistry withAllEffects() {
-		EffectRegistry registry = new EffectRegistry();
-		registry.register(HidebehindEffect.CODE, HidebehindEffect::new);
-		registry.register(UnseenMatriarchEffect.CODE, UnseenMatriarchEffect::new);
-		// ...
-		return registry;
-	}
-
-	/** Crea una nuova istanza dell'effetto per una creatura che entra in campo. */
-	public CreatureEffect create(String code) { ... }
-
-	public boolean exists(String code) { ... }
+public static EffectRegistry withAllEffects() {
+	return new EffectRegistry()
+			.registerSpell(VeilOfAnchoredEffect.CODE, VeilOfAnchoredEffect::new)
+			.registerHidden(LastSanctuaryEffect.CODE, LastSanctuaryEffect::new)
+			.registerTerrain(EchoRiftEffect.CODE, EchoRiftEffect::new);
+			// ... gli effetti delle creature con ENG-23
 }
 ```
+
+- `exists(codice, tipoDiCarta)` e `appliesTo(codice)` servono alla validazione dell'input;
+- `createSpell(codice)`, `createHidden(codice)`, `createTerrain(codice)`, `createItem(codice)` creano una **nuova istanza** a ogni uso, perché un effetto può avere uno stato;
+- `codes()` dà tutti i codici con il tipo di carta, nell'ordine di registrazione.
+
+Il registro si crea una volta all'avvio (`EngineConfiguration`) e poi si legge soltanto: la stessa istanza serve tutte le partite. Il `MatchSimulator` lo riceve nel costruttore; nei test si usa un registro con effetti di prova (`TestEffects.stubsFor(...)` per gli effetti finti).
+
+Fino a `ENG-23` il registro non conosce gli effetti delle creature: il codice di una creatura non si controlla e la creatura gioca senza effetto.
 
 L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API lo usa per sapere quali effetti si possono assegnare a una carta.
 

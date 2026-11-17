@@ -33,8 +33,8 @@ class RoundResolverTest {
 
 	private static final int ARCHIVE = TestFactions.ARCHIVE;
 
-	private final RoundResolver noBonuses = new RoundResolver(TestRules.standard(), TestFactions.noBonuses());
-	private final RoundResolver standard = new RoundResolver(TestRules.standard(), TestFactions.standardMatrix());
+	private final RoundResolver noBonuses = new RoundResolver(TestFactions.noBonuses());
+	private final RoundResolver standard = new RoundResolver(TestFactions.standardMatrix());
 
 	@Test
 	@DisplayName("Attacco simultaneo: 8/6 contro 4/9, le due DEF scendono nello stesso round (9 − 8 = 1, 6 − 4 = 2)")
@@ -199,7 +199,7 @@ class RoundResolverTest {
 	@DisplayName("Bonus DEF di fazione (esempio 05): +3 una sola volta a inizio scontro, non a ogni round")
 	void startCombat_defenseBonus_appliedOnce() {
 		// Arrange: Archive → Invitation defBonus 3, nessun bonus ATK
-		RoundResolver resolver = new RoundResolver(TestRules.standard(), new FactionMatrix(List.of(
+		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -219,7 +219,7 @@ class RoundResolverTest {
 	@DisplayName("Il bonus DEF di fazione si registra con EFFECT_TRIGGERED solo se è maggiore di 0")
 	void startCombat_defenseBonus_loggedOnlyWhenPositive() {
 		// Arrange
-		RoundResolver resolver = new RoundResolver(TestRules.standard(), new FactionMatrix(List.of(
+		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));
@@ -239,7 +239,7 @@ class RoundResolverTest {
 	@DisplayName("La DEF all'entrata si fissa a inizio del primo scontro, bonus compresi (M-06)")
 	void startCombat_recordsInitialDefenseWithBonus() {
 		// Arrange
-		RoundResolver resolver = new RoundResolver(TestRules.standard(), new FactionMatrix(List.of(
+		RoundResolver resolver = new RoundResolver(new FactionMatrix(List.of(
 				new FactionBonus(ARCHIVE, TestFactions.INVITATION, 0, 3))));
 		MatchState state = TestStates.inCombat(TestCards.creature("SCP-1762", ARCHIVE, 3, 4),
 				TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9));

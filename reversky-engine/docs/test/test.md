@@ -35,14 +35,13 @@ I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto
   - `TestDecks`: mazzi piccoli in ordine (`of(...)`) e un mazzo completo da 30 carte per fazione con le carte del catalogo (`full(fazione)`), controllato da `TestDecksTest`;
   - `TestInputs`: `SimulationInput` con regole, fazioni e bonus standard;
   - `TestStates`: `inCombat(...)` (due creature già in campo) e `withDecks(...)` (prima della pescata iniziale);
+  - `TestEffects`: `stubsFor(...)`, un registro con un effetto finto, che non fa niente, per ogni codice di Spell, Hidden, Terreni e Oggetti delle carte date, per i test che usano carte il cui effetto non è ancora implementato;
   - `TestCards.inPlay(carta, lato)`: una creatura già in campo.
 
 ### Esempio: regola del danno al giocatore
 
 ```java
 class RoundResolverTest {
-
-	private final RuleConfig rules = TestRules.standard();   // 30 PV, 75 round, come il rule set 1.0
 
 	@Test
 	@DisplayName("Se muore solo una creatura, il suo proprietario perde punti vita pari alla DEF negativa")
@@ -53,7 +52,7 @@ class RoundResolverTest {
 				TestCards.creature("B", TestFactions.ARCHIVE, 4, 5));  // avversario
 
 		// Act
-		new RoundResolver(rules, TestFactions.noBonuses()).resolve(state);
+		new RoundResolver(TestFactions.noBonuses()).resolve(state);
 
 		// Assert
 		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(2);

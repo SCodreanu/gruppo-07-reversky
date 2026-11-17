@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
+import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.validation.SimulationInputValidator;
 
 /**
@@ -19,8 +20,6 @@ import it.downfall.reversky.engine.core.validation.SimulationInputValidator;
  * mazzo di prova è ancora un mazzo vero.
  */
 class TestDecksTest {
-
-	private final SimulationInputValidator validator = new SimulationInputValidator();
 
 	@ParameterizedTest(name = "fazione {0}")
 	@ValueSource(ints = { TestFactions.WOUND, TestFactions.INVITATION, TestFactions.ARCHIVE, TestFactions.DREAM })
@@ -56,11 +55,12 @@ class TestDecksTest {
 	@ValueSource(ints = { TestFactions.WOUND, TestFactions.INVITATION, TestFactions.ARCHIVE, TestFactions.DREAM })
 	void full_isValidEngineInput(int factionId) {
 		// Arrange
-		List<CardDefinition> deck = TestDecks.full(factionId);
+		SimulationInput input = TestInputs.of(TestDecks.full(factionId), TestDecks.full(TestFactions.WOUND));
+		// Effetti finti per i codici di Spell, Hidden, Terreni e Oggetti, finché non ci sono quelli veri
+		SimulationInputValidator validator = new SimulationInputValidator(TestEffects.stubsFor(input));
 
 		// Act + Assert
-		assertThatCode(() -> validator.validate(TestInputs.of(deck, TestDecks.full(TestFactions.WOUND))))
-				.doesNotThrowAnyException();
+		assertThatCode(() -> validator.validate(input)).doesNotThrowAnyException();
 	}
 
 	private static long count(List<CardDefinition> deck, CardType type) {

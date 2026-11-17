@@ -138,7 +138,7 @@ Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'
 | 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 (`atk` e `def` sulle altre carte si ignorano) | — |
 | 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype`, o con un `subtype` che non esiste per il tipo (Spell: `DAMAGE`, `SHIELD`, `BURN`; Hidden: `SURVIVAL`, `DAMAGE`) | — |
 | 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
-| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
+| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry`, o che è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Fino a `ENG-23` il codice di una creatura non si controlla | `90` |
 
 Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `detail`, `code` e `instance`. I testi sono **in inglese**, come negli errori dell'API; non arrivano mai ai giocatori.
 
@@ -146,7 +146,7 @@ Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `de
 {
   "title": "Invalid simulation input",
   "status": 400,
-  "detail": "Unknown effect 'HIDEBEHND' on card 23",
+  "detail": "Unknown effect VEIL_OF_ANCHORD on card 96",
   "code": "UNKNOWN_EFFECT",
   "instance": "/api/v1/simulations"
 }

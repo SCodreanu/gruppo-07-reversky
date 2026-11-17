@@ -51,14 +51,14 @@ class GlobalExceptionHandlerTest {
 	@DisplayName("Un errore di input del core diventa 400 con il suo code e il suo messaggio")
 	void invalidInput_returns400WithCoreCode() throws Exception {
 		when(simulator.simulate(any())).thenThrow(
-				new InvalidSimulationInputException(ErrorCode.UNKNOWN_EFFECT, "Unknown effect 'HIDEBEHND' on card 23"));
+				new InvalidSimulationInputException(ErrorCode.UNKNOWN_EFFECT, "Unknown effect VEIL_OF_ANCHORD on card 96"));
 
 		perform(SimulationControllerTest.VALID_REQUEST)
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
 				.andExpect(jsonPath("$.title").value("Invalid simulation input"))
 				.andExpect(jsonPath("$.status").value(400))
-				.andExpect(jsonPath("$.detail").value("Unknown effect 'HIDEBEHND' on card 23"))
+				.andExpect(jsonPath("$.detail").value("Unknown effect VEIL_OF_ANCHORD on card 96"))
 				.andExpect(jsonPath("$.code").value("UNKNOWN_EFFECT"))
 				.andExpect(jsonPath("$.instance").value(URL));
 	}

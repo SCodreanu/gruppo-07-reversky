@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
@@ -24,13 +25,16 @@ import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.rules.FactionBonus;
 import it.downfall.reversky.engine.core.rules.RuleConfig;
 import it.downfall.reversky.engine.support.TestCards;
+import it.downfall.reversky.engine.support.TestEffects;
 import it.downfall.reversky.engine.support.TestFactions;
 import it.downfall.reversky.engine.support.TestRules;
 
 /**
  * Test di {@link SimulationInputValidator}: un test per ogni codice di errore di docs/api-engine ("Errori") e per
- * l'ordine dei controlli, così lo stesso input dà sempre lo stesso errore. {@code UNKNOWN_EFFECT} arriva con
- * ENG-22, che crea il registro degli effetti.
+ * l'ordine dei controlli, così lo stesso input dà sempre lo stesso errore.
+ * <p>
+ * Il registro ha un effetto finto per ogni codice di Spell, Hidden, Terreni e Oggetti usato qui: gli effetti veri
+ * arrivano con ENG-19, ENG-20, ENG-21 ed ENG-33.
  */
 class SimulationInputValidatorTest {
 
@@ -50,7 +54,10 @@ class SimulationInputValidatorTest {
 	private static final CardDefinition TORII_BELL = TestCards.item(95, "Campanello del Torii", DREAM,
 			"TORII_BELL");
 
-	private final SimulationInputValidator validator = new SimulationInputValidator();
+	private final SimulationInputValidator validator = new SimulationInputValidator(TestEffects.stubsFor(List.of(
+			VEIL, LAST_SANCTUARY, ECHO_RIFT, TORII_BELL,
+			TestCards.spell(93, "Bite of the Reverse", CardSubtype.DAMAGE, "BITE_OF_REVERSE"),
+			TestCards.hidden(109, "Hostile Presence", CardSubtype.DAMAGE, "HOSTILE_PRESENCE"))));
 
 	@Test
 	@DisplayName("Un input coerente con tutti i tipi di carta (creature, Spell, Hidden, Terreno, Oggetto) è accettato")
@@ -384,6 +391,61 @@ class SimulationInputValidatorTest {
 	@DisplayName("Una creatura senza effectCode è valida: per le creature è facoltativo")
 	void validate_creatureWithoutEffect_doesNotThrow() {
 		assertThatCode(() -> validator.validate(input(deck(CRAWLERS), deck(KAPPA)))).doesNotThrowAnyException();
+	}
+
+	// ---- 9. UNKNOWN_EFFECT ----
+
+	@Test
+	@DisplayName("Spell, Hidden, Terreno od Oggetto con un effectCode che non è nel registro → UNKNOWN_EFFECT")
+	void validate_specialCardWithUnknownEffect_unknownEffect() {
+		// Arrange: codici scritti male
+		CardDefinition spell = TestCards.spell(70, "Veil of the Anchored", CardSubtype.SHIELD, "VEIL_OF_ANCHORD");
+		CardDefinition hidden = TestCards.hidden(80, "Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUAR");
+		CardDefinition terrain = TestCards.terrain(90, "Echo Rift", WOUND, "ECHO_RIF");
+		CardDefinition item = TestCards.item(95, "Campanello del Torii", DREAM, "TORII_BEL");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, spell), deck(KAPPA)), ErrorCode.UNKNOWN_EFFECT);
+		assertFailsWith(input(deck(CRAWLERS, hidden), deck(KAPPA)), ErrorCode.UNKNOWN_EFFECT);
+		assertFailsWith(input(deck(CRAWLERS, terrain), deck(KAPPA)), ErrorCode.UNKNOWN_EFFECT);
+		assertFailsWith(input(deck(CRAWLERS, item), deck(KAPPA)), ErrorCode.UNKNOWN_EFFECT);
+		assertThatThrownBy(() -> validator.validate(input(deck(CRAWLERS, spell), deck(KAPPA))))
+				.hasMessage("Unknown effect VEIL_OF_ANCHORD on card 70");
+	}
+
+	@Test
+	@DisplayName("Un codice che esiste ma è di un altro tipo di carta (Terreno su una Spell) → UNKNOWN_EFFECT")
+	void validate_effectOfAnotherCardType_unknownEffect() {
+		// Arrange
+		CardDefinition spell = TestCards.spell(70, "Veil of the Anchored", CardSubtype.SHIELD, "ECHO_RIFT");
+
+		// Act + Assert
+		assertFailsWith(input(deck(CRAWLERS, spell), deck(KAPPA)), ErrorCode.UNKNOWN_EFFECT);
+		assertThatThrownBy(() -> validator.validate(input(deck(CRAWLERS, spell), deck(KAPPA))))
+				.hasMessage("Effect ECHO_RIFT is not a SPELL effect: card 70");
+	}
+
+	@Test
+	@DisplayName("Fino a ENG-23 il codice di una creatura non si controlla: una creatura con HIDEBEHND è valida")
+	void validate_creatureWithUnknownEffect_acceptedUntilCreatureEffects() {
+		// Arrange
+		CardDefinition creature = new CardDefinition(23, "Hidebehind", CardType.CREATURE, "Uncommon", 2, INVITATION,
+				null, 3, 8, null, "HIDEBEHND");
+
+		// Act + Assert
+		assertThatCode(() -> validator.validate(input(deck(creature), deck(KAPPA)))).doesNotThrowAnyException();
+	}
+
+	@Test
+	@DisplayName("Con un registro vuoto ogni Spell, Hidden, Terreno e Oggetto è sconosciuto")
+	void validate_emptyRegistry_everySpecialCardUnknown() {
+		// Arrange
+		SimulationInputValidator empty = new SimulationInputValidator(new EffectRegistry());
+
+		// Act + Assert
+		assertThatThrownBy(() -> empty.validate(input(deck(CRAWLERS, TORII_BELL), deck(KAPPA))))
+				.isInstanceOfSatisfying(InvalidSimulationInputException.class,
+						e -> assertThat(e.code()).isEqualTo(ErrorCode.UNKNOWN_EFFECT));
 	}
 
 	// ---- Ordine dei controlli ----

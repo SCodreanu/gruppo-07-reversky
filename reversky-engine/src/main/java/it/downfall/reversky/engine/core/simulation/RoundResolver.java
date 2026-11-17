@@ -5,41 +5,28 @@ import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlayerState;
 import it.downfall.reversky.engine.core.rules.FactionMatrix;
-import it.downfall.reversky.engine.core.rules.RuleConfig;
 
 /**
  * Risolve l'inizio di uno scontro e i round, nell'ordine dei passi di docs/effetti ("Ordine di risoluzione di un
  * round"), che fa parte delle regole: non si cambia senza aggiornare quel documento.
  * <p>
  * Passi già presenti: 0 (bonus DEF di fazione), 2 (calcolo dell'attacco), 4 (danni simultanei) e 7 (morti e danno
- * al giocatore). Gli altri passi arrivano con gli effetti, le Spell, le Hidden, i Terreni e gli Oggetti
- * (ENG-19…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima lo sfidante e poi l'avversario.
+ * al giocatore, con il {@link DeathResolver}). Gli altri passi arrivano con gli effetti, le Spell, le Hidden, i
+ * Terreni e gli Oggetti (ENG-19…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima lo sfidante e poi
+ * l'avversario.
  */
 public final class RoundResolver {
 
-	// TODO(@tommasofatticcioni): per ora nessun passo usa le regole; il costruttore segue quello di docs/test.
-	// Usarle nei passi che ne avranno bisogno, oppure toglierle da qui e da docs/test (ENG-22, #60)
-	private final RuleConfig rules;
 	private final FactionMatrix factionMatrix;
+	private final DeathResolver deaths = new DeathResolver();
 
 	/**
 	 * Crea il risolutore per una partita.
 	 *
-	 * @param rules         regole della partita
 	 * @param factionMatrix bonus di fazione della partita
 	 */
-	public RoundResolver(RuleConfig rules, FactionMatrix factionMatrix) {
-		this.rules = rules;
+	public RoundResolver(FactionMatrix factionMatrix) {
 		this.factionMatrix = factionMatrix;
-	}
-
-	/**
-	 * Regole con cui è stato creato il risolutore.
-	 *
-	 * @return le regole
-	 */
-	public RuleConfig rules() {
-		return rules;
 	}
 
 	/**
@@ -88,7 +75,10 @@ public final class RoundResolver {
 
 		endRound(challenger);
 		endRound(opponent);
-		resolveDeaths(state, challenger, opponent);
+		// Passo 7 (D-08): lo stesso controllo vale dopo ogni fase che toglie DEF. Quando arriveranno i passi 1–3
+		// (ENG-23), una morte prima del passo 4 interrompe il round: il round conta, nessuno attacca e i
+		// modificatori a round della sopravvissuta scadono come a fine round (docs/effetti)
+		deaths.resolve(state);
 	}
 
 	private void applyDefenseBonus(CreatureInPlay creature, CreatureInPlay against, MatchLog log) {
@@ -113,48 +103,6 @@ public final class RoundResolver {
 		if (!creature.isDead()) {
 			creature.endRound();
 		}
-	}
-
-	/** Passo 7: morti, poi danno al giocatore solo se è morta una sola creatura (regole-base, "Esito del round"). */
-	private static void resolveDeaths(MatchState state, CreatureInPlay challenger, CreatureInPlay opponent) {
-		boolean challengerDied = challenger.isDead();
-		boolean opponentDied = opponent.isDead();
-		if (!challengerDied && !opponentDied) {
-			return;
-		}
-		if (challengerDied) {
-			removeDeadCreature(state, challenger);
-		}
-		if (opponentDied) {
-			removeDeadCreature(state, opponent);
-		}
-		if (challengerDied != opponentDied) {
-			CreatureInPlay defeated = challengerDied ? challenger : opponent;
-			damageOwner(state, defeated);
-			CreatureInPlay survivor = challengerDied ? opponent : challenger;
-			survivor.endCombat();
-		}
-	}
-
-	private static void removeDeadCreature(MatchState state, CreatureInPlay dead) {
-		state.log().creatureDied(dead);
-		state.player(dead.side()).removeCreature();
-		// D-42: conta per chi la stava affrontando, qualunque sia la causa
-		state.opponentOf(dead.side()).recordDefeatedCreature();
-	}
-
-	/**
-	 * Regolamento base, punto 5 (D-03): il giocatore perde solo la parte negativa della DEF finale della creatura
-	 * sconfitta; con DEF esattamente 0 non perde niente e non c'è evento.
-	 */
-	private static void damageOwner(MatchState state, CreatureInPlay defeated) {
-		int damage = Math.max(0, -defeated.defense());
-		if (damage == 0) {
-			return;
-		}
-		PlayerState owner = state.player(defeated.side());
-		owner.loseLifePoints(damage);
-		state.log().playerDamaged(owner.side(), damage, owner.lifePoints());
 	}
 
 	private static CreatureInPlay requireCreature(PlayerState player) {

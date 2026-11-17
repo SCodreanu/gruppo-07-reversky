@@ -36,12 +36,15 @@ core/
 │   └── FactionMatrix       bonus ATK/DEF tra fazioni, costruita dai dati della richiesta
 ├── simulation/
 │   ├── MatchSimulator      punto d'ingresso: simulate(SimulationInput) → MatchResult
-│   ├── RoundResolver       risolve un singolo round nell'ordine stabilito; danno al giocatore = DEF negativa
+│   ├── RoundResolver       risolve un singolo round nell'ordine stabilito
+│   ├── DeathResolver       morti e danno al giocatore (DEF negativa), dopo ogni fase che toglie DEF (D-08)
 │   ├── DrawService         pesca, gestisce Spell/Hidden/Terreni pescati
 │   └── EndConditionChecker controlla se e come finisce la partita
 ├── effect/
-│   ├── CreatureEffect      interfaccia con i "momenti" in cui un effetto può agire
-│   ├── EffectRegistry      codice effetto → implementazione
+│   ├── CardEffect          interfaccia chiusa degli effetti di Spell, Hidden, Terreni e Oggetti, una per tipo
+│   ├── EffectContext       partita, proprietario, avversario e carta visti da un effetto
+│   ├── CreatureEffect      interfaccia con i "momenti" in cui un effetto di creatura può agire (ENG-23)
+│   ├── EffectRegistry      codice effetto → tipo di carta e implementazione
 │   └── impl/               un file per effetto (HidebehindEffect, WendigoEffect…)
 ├── validation/
 │   ├── SimulationInputValidator  controlla l'input nell'ordine dei codici di errore di api-engine

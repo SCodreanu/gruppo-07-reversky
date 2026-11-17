@@ -31,7 +31,8 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import({ EngineConfiguration.class, SimulationMapper.class })
 class SimulationExamplesTest {
 
-	// TODO(@tommasofatticcioni): svuotare quando l'EffectRegistry controlla i codici effetto (ENG-22, #60)
+	// TODO(@tommasofatticcioni): svuotare quando il registro controlla i codici delle creature (ENG-23, #61):
+	// l'esempio 90 ha HIDEBEHND su una creatura, che fino ad allora gioca senza effetto
 	private static final Set<String> WAITING_FOR_EFFECT_REGISTRY = Set.of("90-errore-effetto-sconosciuto.json");
 
 	@Autowired
@@ -44,7 +45,7 @@ class SimulationExamplesTest {
 			Integer totalRounds, Integer challengerLifePoints, Integer opponentLifePoints,
 			Integer challengerDefeated, Integer opponentDefeated, String code) throws Exception {
 		assumeFalse(WAITING_FOR_EFFECT_REGISTRY.contains(file),
-				"UNKNOWN_EFFECT arriva con l'EffectRegistry (ENG-22, #60)");
+				"UNKNOWN_EFFECT per le creature arriva con i loro effetti (ENG-23, #61)");
 
 		checkExample(file, status, result, endReason, totalRounds, challengerLifePoints, opponentLifePoints,
 				challengerDefeated, opponentDefeated, code);

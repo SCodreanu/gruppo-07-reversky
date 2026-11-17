@@ -112,7 +112,7 @@ Round 1: Hidebehind previene 2 dei 7 danni di Faceling (6 − 5 = 1), Faceling 9
 Round 2: Hidebehind 1 − 7 = −6 (muore), Faceling 1. Lo sfidante perde 6 PV.
 *Controprova:* senza effetto Hidebehind muore già al round 1 con DEF −1 e lo sfidante perde 1 PV.
 Il caso mostra un effetto collaterale della regola del danno: sopravvivere un round in più con poca DEF può costare **più** punti vita.
-Finché `HIDEBEHIND` non è nell'`EffectRegistry` questa richiesta deve dare `400 UNKNOWN_EFFECT`.
+Finché gli effetti delle creature non ci sono (`ENG-23`) il codice di una creatura non si controlla: la richiesta dà `200` e la partita della controprova.
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).
