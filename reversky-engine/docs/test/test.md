@@ -128,7 +128,7 @@ void hidebehind_preventsTwoDamageOnFirstAttackOfEachOpponent() {
 
 La cartella [`examples/`](../../examples/README.md) contiene richieste JSON con il risultato **calcolato a mano**, e un CSV con i valori attesi.
 Un solo test parametrico (`@ParameterizedTest` + `@CsvFileSource`) le invia tutte al controller e controlla risultato, motivo di fine, round, punti vita e codice d'errore.
-Il codice completo del test è nella [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#6-test-di-accettazione-con-gli-esempi).
+Il test è `SimulationExamplesTest`; come funziona e quali esempi sono ancora saltati è nella [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#6-test-di-accettazione-con-gli-esempi).
 
 Servono a due cose: dimostrano che regole e contratto REST funzionano insieme, e sono gli stessi file che l'API può usare per il proprio test di contratto.
 

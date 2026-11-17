@@ -134,48 +134,14 @@ Ricetta per ogni regola:
 
 ## 6. Test di accettazione con gli esempi
 
-Quando esiste il controller (`ENG-12`), gli esempi di `examples/` diventano un unico test parametrico: una riga di CSV = un test.
+Gli esempi di `examples/` sono un unico test parametrico, [`SimulationExamplesTest`](../../src/test/java/it/downfall/reversky/engine/web/SimulationExamplesTest.java): una riga di CSV = un test, inviata al controller con MockMvc.
 Se una regola cambia, si aggiorna il CSV, non il codice del test.
 
-```java
-@WebMvcTest(SimulationController.class)
-@Import(EngineConfiguration.class)
-class SimulationExamplesTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-
-	@ParameterizedTest(name = "{0}")
-	@CsvFileSource(files = "examples/expected-results.csv", numLinesToSkip = 1)
-	@DisplayName("Ogni esempio di examples/ dà il risultato calcolato a mano")
-	void example_matchesExpectedResult(String file, int status, String result, String endReason,
-			Integer totalRounds, Integer challengerLifePoints, Integer opponentLifePoints,
-			Integer challengerDefeated, Integer opponentDefeated, String code) throws Exception {
-		String body = Files.readString(Path.of("examples", file));
-
-		ResultActions response = mockMvc.perform(post("/api/v1/simulations")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(body))
-				.andExpect(status().is(status));
-
-		if (status == 200) {
-			response.andExpect(jsonPath("$.result").value(result))
-					.andExpect(jsonPath("$.endReason").value(endReason))
-					.andExpect(jsonPath("$.totalRounds").value(totalRounds))
-					.andExpect(jsonPath("$.challenger.finalLifePoints").value(challengerLifePoints))
-					.andExpect(jsonPath("$.opponent.finalLifePoints").value(opponentLifePoints))
-					.andExpect(jsonPath("$.challenger.creaturesDefeated").value(challengerDefeated))
-					.andExpect(jsonPath("$.opponent.creaturesDefeated").value(opponentDefeated));
-		} else {
-			response.andExpect(jsonPath("$.code").value(code));
-		}
-	}
-}
-```
-
-- Gli `import` li aggiunge l'IDE. In Spring Boot 4 `@WebMvcTest` è nel package `org.springframework.boot.webmvc.test.autoconfigure`.
+- Un metodo legge `examples/expected-results.csv`, un altro `examples/expected-results-effects.csv` (esempi con effetti).
+- Con `200` controlla risultato, motivo di fine, round, punti vita e creature sconfitte; con `400` controlla `code`.
 - Il percorso `examples/...` è relativo alla cartella `reversky-engine`, che è la cartella di lavoro dei test con Gradle e con IntelliJ.
-- Quando `HIDEBEHIND` è implementato, aggiungi un secondo metodo uguale che legge `expected-results-effects.csv`.
+- `@WebMvcTest` non carica i `@Component`: il test importa `EngineConfiguration` e `SimulationMapper`.
+- In attesa degli effetti: l'esempio 90 (`UNKNOWN_EFFECT`) si salta con un'assunzione finché l'`EffectRegistry` non controlla i codici (`ENG-22`), il metodo degli esempi con effetti è `@Disabled` finché `HIDEBEHIND` non è implementato (`ENG-23`). Nel report compaiono come saltati, non come passati.
 
 ### Test di bilanciamento separati
 
