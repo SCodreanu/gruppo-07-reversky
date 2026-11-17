@@ -58,6 +58,7 @@ $r.log | Format-Table round, type, side, message
 Con IntelliJ o VS Code (*REST Client*) apri [`examples/simulazioni.http`](../../examples/simulazioni.http) e lancia le richieste con ▶.
 
 Swagger UI su `http://localhost:8081/swagger-ui.html` (springdoc, D-41), il documento OpenAPI su `http://localhost:8081/v3/api-docs`.
+In *Try it out* scegli l'esempio `basic` (esempio 01) o `full` (esempio 08, seed 42) e premi *Execute*: la risposta compare sotto, nella tabella *Server response*, dopo il riquadro *Curl*.
 
 ## 4. Lanciare i test
 
