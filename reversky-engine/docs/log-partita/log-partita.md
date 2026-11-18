@@ -40,8 +40,8 @@ In JSON:
 | `MATCH_STARTED` | inizio | `startingLifePoints` | `Match started — 30 life points each` |
 | `CARD_DRAWN` | un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07) | `card`, `cardType` | `Challenger draws Veil of the Anchored (SPELL)` |
 | `CREATURE_ENTERED` | una creatura entra in campo | `card`, `attack`, `defense` | `Challenger plays Crawlers (ATK 4, DEF 5)` |
-| `SPELL_RESOLVED` | una Spell viene risolta e scartata | `card`, `effect`, `target` (nullo se si applica alla prossima creatura) | `Veil of the Anchored resolves on Kappa` |
-| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13) | `card`, `revealed` (nullo a mazzo vuoto), `bonusApplied` | `Call of the Rift reveals Kappa` |
+| `SPELL_RESOLVED` | una Spell viene risolta e scartata | `card`, `effect` (es. `−3 ATK`, `+2 ATK, +1 DEF`, `no effect`), `target` (nullo se si applica alla prossima creatura) | `Skin Fracture resolves on Kappa` |
+| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13); subito dopo c'è il suo `SPELL_RESOLVED` con il bonus dato | `card`, `revealed` (nullo a mazzo vuoto), `bonusApplied` | `Call of the Rift reveals Kappa` |
 | `HIDDEN_SET` | una Hidden viene messa coperta | nessuna: la carta resta nascosta | `Challenger sets a Hidden card` |
 | `HIDDEN_TRIGGERED` | una Hidden si attiva | `card`, `effect` | `Last Sanctuary triggers` |
 | `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | `card`, `replaced` (nullo se non c'era un Terreno) | `Echo Rift enters play, replacing Watching Rift` |
@@ -52,7 +52,7 @@ In JSON:
 | `ROUND_STARTED` | inizio di un round | `round` | `Round 1` |
 | `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `total` | `Crawlers attacks with 6 (4 base, +2 faction)` |
 | `DAMAGE_DEALT` | una creatura colpisce l'altra | `source`, `target`, `amount`, `targetDefense` | `Crawlers deals 6 damage to Kappa (DEF 1)` |
-| `EFFECT_TRIGGERED` | un'abilità agisce; anche il bonus DEF di fazione a inizio scontro, se maggiore di 0 | `card`, `description` | `Kappa: +3 ATK in the first round` |
+| `EFFECT_TRIGGERED` | un'abilità agisce; anche il bonus DEF di fazione a inizio scontro, se maggiore di 0, e ogni modificatore in attesa che raggiunge la creatura (D-34) | `card`, `description` | `Kappa: +3 ATK in the first round`, `Kappa: +5 DEF from Veil of the Anchored (ATK 6, DEF 12)` |
 | `CREATURE_DIED` | una creatura muore | `card` | `Crawlers is destroyed` |
 | `PLAYER_DAMAGED` | un giocatore perde punti vita | `amount`, `lifePoints` | `Challenger loses 3 life points (27 left)` |
 | `MATCH_ENDED` | fine | `result`, `endReason` | `Challenger wins (no creatures left)` |

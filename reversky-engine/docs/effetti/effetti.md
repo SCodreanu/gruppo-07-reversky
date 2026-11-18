@@ -54,6 +54,8 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
 ```
 0. Entrata in campo (solo a inizio scontro)
      - bonus DEF di fazione
+     - modificatori in attesa del proprietario (D-34), solo alla creatura al suo primo scontro: Spell SHIELD e BURN,
+       Spell DAMAGE pescate senza bersaglio; poi controllo delle morti (D-08)
      - bonus del Terreno
      - effetto dell'Oggetto (dopo il Terreno, D-48)
      - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL)
@@ -233,7 +235,18 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 
 | Codice | Carta | Momento | Stato |
 |---|---|---|---|
-| — | — | — | nessuno ancora |
+| `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
+| `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
+| `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
+| `VEIL_OF_ANCHORED` | Velo degli Ancorati (Veil of the Anchored) | Spell `SHIELD`, in attesa | fatto, `ShieldSpellEffectTest` |
+| `REGISTRY_PACT` | Patto del Registro (Registry Pact) | Spell `SHIELD`, in attesa | fatto, `ShieldSpellEffectTest` |
+| `RAIN_ARMOR` | Armatura della Pioggia (Rain Armor) | Spell `SHIELD`, in attesa | fatto, `ShieldSpellEffectTest` |
+| `SCP_458` | SCP-458 · Pizza Senza Fine | Spell `SHIELD`, in attesa per due creature | fatto, `ShieldSpellEffectTest` |
+| `CRACK_CALL` | Richiamo della Crepa (Call of the Rift) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
+| `REVERSE_FUSION` | Fusione del Rovescio (Reverse Fusion) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
+| `FORGOTTEN_ECHO` | Eco dei Dimenticati (Echo of the Forgotten) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
+
+Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).
 Gli effetti sono stati decisi nella [revisione carta per carta](../bilanciamento/revisione-effetti.md) del 10 e 11 novembre: lì ci sono, per ogni carta, i dettagli di motore e le interazioni.

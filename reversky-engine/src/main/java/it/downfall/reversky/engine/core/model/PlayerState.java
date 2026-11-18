@@ -1,13 +1,14 @@
 package it.downfall.reversky.engine.core.model;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, Oggetto accanto al
- * mazzo e creature avversarie sconfitte.
+ * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, modificatori in attesa
+ * della prossima creatura, Oggetto accanto al mazzo e creature avversarie sconfitte.
  */
 public final class PlayerState {
 
@@ -17,6 +18,8 @@ public final class PlayerState {
 	private int lifePoints;
 	private CreatureInPlay creature;
 	private CardDefinition item;
+	/** Modificatori in attesa (D-34): la posizione 0 è per la prossima creatura, la 1 per quella dopo, e così via. */
+	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
 	private int creaturesDefeated;
 
 	/**
@@ -93,6 +96,15 @@ public final class PlayerState {
 	}
 
 	/**
+	 * Guarda la prima carta del mazzo senza pescarla (Spell {@code BURN}, D-13).
+	 *
+	 * @return la carta, o vuoto se il mazzo è finito
+	 */
+	public Optional<CardDefinition> peekCard() {
+		return Optional.ofNullable(deck.peekFirst());
+	}
+
+	/**
 	 * Indica se nel mazzo resta almeno una creatura.
 	 *
 	 * @return {@code true} se si può ancora pescare una creatura
@@ -155,6 +167,52 @@ public final class PlayerState {
 			throw new IllegalStateException(side + " non ha una creatura in campo");
 		}
 		creature = null;
+	}
+
+	/**
+	 * Aggiunge un modificatore in attesa per la prossima creatura che entra in campo. Si somma a quelli già in attesa
+	 * (D-34).
+	 *
+	 * @param modifier modificatore in attesa
+	 */
+	public void addPendingModifier(PendingModifier modifier) {
+		addPendingModifier(0, modifier);
+	}
+
+	/**
+	 * Aggiunge un modificatore in attesa per una delle prossime creature (es. SCP-458: la prossima e quella dopo).
+	 *
+	 * @param position 0 per la prossima creatura, 1 per quella dopo, e così via
+	 * @param modifier modificatore in attesa
+	 * @throws IllegalArgumentException se {@code position} è negativa
+	 */
+	public void addPendingModifier(int position, PendingModifier modifier) {
+		if (position < 0) {
+			throw new IllegalArgumentException("Posizione negativa: " + position);
+		}
+		while (pendingModifiers.size() <= position) {
+			pendingModifiers.add(new ArrayList<>());
+		}
+		pendingModifiers.get(position).add(modifier);
+	}
+
+	/**
+	 * Modificatori in attesa della prossima creatura, nell'ordine in cui sono arrivati.
+	 *
+	 * @return copia non modificabile; vuota se non ce ne sono
+	 */
+	public List<PendingModifier> pendingModifiers() {
+		return pendingModifiers.isEmpty() ? List.of() : List.copyOf(pendingModifiers.getFirst());
+	}
+
+	/**
+	 * Toglie i modificatori in attesa della prossima creatura, che sta per riceverli: quelli per la creatura dopo
+	 * diventano quelli della prossima.
+	 *
+	 * @return i modificatori, nell'ordine in cui sono arrivati; vuota se non ce ne sono
+	 */
+	public List<PendingModifier> takePendingModifiers() {
+		return pendingModifiers.isEmpty() ? List.of() : List.copyOf(pendingModifiers.removeFirst());
 	}
 
 	/**

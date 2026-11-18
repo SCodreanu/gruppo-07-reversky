@@ -48,7 +48,7 @@ class MatchSimulatorTest {
 		// Arrange: mazzi completi del catalogo, anche con Spell, Hidden, Terreno e Oggetto
 		SimulationInput input = TestInputs.of(12345L, TestDecks.full(WOUND), TestDecks.full(DREAM));
 
-		MatchSimulator withStubs = new MatchSimulator(TestEffects.stubsFor(input));
+		MatchSimulator withStubs = new MatchSimulator(TestEffects.gameWithStubsFor(input));
 
 		// Act
 		MatchResult first = withStubs.simulate(input);
@@ -194,37 +194,68 @@ class MatchSimulatorTest {
 	}
 
 	@Test
-	@DisplayName("Una Spell pescata prima di ENG-19 si registra con CARD_DRAWN e si scarta; si pesca la creatura dopo")
-	void simulate_nonCreatureDrawn_loggedAndSkipped() {
+	@DisplayName("Spell SHIELD pescata prima della creatura: SCP-131 entra con +5 DEF (6 → 11), poi l'esempio 01")
+	void simulate_shieldSpellDrawnFirst_appliedToNextCreature() {
 		// Arrange: con il seed 1 il mescolamento mette la Spell prima di SCP-131, quindi si pesca per prima
 		CardDefinition veil = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD, "VEIL_OF_ANCHORED");
 		SimulationInput input = TestInputs.of(1L, List.of(veil, creature(301, "SCP-131", ARCHIVE, 8, 6)),
 				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5)));
 
 		// Act
-		MatchResult result = new MatchSimulator(TestEffects.stubsFor(input)).simulate(input);
+		MatchResult result = simulator.simulate(input);
 
-		// Assert: la Spell non ha effetto, la partita è quella dell'esempio 01
-		assertThat(result.log()).filteredOn(event -> event.type() == EventType.CARD_DRAWN)
+		// Assert: SCP-131 finisce a 11 − 4 = 7 invece di 2; Eternal Cup muore come nell'esempio 01
+		assertThat(result.log()).extracting(MatchEvent::type).startsWith(EventType.MATCH_STARTED,
+				EventType.CARD_DRAWN, EventType.SPELL_RESOLVED, EventType.CREATURE_ENTERED,
+				EventType.CREATURE_ENTERED, EventType.EFFECT_TRIGGERED, EventType.ROUND_STARTED);
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.EFFECT_TRIGGERED)
 				.singleElement()
-				.satisfies(event -> assertThat(event.data()).containsEntry("card", "Veil of the Anchored"));
+				.extracting(MatchEvent::message)
+				.isEqualTo("SCP-131: +5 DEF from Veil of the Anchored (ATK 8, DEF 11)");
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.DAMAGE_DEALT)
+				.extracting(event -> event.data().get("targetDefense"))
+				.containsExactly(-3, 7);
 		assertResult(result, BattleResult.CHALLENGER_WIN, EndReason.NO_CREATURES_LEFT, 1, 30, 27, 1, 0);
 	}
 
 	@Test
-	@DisplayName("D-06: con sole carte non creatura rimaste si pescano tutte, poi NO_CREATURES_LEFT")
-	void simulate_onlyNonCreaturesLeft_drawnThenNoCreaturesLeft() {
-		// Arrange: l'avversario ha Eternal Cup e una Hidden; la Hidden si pesca dopo la morte di Eternal Cup
-		CardDefinition sanctuary = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUARY");
+	@DisplayName("D-06: l'ultima carta dell'avversario, Skin Fracture, uccide SCP-131 (2 − 5 = −3): BOTH_DECKS_EMPTY")
+	void simulate_onlySpellLeft_resolvedThenDecksEmpty() {
+		// Arrange: con il seed 1 l'avversario pesca prima Eternal Cup, poi Skin Fracture dopo la sua morte
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
 		SimulationInput input = TestInputs.of(1L, List.of(creature(301, "SCP-131", ARCHIVE, 8, 6)),
-				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), sanctuary));
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), fracture));
 
 		// Act
-		MatchResult result = new MatchSimulator(TestEffects.stubsFor(input)).simulate(input);
+		MatchResult result = simulator.simulate(input);
+
+		// Assert: round 1 come l'esempio 01 (avversario −3 PV, SCP-131 a DEF 2), poi la Spell toglie 3 PV allo
+		// sfidante; nessuno ha più creature e i punti vita sono pari
+		assertResult(result, BattleResult.DRAW, EndReason.BOTH_DECKS_EMPTY, 1, 27, 27, 1, 1);
+		assertThat(result.log()).extracting(MatchEvent::type).endsWith(EventType.CARD_DRAWN,
+				EventType.SPELL_RESOLVED, EventType.CREATURE_DIED, EventType.PLAYER_DAMAGED, EventType.MATCH_ENDED);
+	}
+
+	@Test
+	@DisplayName("Una Spell dell'avversario uccide la creatura appena pescata dallo sfidante: lo sfidante ripesca")
+	void simulate_spellKillsCreatureJustDrawn_ownerDrawsAgain() {
+		// Arrange: con il seed 5 l'avversario pesca nell'ordine dato. Round 1: 5/4 contro 5/5, muoiono entrambe.
+		// Lo sfidante pesca un 5/4, l'avversario pesca Skin Fracture (4 − 5 = −1: lo sfidante perde 1 PV) e poi
+		// Mothling 3/3. Lo sfidante pesca l'ultimo 5/4, round 2: Mothling 3 − 5 = −2, il 5/4 resta a 1
+		CardDefinition crawler = creature(4, "Crawler", ARCHIVE, 5, 4);
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
+		SimulationInput input = TestInputs.of(5L, List.of(crawler, crawler, crawler),
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 5, 5), fracture,
+						creature(306, "Mothling", ARCHIVE, 3, 3)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
 
 		// Assert
-		assertThat(result.endReason()).isEqualTo(EndReason.NO_CREATURES_LEFT);
-		assertThat(result.log()).extracting(MatchEvent::type).contains(EventType.CARD_DRAWN);
+		assertResult(result, BattleResult.CHALLENGER_WIN, EndReason.NO_CREATURES_LEFT, 2, 29, 28, 2, 2);
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.CREATURE_ENTERED)
+				.extracting(event -> event.data().get("card"))
+				.containsExactly("Crawler", "Eternal Cup", "Crawler", "Mothling", "Crawler");
 	}
 
 	@Test
@@ -240,8 +271,8 @@ class MatchSimulatorTest {
 	@Test
 	@DisplayName("Il simulatore controlla i codici con il suo registro: una Spell che non c'è → UNKNOWN_EFFECT")
 	void simulate_effectNotInRegistry_throwsUnknownEffect() {
-		// Arrange: il registro del gioco non ha ancora gli effetti delle Spell (ENG-19)
-		CardDefinition veil = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD, "VEIL_OF_ANCHORED");
+		// Arrange: codice scritto male
+		CardDefinition veil = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD, "VEIL_OF_ANCHORD");
 		SimulationInput input = TestInputs.of(List.of(veil, creature(301, "SCP-131", ARCHIVE, 8, 6)),
 				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5)));
 

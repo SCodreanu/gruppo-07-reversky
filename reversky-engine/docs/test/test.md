@@ -35,7 +35,7 @@ I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto
   - `TestDecks`: mazzi piccoli in ordine (`of(...)`) e un mazzo completo da 30 carte per fazione con le carte del catalogo (`full(fazione)`), controllato da `TestDecksTest`;
   - `TestInputs`: `SimulationInput` con regole, fazioni e bonus standard;
   - `TestStates`: `inCombat(...)` (due creature già in campo) e `withDecks(...)` (prima della pescata iniziale);
-  - `TestEffects`: `stubsFor(...)`, un registro con un effetto finto, che non fa niente, per ogni codice di Spell, Hidden, Terreni e Oggetti delle carte date, per i test che usano carte il cui effetto non è ancora implementato;
+  - `TestEffects`: `stubsFor(...)`, un registro con un effetto finto, che non fa niente, per ogni codice di Spell, Hidden, Terreni e Oggetti delle carte date; `gameWithStubsFor(input)`, il registro del gioco più un effetto finto solo per i codici che il gioco non ha ancora. Servono ai test con carte il cui effetto non è ancora implementato;
   - `TestCards.inPlay(carta, lato)`: una creatura già in campo.
 
 ### Esempio: regola del danno al giocatore

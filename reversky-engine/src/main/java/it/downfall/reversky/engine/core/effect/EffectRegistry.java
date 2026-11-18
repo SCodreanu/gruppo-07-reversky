@@ -6,6 +6,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
+import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
+import it.downfall.reversky.engine.core.effect.impl.DissolutionEffect;
+import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
+import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
+import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
+import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
+import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
+import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
+import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.model.CardType;
 
 /**
@@ -35,9 +45,18 @@ public final class EffectRegistry {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry withAllEffects() {
-		// Vuoto finché non arrivano gli effetti: Spell con ENG-19, Hidden con ENG-20, Terreni con ENG-21,
-		// Oggetti con ENG-33
-		return new EffectRegistry();
+		// Hidden con ENG-20, Terreni con ENG-21, Oggetti con ENG-33, creature con ENG-23
+		return new EffectRegistry()
+				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
+				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
+				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)
+				.registerSpell(VeilOfAnchoredEffect.CODE, VeilOfAnchoredEffect::new)
+				.registerSpell(RegistryPactEffect.CODE, RegistryPactEffect::new)
+				.registerSpell(RainArmorEffect.CODE, RainArmorEffect::new)
+				.registerSpell(Scp458Effect.CODE, Scp458Effect::new)
+				.registerSpell(CallOfTheRiftEffect.CODE, CallOfTheRiftEffect::new)
+				.registerSpell(ReverseFusionEffect.CODE, ReverseFusionEffect::new)
+				.registerSpell(ForgottenEchoEffect.CODE, ForgottenEchoEffect::new);
 	}
 
 	/**

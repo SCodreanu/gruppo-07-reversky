@@ -3,6 +3,7 @@ package it.downfall.reversky.engine.core.simulation;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.PlayerState;
 import it.downfall.reversky.engine.core.rules.FactionMatrix;
 
@@ -10,10 +11,10 @@ import it.downfall.reversky.engine.core.rules.FactionMatrix;
  * Risolve l'inizio di uno scontro e i round, nell'ordine dei passi di docs/effetti ("Ordine di risoluzione di un
  * round"), che fa parte delle regole: non si cambia senza aggiornare quel documento.
  * <p>
- * Passi già presenti: 0 (bonus DEF di fazione), 2 (calcolo dell'attacco), 4 (danni simultanei) e 7 (morti e danno
- * al giocatore, con il {@link DeathResolver}). Gli altri passi arrivano con gli effetti, le Spell, le Hidden, i
- * Terreni e gli Oggetti (ENG-19…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima lo sfidante e poi
- * l'avversario.
+ * Passi già presenti: 0 (bonus DEF di fazione e modificatori in attesa), 2 (calcolo dell'attacco), 4 (danni
+ * simultanei) e 7 (morti e danno al giocatore, con il {@link DeathResolver}). Gli altri passi arrivano con gli
+ * effetti, le Hidden, i Terreni e gli Oggetti (ENG-20…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima
+ * lo sfidante e poi l'avversario.
  */
 public final class RoundResolver {
 
@@ -32,9 +33,15 @@ public final class RoundResolver {
 	/**
 	 * Passo 0, inizio di uno scontro: una nuova coppia di creature si affronta. Si chiama dopo che una creatura è
 	 * entrata in campo, anche se l'altra era già in campo.
-	 * <p>
-	 * Ogni creatura riceve il bonus DEF di fazione contro la nuova avversaria (docs/fazioni): una volta per scontro,
-	 * come DEF permanente. Alla fine si fissa la DEF all'entrata delle creature al loro primo scontro (M-06).
+	 * <ol>
+	 * <li>Ogni creatura riceve il bonus DEF di fazione contro la nuova avversaria (docs/fazioni): una volta per
+	 * scontro, come DEF permanente.</li>
+	 * <li>Ogni creatura al suo primo scontro riceve i modificatori in attesa del proprietario (D-34), prima lo
+	 * sfidante.</li>
+	 * <li>Si controllano le morti (D-08): un danno in attesa può uccidere, e allora lo scontro finisce prima di
+	 * cominciare.</li>
+	 * <li>Si fissa la DEF all'entrata delle creature rimaste, al loro primo scontro (M-06).</li>
+	 * </ol>
 	 *
 	 * @param state stato della partita, con due creature in campo
 	 * @throws IllegalStateException se manca una creatura
@@ -44,8 +51,11 @@ public final class RoundResolver {
 		CreatureInPlay opponent = requireCreature(state.opponent());
 		applyDefenseBonus(challenger, opponent, state.log());
 		applyDefenseBonus(opponent, challenger, state.log());
-		challenger.recordInitialDefense();
-		opponent.recordInitialDefense();
+		applyPendingModifiers(state.challenger(), challenger, state.log());
+		applyPendingModifiers(state.opponent(), opponent, state.log());
+		deaths.resolve(state);
+		state.challenger().creature().ifPresent(CreatureInPlay::recordInitialDefense);
+		state.opponent().creature().ifPresent(CreatureInPlay::recordInitialDefense);
 	}
 
 	/**
@@ -87,6 +97,19 @@ public final class RoundResolver {
 			creature.addDefense(bonus);
 			log.effectTriggered(creature.side(), creature.name(),
 					"+" + bonus + " DEF faction bonus (DEF " + creature.defense() + ")");
+		}
+	}
+
+	/** D-34: i modificatori in attesa vanno solo a una creatura appena entrata, mai a una sopravvissuta. */
+	private static void applyPendingModifiers(PlayerState owner, CreatureInPlay creature, MatchLog log) {
+		if (creature.hasStartedCombat()) {
+			return;
+		}
+		for (PendingModifier modifier : owner.takePendingModifiers()) {
+			modifier.applyTo(creature);
+			log.effectTriggered(creature.side(), creature.name(), MatchLog.describe(modifier) + " from "
+					+ modifier.card() + " (ATK " + MatchLog.number(creature.attack()) + ", DEF "
+					+ MatchLog.number(creature.defense()) + ")");
 		}
 	}
 
