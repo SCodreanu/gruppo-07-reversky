@@ -5,6 +5,7 @@ import java.util.List;
 
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.HiddenEffect;
+import it.downfall.reversky.engine.core.effect.Penalties;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
@@ -45,8 +46,8 @@ public abstract class FirstRoundHiddenEffect implements HiddenEffect {
 			parts.add(MatchLog.signed(-attackPenalty) + " ATK in the first round");
 		}
 		if (damage > 0) {
-			target.takeDamage(damage);
-			parts.add(MatchLog.signed(-damage) + " DEF");
+			int dealt = Penalties.defense(ctx.state(), target, damage, ctx.owner().side(), null);
+			parts.add(MatchLog.signed(-dealt) + " DEF");
 		}
 		ctx.log().hiddenTriggered(ctx.owner().side(), ctx.card(),
 				String.join(", ", parts) + " to " + target.name());

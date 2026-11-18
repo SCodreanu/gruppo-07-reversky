@@ -92,7 +92,7 @@ class DreamEffectsTest {
 	void toriiShadow_ownFactionTerrain() {
 		// Arrange: Devouring Abyss (Theory of the Dream) dell'avversario, bonus base +1 ATK
 		MatchState state = inCombat(creature("Torii Shadow", "Uncommon", 2, 5, "TORII_SHADOW"), plain("B", 3, 10));
-		state.placeTerrain(TestCards.terrain(116, "Devouring Abyss", TestFactions.DREAM, "DEVOURING_ABYSS"),
+		TestStates.placeTerrain(state, TestCards.terrain(116, "Devouring Abyss", TestFactions.DREAM, "DEVOURING_ABYSS"),
 				Side.OPPONENT);
 
 		// Act
@@ -107,7 +107,8 @@ class DreamEffectsTest {
 	void toriiShadow_otherFactionTerrain() {
 		// Arrange: Echo Rift (Theory of the Wound)
 		MatchState state = inCombat(creature("Torii Shadow", "Uncommon", 2, 5, "TORII_SHADOW"), plain("B", 3, 10));
-		state.placeTerrain(TestCards.terrain(113, "Echo Rift", TestFactions.WOUND, "ECHO_RIFT"), Side.CHALLENGER);
+		TestStates.placeTerrain(state,
+				TestCards.terrain(113, "Echo Rift", TestFactions.WOUND, "ECHO_RIFT"), Side.CHALLENGER);
 
 		// Act
 		resolver.startCombat(state);

@@ -3,12 +3,15 @@ package it.downfall.reversky.engine.core.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
+import it.downfall.reversky.engine.support.TestStates;
 
 /**
  * Test di {@link PendingModifier}: cosa fa a una creatura quando la raggiunge (D-34, D-12, D-35, D-49) e come appare
@@ -18,12 +21,13 @@ class PendingModifierTest {
 
 	private final CreatureInPlay kappa = TestCards.inPlay(TestCards.creature("Kappa", TestFactions.DREAM, 6, 7),
 			Side.OPPONENT);
+	private final MatchState state = TestStates.withDecks(List.of(), List.of());
 
 	@Test
 	@DisplayName("ATK e DEF in più: un modificatore ATK e uno scudo finché la creatura resta in campo, con l'origine")
 	void applyTo_bonus_attackModifierAndShield() {
 		// Act
-		new PendingModifier("Registry Pact", ModifierSource.SPELL, Side.OPPONENT, 1, 2, 0).applyTo(kappa);
+		new PendingModifier("Registry Pact", ModifierSource.SPELL, Side.OPPONENT, 1, 2, 0).applyTo(state, kappa);
 
 		// Assert
 		assertThat(kappa.attack()).isEqualTo(7);
@@ -40,7 +44,7 @@ class PendingModifierTest {
 	@DisplayName("Malus e danno da effetto: −2 ATK e −2 DEF permanente (D-49)")
 	void applyTo_penalty_attackMalusAndPermanentDamage() {
 		// Act
-		new PendingModifier("Dissolution", ModifierSource.SPELL, Side.CHALLENGER, -2, 0, 2).applyTo(kappa);
+		new PendingModifier("Dissolution", ModifierSource.SPELL, Side.CHALLENGER, -2, 0, 2).applyTo(state, kappa);
 
 		// Assert
 		assertThat(kappa.attack()).isEqualTo(4);
@@ -53,7 +57,7 @@ class PendingModifierTest {
 	@DisplayName("Il danno da effetto può uccidere: DEF 7 − 9 = −2")
 	void applyTo_lethalDamage_dead() {
 		// Act
-		new PendingModifier("Skin Fracture", ModifierSource.SPELL, Side.CHALLENGER, 0, 0, 9).applyTo(kappa);
+		new PendingModifier("Skin Fracture", ModifierSource.SPELL, Side.CHALLENGER, 0, 0, 9).applyTo(state, kappa);
 
 		// Assert
 		assertThat(kappa.isDead()).isTrue();

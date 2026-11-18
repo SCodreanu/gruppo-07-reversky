@@ -140,7 +140,8 @@ class ItemServiceTest {
 		// Arrange
 		MatchState state = TestStates.inCombat(TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9),
 				creature("B", 4, 9));
-		state.placeTerrain(TestCards.terrain(114, "Hollow Clearing", TestFactions.INVITATION, "HOLLOW_CLEARING"),
+		TestStates.placeTerrain(state,
+				TestCards.terrain(114, "Hollow Clearing", TestFactions.INVITATION, "HOLLOW_CLEARING"),
 				Side.CHALLENGER);
 		state.challenger().placeItem(COMPASS);
 

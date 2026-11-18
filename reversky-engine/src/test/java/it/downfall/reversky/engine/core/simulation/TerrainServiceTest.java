@@ -63,7 +63,10 @@ class TerrainServiceTest {
 			assertThat(modifier.source()).isEqualTo(ModifierSource.TERRAIN);
 			assertThat(modifier.side()).isEqualTo(Side.OPPONENT);
 		});
-		assertThat(state.terrain()).contains(new PlacedTerrain(ECHO_RIFT, Side.OPPONENT));
+		assertThat(state.terrain()).hasValueSatisfying(terrain -> {
+			assertThat(terrain.card()).isEqualTo(ECHO_RIFT);
+			assertThat(terrain.owner()).isEqualTo(Side.OPPONENT);
+		});
 		assertThat(state.log().events()).extracting(MatchEvent::message).containsExactly(
 				"Echo Rift enters play",
 				"Crawlers: +1 ATK from Echo Rift (ATK 5, DEF 5)",

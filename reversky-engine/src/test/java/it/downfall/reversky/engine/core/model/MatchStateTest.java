@@ -9,8 +9,10 @@ import java.util.Random;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.impl.EchoRiftEffect;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
+import it.downfall.reversky.engine.support.TestStates;
 import it.downfall.reversky.engine.support.TestStates;
 
 /**
@@ -63,25 +65,38 @@ class MatchStateTest {
 	@DisplayName("Un nuovo Terreno, di chiunque sia, sostituisce quello in gioco e lo restituisce (D-19)")
 	void placeTerrain_replacesPreviousOfAnyOwner() {
 		// Act
-		assertThat(state.placeTerrain(ECHO_RIFT, Side.CHALLENGER)).isEmpty();
-		var replaced = state.placeTerrain(WATCHING_RIFT, Side.OPPONENT);
+		assertThat(TestStates.placeTerrain(state, ECHO_RIFT, Side.CHALLENGER)).isEmpty();
+		var replaced = TestStates.placeTerrain(state, WATCHING_RIFT, Side.OPPONENT);
 
 		// Assert
-		assertThat(replaced).contains(new PlacedTerrain(ECHO_RIFT, Side.CHALLENGER));
-		assertThat(state.terrain()).contains(new PlacedTerrain(WATCHING_RIFT, Side.OPPONENT));
+		assertThat(replaced).hasValueSatisfying(old -> assertTerrain(old, ECHO_RIFT, Side.CHALLENGER));
+		assertThat(state.terrain()).hasValueSatisfying(now -> assertTerrain(now, WATCHING_RIFT, Side.OPPONENT));
 	}
 
 	@Test
 	@DisplayName("removeTerrain toglie il Terreno in gioco; solo un TERRAIN si può mettere in gioco")
 	void removeTerrain_andInvalidCard() {
 		// Arrange
-		state.placeTerrain(ECHO_RIFT, Side.CHALLENGER);
+		TestStates.placeTerrain(state, ECHO_RIFT, Side.CHALLENGER);
 
 		// Act + Assert
-		assertThat(state.removeTerrain()).contains(new PlacedTerrain(ECHO_RIFT, Side.CHALLENGER));
+		assertThat(state.removeTerrain()).hasValueSatisfying(old -> assertTerrain(old, ECHO_RIFT, Side.CHALLENGER));
 		assertThat(state.terrain()).isEmpty();
 		assertThatThrownBy(() -> state.placeTerrain(TestCards.creature("Crawlers", TestFactions.WOUND, 4, 5),
-				Side.CHALLENGER)).isInstanceOf(IllegalArgumentException.class);
+				Side.CHALLENGER, new EchoRiftEffect())).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-27: la finestra di scontro è quello in corso, o il prossimo se nessuno scontro è in corso")
+	void combatWindow_currentOrNext() {
+		// Act + Assert: prima del primo scontro conta il primo
+		assertThat(state.combatWindow()).isEqualTo(1);
+		state.startNextCombat();
+		assertThat(state.combatWindow()).isEqualTo(1);
+		state.endCombat();
+		assertThat(state.combatWindow()).isEqualTo(2);
+		state.startNextCombat();
+		assertThat(state.combatWindow()).isEqualTo(2);
 	}
 
 	@Test
@@ -95,5 +110,11 @@ class MatchStateTest {
 		assertThat(state.startNextCombat()).isEqualTo(1);
 		assertThat(state.startNextCombat()).isEqualTo(2);
 		assertThat(state.combatsStarted()).isEqualTo(2);
+	}
+
+	private static void assertTerrain(PlacedTerrain terrain, CardDefinition card, Side owner) {
+		assertThat(terrain.card()).isEqualTo(card);
+		assertThat(terrain.owner()).isEqualTo(owner);
+		assertThat(terrain.effect().code()).isEqualTo(card.effectCode());
 	}
 }

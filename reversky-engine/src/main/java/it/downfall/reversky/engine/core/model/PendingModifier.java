@@ -2,6 +2,8 @@ package it.downfall.reversky.engine.core.model;
 
 import java.util.Objects;
 
+import it.downfall.reversky.engine.core.effect.Penalties;
+
 /**
  * Modificatore in attesa (D-34): un bonus, un malus o un danno da effetto che aspetta la prossima creatura di un
  * giocatore. Lo usano le Spell {@code SHIELD} e {@code BURN} sulla propria creatura e le Spell {@code DAMAGE} senza
@@ -40,19 +42,13 @@ public record PendingModifier(String card, ModifierSource source, Side side, int
 
 	/**
 	 * Applica il modificatore a una creatura: prima l'ATK e lo scudo, poi il danno da effetto, che lo scudo appena
-	 * dato assorbe per primo (D-35). Le morti le controlla chi lo chiama (D-08).
+	 * dato assorbe per primo (D-35). Il danno passa dalle riduzioni del Terreno in gioco ({@link Penalties}, ENG-27).
+	 * Le morti le controlla chi lo chiama (D-08).
 	 *
+	 * @param state    partita, per il Terreno in gioco
 	 * @param creature creatura che lo riceve
 	 */
-	public void applyTo(CreatureInPlay creature) {
-		if (attack != 0) {
-			creature.addModifier(StatModifier.attack(source, side, attack, ModifierDuration.whileInPlay()));
-		}
-		if (shield > 0) {
-			creature.addModifier(StatModifier.shield(source, side, shield, ModifierDuration.whileInPlay()));
-		}
-		if (damage > 0) {
-			creature.takeDamage(damage);
-		}
+	public void applyTo(MatchState state, CreatureInPlay creature) {
+		Penalties.apply(state, creature, this);
 	}
 }

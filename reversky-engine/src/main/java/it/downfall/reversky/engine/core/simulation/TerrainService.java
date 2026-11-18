@@ -29,7 +29,9 @@ import it.downfall.reversky.engine.core.model.StatModifier;
  * <li>Quando il Terreno esce si tolgono i suoi bonus: l'ATK subito, dello scudo solo la parte non consumata (D-19),
  * quindi l'uscita non uccide mai.</li>
  * </ul>
- * Gli effetti secondari arrivano con ENG-27.
+ * Gli effetti secondari (ENG-27) stanno nell'effetto del Terreno in gioco, una nuova istanza per ogni messa in gioco
+ * ({@link PlacedTerrain#effect()}): qui scattano quelli "a inizio scontro"; le ferite e le penalità passano da
+ * {@link CreatureEffectService} e da {@code Penalties}.
  */
 public final class TerrainService {
 
@@ -53,7 +55,8 @@ public final class TerrainService {
 	 * @param card  carta del Terreno
 	 */
 	public void place(MatchState state, PlayerState owner, CardDefinition card) {
-		Optional<PlacedTerrain> replaced = state.placeTerrain(card, owner.side());
+		Optional<PlacedTerrain> replaced = state.placeTerrain(card, owner.side(),
+				effects.createTerrain(card.effectCode()));
 		state.log().terrainPlaced(owner.side(), card, replaced.map(PlacedTerrain::card).orElse(null));
 		replaced.ifPresent(old -> forEachCreature(state, creature -> loseBonus(state, creature, old)));
 		forEachCreature(state, creature -> applyBonus(state, creature));
@@ -67,12 +70,11 @@ public final class TerrainService {
 	 */
 	public void applyBonus(MatchState state, CreatureInPlay creature) {
 		Optional<PlacedTerrain> terrain = state.terrain();
-		if (terrain.isEmpty() || creature.hasTerrainBonusFrom(terrain.get())
-				|| !creature.factions().contains(terrain.get().card().factionId())) {
+		if (terrain.isEmpty() || creature.hasTerrainBonusFrom(terrain.get()) || !terrain.get().affects(creature)) {
 			return;
 		}
 		PlacedTerrain placed = terrain.get();
-		TerrainEffect effect = effects.createTerrain(placed.card().effectCode());
+		TerrainEffect effect = placed.effect();
 		if (effect.attackBonus() > 0) {
 			creature.addModifier(StatModifier.attack(ModifierSource.TERRAIN, placed.owner(), effect.attackBonus(),
 					ModifierDuration.whileInPlay()));
@@ -84,6 +86,30 @@ public final class TerrainService {
 		creature.recordTerrainBonus(placed);
 		state.log().effectTriggered(creature.side(), creature.name(), describe(effect) + " from "
 				+ placed.card().name() + " " + stats(creature));
+	}
+
+	/**
+	 * Effetti secondari "a inizio scontro" (Devouring Abyss), alla fine del passo 0, dopo che si è fissata la DEF
+	 * all'entrata: per ogni creatura viva della fazione del Terreno, prima lo sfidante; dopo ognuna si controllano le
+	 * morti e, se una creatura muore, lo scontro finisce lì (deciso il 18 novembre).
+	 *
+	 * @param state  stato della partita, con due creature in campo
+	 * @param deaths controllo delle morti
+	 */
+	public void startCombat(MatchState state, DeathResolver deaths) {
+		Optional<PlacedTerrain> terrain = state.terrain();
+		if (terrain.isEmpty()) {
+			return;
+		}
+		for (Side side : Side.values()) {
+			CreatureInPlay creature = state.player(side).creature().orElse(null);
+			if (creature != null && !creature.isDead() && terrain.get().affects(creature)) {
+				terrain.get().effect().onCombatStart(state, terrain.get(), creature);
+				if (deaths.resolve(state)) {
+					return;
+				}
+			}
+		}
 	}
 
 	private static void loseBonus(MatchState state, CreatureInPlay creature, PlacedTerrain old) {

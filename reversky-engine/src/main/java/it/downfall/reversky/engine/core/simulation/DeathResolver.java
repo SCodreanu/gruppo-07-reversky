@@ -63,6 +63,7 @@ public final class DeathResolver {
 		if (dead.isEmpty()) {
 			return false;
 		}
+		state.endCombat();
 		dead.forEach(creature -> removeDeadCreature(state, creature));
 		if (dead.size() == 1) {
 			CreatureInPlay defeated = dead.getFirst();

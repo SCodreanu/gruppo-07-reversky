@@ -2,6 +2,7 @@ package it.downfall.reversky.engine.core.effect.impl;
 
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.HiddenEffect;
+import it.downfall.reversky.engine.core.effect.Penalties;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 
@@ -33,14 +34,12 @@ public final class BreakingPointEffect implements HiddenEffect {
 	public void trigger(EffectContext ctx) {
 		CreatureInPlay target = ctx.opponent().creature().orElseThrow(
 				() -> new IllegalStateException("Hidden DAMAGE senza creatura avversaria"));
-		String effect;
-		if (target.defense() <= BREAKING_THRESHOLD) {
-			target.takeDamage(target.defense());
-			effect = "DEF of " + target.name() + " to 0";
-		} else {
-			target.takeDamage(DAMAGE);
-			effect = MatchLog.signed(-DAMAGE) + " DEF to " + target.name();
-		}
+		int defense = target.defense();
+		int damage = defense <= BREAKING_THRESHOLD ? defense : DAMAGE;
+		// il Terreno può ridurre la penalità (Hollow Clearing): allora anche "a 0" diventa una perdita normale
+		int dealt = Penalties.defense(ctx.state(), target, damage, ctx.owner().side(), null);
+		String effect = dealt == defense ? "DEF of " + target.name() + " to 0"
+				: MatchLog.signed(-dealt) + " DEF to " + target.name();
 		ctx.log().hiddenTriggered(ctx.owner().side(), ctx.card(), effect);
 	}
 }

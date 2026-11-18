@@ -1,12 +1,14 @@
 package it.downfall.reversky.engine.support;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.PlacedTerrain;
 import it.downfall.reversky.engine.core.model.PlayerState;
 import it.downfall.reversky.engine.core.model.Side;
 
@@ -61,6 +63,19 @@ public final class TestStates {
 	public static CreatureInPlay withEffect(EffectRegistry effects, CardDefinition card, Side side) {
 		String code = card.effectCode();
 		return new CreatureInPlay(card, side, code == null ? null : effects.createCreature(code));
+	}
+
+	/**
+	 * Mette in gioco un Terreno con il suo effetto dal registro del gioco, senza dare i bonus: le creature in campo li
+	 * ricevono all'inizio dello scontro, come fa il motore (ENG-27).
+	 *
+	 * @param state   partita
+	 * @param terrain carta del Terreno
+	 * @param owner   giocatore che l'ha pescato
+	 * @return il Terreno sostituito, se c'era
+	 */
+	public static Optional<PlacedTerrain> placeTerrain(MatchState state, CardDefinition terrain, Side owner) {
+		return state.placeTerrain(terrain, owner, EffectRegistry.withAllEffects().createTerrain(terrain.effectCode()));
 	}
 
 	/**

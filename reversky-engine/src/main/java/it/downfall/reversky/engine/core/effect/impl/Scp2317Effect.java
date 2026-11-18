@@ -35,11 +35,7 @@ public final class Scp2317Effect implements CreatureEffect {
 	public void onDeath(CreatureContext ctx) {
 		CreatureInPlay self = ctx.self();
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> {
-			enemy.takeDamage(DAMAGE, self);
-			parts.add("deals " + DAMAGE + " damage to " + enemy.name() + " (DEF " + MatchLog.number(enemy.defense())
-					+ ")");
-		});
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, DAMAGE)));
 		ctx.owner().addPendingModifier(new PendingModifier(self.name(), ModifierSource.EFFECT, self.side(),
 				NEXT_CREATURE_ATTACK, 0, 0));
 		parts.add(MatchLog.signed(NEXT_CREATURE_ATTACK) + " ATK to the next creature");

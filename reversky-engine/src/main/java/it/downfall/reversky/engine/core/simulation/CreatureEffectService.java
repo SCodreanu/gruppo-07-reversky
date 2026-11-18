@@ -3,6 +3,7 @@ package it.downfall.reversky.engine.core.simulation;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import it.downfall.reversky.engine.core.effect.CreatureContext;
@@ -11,6 +12,7 @@ import it.downfall.reversky.engine.core.effect.EffectPriority;
 import it.downfall.reversky.engine.core.effect.EnemyEffectGuard;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.PlacedTerrain;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.model.Wound;
 
@@ -119,7 +121,8 @@ public final class CreatureEffectService {
 
 	/**
 	 * Controllo della DEF dopo una fase (deciso il 18 novembre): per ogni creatura viva, nell'ordine D-30, prima
-	 * {@code onWounded} per ogni ferita in coda, poi {@code onDefenseCheck}. Se intanto qualcuno subisce nuove ferite
+	 * {@code onWounded} per ogni ferita in coda, seguito da quello del Terreno in gioco se la creatura è della sua
+	 * fazione (Echo Rift, ENG-27), poi {@code onDefenseCheck}. Se intanto qualcuno subisce nuove ferite
 	 * (es. il danno di The Unseen Matriarch) si ripete. Le ferite di una creatura con DEF 0 o meno restano in coda: se
 	 * un Badge di Uscita Negata la salva, arrivano al controllo dopo.
 	 * <p>
@@ -131,9 +134,12 @@ public final class CreatureEffectService {
 	public void defenseCheck(MatchState state) {
 		do {
 			for (CreatureInPlay creature : inOrder(alive(state))) {
-				List<Wound> wounds = creature.takeUnreportedWounds();
-				creature.effect().ifPresent(effect -> wounds.forEach(
-						wound -> effect.onWounded(context(state, creature), wound)));
+				Optional<PlacedTerrain> terrain = state.terrain().filter(placed -> placed.affects(creature));
+				for (Wound wound : creature.takeUnreportedWounds()) {
+					creature.effect().ifPresent(effect -> effect.onWounded(context(state, creature), wound));
+					// Echo Rift (ENG-27): dopo l'effetto della creatura
+					terrain.ifPresent(placed -> placed.effect().onWounded(state, placed, creature, wound));
+				}
 			}
 			for (CreatureInPlay creature : inOrder(alive(state))) {
 				// un controllo prima può averla uccisa

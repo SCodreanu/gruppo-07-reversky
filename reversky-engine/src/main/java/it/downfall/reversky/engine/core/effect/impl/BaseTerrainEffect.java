@@ -3,8 +3,9 @@ package it.downfall.reversky.engine.core.effect.impl;
 import it.downfall.reversky.engine.core.effect.TerrainEffect;
 
 /**
- * Base dei Terreni con il solo bonus base (D-17, D-18): ATK e DEF in più a tutte le creature in campo della fazione
- * del Terreno, di entrambi i giocatori. Gli effetti secondari arrivano con ENG-27.
+ * Base dei Terreni (D-17, D-18): il bonus base, ATK e DEF in più a tutte le creature in campo della fazione del
+ * Terreno, di entrambi i giocatori. Ogni Terreno aggiunge il suo effetto secondario con i momenti di
+ * {@code TerrainEffect} (ENG-27).
  */
 public abstract class BaseTerrainEffect implements TerrainEffect {
 
