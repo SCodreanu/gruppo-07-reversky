@@ -29,6 +29,8 @@ public final class CreatureInPlay {
 	private final List<StatModifier> modifiers = new ArrayList<>();
 	/** Ferite non ancora riferite all'effetto, nell'ordine in cui sono avvenute (deciso il 18 novembre). */
 	private final List<Wound> unreportedWounds = new ArrayList<>();
+	/** Penalità non ancora controllate, nell'ordine in cui sono arrivate (Remnants of Reality, ENG-37). */
+	private final List<Penalty> unreportedPenalties = new ArrayList<>();
 	private int permanentDefense;
 	private int initialDefense;
 	private boolean initialDefenseRecorded;
@@ -199,6 +201,18 @@ public final class CreatureInPlay {
 	 */
 	public boolean removeBonuses() {
 		return modifiers.removeIf(StatModifier::isBonus);
+	}
+
+	/**
+	 * Toglie i bonus temporanei (The Undying Blossom, ENG-37, deciso il 18 novembre): i modificatori di ATK positivi e
+	 * gli scudi con una durata a round o fino a fine scontro. Restano malus, sigilli, congelamenti e i bonus che
+	 * durano finché la creatura resta in campo, come le Spell (D-12).
+	 *
+	 * @return {@code true} se ha tolto almeno un modificatore
+	 */
+	public boolean removeTemporaryBonuses() {
+		return modifiers.removeIf(modifier -> modifier.isBonus()
+				&& modifier.durationKind() != ModifierDuration.Kind.WHILE_IN_PLAY);
 	}
 
 	/**
@@ -419,12 +433,99 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Aggiunge un modificatore di ATK o uno scudo.
+	 * Aggiunge un modificatore. Un malus ATK causato dall'avversario è una penalità e resta in coda finché il motore
+	 * la controlla (ENG-37).
 	 *
 	 * @param modifier il modificatore
 	 */
 	public void addModifier(StatModifier modifier) {
 		modifiers.add(modifier);
+		if (isEnemyAttackPenalty(modifier)) {
+			unreportedPenalties.add(new Penalty(0, modifier));
+		}
+	}
+
+	/**
+	 * Registra una penalità DEF: DEF persa per un effetto, una Spell, una Hidden, un danno in attesa o un Terreno
+	 * dell'avversario (la chiama {@code Penalties}, ENG-37). Il danno l'ha già applicato chi chiama.
+	 *
+	 * @param lost DEF persa davvero; con 0 non c'è penalità
+	 */
+	public void recordDefensePenalty(int lost) {
+		if (lost > 0) {
+			unreportedPenalties.add(new Penalty(lost, null));
+		}
+	}
+
+	/**
+	 * Indica se ci sono penalità non ancora controllate.
+	 *
+	 * @return {@code true} se ce n'è almeno una
+	 */
+	public boolean hasUnreportedPenalties() {
+		return !unreportedPenalties.isEmpty();
+	}
+
+	/**
+	 * Prende le penalità non ancora controllate, nell'ordine in cui sono arrivate, e le toglie dalla coda (ENG-37).
+	 *
+	 * @return le penalità, anche nessuna
+	 */
+	public List<Penalty> takeUnreportedPenalties() {
+		List<Penalty> penalties = List.copyOf(unreportedPenalties);
+		unreportedPenalties.clear();
+		return penalties;
+	}
+
+	/**
+	 * Malus ATK dell'avversario ancora attivi, nell'ordine in cui sono arrivati (Remnants of Reality).
+	 *
+	 * @return i malus, anche nessuno
+	 */
+	public List<StatModifier> enemyAttackPenalties() {
+		return modifiers.stream().filter(this::isEnemyAttackPenalty).toList();
+	}
+
+	/**
+	 * Toglie punti a un malus ATK ancora attivo (Remnants of Reality, ENG-37): il malus resta con gli altri punti, o
+	 * sparisce se non ne restano.
+	 *
+	 * @param malus  il malus
+	 * @param points punti da togliere, almeno 0
+	 * @return i punti tolti davvero: 0 se il malus non c'è più
+	 */
+	public int cancelAttackPenalty(StatModifier malus, int points) {
+		int index = modifiers.indexOf(malus);
+		if (index < 0 || points <= 0) {
+			return 0;
+		}
+		int cancelled = Math.min(points, -malus.amount());
+		int remaining = malus.amount() + cancelled;
+		if (remaining == 0) {
+			modifiers.remove(index);
+		} else {
+			modifiers.set(index, malus.withAttack(remaining));
+		}
+		return cancelled;
+	}
+
+	/**
+	 * Ridà DEF persa per una penalità (Remnants of Reality, ENG-37, deciso il 18 novembre): DEF permanente in più,
+	 * anche se la creatura ha DEF 0 o meno, quindi può evitare la morte. Il tetto ("senza superare i valori di prima")
+	 * lo controlla chi chiama, che sa quanta DEF ha tolto la penalità.
+	 *
+	 * @param amount DEF da ridare, almeno 0
+	 * @throws IllegalArgumentException se {@code amount} è negativo
+	 */
+	public void restoreDefense(int amount) {
+		if (amount < 0) {
+			throw new IllegalArgumentException("DEF da ridare negativa: " + amount);
+		}
+		permanentDefense += amount;
+	}
+
+	private boolean isEnemyAttackPenalty(StatModifier modifier) {
+		return modifier.stat() == Stat.ATTACK && modifier.amount() < 0 && modifier.side() != side;
 	}
 
 	/**

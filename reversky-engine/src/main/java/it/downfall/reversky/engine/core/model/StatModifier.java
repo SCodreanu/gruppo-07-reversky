@@ -36,6 +36,18 @@ public final class StatModifier {
 		this.remainingShield = stat == Stat.DEFENSE_SHIELD ? amount : 0;
 	}
 
+	/** Copia di un modificatore di ATK con un altro valore: stessa origine, lato, durata e sospensione. */
+	private StatModifier(StatModifier other, int amount) {
+		this.source = other.source;
+		this.side = other.side;
+		this.stat = other.stat;
+		this.amount = amount;
+		this.durationKind = other.durationKind;
+		this.remainingRounds = other.remainingRounds;
+		this.remainingShield = 0;
+		this.suspension = other.suspension;
+	}
+
 	/**
 	 * Bonus o malus di ATK.
 	 *
@@ -220,6 +232,17 @@ public final class StatModifier {
 	/** Toglie la sospensione prima della sua fine (es. la creatura che la causava lascia il campo). */
 	public void resume() {
 		this.suspension = null;
+	}
+
+	/**
+	 * Lo stesso modificatore di ATK con un altro valore (Remnants of Reality, ENG-37): resta uguale tutto il resto,
+	 * round rimasti e sospensione compresi.
+	 *
+	 * @param newAmount nuovo valore
+	 * @return la copia
+	 */
+	StatModifier withAttack(int newAmount) {
+		return new StatModifier(this, newAmount);
 	}
 
 	/**

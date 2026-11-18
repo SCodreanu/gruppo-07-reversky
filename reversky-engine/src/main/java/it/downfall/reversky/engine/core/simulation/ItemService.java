@@ -41,6 +41,15 @@ public final class ItemService {
 	}
 
 	/**
+	 * Registro degli effetti con cui è stato creato, per gli altri servizi del motore.
+	 *
+	 * @return il registro
+	 */
+	EffectRegistry effects() {
+		return effects;
+	}
+
+	/**
 	 * Mette accanto al mazzo un Oggetto appena pescato.
 	 *
 	 * @param state stato della partita

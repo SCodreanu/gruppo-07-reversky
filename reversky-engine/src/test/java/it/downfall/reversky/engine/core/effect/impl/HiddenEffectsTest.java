@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
+import it.downfall.reversky.engine.core.effect.HiddenCondition;
 import it.downfall.reversky.engine.core.log.EventType;
 import it.downfall.reversky.engine.core.log.MatchEvent;
 import it.downfall.reversky.engine.core.model.CardDefinition;
@@ -128,13 +129,15 @@ class HiddenEffectsTest {
 	}
 
 	@Test
-	@DisplayName("Il registro del gioco ha le cinque Hidden P1 e Static Interference; quelle con condizione non ancora")
-	void registry_hiddenWithoutCondition() {
+	@DisplayName("Il registro ha tutte le otto Hidden; solo Remnants of Reality e Unseen Exit hanno una condizione")
+	void registry_allHidden() {
 		assertThat(List.of(LastSanctuaryEffect.CODE, SurvivalInstinctEffect.CODE, HostilePresenceEffect.CODE,
 				EchoStrikeEffect.CODE, BreakingPointEffect.CODE, StaticInterferenceEffect.CODE))
-				.allSatisfy(code -> assertThat(registry.exists(code, CardType.HIDDEN)).isTrue());
-		assertThat(registry.appliesTo("REMNANTS_OF_REALITY")).isEmpty();
-		assertThat(registry.appliesTo("UNSEEN_EXIT")).isEmpty();
+				.allSatisfy(code -> assertThat(registry.createHidden(code).condition())
+						.isEqualTo(HiddenCondition.NONE));
+		assertThat(registry.createHidden(RemnantsOfRealityEffect.CODE).condition())
+				.isEqualTo(HiddenCondition.PENALTY);
+		assertThat(registry.createHidden(UnseenExitEffect.CODE).condition()).isEqualTo(HiddenCondition.LETHAL_ATTACK);
 	}
 
 	private void trigger(String code, CardSubtype subtype) {

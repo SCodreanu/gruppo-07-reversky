@@ -236,7 +236,7 @@ Prima degli effetti di Spell, Hidden, Terreni e Oggetti serve il registro (`ENG-
 | Contatore delle creature perse nel `PlayerState` | The Drowned Memory, The Nameless Caller | M-07 |
 | `CreatureInPlay.heal()` con tetto alla DEF all'entrata (o ai valori di prima) | The Bloodless Hound, Wendigo, SCP-109, Remnants of Reality: fatto con `ENG-34` (scudi compresi nel tetto, niente per una creatura morta), "ai valori di prima" arriva con Remnants of Reality | — |
 | Soglia "metà DEF" controllata dopo ogni fase in cui cambia la DEF | Nure-onna, The Unseen Matriarch, SCP-109: fatto con `onDefenseCheck` (`ENG-26`) | M-06 |
-| Sopravvivenza a un danno letale, prima del controllo morti | The Undying Blossom, Badge di Uscita Negata (Unseen Exit agisce prima, come prevenzione al passo 3) | D-36 |
+| Sopravvivenza a un danno letale, prima del controllo morti | The Undying Blossom, Badge di Uscita Negata (Unseen Exit agisce prima, come prevenzione al passo 3): The Undying Blossom fatta con `ENG-37` (`onLethalDamage`, prima del Badge) | D-36 |
 | Controllo all'entrata delle creature avversarie mentre una creatura è in campo | Mothman, The Stitched Corridor, The Rootbound Doppelganger, Kitsune; esteso all'arrivo di un Terreno per The Hollow Wyrm | — |
 | Effetti annullati (`NULLIFY`) | Il Predicatore sotto la Pioggia, SCP-2521 | D-30 |
 | Momento "prima dell'attivazione di un effetto avversario" | Baku | M-10 |
@@ -246,7 +246,7 @@ Prima degli effetti di Spell, Hidden, Terreni e Oggetti serve il registro (`ENG-
 | Modifica dell'ordine del mazzo avversario | La Regina dei Sentieri Perduti (`DECK_REORDERED`) | — |
 | Rivelazione della prossima carta del mazzo | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati (`BURN_REVEALED`) | D-13, M-15 |
 | Azioni sulle Hidden avversarie | L'Operatore della Stanza 0 (la prossima Hidden lavora per l'altro giocatore), Campanello del Torii (la annulla) | D-15, M-11 |
-| Controllo delle condizioni delle Hidden nei passi del round | Remnants of Reality, Unseen Exit | D-15 |
+| Controllo delle condizioni delle Hidden nei passi del round | Remnants of Reality, Unseen Exit: fatto con `ENG-37` (`HiddenConditionService`, penalità in coda nella creatura) | D-15 |
 | Sostituzione e rimozione del Terreno in gioco, con rimozione dei suoi modificatori | tutti i Terreni, The Null Witness, The Hollow Wyrm (`TERRAIN_REMOVED`): rimozione fatta con `ENG-36` (`Terrains.remove`, `onTerrainArriving`) | D-19, D-35 |
 | DEF temporanea come scudo (assorbe i danni per prima, la scadenza non uccide) | Last Sanctuary, Survival Instinct, Bussola dei Sentieri Falsi | D-35 |
 | Classi base per effetti uguali | "primo attacco ridotto per avversaria" (Hidebehind, Sala d'Attesa Vivente, Nurikabe, The Rootbound Doppelganger, The Stitched Corridor); "danni all'entrata" (SCP-173, The Gnawing Witness); "−1 DEF ora e alla prossima" (Cervo Bianco, Cartellino Sbiadito, Il Collezionista di Nomi, Rokurokubi); "avv. −2/−1 ATK nei primi due round" (Howlers, SCP-049, Noppera-bō, The Masked Bloom); "+2 DEF finché resta in campo" (Il Raccoglitore di Orme, The Index Maw); "danni alla morte" (The Threadbound Doll, SCP-2317); "togli i bonus ATK" (L'Addetto alle Uscite, Deathmoths, Static Interference, il sigillo di Kitsune): al posto della classe base c'è un modificatore, il sigillo (`ENG-35`) | D-37 |

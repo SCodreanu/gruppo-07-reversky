@@ -173,7 +173,7 @@ Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERN
 
 Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
 Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
-L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati: con `ENG-26` ci sono tutti gli effetti `P1` delle creature; con `ENG-34`, `ENG-35` e `ENG-36` (18 novembre) anche The Bloodless Hound, Wendigo, SCP-109, L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference, The Null Witness e The Hollow Wyrm (81 effetti, 56 di creature). Mancano gli altri `P2` (`ENG-37`…`ENG-39`) e `SCP_500`.
+L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati: con `ENG-26` ci sono tutti gli effetti `P1` delle creature; con `ENG-34`…`ENG-37` (18 novembre) anche The Bloodless Hound, Wendigo, SCP-109, L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference, The Null Witness, The Hollow Wyrm, The Undying Blossom, Remnants of Reality e Unseen Exit (84 effetti, 57 di creature). Mancano gli altri `P2` (`ENG-38`, `ENG-39`) e `SCP_500`.
 
 ```json
 [

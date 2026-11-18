@@ -48,6 +48,7 @@ import it.downfall.reversky.engine.core.effect.impl.NureOnnaEffect;
 import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
+import it.downfall.reversky.engine.core.effect.impl.RemnantsOfRealityEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
 import it.downfall.reversky.engine.core.effect.impl.RokurokubiEffect;
 import it.downfall.reversky.engine.core.effect.impl.RootboundDoppelgangerEffect;
@@ -79,6 +80,8 @@ import it.downfall.reversky.engine.core.effect.impl.ThornedMatriarchEffect;
 import it.downfall.reversky.engine.core.effect.impl.ThreadboundDollEffect;
 import it.downfall.reversky.engine.core.effect.impl.ToriiBellEffect;
 import it.downfall.reversky.engine.core.effect.impl.ToriiShadowEffect;
+import it.downfall.reversky.engine.core.effect.impl.UndyingBlossomEffect;
+import it.downfall.reversky.engine.core.effect.impl.UnseenExitEffect;
 import it.downfall.reversky.engine.core.effect.impl.UnseenMatriarchEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.effect.impl.WampusCatEffect;
@@ -173,6 +176,7 @@ public final class EffectRegistry {
 				.registerCreature(Scp3999Effect.CODE, Scp3999Effect::new)
 				.registerCreature(NullWitnessEffect.CODE, NullWitnessEffect::new)
 				.registerCreature(HollowWyrmEffect.CODE, HollowWyrmEffect::new)
+				.registerCreature(UndyingBlossomEffect.CODE, UndyingBlossomEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)
@@ -190,6 +194,8 @@ public final class EffectRegistry {
 				.registerHidden(EchoStrikeEffect.CODE, EchoStrikeEffect::new)
 				.registerHidden(BreakingPointEffect.CODE, BreakingPointEffect::new)
 				.registerHidden(StaticInterferenceEffect.CODE, StaticInterferenceEffect::new)
+				.registerHidden(RemnantsOfRealityEffect.CODE, RemnantsOfRealityEffect::new)
+				.registerHidden(UnseenExitEffect.CODE, UnseenExitEffect::new)
 				.registerTerrain(EchoRiftEffect.CODE, EchoRiftEffect::new)
 				.registerTerrain(HollowClearingEffect.CODE, HollowClearingEffect::new)
 				.registerTerrain(WatchingRiftEffect.CODE, WatchingRiftEffect::new)
