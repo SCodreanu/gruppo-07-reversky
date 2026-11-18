@@ -4,6 +4,7 @@ import java.util.List;
 
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
+import it.downfall.reversky.engine.core.effect.HiddenCondition;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
@@ -34,6 +35,7 @@ public final class RoundResolver {
 	private final ItemService items;
 	private final CreatureEffectService creatureEffects;
 	private final DeathResolver deaths;
+	private final HiddenConditionService hiddenConditions;
 
 	/**
 	 * Crea il risolutore per una partita.
@@ -48,6 +50,7 @@ public final class RoundResolver {
 		this.items = new ItemService(effects);
 		this.creatureEffects = new CreatureEffectService(items);
 		this.deaths = new DeathResolver(items);
+		this.hiddenConditions = new HiddenConditionService(effects, items);
 	}
 
 	/**
@@ -143,6 +146,9 @@ public final class RoundResolver {
 		// Passo 3: le prevenzioni della creatura colpita, prima lo sfidante
 		int toChallenger = creatureEffects.incomingDamage(state, challenger, opponentAttack);
 		int toOpponent = creatureEffects.incomingDamage(state, opponent, challengerAttack);
+		// ENG-37: dopo tutte le altre riduzioni, le Hidden contro un attacco letale (Unseen Exit)
+		toChallenger = hiddenConditions.lethalAttack(state, challenger, toChallenger);
+		toOpponent = hiddenConditions.lethalAttack(state, opponent, toOpponent);
 
 		// Passo 4, regolamento base punto 3: i danni si applicano insieme, nessuno colpisce per primo
 		int[] damages = new int[Side.values().length];
@@ -157,7 +163,7 @@ public final class RoundResolver {
 		// Passi 5 e 6: afterDamage di entrambe, poi le ferite e le soglie della DEF (deciso il 18 novembre), onRoundEnd
 		// solo delle vive
 		creatureEffects.afterDamage(state, damages, wounds);
-		creatureEffects.defenseCheck(state);
+		deaths.checkDefense(state);
 		creatureEffects.roundEnd(state);
 
 		endRound(challenger);
@@ -204,7 +210,8 @@ public final class RoundResolver {
 			for (Side side : Side.values()) {
 				PlayerState owner = state.player(side);
 				for (SetHidden hidden : owner.hiddenZone()) {
-					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype) {
+					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype
+							&& effects.createHidden(hidden.card().effectCode()).condition() == HiddenCondition.NONE) {
 						owner.discardHidden(hidden);
 						if (isCancelled(state, side, hidden.card())) {
 							state.log().hiddenTriggered(side, hidden.card(), "cancelled");

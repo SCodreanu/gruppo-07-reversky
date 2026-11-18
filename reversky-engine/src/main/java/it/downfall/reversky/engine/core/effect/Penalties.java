@@ -52,6 +52,10 @@ public final class Penalties {
 		} else {
 			target.takeDamage(dealt, cause);
 		}
+		if (source != target.side()) {
+			// ENG-37: la DEF persa per una carta avversaria è una penalità (Remnants of Reality)
+			target.recordDefensePenalty(dealt);
+		}
 		return dealt;
 	}
 

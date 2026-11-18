@@ -548,4 +548,65 @@ class CreatureInPlayTest {
 		assertThat(brute.defense()).isEqualTo(10);
 		assertThat(brute.removeTemporaryModifiers()).isFalse();
 	}
+
+	@Test
+	@DisplayName("ENG-37: un malus ATK dell'avversario è una penalità in coda, uno del proprio lato no")
+	void addModifier_enemyAttackMalus_recordedAsPenalty() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		StatModifier enemyMalus = StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -2,
+				ModifierDuration.whileInPlay());
+
+		// Act
+		brute.addModifier(enemyMalus);
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, -1,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.OPPONENT, 2, ModifierDuration.whileInPlay()));
+		brute.recordDefensePenalty(3);
+		brute.recordDefensePenalty(0);
+
+		// Assert
+		assertThat(brute.takeUnreportedPenalties()).containsExactly(new Penalty(0, enemyMalus), new Penalty(3, null));
+		assertThat(brute.hasUnreportedPenalties()).isFalse();
+		assertThat(brute.enemyAttackPenalties()).containsExactly(enemyMalus);
+	}
+
+	@Test
+	@DisplayName("ENG-37: cancelAttackPenalty toglie punti a un malus e tiene la durata; restoreDefense vale da morta")
+	void cancelAttackPenaltyAndRestoreDefense() {
+		// Arrange: −3 ATK per due round
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		StatModifier malus = StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -3, ModifierDuration.rounds(2));
+		brute.addModifier(malus);
+
+		// Act + Assert: 2 punti, resta −1 per due round
+		assertThat(brute.cancelAttackPenalty(malus, 2)).isEqualTo(2);
+		assertThat(brute.attack()).isEqualTo(2);
+		assertThat(brute.modifiers()).singleElement()
+				.satisfies(left -> assertThat(left.remainingRounds()).isEqualTo(2));
+		assertThat(brute.cancelAttackPenalty(malus, 2)).isZero();
+
+		// Act + Assert: da DEF −2 torna a 3
+		brute.takeDamage(12);
+		brute.restoreDefense(5);
+		assertThat(brute.defense()).isEqualTo(3);
+	}
+
+	@Test
+	@DisplayName("ENG-37: removeTemporaryBonuses toglie solo bonus e scudi a durata")
+	void removeTemporaryBonuses_onlyBonusesWithDuration() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, 2, ModifierDuration.rounds(1)));
+		brute.addModifier(StatModifier.shield(ModifierSource.HIDDEN, Side.CHALLENGER, 3,
+				ModifierDuration.untilCombatEnd()));
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -1, ModifierDuration.rounds(1)));
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.CHALLENGER, 1,
+				ModifierDuration.whileInPlay()));
+
+		// Act + Assert: 3 − 1 + 1 = 3
+		assertThat(brute.removeTemporaryBonuses()).isTrue();
+		assertThat(brute.attack()).isEqualTo(3);
+		assertThat(brute.defense()).isEqualTo(10);
+	}
 }

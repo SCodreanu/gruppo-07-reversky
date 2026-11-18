@@ -25,13 +25,16 @@ import it.downfall.reversky.engine.core.model.Side;
  * Prima di togliere una creatura, un Badge di Uscita Negata del proprietario la può salvare (D-36): allora non muore,
  * e se l'altra muore lo stesso è una morte singola, con il danno al giocatore.
  * <p>
- * Prima di cercare le morti, e di nuovo dopo gli {@code onDeath}, si riferiscono le ferite e si controllano le soglie
- * della DEF ({@link CreatureEffectService#defenseCheck}, deciso il 18 novembre): così succede dopo ogni fase.
+ * Prima di cercare le morti, e di nuovo dopo gli {@code onDeath}, si controllano le penalità (Remnants of Reality),
+ * si riferiscono le ferite e si controllano le soglie della DEF ({@link #checkDefense}, deciso il 18 novembre): così
+ * succede dopo ogni fase. Una creatura con DEF 0 o meno chiede prima al suo effetto se sopravvive (The Undying
+ * Blossom), poi al Badge (D-36).
  */
 public final class DeathResolver {
 
 	private final ItemService items;
 	private final CreatureEffectService creatureEffects;
+	private final HiddenConditionService hiddenConditions;
 
 	/**
 	 * Crea il controllo. Non ha stato: la stessa istanza serve qualsiasi partita.
@@ -41,6 +44,21 @@ public final class DeathResolver {
 	public DeathResolver(ItemService items) {
 		this.items = items;
 		this.creatureEffects = new CreatureEffectService(items);
+		this.hiddenConditions = new HiddenConditionService(items.effects(), items);
+	}
+
+	/**
+	 * Controllo della DEF dopo una fase: prima le penalità (Remnants of Reality, ENG-37), poi le ferite e le soglie
+	 * ({@link CreatureEffectService#defenseCheck}); si ripete finché qualcuno riceve nuove penalità. Lo fa ogni
+	 * controllo delle morti, e il round al passo 5.
+	 *
+	 * @param state stato della partita
+	 */
+	public void checkDefense(MatchState state) {
+		do {
+			hiddenConditions.penalties(state);
+			creatureEffects.defenseCheck(state);
+		} while (hasUnreportedPenalties(state));
 	}
 
 	/**
@@ -50,14 +68,14 @@ public final class DeathResolver {
 	 * @return {@code true} se è morta almeno una creatura, cioè lo scontro è finito
 	 */
 	public boolean resolve(MatchState state) {
-		// deciso il 18 novembre: prima si riferiscono le ferite e si controllano le soglie, che possono uccidere
-		creatureEffects.defenseCheck(state);
+		// deciso il 18 novembre: prima le penalità, le ferite e le soglie, che possono uccidere o salvare
+		checkDefense(state);
 		List<CreatureInPlay> dead = new ArrayList<>();
 		List<CreatureInPlay> newlyDead = collectNewDeaths(state, dead);
 		while (!newlyDead.isEmpty()) {
 			dead.addAll(newlyDead);
 			creatureEffects.death(state, newlyDead);
-			creatureEffects.defenseCheck(state);
+			checkDefense(state);
 			newlyDead = collectNewDeaths(state, dead);
 		}
 		if (dead.isEmpty()) {
@@ -84,6 +102,8 @@ public final class DeathResolver {
 			state.player(side).creature()
 					.filter(creature -> !alreadyDead.contains(creature))
 					.filter(CreatureInPlay::isDead)
+					// D-36: prima l'effetto della creatura (The Undying Blossom), poi il Badge
+					.filter(creature -> !creatureEffects.surviveLethal(state, creature))
 					.filter(creature -> !items.saveFromDeath(state, creature))
 					.ifPresent(creature -> {
 						state.log().creatureDied(creature);
@@ -91,6 +111,15 @@ public final class DeathResolver {
 					});
 		}
 		return newlyDead;
+	}
+
+	private static boolean hasUnreportedPenalties(MatchState state) {
+		for (Side side : Side.values()) {
+			if (state.player(side).creature().filter(CreatureInPlay::hasUnreportedPenalties).isPresent()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static void removeDeadCreature(MatchState state, CreatureInPlay dead) {

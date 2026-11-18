@@ -162,4 +162,15 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	default boolean onTerrainArriving(CreatureContext ctx, CardDefinition terrain) {
 		return false;
 	}
+
+	/**
+	 * La creatura ha DEF 0 o meno e sta per morire (ENG-37, D-36): al controllo delle morti, dopo le prevenzioni e
+	 * prima del Badge di Uscita Negata. L'effetto la può salvare (The Undying Blossom) lasciandola con DEF sopra 0.
+	 *
+	 * @param ctx contesto
+	 * @return {@code true} se la creatura sopravvive
+	 */
+	default boolean onLethalDamage(CreatureContext ctx) {
+		return false;
+	}
 }

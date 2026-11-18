@@ -196,6 +196,23 @@ public final class CreatureEffectService {
 	}
 
 	/**
+	 * Controllo delle morti (ENG-37, D-36): una creatura con DEF 0 o meno chiede ai suoi effetti se sopravvive, prima
+	 * del Badge di Uscita Negata.
+	 *
+	 * @param state    stato della partita
+	 * @param creature creatura con DEF 0 o meno
+	 * @return {@code true} se un effetto l'ha salvata
+	 */
+	public boolean surviveLethal(MatchState state, CreatureInPlay creature) {
+		for (CreatureEffect effect : creature.effects()) {
+			if (effect.onLethalDamage(context(state, creature))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Un Terreno appena pescato sta per entrare in gioco (ENG-36): {@code onTerrainArriving} delle creature vive,
 	 * nell'ordine D-30, fino alla prima che lo inghiotte.
 	 *

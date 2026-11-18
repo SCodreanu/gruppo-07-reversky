@@ -54,6 +54,9 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 	/** Un Terreno appena pescato sta per entrare in gioco: true se l'effetto lo inghiotte (ENG-36). */
 	default boolean onTerrainArriving(CreatureContext ctx, CardDefinition terrain) { return false; }
+
+	/** La creatura ha DEF 0 o meno e sta per morire: true se l'effetto la salva (ENG-37, D-36). */
+	default boolean onLethalDamage(CreatureContext ctx) { return false; }
 }
 ```
 
@@ -122,11 +125,14 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
    sopravvissuta
 ```
 
-Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08), con il `DeathResolver`: una creatura uccisa da un danno da effetto prima del passo 4 non attacca. Ogni controllo delle morti comincia con il controllo della DEF (`onWounded`, `onDefenseCheck`, deciso il 18 novembre), che può uccidere a sua volta.
+Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08), con il `DeathResolver`: una creatura uccisa da un danno da effetto prima del passo 4 non attacca. Ogni controllo delle morti comincia con il controllo della DEF (`DeathResolver.checkDefense`, deciso il 18 novembre): prima le penalità (Remnants of Reality, `ENG-37`), poi `onWounded` e `onDefenseCheck`, che possono uccidere a loro volta; si ripete finché nessuno riceve nuove penalità. Una creatura con DEF 0 o meno chiede prima al suo effetto se sopravvive (`onLethalDamage`, The Undying Blossom), poi al Badge di Uscita Negata (D-36).
 Se una creatura muore prima del passo 4, il round si interrompe: **il round conta** (in `totalRounds` e per il limite di round, come il suo `ROUND_STARTED` nel log), nessuno attacca e i modificatori a round della sopravvissuta scadono come a fine round (deciso il 17 novembre).
 Lo stesso controllo vale fuori dai round: una Spell pescata o una Hidden all'inizio dello scontro possono uccidere, e la morte ha le stesse conseguenze (danno al giocatore, creatura sconfitta, fine dello scontro). Se all'inizio dello scontro resta una sola creatura, il round non si gioca e chi ha il campo vuoto pesca di nuovo.
 
-Le Hidden **con una condizione** (D-15) non scattano al passo 0: restano coperte e si controllano quando la loro condizione si può verificare: Unseen Exit al passo 3 (un attacco ucciderebbe la creatura, dopo tutte le altre riduzioni), Remnants of Reality dopo ogni penalità ricevuta. Una Hidden pescata nella pescata iniziale non si attiva nel primo scontro.
+Le Hidden **con una condizione** (D-15, `HiddenEffect.condition()`, implementate il 18 novembre con `ENG-37`) non scattano al passo 0: restano coperte e le controlla l'`HiddenConditionService` quando la loro condizione si può verificare. Si attiva la prima pronta del proprietario, nell'ordine di pescata; anche una Hidden con condizione della pescata iniziale non si attiva nel primo scontro, e il Campanello del Torii dell'avversario la annulla come le altre.
+
+- **Unseen Exit** (`LETHAL_ATTACK`): al passo 3, dopo le prevenzioni dell'effetto, se il danno dell'attacco arriva almeno alla DEF attuale (scudi compresi) previene 5 danni; si attiva e si scarta anche se non basta a salvarla. Un danno da effetto non la attiva.
+- **Remnants of Reality** (`PENALTY`): ogni **penalità** resta in coda nella creatura (`Penalty`): DEF persa per una carta avversaria (passa da `Penalties`: effetti, Spell, Hidden, danni in attesa, Devouring Abyss) o malus ATK di una carta avversaria (`CreatureInPlay.addModifier` lo riconosce dal lato); attacchi, sacrifici, sigilli e congelamenti no. Al controllo della DEF dopo la fase la Hidden annulla fino a 5 punti: prima ridà la DEF tolta dalle penalità di quella fase, nell'ordine e mai più di quanta ne hanno tolta, anche a una creatura con DEF 0 o meno (così le evita la morte); poi toglie punti ai malus ATK avversari ancora attivi, dal più vecchio. I punti avanzati si perdono, la DEF persa nelle fasi prima resta persa. Senza Remnants pronta, le penalità della fase si scartano.
 
 ### Danno da effetto
 
@@ -332,6 +338,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `EXIT_CLERK` | L'Addetto alle Uscite (The Exit Clerk) | creatura, `onEnterPlay` (sigillo di 2 finché l'avversaria resta in campo; senza bonus anche −1 ATK nel primo round) | fatto, `BonusSealEffectsTest` |
 | `DEATHMOTHS` | Deathmoths | creatura, `onEnterPlay` (sigillo di 2 e −2 ATK finché l'avversaria resta in campo) | fatto, `BonusSealEffectsTest` |
 | `SCP_3999` | SCP-3999 | creatura, `onEnterPlay`, `onRoundStart` (toglie i bonus all'entrata e nel 3°, 5°, … round in campo; +1 ATK ogni volta, massimo +3) | fatto, `BonusSealEffectsTest` |
+| `UNDYING_BLOSSOM` | The Undying Blossom | creatura, `onLethalDamage` (una volta resta con 4 DEF, perde i bonus a durata, 3 danni all'avversaria) | fatto, `SurvivalEffectsTest` |
 | `NULL_WITNESS` | The Null Witness | creatura, `onEnterPlay` (4 danni, poi via i modificatori temporanei; toglie il Terreno pescato dall'avversario) | fatto, `TerrainRemovalEffectsTest` |
 | `HOLLOW_WYRM` | The Hollow Wyrm | creatura, `onEnterPlay`, `onTerrainArriving` (inghiotte i Terreni, +3 ATK e +3 DEF per ognuno; senza Terreno all'entrata 4 danni) | fatto, `TerrainRemovalEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
@@ -350,6 +357,8 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `HOSTILE_PRESENCE` | Hostile Presence | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `ECHO_STRIKE` | Echo Strike | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `BREAKING_POINT` | Breaking Point | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `REMNANTS_OF_REALITY` | Remnants of Reality | Hidden `SURVIVAL` con condizione `PENALTY` (annulla fino a 5 punti di penalità) | fatto, `SurvivalEffectsTest` |
+| `UNSEEN_EXIT` | Unseen Exit | Hidden `SURVIVAL` con condizione `LETHAL_ATTACK` (previene 5 danni al passo 3) | fatto, `SurvivalEffectsTest` |
 | `STATIC_INTERFERENCE` | Static Interference | Hidden `DAMAGE`, inizio scontro (sigillo di 5 fino a fine scontro, o 5 danni) | fatto, `BonusSealEffectsTest` |
 | `ECHO_RIFT` | Echo Rift (Crepa Eco) | Terreno, bonus base; secondario `onWounded` (+1 ATK alla prima ferita di ogni scontro) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
 | `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base; secondario `reduceDefensePenalty` (ogni penalità DEF −1) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
@@ -372,7 +381,7 @@ I Terreni hanno il bonus base (`BaseTerrainEffect`) e, dal 18 novembre (`ENG-27`
 
 "Ogni scontro" per Echo Rift e Watching Rift è `MatchState.combatWindow()`: lo scontro in corso o, fra due scontri, quello che sta per iniziare (deciso il 18 novembre). Una Spell pescata dopo una morte colpisce la sopravvissuta per il suo prossimo scontro.
 Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla la prima Spell, Hidden o attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario. Valgono i testi del catalogo finché D-25 è aperta.
-Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point e Static Interference (`ENG-35`) hanno la loro. Mancano le Hidden `P2` con condizione: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (`ENG-37`).
+Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point e Static Interference (`ENG-35`) hanno la loro; Remnants of Reality e Unseen Exit (`ENG-37`) sono le Hidden con condizione. Ci sono tutte le otto Hidden.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).
 Gli effetti sono stati decisi nella [revisione carta per carta](../bilanciamento/revisione-effetti.md) del 10 e 11 novembre: lì ci sono, per ogni carta, i dettagli di motore e le interazioni.
