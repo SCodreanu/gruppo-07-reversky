@@ -9,7 +9,10 @@ public enum EventType {
 	/** Inizio della partita, con i punti vita iniziali. */
 	MATCH_STARTED,
 
-	/** Un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature c'è CREATURE_ENTERED). */
+	/**
+	 * Un giocatore pesca una Spell, un Terreno o un Oggetto (per le creature c'è CREATURE_ENTERED, per le Hidden
+	 * HIDDEN_SET).
+	 */
 	CARD_DRAWN,
 
 	/** Una creatura entra in campo. */

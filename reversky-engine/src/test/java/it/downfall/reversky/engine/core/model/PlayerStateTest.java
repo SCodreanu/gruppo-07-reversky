@@ -21,6 +21,10 @@ class PlayerStateTest {
 	private static final CardDefinition KAPPA = TestCards.creature("Kappa", TestFactions.DREAM, 6, 6);
 	private static final CardDefinition VEIL = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD,
 			"VEIL_OF_ANCHORED");
+	private static final CardDefinition SANCTUARY = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL,
+			"LAST_SANCTUARY");
+	private static final CardDefinition PRESENCE = TestCards.hidden(109, "Hostile Presence", CardSubtype.DAMAGE,
+			"HOSTILE_PRESENCE");
 	private static final CardDefinition TORII_BELL = TestCards.item(120, "Campanello del Torii",
 			TestFactions.DREAM, "TORII_BELL");
 
@@ -187,6 +191,38 @@ class PlayerStateTest {
 		assertThat(player.pendingModifiers()).containsExactly(second);
 		assertThat(player.takePendingModifiers()).containsExactly(second);
 		assertThatThrownBy(() -> player.addPendingModifier(-1, first)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("D-15: le Hidden coperte restano nella zona nell'ordine di pescata finché si scartano")
+	void hiddenZone_setThenDiscard() {
+		// Arrange
+		PlayerState player = player(List.of());
+		SetHidden sanctuary = new SetHidden(SANCTUARY, 2);
+		SetHidden presence = new SetHidden(PRESENCE, 3);
+
+		// Act
+		player.setHidden(sanctuary);
+		player.setHidden(presence);
+		player.discardHidden(sanctuary);
+
+		// Assert
+		assertThat(player.hiddenZone()).containsExactly(presence);
+		assertThatThrownBy(() -> player.discardHidden(sanctuary)).isInstanceOf(IllegalStateException.class);
+	}
+
+	@Test
+	@DisplayName("Una Hidden è pronta dal suo scontro in poi; serve una carta Hidden e uno scontro da 1")
+	void setHidden_readyFromItsCombat() {
+		// Arrange
+		SetHidden hidden = new SetHidden(SANCTUARY, 2);
+
+		// Act + Assert
+		assertThat(hidden.isReadyIn(1)).isFalse();
+		assertThat(hidden.isReadyIn(2)).isTrue();
+		assertThat(hidden.isReadyIn(5)).isTrue();
+		assertThatThrownBy(() -> new SetHidden(VEIL, 1)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> new SetHidden(SANCTUARY, 0)).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	private static PendingModifier pending(String card, int attack, int shield) {

@@ -101,6 +101,8 @@ Attivazione (D-15, decisa il 9 novembre e modificata il 10):
 - una Hidden pescata nella pescata iniziale **non si attiva nel primo scontro** ("non nel primo turno" del catalogo, regola adottata l'11 novembre);
 - se più Hidden si attivano nello stesso momento, le `DAMAGE` si risolvono prima delle `SURVIVAL`.
 
+Implementazione (`ENG-20`): la Hidden pescata va coperta nella zona Hidden del `PlayerState` e il log dice solo `HIDDEN_SET`, senza nominarla; ricorda da quale scontro può attivarsi (il prossimo, o il secondo per la pescata iniziale). All'inizio di ogni scontro, dopo i modificatori in attesa, si attivano le Hidden pronte: prima le `DAMAGE`, poi le `SURVIVAL`, a parità prima quelle dello sfidante e nell'ordine di pescata. Se una Hidden uccide, lo scontro finisce prima di cominciare e le altre restano coperte per lo scontro dopo (deciso il 17 novembre). Le Hidden con condizione (`P2`) non sono ancora implementate.
+
 Durate: "nello scontro corrente" = finché una delle due creature muore; "prima del calcolo dello scontro" (Hidden `DAMAGE`) = il malus ATK vale solo il primo round, il danno alla DEF è permanente. Dettagli nel [catalogo degli effetti](../effetti/catalogo-effetti.md#hidden).
 
 ### Terreno (`TERRAIN`)

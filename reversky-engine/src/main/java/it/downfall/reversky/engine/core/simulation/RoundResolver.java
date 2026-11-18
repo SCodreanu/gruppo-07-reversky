@@ -1,33 +1,46 @@
 package it.downfall.reversky.engine.core.simulation;
 
+import java.util.List;
+
+import it.downfall.reversky.engine.core.effect.EffectContext;
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.log.MatchLog;
+import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.PlayerState;
+import it.downfall.reversky.engine.core.model.SetHidden;
+import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.rules.FactionMatrix;
 
 /**
  * Risolve l'inizio di uno scontro e i round, nell'ordine dei passi di docs/effetti ("Ordine di risoluzione di un
  * round"), che fa parte delle regole: non si cambia senza aggiornare quel documento.
  * <p>
- * Passi già presenti: 0 (bonus DEF di fazione e modificatori in attesa), 2 (calcolo dell'attacco), 4 (danni
+ * Passi già presenti: 0 (bonus DEF di fazione, modificatori in attesa e Hidden), 2 (calcolo dell'attacco), 4 (danni
  * simultanei) e 7 (morti e danno al giocatore, con il {@link DeathResolver}). Gli altri passi arrivano con gli
- * effetti, le Hidden, i Terreni e gli Oggetti (ENG-20…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima
+ * effetti, i Terreni e gli Oggetti (ENG-21…ENG-23). Quando una cosa riguarda entrambi i giocatori, prima
  * lo sfidante e poi l'avversario.
  */
 public final class RoundResolver {
 
+	/** D-15: se più Hidden si attivano insieme, prima le {@code DAMAGE}, poi le {@code SURVIVAL}. */
+	private static final List<CardSubtype> HIDDEN_ORDER = List.of(CardSubtype.DAMAGE, CardSubtype.SURVIVAL);
+
 	private final FactionMatrix factionMatrix;
+	private final EffectRegistry effects;
 	private final DeathResolver deaths = new DeathResolver();
 
 	/**
 	 * Crea il risolutore per una partita.
 	 *
 	 * @param factionMatrix bonus di fazione della partita
+	 * @param effects       registro degli effetti, per le Hidden che si attivano a inizio scontro
 	 */
-	public RoundResolver(FactionMatrix factionMatrix) {
+	public RoundResolver(FactionMatrix factionMatrix, EffectRegistry effects) {
 		this.factionMatrix = factionMatrix;
+		this.effects = effects;
 	}
 
 	/**
@@ -38,10 +51,12 @@ public final class RoundResolver {
 	 * scontro, come DEF permanente.</li>
 	 * <li>Ogni creatura al suo primo scontro riceve i modificatori in attesa del proprietario (D-34), prima lo
 	 * sfidante.</li>
-	 * <li>Si controllano le morti (D-08): un danno in attesa può uccidere, e allora lo scontro finisce prima di
-	 * cominciare.</li>
+	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
+	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
 	 * <li>Si fissa la DEF all'entrata delle creature rimaste, al loro primo scontro (M-06).</li>
 	 * </ol>
+	 * Dopo ogni fase che può togliere DEF si controllano le morti (D-08): se muore una creatura lo scontro finisce
+	 * prima di cominciare, e le Hidden non ancora attivate restano coperte per lo scontro dopo.
 	 *
 	 * @param state stato della partita, con due creature in campo
 	 * @throws IllegalStateException se manca una creatura
@@ -49,11 +64,14 @@ public final class RoundResolver {
 	public void startCombat(MatchState state) {
 		CreatureInPlay challenger = requireCreature(state.challenger());
 		CreatureInPlay opponent = requireCreature(state.opponent());
+		int combat = state.startNextCombat();
 		applyDefenseBonus(challenger, opponent, state.log());
 		applyDefenseBonus(opponent, challenger, state.log());
 		applyPendingModifiers(state.challenger(), challenger, state.log());
 		applyPendingModifiers(state.opponent(), opponent, state.log());
-		deaths.resolve(state);
+		if (!deaths.resolve(state)) {
+			triggerHiddenCards(state, combat);
+		}
 		state.challenger().creature().ifPresent(CreatureInPlay::recordInitialDefense);
 		state.opponent().creature().ifPresent(CreatureInPlay::recordInitialDefense);
 	}
@@ -110,6 +128,28 @@ public final class RoundResolver {
 			log.effectTriggered(creature.side(), creature.name(), MatchLog.describe(modifier) + " from "
 					+ modifier.card() + " (ATK " + MatchLog.number(creature.attack()) + ", DEF "
 					+ MatchLog.number(creature.defense()) + ")");
+		}
+	}
+
+	/**
+	 * D-15: le Hidden senza condizione pronte per questo scontro, {@code DAMAGE} prima di {@code SURVIVAL}. Ogni Hidden
+	 * si scarta quando si attiva; se una uccide, le altre aspettano lo scontro dopo.
+	 */
+	private void triggerHiddenCards(MatchState state, int combat) {
+		for (CardSubtype subtype : HIDDEN_ORDER) {
+			for (Side side : Side.values()) {
+				PlayerState owner = state.player(side);
+				for (SetHidden hidden : owner.hiddenZone()) {
+					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype) {
+						owner.discardHidden(hidden);
+						effects.createHidden(hidden.card().effectCode())
+								.trigger(new EffectContext(state, side, hidden.card()));
+						if (deaths.resolve(state)) {
+							return;
+						}
+					}
+				}
+			}
 		}
 	}
 

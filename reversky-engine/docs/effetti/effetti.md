@@ -58,7 +58,8 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
        Spell DAMAGE pescate senza bersaglio; poi controllo delle morti (D-08)
      - bonus del Terreno
      - effetto dell'Oggetto (dopo il Terreno, D-48)
-     - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL)
+     - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL; a parità prima lo sfidante); se una Hidden
+       uccide, lo scontro finisce qui e le Hidden non ancora attivate restano coperte per lo scontro dopo
      - onEnterPlay di entrambe le creature, poi gli effetti che guardano
        l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…)
      - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
@@ -245,8 +246,14 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `CRACK_CALL` | Richiamo della Crepa (Call of the Rift) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
 | `REVERSE_FUSION` | Fusione del Rovescio (Reverse Fusion) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
 | `FORGOTTEN_ECHO` | Eco dei Dimenticati (Echo of the Forgotten) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
+| `LAST_SANCTUARY` | Last Sanctuary | Hidden `SURVIVAL`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `SURVIVAL_INSTINCT` | Survival Instinct | Hidden `SURVIVAL`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `HOSTILE_PRESENCE` | Hostile Presence | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `ECHO_STRIKE` | Echo Strike | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `BREAKING_POINT` | Breaking Point | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
+Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).
 Gli effetti sono stati decisi nella [revisione carta per carta](../bilanciamento/revisione-effetti.md) del 10 e 11 novembre: lì ci sono, per ogni carta, i dettagli di motore e le interazioni.

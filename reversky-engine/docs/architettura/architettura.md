@@ -29,6 +29,7 @@ core/
 │   ├── CreatureInPlay      creatura sul campo: ATK, DEF permanente più scudi, modificatori, effetto
 │   ├── StatModifier        modificatore con origine, lato, durata e sospensione (D-35)
 │   ├── PendingModifier     modificatore in attesa della prossima creatura di un giocatore (D-34)
+│   ├── SetHidden           Hidden coperta nella zona Hidden, con lo scontro da cui può attivarsi (D-15)
 │   ├── Faction             record (id, nome): le fazioni sono dati, non un enum
 │   ├── PlayerState         lato (CHALLENGER/OPPONENT), punti vita, mazzo, creatura in campo, Hidden, Oggetto
 │   └── MatchState          i due giocatori + numero round + log + random + il Terreno in gioco (uno solo, D-19)
@@ -39,7 +40,7 @@ core/
 │   ├── MatchSimulator      punto d'ingresso: simulate(SimulationInput) → MatchResult
 │   ├── RoundResolver       risolve un singolo round nell'ordine stabilito
 │   ├── DeathResolver       morti e danno al giocatore (DEF negativa), dopo ogni fase che toglie DEF (D-08)
-│   ├── DrawService         pesca finché esce una creatura; risolve le Spell pescate (Hidden, Terreni, Oggetti: ENG-20…)
+│   ├── DrawService         pesca finché esce una creatura; risolve le Spell, mette coperte le Hidden
 │   └── EndConditionChecker controlla se e come finisce la partita
 ├── effect/
 │   ├── CardEffect          interfaccia chiusa degli effetti di Spell, Hidden, Terreni e Oggetti, una per tipo

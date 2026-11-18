@@ -19,6 +19,7 @@ public final class MatchState {
 	private final RandomGenerator random;
 	private final MatchLog log = new MatchLog();
 	private int round;
+	private int combatsStarted;
 	private PlacedTerrain terrain;
 
 	/**
@@ -111,6 +112,25 @@ public final class MatchState {
 	public int startNextRound() {
 		round++;
 		return round;
+	}
+
+	/**
+	 * Scontri iniziati finora, compresi quelli finiti prima del primo round (D-08); 0 durante la pescata iniziale.
+	 *
+	 * @return il numero dell'ultimo scontro iniziato
+	 */
+	public int combatsStarted() {
+		return combatsStarted;
+	}
+
+	/**
+	 * Inizia un nuovo scontro: una nuova coppia di creature si affronta.
+	 *
+	 * @return il numero del nuovo scontro, da 1
+	 */
+	public int startNextCombat() {
+		combatsStarted++;
+		return combatsStarted;
 	}
 
 	/**

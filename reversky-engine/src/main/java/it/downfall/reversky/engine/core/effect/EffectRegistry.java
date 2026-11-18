@@ -7,14 +7,19 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
+import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.DissolutionEffect;
+import it.downfall.reversky.engine.core.effect.impl.EchoStrikeEffect;
 import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
+import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
+import it.downfall.reversky.engine.core.effect.impl.LastSanctuaryEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
 import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
+import it.downfall.reversky.engine.core.effect.impl.SurvivalInstinctEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.model.CardType;
 
@@ -45,7 +50,7 @@ public final class EffectRegistry {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry withAllEffects() {
-		// Hidden con ENG-20, Terreni con ENG-21, Oggetti con ENG-33, creature con ENG-23
+		// Terreni con ENG-21, Oggetti con ENG-33, creature con ENG-23
 		return new EffectRegistry()
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
@@ -56,7 +61,12 @@ public final class EffectRegistry {
 				.registerSpell(Scp458Effect.CODE, Scp458Effect::new)
 				.registerSpell(CallOfTheRiftEffect.CODE, CallOfTheRiftEffect::new)
 				.registerSpell(ReverseFusionEffect.CODE, ReverseFusionEffect::new)
-				.registerSpell(ForgottenEchoEffect.CODE, ForgottenEchoEffect::new);
+				.registerSpell(ForgottenEchoEffect.CODE, ForgottenEchoEffect::new)
+				.registerHidden(LastSanctuaryEffect.CODE, LastSanctuaryEffect::new)
+				.registerHidden(SurvivalInstinctEffect.CODE, SurvivalInstinctEffect::new)
+				.registerHidden(HostilePresenceEffect.CODE, HostilePresenceEffect::new)
+				.registerHidden(EchoStrikeEffect.CODE, EchoStrikeEffect::new)
+				.registerHidden(BreakingPointEffect.CODE, BreakingPointEffect::new);
 	}
 
 	/**

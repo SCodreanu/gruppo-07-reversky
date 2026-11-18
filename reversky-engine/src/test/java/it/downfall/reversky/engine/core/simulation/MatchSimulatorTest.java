@@ -237,6 +237,31 @@ class MatchSimulatorTest {
 	}
 
 	@Test
+	@DisplayName("D-15: una Hidden della pescata iniziale salta il primo scontro e si attiva nel secondo")
+	void simulate_hiddenInInitialDraw_triggersInSecondCombat() {
+		// Arrange: con il seed 3 lo sfidante pesca Last Sanctuary prima di SCP-131, l'avversario Eternal Cup prima
+		// di Mothling. Round 1 come l'esempio 01; nel secondo scontro Last Sanctuary dà +5 DEF a SCP-131 (2 → 7) e
+		// lo scudo assorbe i 3 danni di Mothling; Mothling 4 − 8 = −4
+		CardDefinition sanctuary = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUARY");
+		SimulationInput input = TestInputs.of(3L, List.of(sanctuary, creature(301, "SCP-131", ARCHIVE, 8, 6)),
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), creature(306, "Mothling", ARCHIVE, 3, 4)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert
+		assertResult(result, BattleResult.CHALLENGER_WIN, EndReason.NO_CREATURES_LEFT, 2, 30, 23, 2, 0);
+		assertThat(result.log()).extracting(MatchEvent::type).startsWith(EventType.MATCH_STARTED,
+				EventType.HIDDEN_SET, EventType.CREATURE_ENTERED, EventType.CREATURE_ENTERED, EventType.ROUND_STARTED);
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.HIDDEN_TRIGGERED)
+				.singleElement()
+				.satisfies(event -> assertThat(event.round()).isEqualTo(1));
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.DAMAGE_DEALT)
+				.extracting(event -> event.data().get("targetDefense"))
+				.containsExactly(-3, 2, -4, 4);
+	}
+
+	@Test
 	@DisplayName("Una Spell dell'avversario uccide la creatura appena pescata dallo sfidante: lo sfidante ripesca")
 	void simulate_spellKillsCreatureJustDrawn_ownerDrawsAgain() {
 		// Arrange: con il seed 5 l'avversario pesca nell'ordine dato. Round 1: 5/4 contro 5/5, muoiono entrambe.

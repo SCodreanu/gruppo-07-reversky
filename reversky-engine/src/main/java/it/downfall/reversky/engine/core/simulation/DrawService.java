@@ -9,6 +9,7 @@ import it.downfall.reversky.engine.core.model.CardType;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlayerState;
+import it.downfall.reversky.engine.core.model.SetHidden;
 
 /**
  * Pescata (regole-base, "Pescare"): un giocatore con il campo vuoto pesca finché esce una creatura, che entra in campo.
@@ -16,7 +17,9 @@ import it.downfall.reversky.engine.core.model.PlayerState;
  * <ul>
  * <li>Spell: l'effetto si risolve e la carta si scarta (D-10). Una Spell {@code DAMAGE} può uccidere la creatura
  * avversaria: le morti si controllano subito dopo (D-08).</li>
- * <li>Hidden, Terreni e Oggetti: per ora si registrano e si scartano (ENG-20, ENG-21, ENG-33).</li>
+ * <li>Hidden: si mette coperta nella zona Hidden e si attiverà all'inizio del prossimo scontro del proprietario; una
+ * Hidden della pescata iniziale salta il primo scontro (D-15).</li>
+ * <li>Terreni e Oggetti: per ora si registrano e si scartano (ENG-21, ENG-33).</li>
  * </ul>
  * Se nel mazzo restano solo carte non creatura si risolvono tutte (D-06); la fine della partita la controlla il
  * simulatore.
@@ -52,15 +55,31 @@ public final class DrawService {
 				state.log().creatureEntered(creature);
 				return true;
 			}
-			state.log().cardDrawn(player.side(), card);
-			if (card.type() == CardType.SPELL) {
-				resolveSpell(state, player, card);
+			if (card.type() == CardType.HIDDEN) {
+				// Una Hidden resta coperta: il log non la nomina finché non si attiva (HIDDEN_SET, niente CARD_DRAWN)
+				setHidden(state, player, card);
+			} else {
+				state.log().cardDrawn(player.side(), card);
+				if (card.type() == CardType.SPELL) {
+					resolveSpell(state, player, card);
+				}
 			}
-			// TODO(@tommasofatticcioni): per ora Hidden, Terreni e Oggetti si scartano senza effetto;
-			// vanno risolti con ENG-20 (#58), ENG-21 (#59) ed ENG-33 (#140)
+			// TODO(@tommasofatticcioni): per ora Terreni e Oggetti si scartano senza effetto;
+			// vanno risolti con ENG-21 (#59) ed ENG-33 (#140)
 			drawn = player.drawCard();
 		}
 		return false;
+	}
+
+	/**
+	 * D-15: la Hidden si attiva nel prossimo scontro, cioè quello che inizia dopo questa pescata. Nella pescata
+	 * iniziale (nessuno scontro ancora iniziato) il prossimo è il primo, che la Hidden salta: si attiva dal secondo.
+	 */
+	private static void setHidden(MatchState state, PlayerState player, CardDefinition hidden) {
+		int nextCombat = state.combatsStarted() + 1;
+		int readyFrom = state.combatsStarted() == 0 ? nextCombat + 1 : nextCombat;
+		player.setHidden(new SetHidden(hidden, readyFrom));
+		state.log().hiddenSet(player.side());
 	}
 
 	private void resolveSpell(MatchState state, PlayerState player, CardDefinition spell) {
