@@ -54,6 +54,22 @@ final class EffectActions {
 	}
 
 	/**
+	 * Sigillo dei bonus ATK con origine {@code EFFECT} (ENG-35, D-35): i bonus ATK del bersaglio, anche quelli dopo,
+	 * contano {@code amount} punti in meno.
+	 *
+	 * @param target   creatura sigillata
+	 * @param cause    creatura che la sigilla
+	 * @param amount   punti sigillati, almeno 1
+	 * @param duration durata
+	 * @return la parte di messaggio
+	 */
+	static String seal(CreatureInPlay target, CreatureInPlay cause, int amount, ModifierDuration duration) {
+		target.addModifier(StatModifier.sealAttack(ModifierSource.EFFECT, cause.side(), amount, duration));
+		return "seals " + amount + " points of " + target.name() + "'s ATK bonuses (ATK "
+				+ MatchLog.number(target.attack()) + ")";
+	}
+
+	/**
 	 * DEF permanente in più (es. Il Raccoglitore di Orme): resta finché la creatura è in campo e i danni la consumano.
 	 *
 	 * @param target creatura che la riceve

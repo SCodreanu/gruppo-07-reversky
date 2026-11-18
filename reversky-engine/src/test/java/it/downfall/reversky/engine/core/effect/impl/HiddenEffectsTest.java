@@ -128,14 +128,13 @@ class HiddenEffectsTest {
 	}
 
 	@Test
-	@DisplayName("Il registro del gioco ha le cinque Hidden P1; quelle con condizione (P2) non ci sono ancora")
-	void registry_p1HiddenOnly() {
+	@DisplayName("Il registro del gioco ha le cinque Hidden P1 e Static Interference; quelle con condizione non ancora")
+	void registry_hiddenWithoutCondition() {
 		assertThat(List.of(LastSanctuaryEffect.CODE, SurvivalInstinctEffect.CODE, HostilePresenceEffect.CODE,
-				EchoStrikeEffect.CODE, BreakingPointEffect.CODE))
+				EchoStrikeEffect.CODE, BreakingPointEffect.CODE, StaticInterferenceEffect.CODE))
 				.allSatisfy(code -> assertThat(registry.exists(code, CardType.HIDDEN)).isTrue());
 		assertThat(registry.appliesTo("REMNANTS_OF_REALITY")).isEmpty();
 		assertThat(registry.appliesTo("UNSEEN_EXIT")).isEmpty();
-		assertThat(registry.appliesTo("STATIC_INTERFERENCE")).isEmpty();
 	}
 
 	private void trigger(String code, CardSubtype subtype) {
