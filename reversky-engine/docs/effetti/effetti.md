@@ -75,6 +75,10 @@ Li usano Wretches, Shuten-dōji e SCP-096 (`onWounded`), Nure-onna e The Unseen 
 
 La **guarigione** è `CreatureInPlay.heal(n)` (deciso il 18 novembre): DEF permanente in più, senza superare la DEF all'entrata, scudi compresi, quindi uno scudo dell'entrata scaduto si può recuperare. Una creatura con DEF 0 o meno è morta e non recupera niente (D-16), quindi una guarigione non salva mai da una morte. Le ferite già subite restano in `woundsTaken()`. Nel log è un `EFFECT_TRIGGERED` ("recovers 3 DEF (DEF 9)"), nessun evento nuovo.
 
+Il **sigillo dei bonus ATK** (deciso il 18 novembre, `ENG-35`) è un modificatore (`StatModifier.sealAttack`, `Stat.ATTACK_SEAL`) con origine, lato e durata come gli altri: finché è attivo, i bonus ATK della creatura (i modificatori di ATK positivi, di qualunque origine, anche quelli ricevuti dopo) contano tanti punti in meno, mai sotto 0. I malus contano sempre per intero e il bonus di fazione, che non è un modificatore, non si sigilla. `CreatureInPlay.effectiveAttackBonus()` dà i bonus che contano davvero: "se non ne ha" (L'Addetto alle Uscite, Static Interference) vuol dire che è 0, quindi un bonus già tutto sigillato non conta. Il sigillo dell'Addetto e di Deathmoths resta sull'avversaria per tutta la sua permanenza, anche dopo la loro morte; quello di Static Interference dura fino a fine scontro. Lo userà anche Kitsune (`ENG-38`).
+
+SCP-3999 **toglie** i bonus (`CreatureInPlay.removeBonuses()`, deciso il 18 novembre): i modificatori di ATK positivi e gli scudi, di qualunque origine, per sempre. Restano malus, sigilli, congelamenti e la DEF permanente (bonus DEF di fazione e "+N DEF" degli effetti compresi); dello scudo sparisce solo la parte non usata, quindi non uccide mai. Il bonus del Terreno tolto non torna finché non arriva un altro Terreno (D-17). Il suo +1 ATK arriva anche se il Fascicolo Sigillato 0 annulla l'attivazione sull'avversaria, come il bonus di Smiler.
+
 Un **effetto collegato** è l'effetto di un'altra carta che la creatura porta finché resta in campo (deciso il 18 novembre, `ENG-34`): arriva con un modificatore in attesa (`PendingModifier.attached()`), che lo passa alla creatura (`CreatureInPlay.attachEffect`). Il motore chiama tutti gli effetti di una creatura (`CreatureInPlay.effects()`): prima il suo, poi quelli collegati, nell'ordine in cui sono arrivati; la priorità D-30 la decide l'effetto della creatura. Un effetto collegato è della Spell, non della creatura: annullare l'effetto della creatura non lo tocca. Lo usa SCP-109.
 
 `onCombatStart` (aggiunto il 18 novembre con `ENG-25`, D-31) scatta a ogni inizio di scontro per entrambe le creature, cioè ogni volta che una creatura affronta una nuova avversaria: quando entra e quando sopravvive e ne arriva un'altra. Serve agli effetti "contro ogni avversaria" (Mothman, Spearfinger, Bigfoot). `onEnterPlay` resta una volta per entrata.
@@ -320,6 +324,9 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `STITCHED_CORRIDOR` | The Stitched Corridor (Mutant) | creatura, `onCombatStart`, `modifyIncomingDamage` (classe base `FirstAttackShieldEffect`) | fatto, `MutantEffectsTest` |
 | `BLOODLESS_HOUND` | The Bloodless Hound | creatura, `afterAttack` (recupera metà del danno), `onKill` (recupera 4) | fatto, `HealEffectsTest` |
 | `WENDIGO` | Wendigo | creatura, `onRoundEnd` (3 danni più 1 per eliminazione, massimo 6), `onKill` (recupera 5) | fatto, `HealEffectsTest` |
+| `EXIT_CLERK` | L'Addetto alle Uscite (The Exit Clerk) | creatura, `onEnterPlay` (sigillo di 2 finché l'avversaria resta in campo; senza bonus anche −1 ATK nel primo round) | fatto, `BonusSealEffectsTest` |
+| `DEATHMOTHS` | Deathmoths | creatura, `onEnterPlay` (sigillo di 2 e −2 ATK finché l'avversaria resta in campo) | fatto, `BonusSealEffectsTest` |
+| `SCP_3999` | SCP-3999 | creatura, `onEnterPlay`, `onRoundStart` (toglie i bonus all'entrata e nel 3°, 5°, … round in campo; +1 ATK ogni volta, massimo +3) | fatto, `BonusSealEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
@@ -336,6 +343,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `HOSTILE_PRESENCE` | Hostile Presence | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `ECHO_STRIKE` | Echo Strike | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `BREAKING_POINT` | Breaking Point | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `STATIC_INTERFERENCE` | Static Interference | Hidden `DAMAGE`, inizio scontro (sigillo di 5 fino a fine scontro, o 5 danni) | fatto, `BonusSealEffectsTest` |
 | `ECHO_RIFT` | Echo Rift (Crepa Eco) | Terreno, bonus base; secondario `onWounded` (+1 ATK alla prima ferita di ogni scontro) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
 | `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base; secondario `reduceDefensePenalty` (ogni penalità DEF −1) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
 | `WATCHING_RIFT` | Watching Rift (Crepa Occhi) | Terreno, bonus base; secondario `reduceDamageSpell` (prima Spell `DAMAGE` di ogni scontro −1) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
@@ -357,7 +365,7 @@ I Terreni hanno il bonus base (`BaseTerrainEffect`) e, dal 18 novembre (`ENG-27`
 
 "Ogni scontro" per Echo Rift e Watching Rift è `MatchState.combatWindow()`: lo scontro in corso o, fra due scontri, quello che sta per iniziare (deciso il 18 novembre). Una Spell pescata dopo una morte colpisce la sopravvissuta per il suo prossimo scontro.
 Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla la prima Spell, Hidden o attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario. Valgono i testi del catalogo finché D-25 è aperta.
-Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
+Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point e Static Interference (`ENG-35`) hanno la loro. Mancano le Hidden `P2` con condizione: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (`ENG-37`).
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).
 Gli effetti sono stati decisi nella [revisione carta per carta](../bilanciamento/revisione-effetti.md) del 10 e 11 novembre: lì ci sono, per ogni carta, i dettagli di motore e le interazioni.

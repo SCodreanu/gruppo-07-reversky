@@ -167,12 +167,38 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Somma dei modificatori di ATK attivi.
+	 * Somma dei modificatori di ATK attivi: i bonus meno i punti sigillati (mai sotto 0, ENG-35), più i malus.
 	 *
 	 * @return la somma, anche negativa
 	 */
 	public int attackModifiers() {
-		return modifiers.stream().mapToInt(StatModifier::attackBonus).sum();
+		int penalties = modifiers.stream().mapToInt(StatModifier::attackBonus).filter(value -> value < 0).sum();
+		return effectiveAttackBonus() + penalties;
+	}
+
+	/**
+	 * Bonus ATK che contano davvero (ENG-35, deciso il 18 novembre): la somma dei modificatori di ATK positivi attivi,
+	 * meno i sigilli, mai sotto 0. Se è 0 la creatura "non ha bonus ATK" (L'Addetto alle Uscite, Static
+	 * Interference).
+	 *
+	 * @return i bonus ATK effettivi, almeno 0
+	 */
+	public int effectiveAttackBonus() {
+		int bonuses = modifiers.stream().mapToInt(StatModifier::attackBonus).filter(value -> value > 0).sum();
+		int sealed = modifiers.stream().mapToInt(StatModifier::sealValue).sum();
+		return Math.max(0, bonuses - sealed);
+	}
+
+	/**
+	 * Toglie per sempre tutti i bonus (SCP-3999, ENG-35, deciso il 18 novembre): i modificatori di ATK positivi e gli
+	 * scudi, di qualunque origine, anche quello di un Terreno, che non torna finché non arriva un altro Terreno.
+	 * Restano malus, sigilli, congelamenti e la DEF permanente (bonus di fazione compreso); dello scudo sparisce solo
+	 * la parte non usata, quindi non uccide mai.
+	 *
+	 * @return {@code true} se ha tolto almeno un modificatore
+	 */
+	public boolean removeBonuses() {
+		return modifiers.removeIf(StatModifier::isBonus);
 	}
 
 	/**

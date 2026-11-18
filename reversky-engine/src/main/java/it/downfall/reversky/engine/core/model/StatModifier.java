@@ -5,8 +5,8 @@ package it.downfall.reversky.engine.core.model;
  * <p>
  * Ogni modificatore riporta l'origine ({@link ModifierSource}) e il lato che l'ha causato, così gli effetti possono
  * distinguerlo, sospenderlo o toglierlo. Ha una durata ({@link ModifierDuration}) e si può sospendere per intero:
- * mentre è sospeso non conta (né l'ATK né lo scudo). Sospendere solo una parte di un modificatore (Static
- * Interference, Remnants of Reality) è compito di quegli effetti.
+ * mentre è sospeso non conta (né l'ATK né lo scudo). Per togliere solo una parte dei bonus ATK c'è il sigillo
+ * ({@link #sealAttack}, ENG-35): L'Addetto alle Uscite, Deathmoths, Static Interference, Kitsune.
  * <p>
  * Lo stato cambia solo tramite {@link CreatureInPlay}, che conosce l'ordine degli scudi e la fine di round e scontri.
  */
@@ -78,6 +78,24 @@ public final class StatModifier {
 	 */
 	public static StatModifier freezeAttack(ModifierSource source, Side side, ModifierDuration duration) {
 		return new StatModifier(source, side, Stat.ATTACK_FREEZE, 0, duration);
+	}
+
+	/**
+	 * Sigillo dei bonus ATK (ENG-35, deciso il 18 novembre): finché è attivo, i bonus ATK della creatura contano
+	 * {@code amount} punti in meno in tutto, anche quelli ricevuti dopo, mai sotto 0.
+	 *
+	 * @param source   origine
+	 * @param side     lato che l'ha causato
+	 * @param amount   punti di bonus ATK sigillati, almeno 1
+	 * @param duration durata
+	 * @return il modificatore
+	 * @throws IllegalArgumentException se {@code amount} è minore di 1
+	 */
+	public static StatModifier sealAttack(ModifierSource source, Side side, int amount, ModifierDuration duration) {
+		if (amount < 1) {
+			throw new IllegalArgumentException("Un sigillo vale almeno 1 punto: " + amount);
+		}
+		return new StatModifier(source, side, Stat.ATTACK_SEAL, amount, duration);
 	}
 
 	/**
@@ -159,6 +177,25 @@ public final class StatModifier {
 	 */
 	public int shieldValue() {
 		return stat == Stat.DEFENSE_SHIELD && !isSuspended() ? remainingShield : 0;
+	}
+
+	/**
+	 * Punti di bonus ATK sigillati.
+	 *
+	 * @return {@link #amount()} per un sigillo attivo; 0 se è sospeso o non è un sigillo
+	 */
+	public int sealValue() {
+		return stat == Stat.ATTACK_SEAL && !isSuspended() ? amount : 0;
+	}
+
+	/**
+	 * Indica se è un bonus: un modificatore di ATK positivo o uno scudo (SCP-3999, ENG-35). Malus, sigilli e
+	 * congelamenti non lo sono.
+	 *
+	 * @return {@code true} per un bonus, anche sospeso
+	 */
+	public boolean isBonus() {
+		return stat == Stat.DEFENSE_SHIELD || stat == Stat.ATTACK && amount > 0;
 	}
 
 	/**

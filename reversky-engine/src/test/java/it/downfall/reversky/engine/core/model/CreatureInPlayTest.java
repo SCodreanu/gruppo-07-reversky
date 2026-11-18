@@ -460,4 +460,72 @@ class CreatureInPlayTest {
 		assertThat(plain.effects()).containsExactly(first);
 		assertThat(plain.effect()).isEmpty();
 	}
+
+	@Test
+	@DisplayName("ENG-35: il sigillo toglie punti solo ai bonus ATK, anche a quelli dopo; i malus contano sempre")
+	void sealAttack_onlyPositiveBonuses() {
+		// Arrange: Brute 3 con +1 e +2 ATK, sigillo di 2
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addModifier(StatModifier.attack(ModifierSource.TERRAIN, Side.CHALLENGER, 1,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.CHALLENGER, 2,
+				ModifierDuration.whileInPlay()));
+
+		// Act + Assert: 3 + (3 − 2) = 4
+		brute.addModifier(StatModifier.sealAttack(ModifierSource.EFFECT, Side.OPPONENT, 2,
+				ModifierDuration.whileInPlay()));
+		assertThat(brute.attack()).isEqualTo(4);
+		assertThat(brute.effectiveAttackBonus()).isEqualTo(1);
+
+		// Act + Assert: un malus di 2 conta per intero, 3 + 1 − 2 = 2
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -2,
+				ModifierDuration.whileInPlay()));
+		assertThat(brute.attack()).isEqualTo(2);
+
+		// Act + Assert: un sigillo più grande dei bonus non tocca il malus, 3 + 0 − 2 = 1
+		brute.addModifier(StatModifier.sealAttack(ModifierSource.SPELL, Side.OPPONENT, 5,
+				ModifierDuration.untilCombatEnd()));
+		assertThat(brute.attack()).isEqualTo(1);
+		assertThat(brute.effectiveAttackBonus()).isZero();
+
+		// Act + Assert: a fine scontro scade solo il secondo sigillo
+		brute.endCombat();
+		assertThat(brute.attack()).isEqualTo(2);
+	}
+
+	@Test
+	@DisplayName("ENG-35: un sigillo di 0 punti non si può creare")
+	void sealAttack_zero_throws() {
+		assertThatThrownBy(() -> StatModifier.sealAttack(ModifierSource.EFFECT, Side.OPPONENT, 0,
+				ModifierDuration.whileInPlay())).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-35: removeBonuses toglie bonus ATK e scudi; tiene malus, sigilli, congelamento, DEF permanente")
+	void removeBonuses_keepsPenaltiesAndPermanentDefense() {
+		// Arrange: Brute 3/10 con +2 DEF permanente, +2 ATK, scudo di 3, −1 ATK, sigillo e congelamento
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addDefense(2);
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.CHALLENGER, 2,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.shield(ModifierSource.TERRAIN, Side.CHALLENGER, 3,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -1,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.sealAttack(ModifierSource.EFFECT, Side.OPPONENT, 1,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.freezeAttack(ModifierSource.EFFECT, Side.OPPONENT,
+				ModifierDuration.rounds(1)));
+
+		// Act
+		boolean removed = brute.removeBonuses();
+
+		// Assert
+		assertThat(removed).isTrue();
+		assertThat(brute.defense()).isEqualTo(12);
+		assertThat(brute.attack()).isEqualTo(2);
+		assertThat(brute.modifiers()).extracting(StatModifier::stat)
+				.containsExactly(Stat.ATTACK, Stat.ATTACK_SEAL, Stat.ATTACK_FREEZE);
+		assertThat(brute.removeBonuses()).isFalse();
+	}
 }
