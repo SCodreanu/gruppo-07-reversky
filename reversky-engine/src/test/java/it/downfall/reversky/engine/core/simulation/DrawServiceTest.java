@@ -14,6 +14,7 @@ import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.PlacedTerrain;
 import it.downfall.reversky.engine.core.model.SetHidden;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.support.TestCards;
@@ -127,12 +128,32 @@ class DrawServiceTest {
 	}
 
 	@Test
-	@DisplayName("Terreni e Oggetti per ora si registrano con CARD_DRAWN e si scartano (ENG-21, ENG-33)")
-	void drawCreature_terrainAndItem_loggedAndSkipped() {
+	@DisplayName("D-17: un Terreno pescato entra in gioco e dà subito il bonus alla creatura avversaria della fazione")
+	void drawCreature_terrain_placedWithImmediateBonus() {
+		// Arrange: Kappa dell'avversario è Archive come Watching Rift (+1 ATK, +1 DEF)
+		CardDefinition rift = TestCards.terrain(115, "Watching Rift", TestFactions.ARCHIVE, "WATCHING_RIFT");
+		MatchState state = TestStates.withDecks(List.of(rift, CRAWLERS), List.of());
+		CreatureInPlay kappa = new CreatureInPlay(KAPPA, Side.OPPONENT);
+		state.opponent().placeCreature(kappa);
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert: anche Crawlers è Archive, ma il suo bonus arriva all'inizio dello scontro
+		assertThat(state.terrain()).contains(new PlacedTerrain(rift, Side.CHALLENGER));
+		assertThat(kappa.attack()).isEqualTo(7);
+		assertThat(kappa.defense()).isEqualTo(5);
+		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(4);
+		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
+				EventType.TERRAIN_PLACED, EventType.EFFECT_TRIGGERED, EventType.CREATURE_ENTERED);
+	}
+
+	@Test
+	@DisplayName("Gli Oggetti per ora si registrano con CARD_DRAWN e si scartano (ENG-33)")
+	void drawCreature_item_loggedAndSkipped() {
 		// Arrange
-		CardDefinition rift = TestCards.terrain(113, "Echo Rift", TestFactions.WOUND, "ECHO_RIFT");
 		CardDefinition bell = TestCards.item(120, "Torii Bell", TestFactions.DREAM, "TORII_BELL");
-		List<CardDefinition> deck = List.of(rift, bell, CRAWLERS);
+		List<CardDefinition> deck = List.of(bell, CRAWLERS);
 		MatchState state = TestStates.withDecks(deck, List.of());
 		DrawService withStubs = new DrawService(TestEffects.stubsFor(deck));
 
@@ -141,8 +162,7 @@ class DrawServiceTest {
 
 		// Assert
 		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
-				EventType.CARD_DRAWN, EventType.CREATURE_ENTERED);
-		assertThat(state.terrain()).isEmpty();
+				EventType.CREATURE_ENTERED);
 		assertThat(state.challenger().item()).isEmpty();
 	}
 

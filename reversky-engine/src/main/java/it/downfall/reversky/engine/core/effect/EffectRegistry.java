@@ -9,9 +9,12 @@ import java.util.function.Supplier;
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
 import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
+import it.downfall.reversky.engine.core.effect.impl.DevouringAbyssEffect;
 import it.downfall.reversky.engine.core.effect.impl.DissolutionEffect;
+import it.downfall.reversky.engine.core.effect.impl.EchoRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoStrikeEffect;
 import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
+import it.downfall.reversky.engine.core.effect.impl.HollowClearingEffect;
 import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
 import it.downfall.reversky.engine.core.effect.impl.LastSanctuaryEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
@@ -21,6 +24,7 @@ import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
 import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
 import it.downfall.reversky.engine.core.effect.impl.SurvivalInstinctEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
+import it.downfall.reversky.engine.core.effect.impl.WatchingRiftEffect;
 import it.downfall.reversky.engine.core.model.CardType;
 
 /**
@@ -50,7 +54,7 @@ public final class EffectRegistry {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry withAllEffects() {
-		// Terreni con ENG-21, Oggetti con ENG-33, creature con ENG-23
+		// Oggetti con ENG-33, creature con ENG-23
 		return new EffectRegistry()
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
@@ -66,7 +70,11 @@ public final class EffectRegistry {
 				.registerHidden(SurvivalInstinctEffect.CODE, SurvivalInstinctEffect::new)
 				.registerHidden(HostilePresenceEffect.CODE, HostilePresenceEffect::new)
 				.registerHidden(EchoStrikeEffect.CODE, EchoStrikeEffect::new)
-				.registerHidden(BreakingPointEffect.CODE, BreakingPointEffect::new);
+				.registerHidden(BreakingPointEffect.CODE, BreakingPointEffect::new)
+				.registerTerrain(EchoRiftEffect.CODE, EchoRiftEffect::new)
+				.registerTerrain(HollowClearingEffect.CODE, HollowClearingEffect::new)
+				.registerTerrain(WatchingRiftEffect.CODE, WatchingRiftEffect::new)
+				.registerTerrain(DevouringAbyssEffect.CODE, DevouringAbyssEffect::new);
 	}
 
 	/**

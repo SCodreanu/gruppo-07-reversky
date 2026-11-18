@@ -56,7 +56,7 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
      - bonus DEF di fazione
      - modificatori in attesa del proprietario (D-34), solo alla creatura al suo primo scontro: Spell SHIELD e BURN,
        Spell DAMAGE pescate senza bersaglio; poi controllo delle morti (D-08)
-     - bonus del Terreno
+     - bonus del Terreno, alle creature della sua fazione che non l'hanno ancora ricevuto (una volta per Terreno)
      - effetto dell'Oggetto (dopo il Terreno, D-48)
      - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL; a parità prima lo sfidante); se una Hidden
        uccide, lo scontro finisce qui e le Hidden non ancora attivate restano coperte per lo scontro dopo
@@ -251,8 +251,13 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `HOSTILE_PRESENCE` | Hostile Presence | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `ECHO_STRIKE` | Echo Strike | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `BREAKING_POINT` | Breaking Point | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
+| `ECHO_RIFT` | Echo Rift (Crepa Eco) | Terreno, bonus base | fatto, `TerrainServiceTest` |
+| `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base | fatto, `TerrainServiceTest` |
+| `WATCHING_RIFT` | Watching Rift (Crepa Occhi) | Terreno, bonus base | fatto, `TerrainServiceTest` |
+| `DEVOURING_ABYSS` | Devouring Abyss (Crepa Cavità) | Terreno, bonus base | fatto, `TerrainServiceTest` |
 
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
+I Terreni hanno solo il bonus base (`BaseTerrainEffect`); gli effetti secondari arrivano con `ENG-27`.
 Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).

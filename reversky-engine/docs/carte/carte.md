@@ -124,6 +124,11 @@ La fazione del Terreno è il suo `factionId`; l'effetto è il suo `effectCode`. 
 
 Il bonus DEF del Terreno si applica quando la creatura **entra in campo** (o subito, se è già in campo quando il Terreno viene pescato).
 
+Implementazione (`ENG-21`, `TerrainService`):
+- il bonus si riceve **una volta per Terreno**: subito, se la creatura è in campo quando il Terreno arriva, altrimenti all'inizio del suo primo scontro, dopo i modificatori in attesa. Uno scudo del Terreno consumato non torna allo scontro dopo;
+- ATK e DEF del Terreno hanno origine `TERRAIN` e durano finché il Terreno resta in gioco; la DEF è uno scudo che assorbe i danni **prima** degli altri scudi "finché resta in campo" (per esempio quello di una Spell), perché può sparire prima (deciso il 17 novembre);
+- il log registra con `EFFECT_TRIGGERED` sia il bonus ricevuto sia il bonus perso quando il Terreno esce (deciso il 17 novembre).
+
 ### Oggetto (`ITEM`)
 
 Quando viene pescato viene messo **accanto al mazzo**, come un Terreno, e non può essere distrutto né scartato da altre carte. È **monouso** (D-47, decisa il 10 novembre): resta finché il suo effetto scatta una volta, sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma. Ha una fazione (`factionId`), un effetto (`effectCode`, obbligatorio) e rarità Rare. Ogni mazzo ne contiene uno (lo controlla l'API) e ogni fazione ne ha uno nel catalogo.

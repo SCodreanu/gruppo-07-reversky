@@ -41,6 +41,7 @@ core/
 │   ├── RoundResolver       risolve un singolo round nell'ordine stabilito
 │   ├── DeathResolver       morti e danno al giocatore (DEF negativa), dopo ogni fase che toglie DEF (D-08)
 │   ├── DrawService         pesca finché esce una creatura; risolve le Spell, mette coperte le Hidden
+│   ├── TerrainService      mette in gioco il Terreno (uno solo, D-19) e dà o toglie il suo bonus (D-17)
 │   └── EndConditionChecker controlla se e come finisce la partita
 ├── effect/
 │   ├── CardEffect          interfaccia chiusa degli effetti di Spell, Hidden, Terreni e Oggetti, una per tipo
