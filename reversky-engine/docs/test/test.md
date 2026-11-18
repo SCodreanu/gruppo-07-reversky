@@ -34,7 +34,8 @@ I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto
   - `TestCards`: creature, Spell, Hidden, Terreni e Oggetti in una riga (`cardId` 0 se non serve un id);
   - `TestDecks`: mazzi piccoli in ordine (`of(...)`) e un mazzo completo da 30 carte per fazione con le carte del catalogo (`full(fazione)`), controllato da `TestDecksTest`;
   - `TestInputs`: `SimulationInput` con regole, fazioni e bonus standard;
-  - `TestStates` e le creature in campo (`TestCards.inPlay`) arrivano con `ENG-05`, quando esistono `MatchState` e `CreatureInPlay`.
+  - `TestStates`: `inCombat(...)` (due creature già in campo) e `withDecks(...)` (prima della pescata iniziale);
+  - `TestCards.inPlay(carta, lato)`: una creatura già in campo.
 
 ### Esempio: regola del danno al giocatore
 
@@ -55,8 +56,8 @@ class RoundResolverTest {
 		new RoundResolver(rules, TestFactions.noBonuses()).resolve(state);
 
 		// Assert
-		assertThat(state.challenger().creature().defense()).isEqualTo(2);
-		assertThat(state.opponent().creature()).isNull();          // B è morta con DEF −3
+		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(2);
+		assertThat(state.opponent().creature()).isEmpty();         // B è morta con DEF −3
 		assertThat(state.opponent().lifePoints()).isEqualTo(30 - 3);
 	}
 }
