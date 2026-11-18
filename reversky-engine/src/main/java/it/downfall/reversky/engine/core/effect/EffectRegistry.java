@@ -29,6 +29,7 @@ import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
 import it.downfall.reversky.engine.core.effect.impl.GnawingWitnessEffect;
 import it.downfall.reversky.engine.core.effect.impl.HidebehindEffect;
 import it.downfall.reversky.engine.core.effect.impl.HollowClearingEffect;
+import it.downfall.reversky.engine.core.effect.impl.HollowWyrmEffect;
 import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
 import it.downfall.reversky.engine.core.effect.impl.HoundsEffect;
 import it.downfall.reversky.engine.core.effect.impl.HowlersEffect;
@@ -42,6 +43,7 @@ import it.downfall.reversky.engine.core.effect.impl.MothmanEffect;
 import it.downfall.reversky.engine.core.effect.impl.NameCollectorEffect;
 import it.downfall.reversky.engine.core.effect.impl.NamelessCallerEffect;
 import it.downfall.reversky.engine.core.effect.impl.NopperaBoEffect;
+import it.downfall.reversky.engine.core.effect.impl.NullWitnessEffect;
 import it.downfall.reversky.engine.core.effect.impl.NureOnnaEffect;
 import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
@@ -169,6 +171,8 @@ public final class EffectRegistry {
 				.registerCreature(ExitClerkEffect.CODE, ExitClerkEffect::new)
 				.registerCreature(DeathmothsEffect.CODE, DeathmothsEffect::new)
 				.registerCreature(Scp3999Effect.CODE, Scp3999Effect::new)
+				.registerCreature(NullWitnessEffect.CODE, NullWitnessEffect::new)
+				.registerCreature(HollowWyrmEffect.CODE, HollowWyrmEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)

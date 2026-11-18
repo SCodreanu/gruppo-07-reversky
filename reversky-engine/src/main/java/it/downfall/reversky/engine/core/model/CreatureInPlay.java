@@ -202,6 +202,18 @@ public final class CreatureInPlay {
 	}
 
 	/**
+	 * Toglie i modificatori temporanei (The Null Witness, ENG-36, deciso il 18 novembre): tutti quelli con una durata
+	 * a round o fino a fine scontro, di ogni segno (bonus, scudi, malus, sigilli, congelamenti). Restano quelli che
+	 * durano finché la creatura resta in campo, come le Spell (D-12) e il Terreno. Dello scudo sparisce solo la parte
+	 * non usata, quindi non uccide mai.
+	 *
+	 * @return {@code true} se ha tolto almeno un modificatore
+	 */
+	public boolean removeTemporaryModifiers() {
+		return modifiers.removeIf(modifier -> modifier.durationKind() != ModifierDuration.Kind.WHILE_IN_PLAY);
+	}
+
+	/**
 	 * ATK base più i modificatori, senza il bonus di fazione: quello dipende dall'avversaria e si somma nel calcolo
 	 * del round, dove si applica anche il minimo 0.
 	 *

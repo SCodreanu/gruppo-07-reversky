@@ -51,6 +51,9 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 	/** L'avversaria è morta e questa creatura è sopravvissuta, a scontro finito (passo 7, ENG-34). */
 	default void onKill(CreatureContext ctx, CreatureInPlay defeated) { }
+
+	/** Un Terreno appena pescato sta per entrare in gioco: true se l'effetto lo inghiotte (ENG-36). */
+	default boolean onTerrainArriving(CreatureContext ctx, CardDefinition terrain) { return false; }
 }
 ```
 
@@ -78,6 +81,8 @@ La **guarigione** è `CreatureInPlay.heal(n)` (deciso il 18 novembre): DEF perma
 Il **sigillo dei bonus ATK** (deciso il 18 novembre, `ENG-35`) è un modificatore (`StatModifier.sealAttack`, `Stat.ATTACK_SEAL`) con origine, lato e durata come gli altri: finché è attivo, i bonus ATK della creatura (i modificatori di ATK positivi, di qualunque origine, anche quelli ricevuti dopo) contano tanti punti in meno, mai sotto 0. I malus contano sempre per intero e il bonus di fazione, che non è un modificatore, non si sigilla. `CreatureInPlay.effectiveAttackBonus()` dà i bonus che contano davvero: "se non ne ha" (L'Addetto alle Uscite, Static Interference) vuol dire che è 0, quindi un bonus già tutto sigillato non conta. Il sigillo dell'Addetto e di Deathmoths resta sull'avversaria per tutta la sua permanenza, anche dopo la loro morte; quello di Static Interference dura fino a fine scontro. Lo userà anche Kitsune (`ENG-38`).
 
 SCP-3999 **toglie** i bonus (`CreatureInPlay.removeBonuses()`, deciso il 18 novembre): i modificatori di ATK positivi e gli scudi, di qualunque origine, per sempre. Restano malus, sigilli, congelamenti e la DEF permanente (bonus DEF di fazione e "+N DEF" degli effetti compresi); dello scudo sparisce solo la parte non usata, quindi non uccide mai. Il bonus del Terreno tolto non torna finché non arriva un altro Terreno (D-17). Il suo +1 ATK arriva anche se il Fascicolo Sigillato 0 annulla l'attivazione sull'avversaria, come il bonus di Smiler.
+
+Un Terreno **esce** per un effetto (deciso il 18 novembre, `ENG-36`) con `Terrains.remove`: evento `TERRAIN_REMOVED` con la causa, poi le creature perdono i suoi bonus come quando è sostituito (D-19). The Null Witness lo toglie solo se l'ha pescato l'avversario, e lo toglie anche se il Fascicolo Sigillato 0 salva la creatura, perché il Terreno non è la creatura. The Hollow Wyrm inghiotte quello in gioco all'entrata e quelli pescati dopo: prima di piazzare un Terreno, il `TerrainService` chiede alle creature vive, nell'ordine D-30, `onTerrainArriving`; se una lo inghiotte, il Terreno non si piazza, non sostituisce niente e non c'è `TERRAIN_PLACED`. The Null Witness toglie all'avversaria, dopo i 4 danni, i **modificatori temporanei** (`CreatureInPlay.removeTemporaryModifiers()`): tutti quelli con una durata a round o fino a fine scontro, di ogni segno; restano quelli che durano finché la creatura resta in campo, come le Spell (D-12).
 
 Un **effetto collegato** è l'effetto di un'altra carta che la creatura porta finché resta in campo (deciso il 18 novembre, `ENG-34`): arriva con un modificatore in attesa (`PendingModifier.attached()`), che lo passa alla creatura (`CreatureInPlay.attachEffect`). Il motore chiama tutti gli effetti di una creatura (`CreatureInPlay.effects()`): prima il suo, poi quelli collegati, nell'ordine in cui sono arrivati; la priorità D-30 la decide l'effetto della creatura. Un effetto collegato è della Spell, non della creatura: annullare l'effetto della creatura non lo tocca. Lo usa SCP-109.
 
@@ -327,6 +332,8 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `EXIT_CLERK` | L'Addetto alle Uscite (The Exit Clerk) | creatura, `onEnterPlay` (sigillo di 2 finché l'avversaria resta in campo; senza bonus anche −1 ATK nel primo round) | fatto, `BonusSealEffectsTest` |
 | `DEATHMOTHS` | Deathmoths | creatura, `onEnterPlay` (sigillo di 2 e −2 ATK finché l'avversaria resta in campo) | fatto, `BonusSealEffectsTest` |
 | `SCP_3999` | SCP-3999 | creatura, `onEnterPlay`, `onRoundStart` (toglie i bonus all'entrata e nel 3°, 5°, … round in campo; +1 ATK ogni volta, massimo +3) | fatto, `BonusSealEffectsTest` |
+| `NULL_WITNESS` | The Null Witness | creatura, `onEnterPlay` (4 danni, poi via i modificatori temporanei; toglie il Terreno pescato dall'avversario) | fatto, `TerrainRemovalEffectsTest` |
+| `HOLLOW_WYRM` | The Hollow Wyrm | creatura, `onEnterPlay`, `onTerrainArriving` (inghiotte i Terreni, +3 ATK e +3 DEF per ognuno; senza Terreno all'entrata 4 danni) | fatto, `TerrainRemovalEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |

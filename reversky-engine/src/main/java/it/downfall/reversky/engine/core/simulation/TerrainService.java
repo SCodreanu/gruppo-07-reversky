@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.effect.TerrainEffect;
+import it.downfall.reversky.engine.core.effect.Terrains;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
@@ -36,6 +37,7 @@ import it.downfall.reversky.engine.core.model.StatModifier;
 public final class TerrainService {
 
 	private final EffectRegistry effects;
+	private final CreatureEffectService creatureEffects;
 
 	/**
 	 * Crea il servizio. Non conserva stato tra le partite.
@@ -44,21 +46,26 @@ public final class TerrainService {
 	 */
 	public TerrainService(EffectRegistry effects) {
 		this.effects = effects;
+		this.creatureEffects = new CreatureEffectService(new ItemService(effects));
 	}
 
 	/**
 	 * Mette in gioco un Terreno appena pescato: toglie i bonus di quello che sostituisce e dà il suo alle creature in
-	 * campo della sua fazione, prima lo sfidante.
+	 * campo della sua fazione, prima lo sfidante. Prima però una creatura in campo lo può inghiottire (The Hollow Wyrm,
+	 * ENG-36): allora non si piazza e non sostituisce niente.
 	 *
 	 * @param state stato della partita
 	 * @param owner giocatore che l'ha pescato
 	 * @param card  carta del Terreno
 	 */
 	public void place(MatchState state, PlayerState owner, CardDefinition card) {
+		if (creatureEffects.terrainArriving(state, card)) {
+			return;
+		}
 		Optional<PlacedTerrain> replaced = state.placeTerrain(card, owner.side(),
 				effects.createTerrain(card.effectCode()));
 		state.log().terrainPlaced(owner.side(), card, replaced.map(PlacedTerrain::card).orElse(null));
-		replaced.ifPresent(old -> forEachCreature(state, creature -> loseBonus(state, creature, old)));
+		replaced.ifPresent(old -> Terrains.loseBonuses(state, old));
 		forEachCreature(state, creature -> applyBonus(state, creature));
 	}
 
@@ -109,13 +116,6 @@ public final class TerrainService {
 					return;
 				}
 			}
-		}
-	}
-
-	private static void loseBonus(MatchState state, CreatureInPlay creature, PlacedTerrain old) {
-		if (creature.loseTerrainBonus()) {
-			state.log().effectTriggered(creature.side(), creature.name(),
-					"loses the " + old.card().name() + " bonus " + stats(creature));
 		}
 	}
 

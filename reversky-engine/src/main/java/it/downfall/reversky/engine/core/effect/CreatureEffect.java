@@ -1,5 +1,6 @@
 package it.downfall.reversky.engine.core.effect;
 
+import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.Wound;
 
@@ -147,5 +148,18 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	 * @param defeated la creatura eliminata
 	 */
 	default void onKill(CreatureContext ctx, CreatureInPlay defeated) {
+	}
+
+	/**
+	 * Un Terreno appena pescato sta per entrare in gioco mentre questa creatura è in campo e viva (ENG-36, deciso il 18
+	 * novembre): l'effetto lo può inghiottire (The Hollow Wyrm), e allora il Terreno non si piazza. Il motore chiede
+	 * alle creature nell'ordine D-30 e si ferma alla prima che lo inghiotte.
+	 *
+	 * @param ctx     contesto
+	 * @param terrain carta del Terreno pescato
+	 * @return {@code true} se l'effetto inghiotte il Terreno
+	 */
+	default boolean onTerrainArriving(CreatureContext ctx, CardDefinition terrain) {
+		return false;
 	}
 }

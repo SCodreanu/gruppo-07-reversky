@@ -10,6 +10,7 @@ import it.downfall.reversky.engine.core.effect.CreatureContext;
 import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.effect.EffectPriority;
 import it.downfall.reversky.engine.core.effect.EnemyEffectGuard;
+import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlacedTerrain;
@@ -192,6 +193,25 @@ public final class CreatureEffectService {
 	 */
 	public void kill(MatchState state, CreatureInPlay survivor, CreatureInPlay defeated) {
 		forEachEffect(state, List.of(survivor), (effect, ctx) -> effect.onKill(ctx, defeated));
+	}
+
+	/**
+	 * Un Terreno appena pescato sta per entrare in gioco (ENG-36): {@code onTerrainArriving} delle creature vive,
+	 * nell'ordine D-30, fino alla prima che lo inghiotte.
+	 *
+	 * @param state   stato della partita
+	 * @param terrain carta del Terreno pescato
+	 * @return {@code true} se una creatura l'ha inghiottito: allora il Terreno non si piazza
+	 */
+	public boolean terrainArriving(MatchState state, CardDefinition terrain) {
+		for (CreatureInPlay creature : inOrder(alive(state))) {
+			for (CreatureEffect effect : creature.effects()) {
+				if (effect.onTerrainArriving(context(state, creature), terrain)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private void forEachEffect(MatchState state, List<CreatureInPlay> creatures,
