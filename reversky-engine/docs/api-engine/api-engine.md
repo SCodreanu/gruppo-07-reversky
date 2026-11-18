@@ -188,4 +188,4 @@ arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /a
 ## Note
 
 - Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. Se l'engine viene esposto fuori dalla rete privata si aggiunge una chiave condivisa nell'header `X-Engine-Key`, letta da una variabile d'ambiente (D-40).
-- Ogni endpoint va documentato anche in Swagger (springdoc), come nell'API.
+- Ogni endpoint è documentato anche in Swagger (springdoc 3.2.0, come nell'API, D-41): `http://localhost:8081/swagger-ui.html`. Un nuovo endpoint ha `@Operation` e un `@ApiResponse` per ogni status, con il media type e lo schema (`ProblemDetail` e `application/problem+json` per gli errori), e `OpenApiDocumentationTest` controlla che compaia. Gli esempi di richiesta di Swagger (`OpenApiExamples`) sono gli esempi 01 e 08 di `examples/`: il test controlla che restino uguali ai file e che diano la partita attesa.
