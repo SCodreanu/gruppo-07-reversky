@@ -140,14 +140,34 @@ Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'
 | 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
 | 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
 
+Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `detail`, `code` e `instance`. I testi sono **in inglese**, come negli errori dell'API; non arrivano mai ai giocatori.
+
 ```json
 {
-  "title": "Input di simulazione non valido",
+  "title": "Invalid simulation input",
   "status": 400,
-  "detail": "Effetto sconosciuto: 'HIDEBEHND' sulla carta 23",
-  "code": "UNKNOWN_EFFECT"
+  "detail": "Unknown effect 'HIDEBEHND' on card 23",
+  "code": "UNKNOWN_EFFECT",
+  "instance": "/api/v1/simulations"
 }
 ```
+
+Gli errori della Bean Validation (controllo 1) hanno anche l'elenco `errors` dei campi non validi, con il percorso del campo e il messaggio del vincolo:
+
+```json
+{
+  "title": "Invalid simulation input",
+  "status": 400,
+  "detail": "One or more fields are invalid",
+  "code": "VALIDATION_FAILED",
+  "instance": "/api/v1/simulations",
+  "errors": [ { "field": "challenger.deck[0].name", "message": "Card name is required" } ]
+}
+```
+
+Un JSON malformato, o con un `type`/`subtype` che non esiste, ha `detail` "Malformed JSON or a value of the wrong type" e nessun `errors`.
+
+Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERNAL_ERROR` e un `detail` generico: la causa e il **seed** della partita vanno solo nel log tecnico dell'engine (`Simulazione fallita: seed ...`), da cui la partita si riproduce.
 
 ## `GET /api/v1/effects`
 

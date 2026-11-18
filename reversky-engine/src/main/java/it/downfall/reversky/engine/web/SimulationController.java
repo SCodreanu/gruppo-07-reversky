@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.downfall.reversky.engine.core.model.MatchResult;
+import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.simulation.MatchSimulator;
+import it.downfall.reversky.engine.core.validation.InvalidSimulationInputException;
 import it.downfall.reversky.engine.web.dto.SimulationRequest;
 import it.downfall.reversky.engine.web.dto.SimulationResponse;
 import jakarta.validation.Valid;
@@ -32,10 +34,20 @@ public class SimulationController {
 	 *
 	 * @param request mazzi, regole, fazioni, bonus e seed
 	 * @return il risultato con il log round per round
+	 * @throws InvalidSimulationInputException se l'input non è coerente (400)
+	 * @throws SimulationFailedException       se la simulazione fallisce per un bug (500, con il seed nel log)
 	 */
 	@PostMapping
 	public SimulationResponse simulate(@Valid @RequestBody SimulationRequest request) {
-		MatchResult result = simulator.simulate(mapper.toCore(request));
+		SimulationInput input = mapper.toCore(request);
+		MatchResult result;
+		try {
+			result = simulator.simulate(input);
+		} catch (InvalidSimulationInputException e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw new SimulationFailedException(input.seed(), e);
+		}
 		log.info("Simulazione completata: seed {}, {} round, {}", result.seed(), result.totalRounds(),
 				result.result());
 		return mapper.toResponse(result);

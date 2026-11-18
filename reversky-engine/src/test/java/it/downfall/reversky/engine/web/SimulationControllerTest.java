@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -88,11 +89,40 @@ class SimulationControllerTest {
 				.andExpect(jsonPath("$.log[-1].type").value("MATCH_ENDED"));
 	}
 
+	@Test
+	@DisplayName("Un mazzo senza creature è rifiutato dal core con 400 NO_CREATURES_IN_DECK")
+	void simulate_deckWithoutCreatures_returns400() throws Exception {
+		String spellOnly = VALID_REQUEST
+				.replace("\"name\": \"Eternal Cup\", \"type\": \"CREATURE\"", "\"name\": \"Eternal Cup\", \"type\": \"SPELL\"")
+				.replace("\"factionId\": 3, \"secondaryFactionId\": null, \"atk\": 4",
+						"\"factionId\": null, \"secondaryFactionId\": null, \"atk\": 4");
+
+		perform(spellOnly)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("NO_CREATURES_IN_DECK"))
+				.andExpect(jsonPath("$.detail").value("Deck without creatures: opponent"));
+	}
+
+	// TODO(@tommasofatticcioni): togliere @Disabled quando l'EffectRegistry controlla i codici (ENG-22, #60)
+	@Disabled("UNKNOWN_EFFECT arriva con l'EffectRegistry (ENG-22, #60): oggi l'effetto si ignora e la partita si gioca")
+	@Test
+	@DisplayName("Un effectCode sconosciuto è rifiutato con 400 UNKNOWN_EFFECT")
+	void simulate_unknownEffect_returns400() throws Exception {
+		String unknownEffect = VALID_REQUEST.replace("\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": null",
+				"\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": \"HIDEBEHND\"");
+
+		perform(unknownEffect)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("UNKNOWN_EFFECT"));
+	}
+
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("invalidRequests")
-	@DisplayName("Un campo obbligatorio mancante o non valido è rifiutato con 400")
+	@DisplayName("Un campo obbligatorio mancante o non valido è rifiutato con 400 VALIDATION_FAILED")
 	void simulate_invalidRequest_returns400(String description, String invalidRequest) throws Exception {
-		perform(invalidRequest).andExpect(status().isBadRequest());
+		perform(invalidRequest)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
 	}
 
 	/**

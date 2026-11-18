@@ -408,7 +408,7 @@ class SimulationInputValidatorTest {
 		// Act + Assert
 		assertThatThrownBy(() -> validator.validate(input))
 				.isInstanceOf(InvalidSimulationInputException.class)
-				.hasMessageContaining("carta 11");
+				.hasMessageContaining("card 11");
 	}
 
 	private void assertFailsWith(SimulationInput input, ErrorCode expected) {
