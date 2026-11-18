@@ -3,9 +3,11 @@ package it.downfall.reversky.engine.core.model;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
 
+import it.downfall.reversky.engine.core.log.MatchLog;
+
 /**
- * Stato di una partita in corso: i due giocatori, il numero del round, il Terreno in gioco e il generatore casuale
- * creato dal seed.
+ * Stato di una partita in corso: i due giocatori, il numero del round, il Terreno in gioco, il log e il generatore
+ * casuale creato dal seed.
  * <p>
  * Ogni simulazione crea il proprio stato: il simulatore non conserva niente tra una partita e l'altra
  * (CodingRequirements §7). Tutta la casualità passa da {@link #random()} (docs/mescolamento).
@@ -15,6 +17,7 @@ public final class MatchState {
 	private final PlayerState challenger;
 	private final PlayerState opponent;
 	private final RandomGenerator random;
+	private final MatchLog log = new MatchLog();
 	private int round;
 	private PlacedTerrain terrain;
 
@@ -80,6 +83,15 @@ public final class MatchState {
 	 */
 	public RandomGenerator random() {
 		return random;
+	}
+
+	/**
+	 * Log della partita: ogni stato ne ha uno nuovo, che parte vuoto.
+	 *
+	 * @return il log
+	 */
+	public MatchLog log() {
+		return log;
 	}
 
 	/**

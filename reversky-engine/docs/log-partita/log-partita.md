@@ -35,27 +35,30 @@ In JSON:
 
 ## Tipi di evento
 
-| `type` | Quando | `data` principale |
-|---|---|---|
-| `MATCH_STARTED` | inizio | punti vita iniziali |
-| `CARD_DRAWN` | un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07) | carta |
-| `CREATURE_ENTERED` | una creatura entra in campo | carta, ATK, DEF |
-| `SPELL_RESOLVED` | una Spell viene risolta e scartata | carta, effetto, bersaglio |
-| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13) | Spell, carta rivelata, bonus applicato (nessuno se non è una creatura) |
-| `HIDDEN_SET` | una Hidden viene messa coperta | — (la carta resta nascosta nel messaggio) |
-| `HIDDEN_TRIGGERED` | una Hidden si attiva | carta, effetto |
-| `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | carta, Terreno sostituito se c'era |
-| `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | Terreno, causa (carta che lo ha tolto) |
-| `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | carta che sposta, carta spostata, nuova posizione |
-| `ITEM_PLACED` | un Oggetto entra in gioco | carta |
-| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47) | carta, effetto, creatura |
-| `ROUND_STARTED` | inizio di un round | numero round |
-| `ATTACK_COMPUTED` | calcolo dell'attacco | ATK base, bonus ATK di fazione, modificatori, totale |
-| `DAMAGE_DEALT` | una creatura colpisce l'altra | sorgente, bersaglio, danni, DEF rimasta |
-| `EFFECT_TRIGGERED` | un'abilità agisce | creatura, descrizione |
-| `CREATURE_DIED` | una creatura muore | carta |
-| `PLAYER_DAMAGED` | un giocatore perde punti vita | danni, punti vita rimasti |
-| `MATCH_ENDED` | fine | vincitore, `endReason` |
+| `type` | Quando | Chiavi di `data` | Esempio di `message` |
+|---|---|---|---|
+| `MATCH_STARTED` | inizio | `startingLifePoints` | `Match started — 30 life points each` |
+| `CARD_DRAWN` | un giocatore pesca una Spell, una Hidden, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07) | `card`, `cardType` | `Challenger draws Veil of the Anchored (SPELL)` |
+| `CREATURE_ENTERED` | una creatura entra in campo | `card`, `attack`, `defense` | `Challenger plays Crawlers (ATK 4, DEF 5)` |
+| `SPELL_RESOLVED` | una Spell viene risolta e scartata | `card`, `effect`, `target` (nullo se si applica alla prossima creatura) | `Veil of the Anchored resolves on Kappa` |
+| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13) | `card`, `revealed` (nullo a mazzo vuoto), `bonusApplied` | `Call of the Rift reveals Kappa` |
+| `HIDDEN_SET` | una Hidden viene messa coperta | nessuna: la carta resta nascosta | `Challenger sets a Hidden card` |
+| `HIDDEN_TRIGGERED` | una Hidden si attiva | `card`, `effect` | `Last Sanctuary triggers` |
+| `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | `card`, `replaced` (nullo se non c'era un Terreno) | `Echo Rift enters play, replacing Watching Rift` |
+| `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | `card`, `cause` | `Echo Rift is removed by The Null Witness` |
+| `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | `source`, `card`, `position` (da 1) | `La Regina dei Sentieri Perduti moves Kappa to position 3` |
+| `ITEM_PLACED` | un Oggetto entra in gioco | `card` | `Challenger places Campanello del Torii` |
+| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47) | `card`, `effect`, `creature` | `Campanello del Torii is used on Kappa` |
+| `ROUND_STARTED` | inizio di un round | `round` | `Round 1` |
+| `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `total` | `Crawlers attacks with 6 (4 base, +2 faction)` |
+| `DAMAGE_DEALT` | una creatura colpisce l'altra | `source`, `target`, `amount`, `targetDefense` | `Crawlers deals 6 damage to Kappa (DEF 1)` |
+| `EFFECT_TRIGGERED` | un'abilità agisce; anche il bonus DEF di fazione a inizio scontro, se maggiore di 0 | `card`, `description` | `Kappa: +3 ATK in the first round` |
+| `CREATURE_DIED` | una creatura muore | `card` | `Crawlers is destroyed` |
+| `PLAYER_DAMAGED` | un giocatore perde punti vita | `amount`, `lifePoints` | `Challenger loses 3 life points (27 left)` |
+| `MATCH_ENDED` | fine | `result`, `endReason` | `Challenger wins (no creatures left)` |
+
+I valori di `data` non hanno testo: le carte sono indicate per nome, gli enum con il loro nome (`"SPELL"`, `"CHALLENGER_WIN"`).
+Nei messaggi le parti a 0 di `ATTACK_COMPUTED` non compaiono, e i numeri negativi usano il segno meno tipografico (−).
 
 ## Esempio di sequenza
 
@@ -66,7 +69,7 @@ In JSON:
 #4  round 0  EFFECT_TRIGGERED  Kappa: +3 ATK in the first round
 #5  round 1  ROUND_STARTED     Round 1
 #6  round 1  ATTACK_COMPUTED   Crawlers attacks with 6 (4 base, +2 faction)
-#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 effect)
+#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 modifiers)
 #8  round 1  DAMAGE_DEALT      Crawlers deals 6 damage to Kappa (DEF 1)
 #9  round 1  DAMAGE_DEALT      Kappa deals 8 damage to Crawlers (DEF −3)
 #10 round 1  CREATURE_DIED     Crawlers is destroyed
