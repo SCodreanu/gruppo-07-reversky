@@ -38,12 +38,12 @@ public abstract class DamageSpellEffect implements SpellEffect {
 		PendingModifier hit = new PendingModifier(ctx.card().name(), ModifierSource.SPELL, ctx.owner().side(),
 				-attackPenalty, 0, damage);
 		Optional<CreatureInPlay> target = ctx.opponent().creature();
+		ctx.log().spellResolved(ctx.owner().side(), ctx.card(), MatchLog.describe(hit),
+				target.map(CreatureInPlay::name).orElse(null));
 		if (target.isPresent()) {
-			hit.applyTo(target.get());
+			hit.applyTo(ctx.state(), target.get());
 		} else {
 			ctx.opponent().addPendingModifier(hit);
 		}
-		ctx.log().spellResolved(ctx.owner().side(), ctx.card(), MatchLog.describe(hit),
-				target.map(CreatureInPlay::name).orElse(null));
 	}
 }

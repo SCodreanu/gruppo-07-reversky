@@ -27,7 +27,7 @@ L'engine si sviluppa e si testa con **dati di prova** ([`examples/`](../../examp
 | *ferita* | perdita reale di DEF sopra 0, dopo gli scudi, da un attacco o da un danno da effetto; la riceve `onWounded`, con la creatura che l'ha causata se c'è (18 novembre, `ENG-26`) |
 | *DEF all'entrata* | DEF alla fine dell'inizio dello scontro in cui la creatura entra, **bonus compresi e danni esclusi** (M-06, deciso il 18 novembre): Il Direttore dell'Edificio, i danni in attesa e le Hidden `DAMAGE` non la cambiano |
 | *metà DEF* | DEF ≤ 50% della DEF all'entrata in campo (M-06); si controlla dopo ogni fase in cui la DEF cambia (`onDefenseCheck`), solo se la creatura è ancora viva |
-| *penalità* | riduzione di ATK da una carta avversaria, oppure DEF persa per un effetto, una Spell o una Hidden avversaria; il danno di un attacco non è una penalità |
+| *penalità* | riduzione di ATK da una carta avversaria, oppure DEF persa per un effetto, una Spell, una Hidden, un danno in attesa o un Terreno (Devouring Abyss) dell'avversario (18 novembre, `ENG-27`); il danno di un attacco e il sacrificio di una creatura (The Thorned Matriarch) non sono penalità |
 | *bonus ATK* | qualunque modificatore ATK positivo, di qualunque origine; **non** il bonus di fazione, che non è un modificatore (D-35) |
 | *"primo", "una volta"* | si contano **per entrata in campo** e con danno > 0 (D-31, D-33); *per avversaria* = di nuovo contro ogni nuova creatura avversaria (stato "ultima avversaria") |
 | *annullato* | un effetto annullato non scatta e i suoi bonus ATK sono sospesi; la DEF già guadagnata resta |
@@ -198,7 +198,7 @@ Senza fazione. Valore di ognuna circa 4–5 PS. Messe coperte quando pescate, po
 ## Terreni
 
 Una Crepa per fazione. In gioco c'è un solo Terreno: quello pescato dopo, da chiunque, sostituisce il precedente (D-19); The Null Witness e The Hollow Wyrm possono toglierlo. Il bonus vale per tutte le creature della fazione in campo, anche avversarie (D-17).
-I quattro Terreni valgono circa **3,5 PS per creatura della loro fazione**. Bonus base `P1`; effetto secondario rivisto nella revisione e implementato dopo, `P2` (D-18).
+I quattro Terreni valgono circa **3,5 PS per creatura della loro fazione**. Bonus base `P1`; effetto secondario rivisto nella revisione, `P2` (D-18), implementato il 18 novembre con `ENG-27`. Gli effetti secondari valgono per le creature della fazione del Terreno, di entrambi i giocatori; "ogni scontro" è lo scontro in corso o, fra due scontri, quello che sta per iniziare.
 
 | Carta | Fazione | Codice | Bonus base | Effetto secondario |
 |---|---|---|---|---|

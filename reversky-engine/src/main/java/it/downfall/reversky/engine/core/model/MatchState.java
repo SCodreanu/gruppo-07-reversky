@@ -3,6 +3,7 @@ package it.downfall.reversky.engine.core.model;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
 
+import it.downfall.reversky.engine.core.effect.TerrainEffect;
 import it.downfall.reversky.engine.core.log.MatchLog;
 
 /**
@@ -20,6 +21,8 @@ public final class MatchState {
 	private final MatchLog log = new MatchLog();
 	private int round;
 	private int combatsStarted;
+	/** Uno scontro è in corso: dal suo inizio alla prima morte. */
+	private boolean combatRunning;
 	private PlacedTerrain terrain;
 
 	/**
@@ -130,7 +133,24 @@ public final class MatchState {
 	 */
 	public int startNextCombat() {
 		combatsStarted++;
+		combatRunning = true;
 		return combatsStarted;
+	}
+
+	/** Lo scontro in corso è finito: è morta almeno una creatura (D-08). */
+	public void endCombat() {
+		combatRunning = false;
+	}
+
+	/**
+	 * Scontro a cui conta quello che succede adesso, per gli effetti "una volta per scontro" dei Terreni (Echo Rift,
+	 * Watching Rift, deciso il 18 novembre): lo scontro in corso o, fra due scontri, quello che sta per iniziare. Una
+	 * Spell pescata dopo una morte colpisce la sopravvissuta per il suo prossimo scontro.
+	 *
+	 * @return il numero dello scontro, da 1
+	 */
+	public int combatWindow() {
+		return combatRunning ? combatsStarted : combatsStarted + 1;
 	}
 
 	/**
@@ -145,17 +165,18 @@ public final class MatchState {
 	/**
 	 * Mette in gioco un Terreno, che sostituisce quello già in gioco, di chiunque sia (D-19).
 	 *
-	 * @param card  carta di tipo {@code TERRAIN}
-	 * @param owner chi l'ha pescato
+	 * @param card   carta di tipo {@code TERRAIN}
+	 * @param owner  chi l'ha pescato
+	 * @param effect nuova istanza dell'effetto del Terreno, per questa messa in gioco
 	 * @return il Terreno sostituito, o vuoto
 	 * @throws IllegalArgumentException se la carta non è un Terreno
 	 */
-	public Optional<PlacedTerrain> placeTerrain(CardDefinition card, Side owner) {
+	public Optional<PlacedTerrain> placeTerrain(CardDefinition card, Side owner, TerrainEffect effect) {
 		if (card.type() != CardType.TERRAIN) {
 			throw new IllegalArgumentException("Non è un Terreno: carta " + card.cardId());
 		}
 		Optional<PlacedTerrain> replaced = terrain();
-		terrain = new PlacedTerrain(card, owner);
+		terrain = new PlacedTerrain(card, owner, effect);
 		return replaced;
 	}
 

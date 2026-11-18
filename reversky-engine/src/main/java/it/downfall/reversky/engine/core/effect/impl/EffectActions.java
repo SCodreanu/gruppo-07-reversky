@@ -3,6 +3,7 @@ package it.downfall.reversky.engine.core.effect.impl;
 import java.util.List;
 
 import it.downfall.reversky.engine.core.effect.CreatureContext;
+import it.downfall.reversky.engine.core.effect.Penalties;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
@@ -20,7 +21,8 @@ final class EffectActions {
 
 	/**
 	 * Danno da effetto (D-08): perdita permanente di DEF, gli scudi assorbono per primi. La causa della ferita è la
-	 * creatura che porta l'effetto. Le morti le controlla il motore.
+	 * creatura che porta l'effetto; il Terreno in gioco può ridurre la penalità ({@link Penalties}). Le morti le
+	 * controlla il motore.
 	 *
 	 * @param ctx    contesto dell'effetto
 	 * @param target creatura colpita
@@ -28,8 +30,8 @@ final class EffectActions {
 	 * @return la parte di messaggio
 	 */
 	static String damage(CreatureContext ctx, CreatureInPlay target, int amount) {
-		target.takeDamage(amount, ctx.self());
-		return "deals " + amount + " damage to " + target.name() + " (DEF " + MatchLog.number(target.defense()) + ")";
+		int dealt = Penalties.defense(ctx.state(), target, amount, ctx.self().side(), ctx.self());
+		return "deals " + dealt + " damage to " + target.name() + " (DEF " + MatchLog.number(target.defense()) + ")";
 	}
 
 	/**

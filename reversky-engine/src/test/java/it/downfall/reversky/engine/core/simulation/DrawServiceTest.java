@@ -183,7 +183,10 @@ class DrawServiceTest {
 		draws.drawCreature(state, state.challenger());
 
 		// Assert: anche Crawlers è Archive, ma il suo bonus arriva all'inizio dello scontro
-		assertThat(state.terrain()).contains(new PlacedTerrain(rift, Side.CHALLENGER));
+		assertThat(state.terrain()).hasValueSatisfying(terrain -> {
+			assertThat(terrain.card()).isEqualTo(rift);
+			assertThat(terrain.owner()).isEqualTo(Side.CHALLENGER);
+		});
 		assertThat(kappa.attack()).isEqualTo(7);
 		assertThat(kappa.defense()).isEqualTo(5);
 		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(4);

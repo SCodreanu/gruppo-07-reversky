@@ -117,7 +117,7 @@ Quando viene pescato viene messo **accanto al mazzo** e resta in gioco finché u
 | Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK e +1 DEF | la prima Spell `DAMAGE` subita in uno scontro fa 1 punto in meno (prima dalla DEF, poi dall'ATK) |
 | Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK | all'inizio di ogni scontro 1 danno alla creatura avversaria (danno da effetto) |
 
-I quattro Terreni valgono circa 3,5 PS per creatura della loro fazione (revisione dell'11 novembre). Gli effetti secondari sono decisi e si implementano dopo il bonus base (D-18).
+I quattro Terreni valgono circa 3,5 PS per creatura della loro fazione (revisione dell'11 novembre). Gli effetti secondari (D-18) sono implementati dal 18 novembre (`ENG-27`): come funzionano nel motore è in [effetti](../effetti/effetti.md#effetti-implementati).
 
 Quando un Terreno esce (sostituito, rimosso o inghiottito), i suoi bonus si tolgono: l'ATK subito, la DEF con la regola dello scudo (si toglie solo la parte non ancora consumata dai danni, D-35), quindi l'uscita di un Terreno non uccide mai (D-19, deciso l'11 novembre).
 

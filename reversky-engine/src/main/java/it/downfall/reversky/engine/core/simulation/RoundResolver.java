@@ -67,6 +67,8 @@ public final class RoundResolver {
 	 * <li>{@code onEnterPlay} delle creature che non sono ancora entrate (D-31), poi {@code onCombatStart} di
 	 * entrambe; dopo ognuno si controllano le morti.</li>
 	 * <li>Si fissa la DEF all'entrata delle creature appena entrate (M-06).</li>
+	 * <li>Effetti secondari dei Terreni a inizio scontro (Devouring Abyss, ENG-27), prima lo sfidante, con il controllo
+	 * delle morti dopo ognuno.</li>
 	 * </ol>
 	 * Dopo ogni fase che può togliere DEF si controllano le morti (D-08): se muore una creatura lo scontro finisce
 	 * prima di cominciare, e le Hidden non ancora attivate restano coperte per lo scontro dopo. Una creatura che non è
@@ -83,17 +85,20 @@ public final class RoundResolver {
 		applyDefenseBonus(opponent, challenger, state.log());
 		applyPendingModifiers(state, state.challenger(), challenger);
 		applyPendingModifiers(state, state.opponent(), opponent);
-		if (!deaths.resolve(state)) {
+		boolean ended = deaths.resolve(state);
+		if (!ended) {
 			terrains.applyBonus(state, challenger);
 			terrains.applyBonus(state, opponent);
 			items.startCombat(state, challenger);
 			items.startCombat(state, opponent);
-			if (!triggerHiddenCards(state, combat)) {
-				creatureEffects.enterPlay(state, deaths);
-			}
+			ended = triggerHiddenCards(state, combat) || creatureEffects.enterPlay(state, deaths);
 		}
 		state.challenger().creature().ifPresent(RoundResolver::recordCombatStarted);
 		state.opponent().creature().ifPresent(RoundResolver::recordCombatStarted);
+		if (!ended) {
+			// effetti secondari dei Terreni a inizio scontro (Devouring Abyss), dopo la DEF all'entrata
+			terrains.startCombat(state, deaths);
+		}
 	}
 
 	/** Fine del passo 0: la DEF all'entrata si fissa solo per una creatura che è entrata davvero (M-06). */
@@ -181,7 +186,7 @@ public final class RoundResolver {
 					&& items.cancelEnemyEffect(state, owner, modifier.card(), creature.name())) {
 				continue;
 			}
-			modifier.applyTo(creature);
+			modifier.applyTo(state, creature);
 			log.effectTriggered(creature.side(), creature.name(), MatchLog.describe(modifier) + " from "
 					+ modifier.card() + " (ATK " + MatchLog.number(creature.attack()) + ", DEF "
 					+ MatchLog.number(creature.defense()) + ")");

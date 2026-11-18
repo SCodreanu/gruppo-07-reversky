@@ -409,7 +409,8 @@ class RoundResolverTest {
 				new FactionBonus(TestFactions.INVITATION, ARCHIVE, 0, 1))));
 		MatchState state = TestStates.inCombat(TestCards.creature("Squonk", TestFactions.INVITATION, 3, 9),
 				TestCards.creature("SCP-131", ARCHIVE, 8, 6));
-		state.placeTerrain(TestCards.terrain(114, "Hollow Clearing", TestFactions.INVITATION, "HOLLOW_CLEARING"),
+		TestStates.placeTerrain(state,
+				TestCards.terrain(114, "Hollow Clearing", TestFactions.INVITATION, "HOLLOW_CLEARING"),
 				Side.OPPONENT);
 		state.challenger().addPendingModifier(
 				new PendingModifier("Veil of the Anchored", ModifierSource.SPELL, Side.CHALLENGER, 0, 5, 0));

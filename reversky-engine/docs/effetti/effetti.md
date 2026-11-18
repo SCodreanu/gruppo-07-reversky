@@ -85,7 +85,8 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
        entrambe (Mothman, Spearfinger, Bigfoot…); dopo ogni effetto si controllano le morti, come per le Hidden: se
        uno uccide lo scontro finisce lì, e chi non è entrato entra allo scontro dopo (deciso il 18 novembre)
      - si fissa la DEF all'entrata delle creature appena entrate (M-06): bonus compresi, danni presi fin qui esclusi
-     - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
+     - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss): prima lo sfidante, con il controllo delle
+       morti dopo ognuno (deciso il 18 novembre)
 1. Scudo della Bussola dei Sentieri Falsi (nei primi tre round del suo scontro), poi onRoundStart
 2. Calcolo attacco: ATK base + bonus ATK di fazione + modificatori → modifyOutgoingAttack → minimo 0; un attacco
    congelato (Yuki-onna) vale 0
@@ -208,7 +209,7 @@ Le carte che non sono creature hanno un'interfaccia per tipo, sotto l'interfacci
 |---|---|---|
 | `SpellEffect` | `resolve(ctx)`: una volta, quando la Spell viene pescata, poi la carta si scarta | `ENG-19` |
 | `HiddenEffect` | `trigger(ctx)`: una volta, quando la Hidden si attiva, poi la carta si scarta | `ENG-20` |
-| `TerrainEffect` | `attackBonus()` e `defenseBonus()`: il bonus base, applicato dal motore alle creature della fazione | `ENG-21` |
+| `TerrainEffect` | `attackBonus()` e `defenseBonus()`: il bonus base, applicato dal motore alle creature della fazione; per gli effetti secondari `onCombatStart`, `onWounded`, `reduceDefensePenalty`, `reduceDamageSpell` | `ENG-21`, `ENG-27` |
 | `ItemEffect` | nessuno per ora: i momenti degli Oggetti arrivano con `ENG-33` | `ENG-33` |
 
 Gli effetti `P2` aggiungono i loro momenti all'interfaccia del loro tipo (es. le condizioni di Unseen Exit e Remnants of Reality, gli effetti secondari dei Terreni).
@@ -316,10 +317,10 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `HOSTILE_PRESENCE` | Hostile Presence | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `ECHO_STRIKE` | Echo Strike | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
 | `BREAKING_POINT` | Breaking Point | Hidden `DAMAGE`, inizio scontro | fatto, `HiddenEffectsTest` |
-| `ECHO_RIFT` | Echo Rift (Crepa Eco) | Terreno, bonus base | fatto, `TerrainServiceTest` |
-| `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base | fatto, `TerrainServiceTest` |
-| `WATCHING_RIFT` | Watching Rift (Crepa Occhi) | Terreno, bonus base | fatto, `TerrainServiceTest` |
-| `DEVOURING_ABYSS` | Devouring Abyss (Crepa Cavità) | Terreno, bonus base | fatto, `TerrainServiceTest` |
+| `ECHO_RIFT` | Echo Rift (Crepa Eco) | Terreno, bonus base; secondario `onWounded` (+1 ATK alla prima ferita di ogni scontro) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
+| `HOLLOW_CLEARING` | Hollow Clearing (Crepa Radura) | Terreno, bonus base; secondario `reduceDefensePenalty` (ogni penalità DEF −1) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
+| `WATCHING_RIFT` | Watching Rift (Crepa Occhi) | Terreno, bonus base; secondario `reduceDamageSpell` (prima Spell `DAMAGE` di ogni scontro −1) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
+| `DEVOURING_ABYSS` | Devouring Abyss (Crepa Cavità) | Terreno, bonus base; secondario `onCombatStart` (1 danno a inizio scontro) | fatto, `TerrainServiceTest`, `TerrainSecondaryEffectsTest` |
 | `DENIED_EXIT_BADGE` | Badge di Uscita Negata | Oggetto, controllo delle morti | fatto, `ItemServiceTest` |
 | `FALSE_PATHS_COMPASS` | Bussola dei Sentieri Falsi | Oggetto, inizio scontro e inizio round | fatto, `ItemServiceTest` |
 | `SEALED_FILE_ZERO` | Fascicolo Sigillato 0 | Oggetto, Spell, Hidden o effetto di creatura avversaria in arrivo | fatto, `ItemServiceTest`, `Scp2317EffectTest`, `SmilerEffectTest` |
@@ -328,7 +329,14 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 Gli effetti delle creature uguali condividono una classe base (D-37): `FirstAttackShieldEffect` (Hidebehind, Nurikabe, Sala d'Attesa Vivente, e con altre parti le due Mutant, tramite `afterFirstAttack`), `EntryDamageEffect` (SCP-173, The Gnawing Witness), `EntryAndNextDamageEffect` (Cervo Bianco, Il Collezionista di Nomi, Cartellino Sbiadito, Rokurokubi), `FadingAttackPenaltyEffect` (SCP-049, Howlers, Noppera-bō, The Masked Bloom), `EntryDefenseEffect`; `EffectActions` scrive danni, modificatori e log nello stesso modo per tutti.
 Yuki-onna usa un modificatore "attacco congelato" (`StatModifier.freezeAttack`, deciso il 18 novembre): finché è attivo l'attacco vale 0 dopo tutto il resto e `ATTACK_COMPUTED` riporta `frozen`. The Rootbound Doppelganger dà il suo −2 ATK all'inizio del round dopo il primo attacco dell'avversaria, per due round (deciso il 18 novembre). L'Ombra del Torii riconosce il Terreno della sua fazione dalle fazioni della carta del Terreno. Bigfoot e SCP-3000 riconoscono "Rare o superiore" con `RARE_ORDER = 3` (`rarityOrder` di Rare): va tenuto uguale al seed delle rarità dell'API (deciso il 18 novembre).
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
-I Terreni hanno solo il bonus base (`BaseTerrainEffect`); gli effetti secondari arrivano con `ENG-27`.
+I Terreni hanno il bonus base (`BaseTerrainEffect`) e, dal 18 novembre (`ENG-27`), l'effetto secondario. L'effetto sta nel Terreno in gioco (`PlacedTerrain.effect()`), una nuova istanza per ogni messa in gioco, che tiene lo stato "una volta per scontro" e riparte quando il Terreno è sostituito. Il motore lo chiama solo per le creature della sua fazione (`PlacedTerrain.affects`), di entrambi i giocatori, anche prima che ricevano il bonus:
+
+- **Echo Rift:** al controllo della DEF, dopo l'`onWounded` della creatura, la prima ferita di ogni scontro dà +1 ATK fino a fine scontro, con origine `TERRAIN` (sparisce se il Terreno esce).
+- **Hollow Clearing:** ogni penalità DEF è ridotta di 1. Tutti i danni che non sono attacchi passano da `Penalties` (`Penalties.defense`, `Penalties.apply` per i modificatori in attesa e le Spell `DAMAGE`): se vengono dall'avversario sono penalità, quindi effetti di creatura, Spell, Hidden, danni in attesa e Devouring Abyss; non gli attacchi né il sacrificio di The Thorned Matriarch. Breaking Point lascia la creatura a 1 DEF.
+- **Watching Rift:** la prima Spell `DAMAGE` dell'avversario di ogni scontro perde un punto, prima dalla DEF, poi dall'ATK; una Spell annullata dal Fascicolo Sigillato 0 non lo consuma.
+- **Devouring Abyss:** alla fine del passo 0 ogni creatura della fazione fa 1 danno all'avversaria, prima lo sfidante, con il controllo delle morti dopo ognuno; la ferita ha come causa la creatura (SCP-096 la marchia) e il Fascicolo Sigillato 0 non lo annulla.
+
+"Ogni scontro" per Echo Rift e Watching Rift è `MatchState.combatWindow()`: lo scontro in corso o, fra due scontri, quello che sta per iniziare (deciso il 18 novembre). Una Spell pescata dopo una morte colpisce la sopravvissuta per il suo prossimo scontro.
 Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla la prima Spell, Hidden o attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario. Valgono i testi del catalogo finché D-25 è aperta.
 Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
 
