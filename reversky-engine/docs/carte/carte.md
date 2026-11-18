@@ -27,6 +27,7 @@ Un mazzo è una `List<CardDefinition>` con **un elemento per copia**.
 ## Rarità
 
 Le rarità sono dati (tabella `rarities`): l'engine riceve nome e `rarityOrder` e confronta le rarità **solo tramite `rarityOrder`**, mai tramite il nome.
+Per "Rare o superiore" (Bigfoot, SCP-3000) gli effetti usano la costante `RARE_ORDER = 3`, cioè l'ordine di Rare con Common 1 … Mutant 6 (deciso il 18 novembre): se il seed delle rarità dell'API (`API-15`) cambia gli ordini, va cambiata anche la costante.
 
 Nel motore la rarità serve solo a qualche effetto (Bigfoot: "contro Rare o superiori +4 ATK e 2 danni in meno da ogni loro attacco, contro Common e Uncommon +2 ATK"; SCP-3000: "contro Rare o superiori subisce metà dei danni dai loro attacchi"; SCP-2521: ruba l'effetto solo a una Rare o inferiore; La Regina dei Sentieri Perduti: sposta in fondo al mazzo avversario la creatura di rarità più alta). Corrispondenza con la classificazione della lore:
 

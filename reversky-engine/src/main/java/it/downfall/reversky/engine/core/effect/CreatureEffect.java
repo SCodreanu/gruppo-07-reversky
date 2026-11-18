@@ -25,12 +25,22 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	}
 
 	/**
-	 * La creatura entra in campo (passo 0, dopo le Hidden): una volta per entrata. Se una Hidden uccide prima, la
-	 * creatura entra allo scontro dopo.
+	 * La creatura entra in campo (passo 0, dopo le Hidden): una volta per entrata. Se una Hidden o l'effetto d'entrata
+	 * dell'altra creatura uccide prima, la creatura entra allo scontro dopo.
 	 *
 	 * @param ctx contesto
 	 */
 	default void onEnterPlay(CreatureContext ctx) {
+	}
+
+	/**
+	 * Inizio di uno scontro (passo 0, dopo tutti gli {@code onEnterPlay}): la creatura affronta una nuova avversaria,
+	 * sia quando entra sia quando sopravvive e ne arriva un'altra (deciso il 18 novembre; es. Mothman, Spearfinger,
+	 * Bigfoot).
+	 *
+	 * @param ctx contesto
+	 */
+	default void onCombatStart(CreatureContext ctx) {
 	}
 
 	/**
@@ -68,10 +78,12 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	/**
 	 * Passo 5: dopo che i danni del round sono stati applicati, anche se la creatura ha DEF 0 o meno.
 	 *
-	 * @param ctx   contesto
-	 * @param wound ferita subita da questo attacco: la DEF persa davvero sopra 0, dopo gli scudi
+	 * @param ctx    contesto
+	 * @param damage danno dell'attacco ricevuto, dopo il passo 3; "un attacco subito" conta solo con danno sopra 0
+	 *               (D-33)
+	 * @param wound  ferita subita da questo attacco: la DEF persa davvero sopra 0, dopo gli scudi
 	 */
-	default void afterDamage(CreatureContext ctx, int wound) {
+	default void afterDamage(CreatureContext ctx, int damage, int wound) {
 	}
 
 	/**

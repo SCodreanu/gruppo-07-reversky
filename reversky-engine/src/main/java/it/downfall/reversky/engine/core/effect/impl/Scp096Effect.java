@@ -31,7 +31,7 @@ public final class Scp096Effect implements CreatureEffect {
 	}
 
 	@Override
-	public void afterDamage(CreatureContext ctx, int wound) {
+	public void afterDamage(CreatureContext ctx, int damage, int wound) {
 		CreatureInPlay self = ctx.self();
 		CreatureInPlay attacker = ctx.enemy().orElse(null);
 		if (marked != null || wound <= 0 || attacker == null || self.isDead()) {

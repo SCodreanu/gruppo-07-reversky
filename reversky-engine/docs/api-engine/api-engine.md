@@ -81,7 +81,7 @@ Simula una partita completa.
 | `rarity` | sì | nome della rarità (`rarities.name`) |
 | `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`); un valore che non esiste rende il JSON non valido |
 | `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
-| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
+| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità; l'engine si aspetta Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6 (Bigfoot e SCP-3000 usano Rare = 3) |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
 | `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL`; un valore che non esiste rende il JSON non valido |

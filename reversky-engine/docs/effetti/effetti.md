@@ -19,6 +19,9 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	/** La creatura entra in campo: una volta per entrata (passo 0). */
 	default void onEnterPlay(CreatureContext ctx) { }
 
+	/** Inizio di uno scontro: la creatura affronta una nuova avversaria (passo 0, dopo gli onEnterPlay). */
+	default void onCombatStart(CreatureContext ctx) { }
+
 	/** Inizio di ogni round (passo 1). */
 	default void onRoundStart(CreatureContext ctx) { }
 
@@ -29,7 +32,7 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	default int modifyIncomingDamage(CreatureContext ctx, int damage) { return damage; }
 
 	/** Dopo che i danni del round sono stati applicati, anche se la creatura è morta (passo 5). */
-	default void afterDamage(CreatureContext ctx, int wound) { }
+	default void afterDamage(CreatureContext ctx, int damage, int wound) { }
 
 	/** Fine di ogni round, se la creatura è ancora viva (passo 6). */
 	default void onRoundEnd(CreatureContext ctx) { }
@@ -43,7 +46,9 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 `CreatureContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria in campo (`enemy()`, per leggerla), i due giocatori (`owner()`, `opponent()`), il round (`round()`) e il `MatchLog` (`log()`). Per **colpire** la creatura avversaria (danno o malus) un effetto usa `targetEnemy()`: è vuoto se l'avversaria non c'è o ha già DEF 0 o meno, e se un Fascicolo Sigillato 0 dell'avversario annulla l'attivazione (deciso il 18 novembre). Si crea un contesto per ogni chiamata, quindi il Fascicolo si controlla una volta per attivazione.
 
-`afterDamage` riceve la **ferita**: la DEF persa davvero sopra 0, dopo gli scudi (`CreatureInPlay.takeDamage` la restituisce).
+`afterDamage` riceve il **danno** dell'attacco (dopo il passo 3: "un attacco subito" conta solo con danno sopra 0, D-33) e la **ferita**: la DEF persa davvero sopra 0, dopo gli scudi (`CreatureInPlay.takeDamage` la restituisce).
+
+`onCombatStart` (aggiunto il 18 novembre con `ENG-25`, D-31) scatta a ogni inizio di scontro per entrambe le creature, cioè ogni volta che una creatura affronta una nuova avversaria: quando entra e quando sopravvive e ne arriva un'altra. Serve agli effetti "contro ogni avversaria" (Mothman, Spearfinger, Bigfoot). `onEnterPlay` resta una volta per entrata.
 
 Ogni effetto tiene da sé lo stato che gli serve per "primo round", "una volta", "contro ogni avversaria" (D-31, deciso il 18 novembre): non c'è un contatore di attivazioni nel motore. I bonus ATK degli effetti si danno come `StatModifier` con origine `EFFECT` e una durata, non in `modifyOutgoingAttack` (deciso il 18 novembre): così compaiono nell'ATK e nel log e gli effetti che sospendono i bonus ATK (Static Interference, L'Addetto alle Uscite, Deathmoths) li vedono. `modifyOutgoingAttack` resta per i casi che dipendono dall'avversaria del momento; la sua modifica compare in `ATTACK_COMPUTED` come `effectBonus`.
 
@@ -62,9 +67,9 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
      - effetto dell'Oggetto (dopo il Terreno, D-48)
      - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL; a parità prima lo sfidante); se una Hidden
        uccide, lo scontro finisce qui e le Hidden non ancora attivate restano coperte per lo scontro dopo
-     - onEnterPlay delle creature che non sono ancora entrate (una volta per entrata, D-31), poi gli effetti che
-       guardano l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…); se una Hidden ha ucciso, chi
-       non è entrato entra allo scontro dopo (deciso il 18 novembre)
+     - onEnterPlay delle creature che non sono ancora entrate (una volta per entrata, D-31), poi onCombatStart di
+       entrambe (Mothman, Spearfinger, Bigfoot…); dopo ogni effetto si controllano le morti, come per le Hidden: se
+       uno uccide lo scontro finisce lì, e chi non è entrato entra allo scontro dopo (deciso il 18 novembre)
      - si fissa la DEF all'entrata delle creature appena entrate (M-06)
      - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
 1. Scudo della Bussola dei Sentieri Falsi (nei primi tre round del suo scontro), poi onRoundStart
@@ -231,6 +236,27 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `SCP_096` | SCP-096 (Shy Guy) | creatura, `afterDamage` (+3 ATK fino a fine scontro) | fatto, `Scp096EffectTest` |
 | `SCP_2317` | SCP-2317 (A Door in the Woods) | creatura, `onDeath` | fatto, `Scp2317EffectTest` |
 | `SMILER` | Smiler | creatura, `onRoundEnd` | fatto, `SmilerEffectTest` |
+| `WAMPUS_CAT` | Wampus Cat | creatura, `onEnterPlay` (avv. −1 ATK finché resta in campo) | fatto, `EntryEffectsTest` |
+| `SILENT_SHEPHERD` | Il Pastore Muto (The Silent Shepherd) | creatura, `onDeath` (scudo di 2 DEF alla prossima) | fatto, `CombatEffectsTest` |
+| `WHITE_STAG` | Cervo Bianco (White Stag) | creatura, `onEnterPlay` (classe base `EntryAndNextDamageEffect`) | fatto, `EntryEffectsTest` |
+| `NAMELESS_CALLER` | The Nameless Caller | creatura, `onEnterPlay` | fatto, `EntryEffectsTest` |
+| `FOOTPRINT_GATHERER` | Il Raccoglitore di Orme | creatura, `onEnterPlay` (classe base `EntryDefenseEffect`) | fatto, `EntryEffectsTest` |
+| `SPEARFINGER` | Spearfinger | creatura, `onCombatStart` (+2 ATK per un round) | fatto, `CombatEffectsTest` |
+| `BELL_WITCH` | Bell Witch | creatura, `onRoundStart`, `onDeath` | fatto, `CombatEffectsTest` |
+| `MOTHMAN` | Mothman | creatura, `onCombatStart` | fatto, `CombatEffectsTest` |
+| `BIGFOOT` | Bigfoot | creatura, `onCombatStart`, `modifyIncomingDamage` | fatto, `CombatEffectsTest` |
+| `THORNED_MATRIARCH` | The Thorned Matriarch | creatura, `onRoundStart` | fatto, `CombatEffectsTest` |
+| `SCP_173` | SCP-173 (The Sculpture) | creatura, `onEnterPlay` (classe base `EntryDamageEffect`) | fatto, `EntryEffectsTest` |
+| `SCP_049` | SCP-049 (Plague Doctor) | creatura, `onEnterPlay` (classe base `FadingAttackPenaltyEffect`) | fatto, `EntryEffectsTest` |
+| `NAME_COLLECTOR` | Il Collezionista di Nomi | creatura, `onEnterPlay` (classe base `EntryAndNextDamageEffect`) | fatto, `EntryEffectsTest` |
+| `SCP_053` | SCP-053 (The Young Girl) | creatura, `onEnterPlay` | fatto, `EntryEffectsTest` |
+| `SCP_2006` | SCP-2006 (Too Spooky) | creatura, `onEnterPlay` (cambia l'ATK base) | fatto, `EntryEffectsTest` |
+| `INDEX_MAW` | The Index Maw | creatura, `onEnterPlay` (classe base `EntryDefenseEffect`) | fatto, `EntryEffectsTest` |
+| `SCP_106` | SCP-106 (Old Man) | creatura, `afterDamage` | fatto, `CombatEffectsTest` |
+| `SCP_682` | SCP-682 (Hard-to-Destroy Reptile) | creatura, `modifyIncomingDamage` | fatto, `CombatEffectsTest` |
+| `DROWNED_MEMORY` | The Drowned Memory | creatura, `onEnterPlay` | fatto, `EntryEffectsTest` |
+| `SCP_3000` | SCP-3000 (Anantashesha) | creatura, `onEnterPlay`, `modifyIncomingDamage` | fatto, `CombatEffectsTest` |
+| `SCP_001` | SCP-001 (When Day Breaks) | creatura, `onEnterPlay`, `onRoundStart` | fatto, `CombatEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
@@ -255,6 +281,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `SEALED_FILE_ZERO` | Fascicolo Sigillato 0 | Oggetto, Spell, Hidden o effetto di creatura avversaria in arrivo | fatto, `ItemServiceTest`, `Scp2317EffectTest`, `SmilerEffectTest` |
 | `TORII_BELL` | Campanello del Torii | Oggetto, Hidden avversaria in arrivo | fatto, `ItemServiceTest` |
 
+Gli effetti delle creature uguali condividono una classe base (D-37): `FirstAttackShieldEffect`, `EntryDamageEffect`, `EntryAndNextDamageEffect`, `FadingAttackPenaltyEffect`, `EntryDefenseEffect`; `EffectActions` scrive danni, modificatori e log nello stesso modo per tutti. Bigfoot e SCP-3000 riconoscono "Rare o superiore" con `RARE_ORDER = 3` (`rarityOrder` di Rare): va tenuto uguale al seed delle rarità dell'API (deciso il 18 novembre).
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
 I Terreni hanno solo il bonus base (`BaseTerrainEffect`); gli effetti secondari arrivano con `ENG-27`.
 Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla la prima Spell, Hidden o attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario. Valgono i testi del catalogo finché D-25 è aperta.

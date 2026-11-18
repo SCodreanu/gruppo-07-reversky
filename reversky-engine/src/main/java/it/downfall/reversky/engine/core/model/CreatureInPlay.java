@@ -29,6 +29,8 @@ public final class CreatureInPlay {
 	private boolean initialDefenseRecorded;
 	private boolean combatStarted;
 	private boolean entered;
+	/** ATK base preso da un effetto (SCP-2006), o {@code null}: allora vale l'ATK del catalogo. */
+	private Integer copiedBaseAttack;
 	/** Il Terreno in gioco che le ha dato il bonus (D-17), o {@code null}: il bonus si riceve una volta per Terreno. */
 	private PlacedTerrain terrainBonus;
 	/** Scudo a inizio round programmato da un Oggetto (Bussola dei Sentieri Falsi), o {@code null}. */
@@ -110,12 +112,27 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * ATK del catalogo. Non cambia per i danni.
+	 * ATK base: quello del catalogo, o quello preso da un effetto finché la creatura resta in campo (SCP-2006). Non
+	 * cambia per i danni e non è un bonus ATK.
 	 *
 	 * @return l'ATK base
 	 */
 	public int baseAttack() {
-		return card.attack();
+		return copiedBaseAttack != null ? copiedBaseAttack : card.attack();
+	}
+
+	/**
+	 * Prende un altro ATK base finché resta in campo (SCP-2006, deciso il 18 novembre): non è un modificatore, quindi
+	 * gli effetti che sospendono i bonus ATK non lo toccano.
+	 *
+	 * @param attack nuovo ATK base, almeno 0
+	 * @throws IllegalArgumentException se {@code attack} è negativo
+	 */
+	public void copyBaseAttack(int attack) {
+		if (attack < 0) {
+			throw new IllegalArgumentException("ATK base negativo: " + attack);
+		}
+		this.copiedBaseAttack = attack;
 	}
 
 	/**

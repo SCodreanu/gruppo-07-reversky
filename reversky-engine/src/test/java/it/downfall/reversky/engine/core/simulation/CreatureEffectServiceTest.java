@@ -172,7 +172,7 @@ class CreatureEffectServiceTest {
 		}
 
 		@Override
-		public void afterDamage(CreatureContext ctx, int wound) {
+		public void afterDamage(CreatureContext ctx, int damage, int wound) {
 			calls.add(ctx.self().name() + " afterDamage " + wound);
 		}
 

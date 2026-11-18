@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.jayway.jsonpath.JsonPath;
 
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
+import it.downfall.reversky.engine.core.model.CardType;
 
 /**
  * Test di {@link EffectController} (docs/api-engine, {@code GET /api/v1/effects}): elenca il registro del gioco, per
@@ -41,7 +42,7 @@ class EffectControllerTest {
 		String body = mockMvc.perform(get("/api/v1/effects"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$[0].code").value("HIDEBEHIND"))
+				.andExpect(jsonPath("$[0].code").value("BELL_WITCH"))
 				.andExpect(jsonPath("$[0].appliesTo").value("CREATURE"))
 				.andReturn().getResponse().getContentAsString();
 
@@ -58,14 +59,17 @@ class EffectControllerTest {
 		// Act
 		String body = mockMvc.perform(get("/api/v1/effects")).andReturn().getResponse().getContentAsString();
 
-		// Assert
+		// Assert: ogni coppia (tipo, codice) viene dopo la precedente; i tipi nell'ordine di CardType
 		List<String> codes = JsonPath.read(body, "$[*].code");
-		assertThat(codes).containsExactly(
-				"HIDEBEHIND", "KAPPA", "NURIKABE", "SCP_096", "SCP_2317", "SMILER",
-				"BITE_OF_REVERSE", "CRACK_CALL", "DISSOLUTION", "FORGOTTEN_ECHO", "RAIN_ARMOR", "REGISTRY_PACT",
-				"REVERSE_FUSION", "SCP_458", "SKIN_FRACTURE", "VEIL_OF_ANCHORED",
-				"BREAKING_POINT", "ECHO_STRIKE", "HOSTILE_PRESENCE", "LAST_SANCTUARY", "SURVIVAL_INSTINCT",
-				"DEVOURING_ABYSS", "ECHO_RIFT", "HOLLOW_CLEARING", "WATCHING_RIFT",
-				"DENIED_EXIT_BADGE", "FALSE_PATHS_COMPASS", "SEALED_FILE_ZERO", "TORII_BELL");
+		List<String> types = JsonPath.read(body, "$[*].appliesTo");
+		assertThat(types).first().isEqualTo("CREATURE");
+		assertThat(types).last().isEqualTo("ITEM");
+		for (int i = 1; i < codes.size(); i++) {
+			int byType = Integer.compare(CardType.valueOf(types.get(i - 1)).ordinal(),
+					CardType.valueOf(types.get(i)).ordinal());
+			assertThat(byType < 0 || byType == 0 && codes.get(i - 1).compareTo(codes.get(i)) < 0)
+					.as("%s (%s) prima di %s (%s)", codes.get(i - 1), types.get(i - 1), codes.get(i), types.get(i))
+					.isTrue();
+		}
 	}
 }
