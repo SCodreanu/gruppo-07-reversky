@@ -3,6 +3,8 @@ package it.downfall.reversky.engine.core.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -316,6 +318,66 @@ class CreatureInPlayTest {
 
 		// Assert
 		assertThat(crawlers.initialDefense()).isEqualTo(8);
+	}
+
+	@Test
+	@DisplayName("M-06 (deciso il 18 novembre): la DEF all'entrata conta i bonus, non i danni presi prima di fissarla")
+	void initialDefense_ignoresDamageBeforeRecording() {
+		// Arrange
+		CreatureInPlay crawlers = new CreatureInPlay(CRAWLERS, Side.CHALLENGER);
+		crawlers.addDefense(3);
+		crawlers.takeDamage(2);
+
+		// Act + Assert: 5 + 3 = 8 anche con DEF 6, prima e dopo averla fissata
+		assertThat(crawlers.initialDefense()).isEqualTo(8);
+		crawlers.recordInitialDefense();
+		crawlers.takeDamage(1);
+		assertThat(crawlers.defense()).isEqualTo(5);
+		assertThat(crawlers.initialDefense()).isEqualTo(8);
+	}
+
+	@Test
+	@DisplayName("Ogni ferita aspetta di essere riferita, con la causa; lo scudo non ferisce; il totale le somma")
+	void takeDamage_queuesWoundsWithCause() {
+		// Arrange: scudo di 3
+		CreatureInPlay crawlers = new CreatureInPlay(CRAWLERS, Side.CHALLENGER);
+		CreatureInPlay enemy = new CreatureInPlay(CRAWLERS, Side.OPPONENT);
+		crawlers.addModifier(StatModifier.shield(ModifierSource.SPELL, Side.CHALLENGER, 3,
+				ModifierDuration.whileInPlay()));
+
+		// Act: 2 tutti allo scudo; 3 da enemy (1 allo scudo, 2 di ferita); 1 da una carta che non è una creatura
+		crawlers.takeDamage(2, enemy);
+		crawlers.takeDamage(3, enemy);
+		crawlers.takeDamage(1);
+
+		// Assert
+		assertThat(crawlers.hasUnreportedWounds()).isTrue();
+		List<Wound> wounds = crawlers.takeUnreportedWounds();
+		assertThat(wounds).extracting(Wound::amount).containsExactly(2, 1);
+		assertThat(wounds.get(0).cause()).contains(enemy);
+		assertThat(wounds.get(1).cause()).isEmpty();
+		assertThat(crawlers.hasUnreportedWounds()).isFalse();
+		assertThat(crawlers.woundsTaken()).isEqualTo(3);
+	}
+
+	@Test
+	@DisplayName("L'attacco congelato vale finché il modificatore è attivo: sospeso non conta, poi scade a fine round")
+	void freezeAttack_activeSuspendedExpired() {
+		// Arrange
+		CreatureInPlay crawlers = new CreatureInPlay(CRAWLERS, Side.CHALLENGER);
+		StatModifier freeze = StatModifier.freezeAttack(ModifierSource.EFFECT, Side.OPPONENT,
+				ModifierDuration.rounds(1));
+
+		// Act + Assert
+		crawlers.addModifier(freeze);
+		assertThat(crawlers.isAttackFrozen()).isTrue();
+		assertThat(crawlers.attack()).isEqualTo(4);
+		freeze.suspend(ModifierDuration.rounds(1));
+		assertThat(crawlers.isAttackFrozen()).isFalse();
+		freeze.resume();
+		crawlers.endRound();
+		assertThat(crawlers.isAttackFrozen()).isFalse();
+		assertThat(crawlers.modifiers()).isEmpty();
 	}
 
 	@Test

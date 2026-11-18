@@ -68,6 +68,19 @@ public final class StatModifier {
 	}
 
 	/**
+	 * Attacco congelato (deciso il 18 novembre): finché è attivo l'attacco della creatura è 0, dopo tutti gli altri
+	 * modificatori e l'effetto dell'attaccante (Yuki-onna). È un malus, quindi si può annullare o sospendere.
+	 *
+	 * @param source   origine
+	 * @param side     lato che l'ha causato
+	 * @param duration durata
+	 * @return il modificatore
+	 */
+	public static StatModifier freezeAttack(ModifierSource source, Side side, ModifierDuration duration) {
+		return new StatModifier(source, side, Stat.ATTACK_FREEZE, 0, duration);
+	}
+
+	/**
 	 * Origine del modificatore.
 	 *
 	 * @return l'origine
@@ -146,6 +159,15 @@ public final class StatModifier {
 	 */
 	public int shieldValue() {
 		return stat == Stat.DEFENSE_SHIELD && !isSuspended() ? remainingShield : 0;
+	}
+
+	/**
+	 * Indica se congela l'attacco.
+	 *
+	 * @return {@code true} per un congelamento dell'attacco attivo, non sospeso
+	 */
+	public boolean freezesAttack() {
+		return stat == Stat.ATTACK_FREEZE && !isSuspended();
 	}
 
 	/**

@@ -64,7 +64,8 @@ public final class RoundResolver {
 	 * dopo il Terreno (D-48).</li>
 	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
 	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
-	 * <li>{@code onEnterPlay} delle creature che non sono ancora entrate (D-31).</li>
+	 * <li>{@code onEnterPlay} delle creature che non sono ancora entrate (D-31), poi {@code onCombatStart} di
+	 * entrambe; dopo ognuno si controllano le morti.</li>
 	 * <li>Si fissa la DEF all'entrata delle creature appena entrate (M-06).</li>
 	 * </ol>
 	 * Dopo ogni fase che può togliere DEF si controllano le morti (D-08): se muore una creatura lo scontro finisce
@@ -88,8 +89,7 @@ public final class RoundResolver {
 			items.startCombat(state, challenger);
 			items.startCombat(state, opponent);
 			if (!triggerHiddenCards(state, combat)) {
-				creatureEffects.enterPlay(state);
-				deaths.resolve(state);
+				creatureEffects.enterPlay(state, deaths);
 			}
 		}
 		state.challenger().creature().ifPresent(RoundResolver::recordCombatStarted);
@@ -140,14 +140,19 @@ public final class RoundResolver {
 		int toOpponent = creatureEffects.incomingDamage(state, opponent, challengerAttack);
 
 		// Passo 4, regolamento base punto 3: i danni si applicano insieme, nessuno colpisce per primo
+		int[] damages = new int[Side.values().length];
 		int[] wounds = new int[Side.values().length];
-		wounds[Side.OPPONENT.ordinal()] = opponent.takeDamage(toOpponent);
-		wounds[Side.CHALLENGER.ordinal()] = challenger.takeDamage(toChallenger);
+		damages[Side.OPPONENT.ordinal()] = toOpponent;
+		damages[Side.CHALLENGER.ordinal()] = toChallenger;
+		wounds[Side.OPPONENT.ordinal()] = opponent.takeDamage(toOpponent, challenger);
+		wounds[Side.CHALLENGER.ordinal()] = challenger.takeDamage(toChallenger, opponent);
 		log.damageDealt(challenger, opponent, toOpponent);
 		log.damageDealt(opponent, challenger, toChallenger);
 
-		// Passi 5 e 6: afterDamage di entrambe, onRoundEnd solo delle vive
-		creatureEffects.afterDamage(state, wounds);
+		// Passi 5 e 6: afterDamage di entrambe, poi le ferite e le soglie della DEF (deciso il 18 novembre), onRoundEnd
+		// solo delle vive
+		creatureEffects.afterDamage(state, damages, wounds);
+		creatureEffects.defenseCheck(state);
 		creatureEffects.roundEnd(state);
 
 		endRound(challenger);
@@ -227,14 +232,16 @@ public final class RoundResolver {
 
 	/**
 	 * Attacco effettivo: ATK con i modificatori più il bonus di fazione, poi l'effetto dell'attaccante
-	 * ({@code modifyOutgoingAttack}), mai sotto 0 (D-04).
+	 * ({@code modifyOutgoingAttack}), mai sotto 0 (D-04). Un attacco congelato (Yuki-onna) vale 0, dopo tutto il
+	 * resto (deciso il 18 novembre).
 	 */
 	private int computeAttack(MatchState state, CreatureInPlay attacker, CreatureInPlay defender) {
 		int factionBonus = factionMatrix.atkBonus(attacker.factions(), defender.factions());
 		int attack = attacker.attack() + factionBonus;
 		int effectBonus = creatureEffects.outgoingAttack(state, attacker, attack) - attack;
-		int total = Math.max(0, attack + effectBonus);
-		state.log().attackComputed(attacker, factionBonus, effectBonus, total);
+		boolean frozen = attacker.isAttackFrozen();
+		int total = frozen ? 0 : Math.max(0, attack + effectBonus);
+		state.log().attackComputed(attacker, factionBonus, effectBonus, frozen, total);
 		return total;
 	}
 

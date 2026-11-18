@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import it.downfall.reversky.engine.core.effect.CreatureEffect;
@@ -24,11 +25,19 @@ public final class CreatureInPlay {
 	/** Effetto della creatura, una nuova istanza per ogni entrata in campo (D-31), o {@code null} se non ne ha. */
 	private final CreatureEffect effect;
 	private final List<StatModifier> modifiers = new ArrayList<>();
+	/** Ferite non ancora riferite all'effetto, nell'ordine in cui sono avvenute (deciso il 18 novembre). */
+	private final List<Wound> unreportedWounds = new ArrayList<>();
 	private int permanentDefense;
 	private int initialDefense;
 	private boolean initialDefenseRecorded;
+	/** Danni presi prima di fissare la DEF all'entrata: non la riducono (M-06, deciso il 18 novembre). */
+	private int damageBeforeEntry;
+	/** DEF permanente persa davvero dall'entrata in campo, somma delle ferite. */
+	private int woundsTaken;
 	private boolean combatStarted;
 	private boolean entered;
+	/** ATK base preso da un effetto (SCP-2006), o {@code null}: allora vale l'ATK del catalogo. */
+	private Integer copiedBaseAttack;
 	/** Il Terreno in gioco che le ha dato il bonus (D-17), o {@code null}: il bonus si riceve una volta per Terreno. */
 	private PlacedTerrain terrainBonus;
 	/** Scudo a inizio round programmato da un Oggetto (Bussola dei Sentieri Falsi), o {@code null}. */
@@ -61,7 +70,6 @@ public final class CreatureInPlay {
 		this.side = side;
 		this.effect = effect;
 		this.permanentDefense = card.defense();
-		this.initialDefense = card.defense();
 	}
 
 	/**
@@ -110,12 +118,27 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * ATK del catalogo. Non cambia per i danni.
+	 * ATK base: quello del catalogo, o quello preso da un effetto finché la creatura resta in campo (SCP-2006). Non
+	 * cambia per i danni e non è un bonus ATK.
 	 *
 	 * @return l'ATK base
 	 */
 	public int baseAttack() {
-		return card.attack();
+		return copiedBaseAttack != null ? copiedBaseAttack : card.attack();
+	}
+
+	/**
+	 * Prende un altro ATK base finché resta in campo (SCP-2006, deciso il 18 novembre): non è un modificatore, quindi
+	 * gli effetti che sospendono i bonus ATK non lo toccano.
+	 *
+	 * @param attack nuovo ATK base, almeno 0
+	 * @throws IllegalArgumentException se {@code attack} è negativo
+	 */
+	public void copyBaseAttack(int attack) {
+		if (attack < 0) {
+			throw new IllegalArgumentException("ATK base negativo: " + attack);
+		}
+		this.copiedBaseAttack = attack;
 	}
 
 	/**
@@ -147,13 +170,55 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * DEF all'entrata in campo, bonus compresi (M-06): serve alle soglie "metà DEF" e ai tetti di {@code heal}.
-	 * Prima di {@link #recordInitialDefense()} è la DEF del catalogo.
+	 * DEF all'entrata in campo, bonus compresi e danni esclusi (M-06, deciso il 18 novembre): serve alle soglie "metà
+	 * DEF", a Hounds e ai tetti di {@code heal}. I danni presi prima di fissarla (Spell e Hidden {@code DAMAGE}, danni
+	 * in attesa, effetti d'entrata avversari) non la riducono. Prima di {@link #recordInitialDefense()} si calcola
+	 * sulla DEF attuale, quindi vale già durante l'inizio dello scontro.
 	 *
 	 * @return la DEF all'entrata
 	 */
 	public int initialDefense() {
-		return initialDefense;
+		return initialDefenseRecorded ? initialDefense : defense() + damageBeforeEntry;
+	}
+
+	/**
+	 * DEF permanente persa davvero dall'entrata in campo: la somma delle ferite, senza la parte assorbita dagli scudi
+	 * (The Unseen Matriarch).
+	 *
+	 * @return la DEF persa, almeno 0
+	 */
+	public int woundsTaken() {
+		return woundsTaken;
+	}
+
+	/**
+	 * Indica se ci sono ferite non ancora riferite all'effetto.
+	 *
+	 * @return {@code true} se ce n'è almeno una
+	 */
+	public boolean hasUnreportedWounds() {
+		return !unreportedWounds.isEmpty();
+	}
+
+	/**
+	 * Prende le ferite non ancora riferite, nell'ordine in cui sono avvenute, e le toglie dalla coda: il motore le
+	 * riferisce all'effetto al controllo dopo la fase (deciso il 18 novembre).
+	 *
+	 * @return le ferite, anche nessuna
+	 */
+	public List<Wound> takeUnreportedWounds() {
+		List<Wound> wounds = List.copyOf(unreportedWounds);
+		unreportedWounds.clear();
+		return wounds;
+	}
+
+	/**
+	 * Indica se l'attacco è congelato (Yuki-onna): allora nel calcolo del round vale 0.
+	 *
+	 * @return {@code true} se c'è un congelamento dell'attacco attivo
+	 */
+	public boolean isAttackFrozen() {
+		return modifiers.stream().anyMatch(StatModifier::freezesAttack);
 	}
 
 	/**
@@ -187,13 +252,13 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Fissa la DEF all'entrata alla DEF attuale. Si chiama alla fine dell'inizio dello scontro in cui la creatura
-	 * entra davvero ({@link #hasEntered()}), quando i bonus d'entrata sono stati applicati; le chiamate successive non
-	 * cambiano nulla.
+	 * Fissa la DEF all'entrata: la DEF attuale più i danni presi fin qui (M-06, deciso il 18 novembre). Si chiama
+	 * alla fine dell'inizio dello scontro in cui la creatura entra davvero ({@link #hasEntered()}), quando i bonus
+	 * d'entrata sono stati applicati; le chiamate successive non cambiano nulla.
 	 */
 	public void recordInitialDefense() {
 		if (!initialDefenseRecorded) {
-			initialDefense = defense();
+			initialDefense = defense() + damageBeforeEntry;
 			initialDefenseRecorded = true;
 		}
 	}
@@ -222,16 +287,38 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Subisce un danno: prima lo assorbono gli scudi, dal primo che scade, poi la DEF permanente, che può scendere
-	 * sotto 0 (il danno al giocatore è la DEF negativa, D-03).
+	 * Subisce un danno da una carta che non è una creatura (Spell, Hidden, Terreno, Oggetto) o da un modificatore in
+	 * attesa: come {@link #takeDamage(int, CreatureInPlay)}, ma la ferita non ha una creatura come causa.
 	 *
 	 * @param damage danno, almeno 0
-	 * @return la ferita (docs/effetti, "Soglie"): la DEF persa davvero sopra 0, dopo gli scudi
+	 * @return la ferita: la DEF persa davvero sopra 0, dopo gli scudi
 	 * @throws IllegalArgumentException se {@code damage} è negativo
 	 */
 	public int takeDamage(int damage) {
+		return applyDamage(damage, null);
+	}
+
+	/**
+	 * Subisce un danno da una creatura, con il suo attacco o con il suo effetto: prima lo assorbono gli scudi, dal
+	 * primo che scade, poi la DEF permanente, che può scendere sotto 0 (il danno al giocatore è la DEF negativa,
+	 * D-03). Se la DEF permanente scende, la ferita resta in coda finché il motore la riferisce all'effetto.
+	 *
+	 * @param damage danno, almeno 0
+	 * @param cause  creatura che infligge il danno
+	 * @return la ferita (docs/effetti, "Soglie"): la DEF persa davvero sopra 0, dopo gli scudi
+	 * @throws IllegalArgumentException se {@code damage} è negativo
+	 */
+	public int takeDamage(int damage, CreatureInPlay cause) {
+		return applyDamage(damage, Objects.requireNonNull(cause, "cause"));
+	}
+
+	private int applyDamage(int damage, CreatureInPlay cause) {
 		if (damage < 0) {
 			throw new IllegalArgumentException("Danno negativo: " + damage);
+		}
+		if (!initialDefenseRecorded) {
+			// gli scudi assorbono e la DEF permanente scende: la DEF cala sempre esattamente del danno
+			damageBeforeEntry += damage;
 		}
 		int remaining = damage;
 		for (StatModifier shield : shieldsInAbsorbOrder()) {
@@ -240,6 +327,10 @@ public final class CreatureInPlay {
 		modifiers.removeIf(StatModifier::isExhausted);
 		int wound = Math.min(remaining, Math.max(0, permanentDefense));
 		permanentDefense -= remaining;
+		if (wound > 0) {
+			woundsTaken += wound;
+			unreportedWounds.add(new Wound(wound, cause));
+		}
 		return wound;
 	}
 

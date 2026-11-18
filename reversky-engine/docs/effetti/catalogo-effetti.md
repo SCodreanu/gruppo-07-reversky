@@ -24,8 +24,9 @@ L'engine si sviluppa e si testa con **dati di prova** ([`examples/`](../../examp
 | *scontro* | serie di round tra le stesse due creature (il catalogo dice anche "combattimento"); finisce quando una delle due muore |
 | *finché resta in campo* | dura per tutta la permanenza della creatura, anche negli scontri successivi |
 | *danno da effetto* | DEF tolta da un effetto, una Spell, una Hidden, un Terreno o un Oggetto: è una perdita permanente di DEF, **non** un attacco (non attiva gli effetti "quando viene attaccata" e le prevenzioni degli attacchi). Può uccidere fuori dal passo 4 (D-08) |
-| *ferita* | perdita reale di DEF sopra 0, dopo gli scudi |
-| *metà DEF* | DEF ≤ 50% della DEF all'entrata in campo, bonus compresi (M-06); si controlla dopo ogni fase in cui la DEF cambia, solo se la creatura è ancora viva |
+| *ferita* | perdita reale di DEF sopra 0, dopo gli scudi, da un attacco o da un danno da effetto; la riceve `onWounded`, con la creatura che l'ha causata se c'è (18 novembre, `ENG-26`) |
+| *DEF all'entrata* | DEF alla fine dell'inizio dello scontro in cui la creatura entra, **bonus compresi e danni esclusi** (M-06, deciso il 18 novembre): Il Direttore dell'Edificio, i danni in attesa e le Hidden `DAMAGE` non la cambiano |
+| *metà DEF* | DEF ≤ 50% della DEF all'entrata in campo (M-06); si controlla dopo ogni fase in cui la DEF cambia (`onDefenseCheck`), solo se la creatura è ancora viva |
 | *penalità* | riduzione di ATK da una carta avversaria, oppure DEF persa per un effetto, una Spell o una Hidden avversaria; il danno di un attacco non è una penalità |
 | *bonus ATK* | qualunque modificatore ATK positivo, di qualunque origine; **non** il bonus di fazione, che non è un modificatore (D-35) |
 | *"primo", "una volta"* | si contano **per entrata in campo** e con danno > 0 (D-31, D-33); *per avversaria* = di nuovo contro ogni nuova creatura avversaria (stato "ultima avversaria") |
@@ -233,7 +234,7 @@ Prima degli effetti di Spell, Hidden, Terreni e Oggetti serve il registro (`ENG-
 | `StatModifier` con origine e durata in round, sospendibile | modificatori sull'avversario per N round (Howlers, SCP-049, Noppera-bō, The Masked Bloom, SCP-053, Yuki-onna, The Face Collector, The Rootbound Doppelganger, Hostile Presence, Echo Strike), bonus per N round (Kappa, Il Doppio di Servizio), bonus "nello scontro corrente" (Last Sanctuary, Survival Instinct, Echo Rift), sospensioni e rimozioni (L'Addetto alle Uscite, Deathmoths, Kitsune, Static Interference, SCP-3999, The Null Witness, The Undying Blossom, Remnants of Reality) | D-35 |
 | Contatore delle creature perse nel `PlayerState` | The Drowned Memory, The Nameless Caller | M-07 |
 | `CreatureInPlay.heal()` con tetto alla DEF all'entrata (o ai valori di prima) | The Bloodless Hound, Wendigo, SCP-109, Remnants of Reality | — |
-| Soglia "metà DEF" controllata dopo ogni fase in cui cambia la DEF | Nure-onna, The Unseen Matriarch, SCP-109 | M-06 |
+| Soglia "metà DEF" controllata dopo ogni fase in cui cambia la DEF | Nure-onna, The Unseen Matriarch, SCP-109: fatto con `onDefenseCheck` (`ENG-26`) | M-06 |
 | Sopravvivenza a un danno letale, prima del controllo morti | The Undying Blossom, Badge di Uscita Negata (Unseen Exit agisce prima, come prevenzione al passo 3) | D-36 |
 | Controllo all'entrata delle creature avversarie mentre una creatura è in campo | Mothman, The Stitched Corridor, The Rootbound Doppelganger, Kitsune; esteso all'arrivo di un Terreno per The Hollow Wyrm | — |
 | Effetti annullati (`NULLIFY`) | Il Predicatore sotto la Pioggia, SCP-2521 | D-30 |

@@ -56,7 +56,7 @@ class FirstAttackShieldEffectTest {
 	}
 
 	@ParameterizedTest(name = "{0}")
-	@ValueSource(strings = { "HIDEBEHIND", "NURIKABE" })
+	@ValueSource(strings = { "HIDEBEHIND", "NURIKABE", "LIVING_WAITING_ROOM" })
 	@DisplayName("Contro una nuova avversaria la prevenzione riparte")
 	void newEnemy_preventsAgain(String code) {
 		// Arrange: A muore al round 1, poi entra B

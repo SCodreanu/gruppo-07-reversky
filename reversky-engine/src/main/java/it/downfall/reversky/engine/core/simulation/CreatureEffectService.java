@@ -12,6 +12,7 @@ import it.downfall.reversky.engine.core.effect.EnemyEffectGuard;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.Side;
+import it.downfall.reversky.engine.core.model.Wound;
 
 /**
  * Chiama gli effetti delle creature nei momenti del round (docs/effetti, "Ordine di risoluzione di un round").
@@ -36,17 +37,32 @@ public final class CreatureEffectService {
 	}
 
 	/**
-	 * Passo 0: {@code onEnterPlay} delle creature in campo che non sono ancora entrate, una volta per entrata (D-31).
+	 * Passo 0, dopo le Hidden: {@code onEnterPlay} delle creature che non sono ancora entrate (una volta per entrata,
+	 * D-31), poi {@code onCombatStart} di entrambe. Dopo ogni effetto si controllano le morti, come per le Hidden
+	 * (deciso il 18 novembre): se una creatura muore lo scontro finisce lì, e chi non è ancora entrato entra allo
+	 * scontro dopo.
 	 *
-	 * @param state stato della partita
+	 * @param state  stato della partita, con due creature in campo
+	 * @param deaths controllo delle morti
+	 * @return {@code true} se è morta una creatura, cioè lo scontro è finito
 	 */
-	public void enterPlay(MatchState state) {
+	public boolean enterPlay(MatchState state, DeathResolver deaths) {
 		for (CreatureInPlay creature : inOrder(inPlay(state))) {
 			if (!creature.hasEntered()) {
 				creature.recordEntered();
 				creature.effect().ifPresent(effect -> effect.onEnterPlay(context(state, creature)));
+				if (deaths.resolve(state)) {
+					return true;
+				}
 			}
 		}
+		for (CreatureInPlay creature : inOrder(inPlay(state))) {
+			creature.effect().ifPresent(effect -> effect.onCombatStart(context(state, creature)));
+			if (deaths.resolve(state)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -90,12 +106,42 @@ public final class CreatureEffectService {
 	/**
 	 * Passo 5: {@code afterDamage} di ogni creatura colpita, anche se ha DEF 0 o meno.
 	 *
-	 * @param state  stato della partita
-	 * @param wounds ferita di ogni creatura in campo, indicizzata per {@link Side#ordinal()}
+	 * @param state   stato della partita
+	 * @param damages danno dell'attacco ricevuto da ogni creatura, indicizzato per {@link Side#ordinal()}
+	 * @param wounds  ferita di ogni creatura, indicizzata per {@link Side#ordinal()}
 	 */
-	public void afterDamage(MatchState state, int[] wounds) {
-		forEachEffect(state, inPlay(state),
-				(effect, ctx) -> effect.afterDamage(ctx, wounds[ctx.self().side().ordinal()]));
+	public void afterDamage(MatchState state, int[] damages, int[] wounds) {
+		forEachEffect(state, inPlay(state), (effect, ctx) -> {
+			int side = ctx.self().side().ordinal();
+			effect.afterDamage(ctx, damages[side], wounds[side]);
+		});
+	}
+
+	/**
+	 * Controllo della DEF dopo una fase (deciso il 18 novembre): per ogni creatura viva, nell'ordine D-30, prima
+	 * {@code onWounded} per ogni ferita in coda, poi {@code onDefenseCheck}. Se intanto qualcuno subisce nuove ferite
+	 * (es. il danno di The Unseen Matriarch) si ripete. Le ferite di una creatura con DEF 0 o meno restano in coda: se
+	 * un Badge di Uscita Negata la salva, arrivano al controllo dopo.
+	 * <p>
+	 * Lo chiamano il {@link DeathResolver}, prima di cercare le morti e dopo gli {@code onDeath}, e il round al passo
+	 * 5, dopo {@code afterDamage}.
+	 *
+	 * @param state stato della partita
+	 */
+	public void defenseCheck(MatchState state) {
+		do {
+			for (CreatureInPlay creature : inOrder(alive(state))) {
+				List<Wound> wounds = creature.takeUnreportedWounds();
+				creature.effect().ifPresent(effect -> wounds.forEach(
+						wound -> effect.onWounded(context(state, creature), wound)));
+			}
+			for (CreatureInPlay creature : inOrder(alive(state))) {
+				// un controllo prima può averla uccisa
+				if (!creature.isDead()) {
+					creature.effect().ifPresent(effect -> effect.onDefenseCheck(context(state, creature)));
+				}
+			}
+		} while (alive(state).stream().anyMatch(CreatureInPlay::hasUnreportedWounds));
 	}
 
 	/**
@@ -104,8 +150,7 @@ public final class CreatureEffectService {
 	 * @param state stato della partita
 	 */
 	public void roundEnd(MatchState state) {
-		forEachEffect(state, inPlay(state).stream().filter(creature -> !creature.isDead()).toList(),
-				CreatureEffect::onRoundEnd);
+		forEachEffect(state, alive(state), CreatureEffect::onRoundEnd);
 	}
 
 	/**
@@ -136,6 +181,10 @@ public final class CreatureEffectService {
 						.map(CreatureEffect::priority).orElse(EffectPriority.NORMAL))
 				.thenComparing(CreatureInPlay::side));
 		return ordered;
+	}
+
+	private static List<CreatureInPlay> alive(MatchState state) {
+		return inPlay(state).stream().filter(creature -> !creature.isDead()).toList();
 	}
 
 	private static List<CreatureInPlay> inPlay(MatchState state) {

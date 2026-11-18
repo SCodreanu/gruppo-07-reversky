@@ -81,7 +81,7 @@ Simula una partita completa.
 | `rarity` | sì | nome della rarità (`rarities.name`) |
 | `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`); un valore che non esiste rende il JSON non valido |
 | `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
-| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
+| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità; l'engine si aspetta Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6 (Bigfoot e SCP-3000 usano Rare = 3) |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
 | `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL`; un valore che non esiste rende il JSON non valido |
@@ -173,7 +173,7 @@ Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERN
 
 Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
 Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
-L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati (`ENG-23`, `ENG-25`, `ENG-26`).
+L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati: con `ENG-26` ci sono tutti gli effetti `P1` delle creature (72 effetti, 49 di creature); mancano i `P2`.
 
 ```json
 [
@@ -188,6 +188,8 @@ L'engine non ha regole proprie: tutto ciò che non è una costante del regolamen
 arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /api/v1/rules`, dal rule set attivo).
 
 ## Note
+
+- Il log della partita è in [log-partita](../log-partita/log-partita.md). **18 novembre (`ENG-26`):** `ATTACK_COMPUTED` ha un campo `data` in più, `frozen` (booleano, sempre presente), vero quando l'attacco è congelato (Yuki-onna) e `total` è 0; con `ENG-25` era arrivato `effectBonus`. L'`EngineClient` dell'API salva il log così com'è, ma chi lo legge deve conoscere i campi nuovi.
 
 - Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. Se l'engine viene esposto fuori dalla rete privata si aggiunge una chiave condivisa nell'header `X-Engine-Key`, letta da una variabile d'ambiente (D-40).
 - Ogni endpoint è documentato anche in Swagger (springdoc 3.2.0, come nell'API, D-41): `http://localhost:8081/swagger-ui.html`. Un nuovo endpoint ha `@Operation` e un `@ApiResponse` per ogni status, con il media type e lo schema (`ProblemDetail` e `application/problem+json` per gli errori), e `OpenApiDocumentationTest` controlla che compaia. Gli esempi di richiesta di Swagger (`OpenApiExamples`) sono gli esempi 01 e 08 di `examples/`: il test controlla che restino uguali ai file e che diano la partita attesa.

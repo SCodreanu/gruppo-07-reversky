@@ -213,19 +213,20 @@ class MatchLogTest {
 	@Test
 	@DisplayName("ATTACK_COMPUTED: 4 base +2 fazione = 6; le parti a 0 non compaiono nel messaggio")
 	void attackComputed() {
-		log.attackComputed(TestCards.inPlay(CRAWLERS, Side.CHALLENGER), 2, 0, 6);
+		log.attackComputed(TestCards.inPlay(CRAWLERS, Side.CHALLENGER), 2, 0, false, 6);
 		assertEvent(EventType.ATTACK_COMPUTED, Side.CHALLENGER, "Crawlers attacks with 6 (4 base, +2 faction)");
 		assertThat(last().data()).containsExactly(entry("attacker", "Crawlers"), entry("baseAttack", 4),
-				entry("factionBonus", 2), entry("modifiers", 0), entry("effectBonus", 0), entry("total", 6));
+				entry("factionBonus", 2), entry("modifiers", 0), entry("effectBonus", 0), entry("frozen", false),
+				entry("total", 6));
 
-		log.attackComputed(TestCards.inPlay(KAPPA, Side.OPPONENT), 0, 0, 6);
+		log.attackComputed(TestCards.inPlay(KAPPA, Side.OPPONENT), 0, 0, false, 6);
 		assertThat(last().message()).isEqualTo("Kappa attacks with 6 (6 base)");
 	}
 
 	@Test
 	@DisplayName("ATTACK_COMPUTED: la modifica dell'effetto dell'attaccante compare come parte \"effect\"")
 	void attackComputed_withEffectBonus() {
-		log.attackComputed(TestCards.inPlay(KAPPA, Side.OPPONENT), 0, 2, 8);
+		log.attackComputed(TestCards.inPlay(KAPPA, Side.OPPONENT), 0, 2, false, 8);
 		assertThat(last().message()).isEqualTo("Kappa attacks with 8 (6 base, +2 effect)");
 		assertThat(last().data()).containsEntry("effectBonus", 2);
 	}
@@ -238,11 +239,19 @@ class MatchLogTest {
 		kappa.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, 3, ModifierDuration.rounds(1)));
 
 		// Act
-		log.attackComputed(kappa, -1, 0, 8);
+		log.attackComputed(kappa, -1, 0, false, 8);
 
 		// Assert
 		assertThat(last().message()).isEqualTo("Kappa attacks with 8 (6 base, −1 faction, +3 modifiers)");
 		assertThat(last().data()).containsEntry("modifiers", 3);
+	}
+
+	@Test
+	@DisplayName("ATTACK_COMPUTED (deciso il 18 novembre): un attacco congelato vale 0 e il messaggio dice frozen")
+	void attackComputed_frozen() {
+		log.attackComputed(TestCards.inPlay(KAPPA, Side.OPPONENT), 2, 0, true, 0);
+		assertThat(last().message()).isEqualTo("Kappa attacks with 0 (6 base, +2 faction, frozen)");
+		assertThat(last().data()).containsEntry("frozen", true).containsEntry("total", 0);
 	}
 
 	@Test
@@ -320,7 +329,7 @@ class MatchLogTest {
 		log.itemPlaced(Side.OPPONENT, TORII_BELL);
 		log.itemConsumed(Side.OPPONENT, TORII_BELL, "TORII_BELL", "Kappa");
 		log.roundStarted(1);
-		log.attackComputed(crawlers, 2, 0, 6);
+		log.attackComputed(crawlers, 2, 0, false, 6);
 		log.damageDealt(crawlers, kappa, 6);
 		log.effectTriggered(Side.OPPONENT, "Kappa", "+3 ATK in the first round");
 		log.creatureDied(kappa);
