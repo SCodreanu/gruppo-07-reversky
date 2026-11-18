@@ -528,4 +528,24 @@ class CreatureInPlayTest {
 				.containsExactly(Stat.ATTACK, Stat.ATTACK_SEAL, Stat.ATTACK_FREEZE);
 		assertThat(brute.removeBonuses()).isFalse();
 	}
+
+	@Test
+	@DisplayName("ENG-36: removeTemporaryModifiers toglie i modificatori a durata di ogni segno, non quelli in campo")
+	void removeTemporaryModifiers_onlyWithDuration() {
+		// Arrange: +2 ATK per un round, −1 ATK e scudo di 3 fino a fine scontro, +1 ATK finché resta in campo
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, 2, ModifierDuration.rounds(1)));
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -1,
+				ModifierDuration.untilCombatEnd()));
+		brute.addModifier(StatModifier.shield(ModifierSource.HIDDEN, Side.CHALLENGER, 3,
+				ModifierDuration.untilCombatEnd()));
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.CHALLENGER, 1,
+				ModifierDuration.whileInPlay()));
+
+		// Act + Assert
+		assertThat(brute.removeTemporaryModifiers()).isTrue();
+		assertThat(brute.attack()).isEqualTo(4);
+		assertThat(brute.defense()).isEqualTo(10);
+		assertThat(brute.removeTemporaryModifiers()).isFalse();
+	}
 }
