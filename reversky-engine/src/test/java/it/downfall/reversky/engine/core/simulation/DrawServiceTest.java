@@ -61,6 +61,47 @@ class DrawServiceTest {
 	}
 
 	@Test
+	@DisplayName("D-31: una creatura pescata entra con una nuova istanza del suo effetto; senza codice non ne ha")
+	void drawCreature_createsEffectPerEntry() {
+		// Arrange: due copie di Hidebehind, una Common senza codice
+		CardDefinition hidebehind = TestCards.creature(23, "Hidebehind", TestFactions.INVITATION, null, "Uncommon", 4,
+				6, "HIDEBEHIND");
+		MatchState state = TestStates.withDecks(List.of(hidebehind, CRAWLERS), List.of(hidebehind));
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+		draws.drawCreature(state, state.opponent());
+
+		// Assert
+		CreatureInPlay first = state.challenger().creature().orElseThrow();
+		CreatureInPlay second = state.opponent().creature().orElseThrow();
+		assertThat(first.effect()).hasValueSatisfying(effect -> assertThat(effect.code()).isEqualTo("HIDEBEHIND"));
+		assertThat(second.effect()).isPresent();
+		assertThat(first.effect().get()).isNotSameAs(second.effect().get());
+		state.challenger().removeCreature();
+		draws.drawCreature(state, state.challenger());
+		assertThat(state.challenger().creature().orElseThrow().effect()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("D-08: una Spell che uccide SCP-2317 fa scattare il suo effetto alla morte prima che lasci il campo")
+	void drawCreature_damageSpellKillsCreatureWithDeathEffect() {
+		// Arrange: SCP-2317 dell'avversario ha DEF 4; lo sfidante pesca Skin Fracture, poi Crawlers
+		MatchState state = TestStates.withDecks(List.of(FRACTURE, CRAWLERS), List.of());
+		EffectRegistry registry = EffectRegistry.withAllEffects();
+		state.opponent().placeCreature(TestStates.withEffect(registry, TestCards.creature(0, "SCP-2317",
+				TestFactions.ARCHIVE, null, "Mythic", 3, 4, "SCP_2317"), Side.OPPONENT));
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert: nessuna creatura dello sfidante da colpire; il +1 ATK resta in attesa per l'avversario
+		assertThat(state.opponent().creature()).isEmpty();
+		assertThat(state.opponent().pendingModifiers()).singleElement()
+				.satisfies(modifier -> assertThat(modifier.attack()).isEqualTo(1));
+	}
+
+	@Test
 	@DisplayName("D-08: Skin Fracture pescata uccide la creatura avversaria (4 − 5 = −1): −1 PV, conta per chi pesca")
 	void drawCreature_damageSpellKillsOpponent() {
 		// Arrange: lo sfidante ha il campo vuoto e pesca Skin Fracture; Kappa dell'avversario ha DEF 4

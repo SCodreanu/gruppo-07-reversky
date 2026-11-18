@@ -1,15 +1,12 @@
 package it.downfall.reversky.engine.web;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -31,10 +28,6 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import({ EngineConfiguration.class, SimulationMapper.class })
 class SimulationExamplesTest {
 
-	// TODO(@tommasofatticcioni): svuotare quando il registro controlla i codici delle creature (ENG-23, #61):
-	// l'esempio 90 ha HIDEBEHND su una creatura, che fino ad allora gioca senza effetto
-	private static final Set<String> WAITING_FOR_EFFECT_REGISTRY = Set.of("90-errore-effetto-sconosciuto.json");
-
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -44,15 +37,10 @@ class SimulationExamplesTest {
 	void example_matchesExpectedResult(String file, int status, String result, String endReason,
 			Integer totalRounds, Integer challengerLifePoints, Integer opponentLifePoints,
 			Integer challengerDefeated, Integer opponentDefeated, String code) throws Exception {
-		assumeFalse(WAITING_FOR_EFFECT_REGISTRY.contains(file),
-				"UNKNOWN_EFFECT per le creature arriva con i loro effetti (ENG-23, #61)");
-
 		checkExample(file, status, result, endReason, totalRounds, challengerLifePoints, opponentLifePoints,
 				challengerDefeated, opponentDefeated, code);
 	}
 
-	// TODO(@tommasofatticcioni): togliere @Disabled quando HIDEBEHIND è implementato (ENG-23, #61)
-	@Disabled("Gli esempi con effetti (09, HIDEBEHIND) arrivano con gli effetti delle creature (ENG-23, #61)")
 	@ParameterizedTest(name = "{0}")
 	@CsvFileSource(files = "examples/expected-results-effects.csv", numLinesToSkip = 1)
 	@DisplayName("Ogni esempio con effetti di examples/ dà il risultato calcolato a mano")

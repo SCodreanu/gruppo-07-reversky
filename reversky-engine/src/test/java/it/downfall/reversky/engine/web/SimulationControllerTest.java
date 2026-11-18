@@ -119,17 +119,16 @@ class SimulationControllerTest {
 				.andExpect(jsonPath("$.detail").value("Unknown effect VEIL_OF_ANCHORD on card 96"));
 	}
 
-	// TODO(@tommasofatticcioni): da ENG-23 (#61) il codice di una creatura si controlla e questo diventa un 400
 	@Test
-	@DisplayName("Fino a ENG-23 il codice effetto di una creatura non si controlla: la partita si gioca senza effetto")
-	void simulate_unknownCreatureEffect_playedUntilCreatureEffects() throws Exception {
+	@DisplayName("Il codice effetto di una creatura non registrato dà 400 UNKNOWN_EFFECT, come per le altre carte")
+	void simulate_unknownCreatureEffect_returns400() throws Exception {
 		String unknownEffect = VALID_REQUEST.replace(
 				"\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": null",
 				"\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": \"HIDEBEHND\"");
 
 		perform(unknownEffect)
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.result").value("CHALLENGER_WIN"));
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("UNKNOWN_EFFECT"));
 	}
 
 	@ParameterizedTest(name = "{0}")

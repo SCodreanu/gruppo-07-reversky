@@ -16,6 +16,8 @@ import it.downfall.reversky.engine.core.model.Side;
  * Le regole sono le stesse ovunque:
  * <ul>
  * <li>una creatura con DEF ≤ 0 lascia il campo e conta come sconfitta per chi la stava affrontando (D-42);</li>
+ * <li>prima che lasci il campo scatta il suo {@code onDeath} (es. SCP-2317), poi le morti si ricontrollano: un effetto
+ * alla morte può uccidere anche l'altra creatura (docs/effetti, "Effetto alla morte");</li>
  * <li>se ne muore una sola, il suo proprietario perde la parte negativa della DEF (D-03) e la sopravvissuta perde i
  * modificatori che duravano fino a fine scontro;</li>
  * <li>se muoiono entrambe nello stesso controllo, nessun giocatore perde punti vita.</li>
@@ -26,14 +28,16 @@ import it.downfall.reversky.engine.core.model.Side;
 public final class DeathResolver {
 
 	private final ItemService items;
+	private final CreatureEffectService creatureEffects;
 
 	/**
 	 * Crea il controllo. Non ha stato: la stessa istanza serve qualsiasi partita.
 	 *
-	 * @param items Oggetti, per il Badge di Uscita Negata
+	 * @param items Oggetti, per il Badge di Uscita Negata e il Fascicolo Sigillato 0
 	 */
 	public DeathResolver(ItemService items) {
 		this.items = items;
+		this.creatureEffects = new CreatureEffectService(items);
 	}
 
 	/**
@@ -44,11 +48,11 @@ public final class DeathResolver {
 	 */
 	public boolean resolve(MatchState state) {
 		List<CreatureInPlay> dead = new ArrayList<>();
-		for (Side side : Side.values()) {
-			state.player(side).creature()
-					.filter(CreatureInPlay::isDead)
-					.filter(creature -> !items.saveFromDeath(state, creature))
-					.ifPresent(dead::add);
+		List<CreatureInPlay> newlyDead = collectNewDeaths(state, dead);
+		while (!newlyDead.isEmpty()) {
+			dead.addAll(newlyDead);
+			creatureEffects.death(state, newlyDead);
+			newlyDead = collectNewDeaths(state, dead);
 		}
 		if (dead.isEmpty()) {
 			return false;
@@ -62,8 +66,23 @@ public final class DeathResolver {
 		return true;
 	}
 
+	/** Le creature in campo con DEF ≤ 0 non ancora contate e non salvate da un Badge, nell'ordine dei lati. */
+	private List<CreatureInPlay> collectNewDeaths(MatchState state, List<CreatureInPlay> alreadyDead) {
+		List<CreatureInPlay> newlyDead = new ArrayList<>();
+		for (Side side : Side.values()) {
+			state.player(side).creature()
+					.filter(creature -> !alreadyDead.contains(creature))
+					.filter(CreatureInPlay::isDead)
+					.filter(creature -> !items.saveFromDeath(state, creature))
+					.ifPresent(creature -> {
+						state.log().creatureDied(creature);
+						newlyDead.add(creature);
+					});
+		}
+		return newlyDead;
+	}
+
 	private static void removeDeadCreature(MatchState state, CreatureInPlay dead) {
-		state.log().creatureDied(dead);
 		state.player(dead.side()).removeCreature();
 		// D-42: conta per chi la stava affrontando, qualunque sia la causa
 		state.opponentOf(dead.side()).recordDefeatedCreature();

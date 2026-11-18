@@ -149,7 +149,7 @@ Implementazione (`ENG-33`, `ItemService`):
 - quando scatta si consuma con `ITEM_CONSUMED`;
 - **Badge di Uscita Negata:** nel controllo delle morti, prima di togliere la creatura. Se morirebbero entrambe, la creatura del proprietario resta con 1 DEF e l'altra muore da sola, quindi il suo proprietario perde la DEF negativa come in ogni morte singola (deciso il 17 novembre);
 - **Bussola dei Sentieri Falsi:** all'inizio del prossimo scontro della creatura del proprietario, dopo il Terreno; lo scudo arriva all'inizio di ognuno dei primi tre round e dura quel round;
-- **Fascicolo Sigillato 0:** annulla tutta la prima Spell `DAMAGE` o Hidden `DAMAGE` avversaria che colpirebbe la creatura del proprietario, anche una Spell `DAMAGE` rimasta in attesa quando raggiunge la creatura all'inizio dello scontro (deciso il 17 novembre). Gli effetti delle creature avversarie si aggiungono con `ENG-23`;
+- **Fascicolo Sigillato 0:** annulla tutta la prima Spell `DAMAGE` o Hidden `DAMAGE` avversaria che colpirebbe la creatura del proprietario, anche una Spell `DAMAGE` rimasta in attesa quando raggiunge la creatura all'inizio dello scontro (deciso il 17 novembre), oppure la prima attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario (danno o malus): l'attivazione perde la parte che la colpisce, il resto avviene (es. SCP-2317 dà comunque +1 ATK alla prossima creatura del suo proprietario; deciso il 18 novembre);
 - **Campanello del Torii:** annulla la prima Hidden avversaria nel momento in cui si attiverebbe, prima del Fascicolo;
 - valgono i testi del catalogo: le riprogettazioni di Fascicolo e Campanello proposte in D-25 non sono ancora decise.
 
@@ -165,7 +165,7 @@ L'engine **non** controlla le regole del mazzo (numero di carte, copie…): lo f
 - le creature hanno ATK ≥ 0 e DEF > 0;
 - Creature, Terreni e Oggetti hanno un `factionId`; Spell e Hidden non hanno né `factionId` né `secondaryFactionId`;
 - ogni `factionId` e `secondaryFactionId` è tra le `factions` ricevute, e le due fazioni di una carta sono diverse;
-- `effectCode`, se presente, esiste nell'`EffectRegistry` per il tipo della carta (un codice di Terreno su una Spell è sconosciuto); il codice di una creatura si controlla da `ENG-23`, quando arrivano i loro effetti;
+- `effectCode`, se presente, esiste nell'`EffectRegistry` per il tipo della carta (un codice di Terreno su una Spell è sconosciuto); una creatura può non avere codice, ma se ce l'ha deve essere registrato (da `ENG-23`);
 - Spell/Hidden hanno un `subtype`;
 - Spell, Hidden, Terreni e Oggetti hanno un `effectCode` (per le creature è facoltativo).
 

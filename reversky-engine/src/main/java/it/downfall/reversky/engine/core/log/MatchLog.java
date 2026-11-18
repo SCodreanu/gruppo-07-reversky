@@ -213,9 +213,10 @@ public final class MatchLog {
 	 *
 	 * @param attacker     creatura che attacca
 	 * @param factionBonus bonus ATK di fazione contro l'avversaria, anche negativo
+	 * @param effectBonus  modifica dell'effetto dell'attaccante ({@code modifyOutgoingAttack}), anche negativa
 	 * @param total        attacco effettivo, già con il minimo 0
 	 */
-	public void attackComputed(CreatureInPlay attacker, int factionBonus, int total) {
+	public void attackComputed(CreatureInPlay attacker, int factionBonus, int effectBonus, int total) {
 		int base = attacker.baseAttack();
 		int modifiers = attacker.attackModifiers();
 		StringBuilder parts = new StringBuilder(number(base)).append(" base");
@@ -225,9 +226,12 @@ public final class MatchLog {
 		if (modifiers != 0) {
 			parts.append(", ").append(signed(modifiers)).append(" modifiers");
 		}
+		if (effectBonus != 0) {
+			parts.append(", ").append(signed(effectBonus)).append(" effect");
+		}
 		add(EventType.ATTACK_COMPUTED, attacker.side(),
 				data("attacker", attacker.name(), "baseAttack", base, "factionBonus", factionBonus,
-						"modifiers", modifiers, "total", total),
+						"modifiers", modifiers, "effectBonus", effectBonus, "total", total),
 				attacker.name() + " attacks with " + number(total) + " (" + parts + ")");
 	}
 

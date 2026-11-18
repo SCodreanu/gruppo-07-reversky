@@ -19,10 +19,9 @@ import it.downfall.reversky.engine.core.rules.FactionMatrix;
  * Risolve l'inizio di uno scontro e i round, nell'ordine dei passi di docs/effetti ("Ordine di risoluzione di un
  * round"), che fa parte delle regole: non si cambia senza aggiornare quel documento.
  * <p>
- * Passi già presenti: 0 (bonus DEF di fazione, modificatori in attesa, bonus del Terreno e Hidden), 2 (calcolo
- * dell'attacco), 4 (danni simultanei) e 7 (morti e danno al giocatore, con il {@link DeathResolver}). Gli altri passi
- * arrivano con gli effetti delle creature e gli Oggetti (ENG-23, ENG-33). Quando una cosa riguarda entrambi i
- * giocatori, prima lo sfidante e poi l'avversario.
+ * Ci sono tutti i passi, da 0 a 7; gli effetti delle creature li chiama {@link CreatureEffectService} (ENG-23) e le
+ * morti le controlla il {@link DeathResolver}. Quando una cosa riguarda entrambi i giocatori, prima lo sfidante e poi
+ * l'avversario; per gli effetti delle creature prima la priorità, poi lo sfidante (D-30).
  */
 public final class RoundResolver {
 
@@ -33,6 +32,7 @@ public final class RoundResolver {
 	private final EffectRegistry effects;
 	private final TerrainService terrains;
 	private final ItemService items;
+	private final CreatureEffectService creatureEffects;
 	private final DeathResolver deaths;
 
 	/**
@@ -46,6 +46,7 @@ public final class RoundResolver {
 		this.effects = effects;
 		this.terrains = new TerrainService(effects);
 		this.items = new ItemService(effects);
+		this.creatureEffects = new CreatureEffectService(items);
 		this.deaths = new DeathResolver(items);
 	}
 
@@ -63,10 +64,12 @@ public final class RoundResolver {
 	 * dopo il Terreno (D-48).</li>
 	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
 	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
-	 * <li>Si fissa la DEF all'entrata delle creature rimaste, al loro primo scontro (M-06).</li>
+	 * <li>{@code onEnterPlay} delle creature che non sono ancora entrate (D-31).</li>
+	 * <li>Si fissa la DEF all'entrata delle creature appena entrate (M-06).</li>
 	 * </ol>
 	 * Dopo ogni fase che può togliere DEF si controllano le morti (D-08): se muore una creatura lo scontro finisce
-	 * prima di cominciare, e le Hidden non ancora attivate restano coperte per lo scontro dopo.
+	 * prima di cominciare, e le Hidden non ancora attivate restano coperte per lo scontro dopo. Una creatura che non è
+	 * arrivata al suo {@code onEnterPlay} entra allo scontro dopo (deciso il 18 novembre).
 	 *
 	 * @param state stato della partita, con due creature in campo
 	 * @throws IllegalStateException se manca una creatura
@@ -84,10 +87,21 @@ public final class RoundResolver {
 			terrains.applyBonus(state, opponent);
 			items.startCombat(state, challenger);
 			items.startCombat(state, opponent);
-			triggerHiddenCards(state, combat);
+			if (!triggerHiddenCards(state, combat)) {
+				creatureEffects.enterPlay(state);
+				deaths.resolve(state);
+			}
 		}
-		state.challenger().creature().ifPresent(CreatureInPlay::recordInitialDefense);
-		state.opponent().creature().ifPresent(CreatureInPlay::recordInitialDefense);
+		state.challenger().creature().ifPresent(RoundResolver::recordCombatStarted);
+		state.opponent().creature().ifPresent(RoundResolver::recordCombatStarted);
+	}
+
+	/** Fine del passo 0: la DEF all'entrata si fissa solo per una creatura che è entrata davvero (M-06). */
+	private static void recordCombatStarted(CreatureInPlay creature) {
+		creature.recordCombatStarted();
+		if (creature.hasEntered()) {
+			creature.recordInitialDefense();
+		}
 	}
 
 	/**
@@ -105,25 +119,40 @@ public final class RoundResolver {
 		MatchLog log = state.log();
 		log.roundStarted(state.startNextRound());
 
-		// Passo 1: scudi a inizio round (Bussola dei Sentieri Falsi)
+		// Passo 1: scudi a inizio round (Bussola dei Sentieri Falsi), poi onRoundStart
 		items.startRound(state, challenger);
 		items.startRound(state, opponent);
+		creatureEffects.roundStart(state);
+		if (deaths.resolve(state)) {
+			// D-08: una morte prima del passo 4 interrompe il round; il round conta, nessuno attacca e i modificatori
+			// a round della sopravvissuta scadono come a fine round (deciso il 17 novembre)
+			state.challenger().creature().ifPresent(RoundResolver::endRound);
+			state.opponent().creature().ifPresent(RoundResolver::endRound);
+			return;
+		}
 
 		// Passo 2: si calcolano entrambi gli attacchi prima di applicare i danni
-		int challengerAttack = computeAttack(challenger, opponent, log);
-		int opponentAttack = computeAttack(opponent, challenger, log);
+		int challengerAttack = computeAttack(state, challenger, opponent);
+		int opponentAttack = computeAttack(state, opponent, challenger);
+
+		// Passo 3: le prevenzioni della creatura colpita, prima lo sfidante
+		int toChallenger = creatureEffects.incomingDamage(state, challenger, opponentAttack);
+		int toOpponent = creatureEffects.incomingDamage(state, opponent, challengerAttack);
 
 		// Passo 4, regolamento base punto 3: i danni si applicano insieme, nessuno colpisce per primo
-		opponent.takeDamage(challengerAttack);
-		challenger.takeDamage(opponentAttack);
-		log.damageDealt(challenger, opponent, challengerAttack);
-		log.damageDealt(opponent, challenger, opponentAttack);
+		int[] wounds = new int[Side.values().length];
+		wounds[Side.OPPONENT.ordinal()] = opponent.takeDamage(toOpponent);
+		wounds[Side.CHALLENGER.ordinal()] = challenger.takeDamage(toChallenger);
+		log.damageDealt(challenger, opponent, toOpponent);
+		log.damageDealt(opponent, challenger, toChallenger);
+
+		// Passi 5 e 6: afterDamage di entrambe, onRoundEnd solo delle vive
+		creatureEffects.afterDamage(state, wounds);
+		creatureEffects.roundEnd(state);
 
 		endRound(challenger);
 		endRound(opponent);
-		// Passo 7 (D-08): lo stesso controllo vale dopo ogni fase che toglie DEF. Quando arriveranno i passi 1–3
-		// (ENG-23), una morte prima del passo 4 interrompe il round: il round conta, nessuno attacca e i
-		// modificatori a round della sopravvissuta scadono come a fine round (docs/effetti)
+		// Passo 7 (D-08): lo stesso controllo vale dopo ogni fase che toglie DEF
 		deaths.resolve(state);
 	}
 
@@ -157,8 +186,10 @@ public final class RoundResolver {
 	/**
 	 * D-15: le Hidden senza condizione pronte per questo scontro, {@code DAMAGE} prima di {@code SURVIVAL}. Ogni Hidden
 	 * si scarta quando si attiva; se una uccide, le altre aspettano lo scontro dopo.
+	 *
+	 * @return {@code true} se una Hidden ha ucciso, cioè lo scontro è finito
 	 */
-	private void triggerHiddenCards(MatchState state, int combat) {
+	private boolean triggerHiddenCards(MatchState state, int combat) {
 		for (CardSubtype subtype : HIDDEN_ORDER) {
 			for (Side side : Side.values()) {
 				PlayerState owner = state.player(side);
@@ -172,12 +203,13 @@ public final class RoundResolver {
 						effects.createHidden(hidden.card().effectCode())
 								.trigger(new EffectContext(state, side, hidden.card()));
 						if (deaths.resolve(state)) {
-							return;
+							return true;
 						}
 					}
 				}
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -193,11 +225,16 @@ public final class RoundResolver {
 				target.creature().map(CreatureInPlay::name).orElse(null));
 	}
 
-	/** Attacco effettivo: ATK con i modificatori più il bonus di fazione, mai sotto 0 (D-04). */
-	private int computeAttack(CreatureInPlay attacker, CreatureInPlay defender, MatchLog log) {
+	/**
+	 * Attacco effettivo: ATK con i modificatori più il bonus di fazione, poi l'effetto dell'attaccante
+	 * ({@code modifyOutgoingAttack}), mai sotto 0 (D-04).
+	 */
+	private int computeAttack(MatchState state, CreatureInPlay attacker, CreatureInPlay defender) {
 		int factionBonus = factionMatrix.atkBonus(attacker.factions(), defender.factions());
-		int total = Math.max(0, attacker.attack() + factionBonus);
-		log.attackComputed(attacker, factionBonus, total);
+		int attack = attacker.attack() + factionBonus;
+		int effectBonus = creatureEffects.outgoingAttack(state, attacker, attack) - attack;
+		int total = Math.max(0, attack + effectBonus);
+		state.log().attackComputed(attacker, factionBonus, effectBonus, total);
 		return total;
 	}
 

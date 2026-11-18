@@ -37,7 +37,7 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 75 round, PV 30–30 |
 | `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
-| `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `09-effetto-hidebehind` | primo effetto di creatura (`HIDEBEHIND`) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
 | `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–(−5) |
 | `11-doppia-fazione-vantaggio` | carta con due fazioni: prende il bonus della seconda fazione | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–28 |
 | `12-doppia-fazione-svantaggio` | carta con due fazioni: subisce anche lo svantaggio della seconda fazione | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
@@ -113,7 +113,7 @@ Round 1: Hidebehind previene 2 dei 7 danni di Faceling (6 − 5 = 1), Faceling 9
 Round 2: Hidebehind 1 − 7 = −6 (muore), Faceling 1. Lo sfidante perde 6 PV.
 *Controprova:* senza effetto Hidebehind muore già al round 1 con DEF −1 e lo sfidante perde 1 PV.
 Il caso mostra un effetto collaterale della regola del danno: sopravvivere un round in più con poca DEF può costare **più** punti vita.
-Finché gli effetti delle creature non ci sono (`ENG-23`) il codice di una creatura non si controlla: la richiesta dà `200` e la partita della controprova.
+Nel log, al round 1, `Hidebehind: prevents 2 damage from the first attack of Faceling`.
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).

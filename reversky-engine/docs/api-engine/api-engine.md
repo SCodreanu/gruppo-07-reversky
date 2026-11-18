@@ -138,7 +138,7 @@ Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'
 | 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 (`atk` e `def` sulle altre carte si ignorano) | — |
 | 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype`, o con un `subtype` che non esiste per il tipo (Spell: `DAMAGE`, `SHIELD`, `BURN`; Hidden: `SURVIVAL`, `DAMAGE`) | — |
 | 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
-| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry`, o che è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Fino a `ENG-23` il codice di una creatura non si controlla | `90` |
+| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry`, o che è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Una creatura può non avere `effectCode` (le Common); se ce l'ha, vale la stessa regola (da `ENG-23`) | `90` |
 
 Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `detail`, `code` e `instance`. I testi sono **in inglese**, come negli errori dell'API; non arrivano mai ai giocatori.
 
@@ -173,7 +173,7 @@ Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERN
 
 Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
 Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
-L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono con `ENG-23`.
+L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati (`ENG-23`, `ENG-25`, `ENG-26`).
 
 ```json
 [

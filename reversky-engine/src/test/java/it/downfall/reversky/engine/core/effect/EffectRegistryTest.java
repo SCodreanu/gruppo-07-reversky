@@ -161,7 +161,7 @@ class EffectRegistryTest {
 				case HIDDEN -> game.createHidden(code);
 				case TERRAIN -> game.createTerrain(code);
 				case ITEM -> game.createItem(code);
-				case CREATURE -> throw new AssertionError("Effetti delle creature con ENG-23: " + code);
+				case CREATURE -> game.createCreature(code);
 			};
 			assertThat(effect.code()).isEqualTo(code);
 		});

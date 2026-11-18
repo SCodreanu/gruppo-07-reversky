@@ -426,14 +426,46 @@ class SimulationInputValidatorTest {
 	}
 
 	@Test
-	@DisplayName("Fino a ENG-23 il codice di una creatura non si controlla: una creatura con HIDEBEHND è valida")
-	void validate_creatureWithUnknownEffect_acceptedUntilCreatureEffects() {
+	@DisplayName("Una creatura con un codice non registrato (HIDEBEHND) dà UNKNOWN_EFFECT, come le altre carte")
+	void validate_creatureWithUnknownEffect_throwsUnknownEffect() {
 		// Arrange
 		CardDefinition creature = new CardDefinition(23, "Hidebehind", CardType.CREATURE, "Uncommon", 2, INVITATION,
 				null, 3, 8, null, "HIDEBEHND");
 
 		// Act + Assert
-		assertThatCode(() -> validator.validate(input(deck(creature), deck(KAPPA)))).doesNotThrowAnyException();
+		assertThatThrownBy(() -> validator.validate(input(deck(creature), deck(KAPPA))))
+				.isInstanceOfSatisfying(InvalidSimulationInputException.class, e -> {
+					assertThat(e.code()).isEqualTo(ErrorCode.UNKNOWN_EFFECT);
+					assertThat(e.getMessage()).isEqualTo("Unknown effect HIDEBEHND on card 23");
+				});
+	}
+
+	@Test
+	@DisplayName("Una creatura con il codice di un altro tipo di carta (VEIL_OF_ANCHORED) dà UNKNOWN_EFFECT")
+	void validate_creatureWithSpellCode_throwsUnknownEffect() {
+		// Arrange
+		CardDefinition creature = new CardDefinition(23, "Hidebehind", CardType.CREATURE, "Uncommon", 2, INVITATION,
+				null, 3, 8, null, "VEIL_OF_ANCHORED");
+
+		// Act + Assert
+		assertThatThrownBy(() -> validator.validate(input(deck(creature), deck(KAPPA))))
+				.isInstanceOfSatisfying(InvalidSimulationInputException.class, e -> {
+					assertThat(e.code()).isEqualTo(ErrorCode.UNKNOWN_EFFECT);
+					assertThat(e.getMessage()).isEqualTo("Effect VEIL_OF_ANCHORED is not a CREATURE effect: card 23");
+				});
+	}
+
+	@Test
+	@DisplayName("Una creatura con un effetto registrato (HIDEBEHIND) o senza codice è valida")
+	void validate_creatureWithRegisteredEffectOrNone_accepted() {
+		// Arrange
+		CardDefinition creature = new CardDefinition(23, "Hidebehind", CardType.CREATURE, "Uncommon", 2, INVITATION,
+				null, 3, 8, null, "HIDEBEHIND");
+
+		SimulationInputValidator game = new SimulationInputValidator(EffectRegistry.withAllEffects());
+
+		// Act + Assert: KAPPA qui è una Common senza codice
+		assertThatCode(() -> game.validate(input(deck(creature), deck(KAPPA)))).doesNotThrowAnyException();
 	}
 
 	@Test

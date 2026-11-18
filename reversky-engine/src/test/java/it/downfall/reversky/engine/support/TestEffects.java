@@ -3,6 +3,7 @@ package it.downfall.reversky.engine.support;
 import java.util.List;
 import java.util.stream.Stream;
 
+import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.effect.HiddenEffect;
@@ -13,9 +14,9 @@ import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.SimulationInput;
 
 /**
- * Registri degli effetti per i test che usano Spell, Hidden, Terreni od Oggetti il cui effetto vero non esiste ancora:
- * quei codici sono registrati con un effetto finto che non fa niente, così l'input supera il controllo
- * {@code UNKNOWN_EFFECT} e la carta si gioca senza effetto.
+ * Registri degli effetti per i test che usano carte il cui effetto vero non esiste ancora (es. le creature dei mazzi
+ * del catalogo in {@link TestDecks}): quei codici sono registrati con un effetto finto che non fa niente, così l'input
+ * supera il controllo {@code UNKNOWN_EFFECT} e la carta si gioca senza effetto.
  */
 public final class TestEffects {
 
@@ -23,7 +24,7 @@ public final class TestEffects {
 	}
 
 	/**
-	 * Registro con un effetto finto per ogni codice delle carte non creatura dei due mazzi.
+	 * Registro con un effetto finto per ogni codice delle carte dei due mazzi.
 	 *
 	 * @param input input della simulazione
 	 * @return un nuovo registro
@@ -33,8 +34,8 @@ public final class TestEffects {
 	}
 
 	/**
-	 * Registro con un effetto finto per ogni codice delle carte non creatura date. Un codice ripetuto si registra una
-	 * volta sola; le creature si ignorano.
+	 * Registro con un effetto finto per ogni codice delle carte date. Un codice ripetuto si registra una volta sola;
+	 * le carte senza codice si ignorano.
 	 *
 	 * @param cards carte, anche ripetute
 	 * @return un nuovo registro
@@ -44,8 +45,8 @@ public final class TestEffects {
 	}
 
 	/**
-	 * Registro del gioco ({@link EffectRegistry#withAllEffects()}) più un effetto finto per ogni codice delle carte
-	 * non creatura dei due mazzi che il gioco non ha ancora: gli effetti già implementati sono quelli veri.
+	 * Registro del gioco ({@link EffectRegistry#withAllEffects()}) più un effetto finto per ogni codice delle carte dei
+	 * due mazzi che il gioco non ha ancora: gli effetti già implementati sono quelli veri.
 	 *
 	 * @param input input della simulazione
 	 * @return un nuovo registro
@@ -69,10 +70,11 @@ public final class TestEffects {
 			case HIDDEN -> registry.registerHidden(code, () -> new StubHidden(code));
 			case TERRAIN -> registry.registerTerrain(code, () -> new StubTerrain(code));
 			case ITEM -> registry.registerItem(code, () -> new StubItem(code));
-			case CREATURE -> {
-				// gli effetti delle creature arrivano con ENG-23: il registro non li conosce ancora
-			}
+			case CREATURE -> registry.registerCreature(code, () -> new StubCreature(code));
 		}
+	}
+
+	private record StubCreature(String code) implements CreatureEffect {
 	}
 
 	private record StubSpell(String code) implements SpellEffect {

@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import it.downfall.reversky.engine.core.effect.CreatureEffect;
+
 /**
  * Creatura in campo: la carta, la DEF che le resta e i modificatori (docs/carte, "Creatura").
  * <p>
@@ -19,30 +21,56 @@ public final class CreatureInPlay {
 
 	private final CardDefinition card;
 	private final Side side;
+	/** Effetto della creatura, una nuova istanza per ogni entrata in campo (D-31), o {@code null} se non ne ha. */
+	private final CreatureEffect effect;
 	private final List<StatModifier> modifiers = new ArrayList<>();
 	private int permanentDefense;
 	private int initialDefense;
 	private boolean initialDefenseRecorded;
+	private boolean combatStarted;
+	private boolean entered;
 	/** Il Terreno in gioco che le ha dato il bonus (D-17), o {@code null}: il bonus si riceve una volta per Terreno. */
 	private PlacedTerrain terrainBonus;
 	/** Scudo a inizio round programmato da un Oggetto (Bussola dei Sentieri Falsi), o {@code null}. */
 	private RoundStartShield roundStartShield;
 
 	/**
-	 * Mette in campo una creatura con la DEF del catalogo.
+	 * Mette in campo una creatura senza effetto, con la DEF del catalogo.
 	 *
 	 * @param card carta della creatura
 	 * @param side proprietario
 	 * @throws IllegalArgumentException se la carta non è una creatura
 	 */
 	public CreatureInPlay(CardDefinition card, Side side) {
+		this(card, side, null);
+	}
+
+	/**
+	 * Mette in campo una creatura con il suo effetto, con la DEF del catalogo.
+	 *
+	 * @param card   carta della creatura
+	 * @param side   proprietario
+	 * @param effect nuova istanza dell'effetto della carta (D-31), o {@code null} se la carta non ha effetto
+	 * @throws IllegalArgumentException se la carta non è una creatura
+	 */
+	public CreatureInPlay(CardDefinition card, Side side, CreatureEffect effect) {
 		if (card.type() != CardType.CREATURE) {
 			throw new IllegalArgumentException("Solo una creatura entra in campo: carta " + card.cardId());
 		}
 		this.card = card;
 		this.side = side;
+		this.effect = effect;
 		this.permanentDefense = card.defense();
 		this.initialDefense = card.defense();
+	}
+
+	/**
+	 * Effetto della creatura.
+	 *
+	 * @return l'effetto, o vuoto se la carta non ne ha (es. le Common)
+	 */
+	public Optional<CreatureEffect> effect() {
+		return Optional.ofNullable(effect);
 	}
 
 	/**
@@ -129,18 +157,39 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Indica se la creatura ha già avuto un inizio di scontro, cioè se la sua DEF all'entrata è fissata. Una creatura
-	 * appena entrata in campo non l'ha ancora avuto: riceve i modificatori in attesa del proprietario (D-34).
+	 * Indica se la creatura ha già avuto un inizio di scontro. Una creatura appena entrata in campo non l'ha ancora
+	 * avuto: riceve i modificatori in attesa del proprietario (D-34).
 	 *
-	 * @return {@code true} dopo {@link #recordInitialDefense()}
+	 * @return {@code true} dopo {@link #recordCombatStarted()}
 	 */
 	public boolean hasStartedCombat() {
-		return initialDefenseRecorded;
+		return combatStarted;
+	}
+
+	/** Ricorda che la creatura ha avuto un inizio di scontro (fine del passo 0, anche se lo scontro è finito lì). */
+	public void recordCombatStarted() {
+		combatStarted = true;
 	}
 
 	/**
-	 * Fissa la DEF all'entrata alla DEF attuale. Si chiama alla fine dell'inizio del primo scontro della creatura,
-	 * quando i bonus d'entrata sono stati applicati; le chiamate successive non cambiano nulla.
+	 * Indica se il suo {@code onEnterPlay} è già stato chiamato. Di solito succede al primo inizio di scontro; se una
+	 * Hidden uccide prima, succede allo scontro dopo (deciso il 18 novembre).
+	 *
+	 * @return {@code true} dopo {@link #recordEntered()}
+	 */
+	public boolean hasEntered() {
+		return entered;
+	}
+
+	/** Ricorda che il momento dell'entrata in campo è passato (una volta per entrata, D-31). */
+	public void recordEntered() {
+		entered = true;
+	}
+
+	/**
+	 * Fissa la DEF all'entrata alla DEF attuale. Si chiama alla fine dell'inizio dello scontro in cui la creatura
+	 * entra davvero ({@link #hasEntered()}), quando i bonus d'entrata sono stati applicati; le chiamate successive non
+	 * cambiano nulla.
 	 */
 	public void recordInitialDefense() {
 		if (!initialDefenseRecorded) {
@@ -177,9 +226,10 @@ public final class CreatureInPlay {
 	 * sotto 0 (il danno al giocatore è la DEF negativa, D-03).
 	 *
 	 * @param damage danno, almeno 0
+	 * @return la ferita (docs/effetti, "Soglie"): la DEF persa davvero sopra 0, dopo gli scudi
 	 * @throws IllegalArgumentException se {@code damage} è negativo
 	 */
-	public void takeDamage(int damage) {
+	public int takeDamage(int damage) {
 		if (damage < 0) {
 			throw new IllegalArgumentException("Danno negativo: " + damage);
 		}
@@ -188,7 +238,9 @@ public final class CreatureInPlay {
 			remaining = shield.absorb(remaining);
 		}
 		modifiers.removeIf(StatModifier::isExhausted);
+		int wound = Math.min(remaining, Math.max(0, permanentDefense));
 		permanentDefense -= remaining;
+		return wound;
 	}
 
 	/**

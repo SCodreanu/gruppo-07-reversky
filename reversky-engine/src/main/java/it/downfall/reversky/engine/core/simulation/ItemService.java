@@ -22,7 +22,8 @@ import it.downfall.reversky.engine.core.model.StatModifier;
  * <li>Badge di Uscita Negata: nel controllo delle morti, prima di togliere la creatura (D-36).</li>
  * <li>Bussola dei Sentieri Falsi: all'inizio dello scontro, dopo il Terreno (D-48); lo scudo arriva a inizio
  * round.</li>
- * <li>Fascicolo Sigillato 0: quando una Spell o una Hidden avversaria colpirebbe la creatura del proprietario.</li>
+ * <li>Fascicolo Sigillato 0: quando una Spell, una Hidden o un effetto di creatura avversari colpirebbero la creatura
+ * del proprietario.</li>
  * <li>Campanello del Torii: quando una Hidden avversaria starebbe per attivarsi.</li>
  * </ul>
  */
@@ -105,8 +106,9 @@ public final class ItemService {
 	}
 
 	/**
-	 * Una Spell o una Hidden avversaria sta per colpire la creatura del proprietario (in campo, o la prossima se il
-	 * colpo era in attesa): un Fascicolo Sigillato 0 la annulla del tutto.
+	 * Una Spell, una Hidden o un effetto di creatura avversari stanno per colpire la creatura del proprietario (in
+	 * campo, o la prossima se il colpo era in attesa): un Fascicolo Sigillato 0 li annulla del tutto. Di un effetto di
+	 * creatura si annulla la parte che colpisce, una sola attivazione ({@link CreatureEffectService}).
 	 *
 	 * @param state    stato della partita
 	 * @param target   giocatore la cui creatura sarebbe colpita
