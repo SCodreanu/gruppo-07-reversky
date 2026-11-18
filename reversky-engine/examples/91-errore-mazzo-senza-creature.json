@@ -20,7 +20,7 @@
   "challenger": {
     "userId": 7,
     "deck": [
-      { "cardId": 70, "name": "Veil of the Anchored", "type": "SPELL", "rarity": "Uncommon", "rarityOrder": 2, "factionId": 3, "secondaryFactionId": null, "atk": null, "def": null, "subtype": "SHIELD", "effectCode": "VEIL_OF_ANCHORED" }
+      { "cardId": 70, "name": "Veil of the Anchored", "type": "SPELL", "rarity": "Uncommon", "rarityOrder": 2, "factionId": null, "secondaryFactionId": null, "atk": null, "def": null, "subtype": "SHIELD", "effectCode": "VEIL_OF_ANCHORED" }
     ]
   },
   "opponent": {
