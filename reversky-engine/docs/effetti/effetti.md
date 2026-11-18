@@ -11,41 +11,43 @@ La carta indica il suo effetto con un **codice** (`effectCode`, es. `"HIDEBEHIND
 ## L'interfaccia
 
 ```java
-public interface CreatureEffect {
-
-	/** Codice univoco, uguale a quello salvato sulla carta. */
-	String code();
+public non-sealed interface CreatureEffect extends CardEffect {
 
 	/** Priorità di risoluzione quando più effetti agiscono nello stesso momento. */
 	default EffectPriority priority() { return EffectPriority.NORMAL; }
 
-	/** La creatura entra in campo (inizio dello scontro). */
-	default void onEnterPlay(EffectContext ctx) { }
+	/** La creatura entra in campo: una volta per entrata (passo 0). */
+	default void onEnterPlay(CreatureContext ctx) { }
 
-	/** Inizio di ogni round. */
-	default void onRoundStart(EffectContext ctx) { }
+	/** Inizio di ogni round (passo 1). */
+	default void onRoundStart(CreatureContext ctx) { }
 
-	/** Modifica l'attacco che questa creatura sta per infliggere. */
-	default int modifyOutgoingAttack(EffectContext ctx, int attack) { return attack; }
+	/** Modifica l'attacco che questa creatura sta per infliggere (passo 2). */
+	default int modifyOutgoingAttack(CreatureContext ctx, int attack) { return attack; }
 
-	/** Modifica il danno che questa creatura sta per ricevere. */
-	default int modifyIncomingDamage(EffectContext ctx, int damage) { return damage; }
+	/** Modifica il danno dell'attacco che questa creatura sta per ricevere (passo 3). */
+	default int modifyIncomingDamage(CreatureContext ctx, int damage) { return damage; }
 
-	/** Dopo che i danni del round sono stati applicati. */
-	default void afterDamage(EffectContext ctx, int damageTaken) { }
+	/** Dopo che i danni del round sono stati applicati, anche se la creatura è morta (passo 5). */
+	default void afterDamage(CreatureContext ctx, int wound) { }
 
-	/** Fine di ogni round, se la creatura è ancora viva. */
-	default void onRoundEnd(EffectContext ctx) { }
+	/** Fine di ogni round, se la creatura è ancora viva (passo 6). */
+	default void onRoundEnd(CreatureContext ctx) { }
 
-	/** La creatura muore. */
-	default void onDeath(EffectContext ctx) { }
-
-	/** La creatura ha ucciso quella avversaria. */
-	default void onKill(EffectContext ctx) { }
+	/** La creatura muore, prima di lasciare il campo (passo 7). */
+	default void onDeath(CreatureContext ctx) { }
 }
 ```
 
-`EffectContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria (`opponent()`), i due giocatori, il numero del round, il `MatchLog`.
+`code()` viene da `CardEffect`. `onKill` arriverà con il primo effetto che lo usa (The Bloodless Hound, Wendigo, La Regina dei Sentieri Perduti), con le sue regole.
+
+`CreatureContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria in campo (`enemy()`, per leggerla), i due giocatori (`owner()`, `opponent()`), il round (`round()`) e il `MatchLog` (`log()`). Per **colpire** la creatura avversaria (danno o malus) un effetto usa `targetEnemy()`: è vuoto se l'avversaria non c'è o ha già DEF 0 o meno, e se un Fascicolo Sigillato 0 dell'avversario annulla l'attivazione (deciso il 18 novembre). Si crea un contesto per ogni chiamata, quindi il Fascicolo si controlla una volta per attivazione.
+
+`afterDamage` riceve la **ferita**: la DEF persa davvero sopra 0, dopo gli scudi (`CreatureInPlay.takeDamage` la restituisce).
+
+Ogni effetto tiene da sé lo stato che gli serve per "primo round", "una volta", "contro ogni avversaria" (D-31, deciso il 18 novembre): non c'è un contatore di attivazioni nel motore. I bonus ATK degli effetti si danno come `StatModifier` con origine `EFFECT` e una durata, non in `modifyOutgoingAttack` (deciso il 18 novembre): così compaiono nell'ATK e nel log e gli effetti che sospendono i bonus ATK (Static Interference, L'Addetto alle Uscite, Deathmoths) li vedono. `modifyOutgoingAttack` resta per i casi che dipendono dall'avversaria del momento; la sua modifica compare in `ATTACK_COMPUTED` come `effectBonus`.
+
+L'istanza dell'effetto sta nella creatura (`CreatureInPlay.effect()`): `DrawService` la crea dal registro quando la creatura entra in campo. `CreatureEffectService` chiama i momenti nei passi del round; `DeathResolver` chiama `onDeath`.
 
 ## Ordine di risoluzione di un round
 
@@ -60,10 +62,12 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
      - effetto dell'Oggetto (dopo il Terreno, D-48)
      - Hidden in attesa senza condizione (prima DAMAGE, poi SURVIVAL; a parità prima lo sfidante); se una Hidden
        uccide, lo scontro finisce qui e le Hidden non ancora attivate restano coperte per lo scontro dopo
-     - onEnterPlay di entrambe le creature, poi gli effetti che guardano
-       l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…)
+     - onEnterPlay delle creature che non sono ancora entrate (una volta per entrata, D-31), poi gli effetti che
+       guardano l'entrata di una creatura avversaria (Mothman, The Stitched Corridor…); se una Hidden ha ucciso, chi
+       non è entrato entra allo scontro dopo (deciso il 18 novembre)
+     - si fissa la DEF all'entrata delle creature appena entrate (M-06)
      - effetti secondari dei Terreni "a inizio scontro" (Devouring Abyss)
-1. onRoundStart (e lo scudo della Bussola dei Sentieri Falsi, nei primi tre round del suo scontro)
+1. Scudo della Bussola dei Sentieri Falsi (nei primi tre round del suo scontro), poi onRoundStart
 2. Calcolo attacco: ATK base + bonus ATK di fazione + modificatori → modifyOutgoingAttack → minimo 0
 3. Calcolo danno ricevuto: modifyIncomingDamage della creatura colpita
 4. Applicazione SIMULTANEA dei danni
@@ -121,40 +125,25 @@ Il Custode delle Porte Incrociate **non** è un effetto `NULLIFY`: è immune agl
 
 > Previene 2 danni dal primo attacco di ogni creatura avversaria che affronta.
 
+Hidebehind e Nurikabe estendono la classe base `FirstAttackShieldEffect` (D-37), che fa tutto il lavoro:
+
 ```java
-/**
- * Hidebehind — "Previene 2 danni dal primo attacco di ogni creatura avversaria".
- */
-public final class HidebehindEffect implements CreatureEffect {
-
-	public static final String CODE = "HIDEBEHIND";
-
-	private static final int PREVENTED_DAMAGE = 2;
-
-	/** Ultima avversaria contro cui lo scudo è già stato usato. */
-	private CreatureInPlay shieldUsedAgainst;
-
-	@Override
-	public String code() {
-		return CODE;
+@Override
+public final int modifyIncomingDamage(CreatureContext ctx, int damage) {
+	CreatureInPlay attacker = ctx.enemy().orElse(null);
+	// D-33: conta il primo attacco con danno > 0 di ogni avversaria
+	if (damage <= 0 || attacker == null || attacker == usedAgainst) {
+		return damage;
 	}
-
-	@Override
-	public int modifyIncomingDamage(EffectContext ctx, int damage) {
-		CreatureInPlay attacker = ctx.opponent();
-		// D-33: conta il primo attacco con danno > 0 di ogni avversaria
-		if (attacker == shieldUsedAgainst || damage <= 0) {
-			return damage;
-		}
-		shieldUsedAgainst = attacker;
-		int reduced = Math.max(0, damage - PREVENTED_DAMAGE);
-		ctx.log().effect(ctx.self(), "prevents " + (damage - reduced) + " damage");
-		return reduced;
-	}
+	usedAgainst = attacker;
+	int reduced = Math.max(0, damage - prevented);
+	ctx.log().effectTriggered(ctx.self().side(), ctx.self().name(),
+			"prevents " + (damage - reduced) + " damage from the first attack of " + attacker.name());
+	return reduced;
 }
 ```
 
-Nota: l'effetto ha uno **stato** (`shieldUsedAgainst`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
+Nota: l'effetto ha uno **stato** (`usedAgainst`). Per questo il registro crea **una nuova istanza per ogni creatura che entra in campo**.
 
 ### Effetto con soglia: The Unseen Matriarch
 
@@ -181,7 +170,7 @@ La stessa soglia si controlla anche dopo le altre fasi in cui la DEF cambia (dan
 
 > Alla morte infligge 4 danni alla creatura avversaria e dà +1 ATK alla prossima creatura alleata.
 
-Il danno può uccidere anche l'avversaria: le morti si ricontrollano dopo gli `onDeath`, quindi possono morire **entrambe** (e in quel caso nessun giocatore subisce danni).
+Il danno può uccidere anche l'avversaria: le morti si ricontrollano dopo gli `onDeath`, quindi possono morire **entrambe** (e in quel caso nessun giocatore subisce danni). Nel log `CREATURE_DIED` della creatura viene prima del suo effetto alla morte.
 Il +1 ATK va nei modificatori in attesa del proprietario (D-34) e si applica alla sua prossima creatura che entra.
 
 ## Effetti di Spell, Hidden, Terreni e Oggetti
@@ -205,20 +194,20 @@ Gli effetti `P2` aggiungono i loro momenti all'interfaccia del loro tipo (es. le
 ```java
 public static EffectRegistry withAllEffects() {
 	return new EffectRegistry()
+			.registerCreature(HidebehindEffect.CODE, HidebehindEffect::new)
 			.registerSpell(VeilOfAnchoredEffect.CODE, VeilOfAnchoredEffect::new)
 			.registerHidden(LastSanctuaryEffect.CODE, LastSanctuaryEffect::new)
 			.registerTerrain(EchoRiftEffect.CODE, EchoRiftEffect::new);
-			// ... gli effetti delle creature con ENG-23
 }
 ```
 
 - `exists(codice, tipoDiCarta)` e `appliesTo(codice)` servono alla validazione dell'input;
-- `createSpell(codice)`, `createHidden(codice)`, `createTerrain(codice)`, `createItem(codice)` creano una **nuova istanza** a ogni uso, perché un effetto può avere uno stato;
+- `createCreature(codice)`, `createSpell(codice)`, `createHidden(codice)`, `createTerrain(codice)`, `createItem(codice)` creano una **nuova istanza** a ogni uso, perché un effetto può avere uno stato;
 - `codes()` dà tutti i codici con il tipo di carta, nell'ordine di registrazione.
 
 Il registro si crea una volta all'avvio (`EngineConfiguration`) e poi si legge soltanto: la stessa istanza serve tutte le partite. Il `MatchSimulator` lo riceve nel costruttore; nei test si usa un registro con effetti di prova (`TestEffects.stubsFor(...)` per gli effetti finti).
 
-Fino a `ENG-23` il registro non conosce gli effetti delle creature: il codice di una creatura non si controlla e la creatura gioca senza effetto.
+Una creatura può non avere codice (le Common): allora gioca senza effetto. Se ha un codice, deve essere registrato come effetto di creatura, come per le altre carte (`UNKNOWN_EFFECT`, deciso il 18 novembre): gli effetti delle creature non ancora implementati danno `400` finché non arrivano (`ENG-25`, `ENG-26`), e intanto l'API lascia vuoto `effect_code`.
 
 L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API lo usa per sapere quali effetti si possono assegnare a una carta.
 
@@ -236,6 +225,12 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 
 | Codice | Carta | Momento | Stato |
 |---|---|---|---|
+| `HIDEBEHIND` | Hidebehind | creatura, `modifyIncomingDamage` | fatto, `FirstAttackShieldEffectTest`, esempio 09 |
+| `NURIKABE` | Nurikabe | creatura, `modifyIncomingDamage` | fatto, `FirstAttackShieldEffectTest` |
+| `KAPPA` | Kappa | creatura, `onEnterPlay` (+3 ATK per un round) | fatto, `KappaEffectTest` |
+| `SCP_096` | SCP-096 (Shy Guy) | creatura, `afterDamage` (+3 ATK fino a fine scontro) | fatto, `Scp096EffectTest` |
+| `SCP_2317` | SCP-2317 (A Door in the Woods) | creatura, `onDeath` | fatto, `Scp2317EffectTest` |
+| `SMILER` | Smiler | creatura, `onRoundEnd` | fatto, `SmilerEffectTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
@@ -257,12 +252,12 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `DEVOURING_ABYSS` | Devouring Abyss (Crepa Cavità) | Terreno, bonus base | fatto, `TerrainServiceTest` |
 | `DENIED_EXIT_BADGE` | Badge di Uscita Negata | Oggetto, controllo delle morti | fatto, `ItemServiceTest` |
 | `FALSE_PATHS_COMPASS` | Bussola dei Sentieri Falsi | Oggetto, inizio scontro e inizio round | fatto, `ItemServiceTest` |
-| `SEALED_FILE_ZERO` | Fascicolo Sigillato 0 | Oggetto, Spell o Hidden avversaria in arrivo | fatto per Spell e Hidden, `ItemServiceTest` |
+| `SEALED_FILE_ZERO` | Fascicolo Sigillato 0 | Oggetto, Spell, Hidden o effetto di creatura avversaria in arrivo | fatto, `ItemServiceTest`, `Scp2317EffectTest`, `SmilerEffectTest` |
 | `TORII_BELL` | Campanello del Torii | Oggetto, Hidden avversaria in arrivo | fatto, `ItemServiceTest` |
 
 Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
 I Terreni hanno solo il bonus base (`BaseTerrainEffect`); gli effetti secondari arrivano con `ENG-27`.
-Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla per ora Spell e Hidden, gli effetti delle creature arrivano con `ENG-23`. Valgono i testi del catalogo finché D-25 è aperta.
+Gli Oggetti dicono cosa fanno (`ItemEffect`) e `ItemService` li fa scattare nel loro momento; il Fascicolo Sigillato 0 annulla la prima Spell, Hidden o attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario. Valgono i testi del catalogo finché D-25 è aperta.
 Le Hidden senza condizione hanno due classi base (`SurvivalHiddenEffect`, `FirstRoundHiddenEffect`); Breaking Point ha la sua. Mancano le Hidden `P2`: `REMNANTS_OF_REALITY`, `UNSEEN_EXIT` (con condizione) e `STATIC_INTERFERENCE`.
 
 L'elenco di **tutti** gli effetti da implementare (creature, Spell, Hidden, Terreni, Oggetti), con codici proposti, momenti e note, è nel [catalogo degli effetti](catalogo-effetti.md).

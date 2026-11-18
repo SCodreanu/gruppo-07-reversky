@@ -44,4 +44,4 @@ Con curl, al posto di Swagger (cmd, dalla cartella `reversky-engine`):
 curl -s -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\13-carte-speciali.json
 ```
 
-Le creature non hanno ancora i loro effetti (`ENG-23`): nel SAL si mostrano Spell, Hidden, Terreni e Oggetti.
+Delle creature ci sono i primi sei effetti (`ENG-23`): l'esempio 09 (Hidebehind) mostra una prevenzione nel log. Gli esempi 08 e 13 usano creature senza effetto.

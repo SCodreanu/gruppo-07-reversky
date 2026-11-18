@@ -50,7 +50,7 @@ In JSON:
 | `ITEM_PLACED` | un Oggetto entra in gioco | `card` | `Challenger places Campanello del Torii` |
 | `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47); se annulla una Spell o una Hidden, subito dopo c'è il suo `SPELL_RESOLVED` o `HIDDEN_TRIGGERED` con `effect` `cancelled` | `card`, `effect` (es. `stays at 1 DEF`, `cancels Skin Fracture`), `creature` | `Campanello del Torii is used on Kappa` |
 | `ROUND_STARTED` | inizio di un round | `round` | `Round 1` |
-| `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `total` | `Crawlers attacks with 6 (4 base, +2 faction)` |
+| `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `effectBonus`, `total` | `Crawlers attacks with 6 (4 base, +2 faction)` |
 | `DAMAGE_DEALT` | una creatura colpisce l'altra | `source`, `target`, `amount`, `targetDefense` | `Crawlers deals 6 damage to Kappa (DEF 1)` |
 | `EFFECT_TRIGGERED` | un'abilità agisce; anche il bonus DEF di fazione a inizio scontro, se maggiore di 0, ogni modificatore in attesa che raggiunge la creatura (D-34) e il bonus di un Terreno ricevuto o perso | `card`, `description` | `Kappa: +3 ATK in the first round`, `Kappa: +5 DEF from Veil of the Anchored (ATK 6, DEF 12)`, `Kappa: loses the Watching Rift bonus (ATK 6, DEF 7)` |
 | `CREATURE_DIED` | una creatura muore | `card` | `Crawlers is destroyed` |

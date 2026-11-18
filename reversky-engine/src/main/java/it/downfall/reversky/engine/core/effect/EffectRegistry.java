@@ -16,15 +16,21 @@ import it.downfall.reversky.engine.core.effect.impl.EchoRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoStrikeEffect;
 import it.downfall.reversky.engine.core.effect.impl.FalsePathsCompassEffect;
 import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
+import it.downfall.reversky.engine.core.effect.impl.HidebehindEffect;
 import it.downfall.reversky.engine.core.effect.impl.HollowClearingEffect;
 import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
+import it.downfall.reversky.engine.core.effect.impl.KappaEffect;
 import it.downfall.reversky.engine.core.effect.impl.LastSanctuaryEffect;
+import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
+import it.downfall.reversky.engine.core.effect.impl.Scp096Effect;
+import it.downfall.reversky.engine.core.effect.impl.Scp2317Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
 import it.downfall.reversky.engine.core.effect.impl.SealedFileZeroEffect;
 import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
+import it.downfall.reversky.engine.core.effect.impl.SmilerEffect;
 import it.downfall.reversky.engine.core.effect.impl.SurvivalInstinctEffect;
 import it.downfall.reversky.engine.core.effect.impl.ToriiBellEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
@@ -58,8 +64,13 @@ public final class EffectRegistry {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry withAllEffects() {
-		// creature con ENG-23
 		return new EffectRegistry()
+				.registerCreature(HidebehindEffect.CODE, HidebehindEffect::new)
+				.registerCreature(NurikabeEffect.CODE, NurikabeEffect::new)
+				.registerCreature(KappaEffect.CODE, KappaEffect::new)
+				.registerCreature(Scp096Effect.CODE, Scp096Effect::new)
+				.registerCreature(Scp2317Effect.CODE, Scp2317Effect::new)
+				.registerCreature(SmilerEffect.CODE, SmilerEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)
@@ -83,6 +94,18 @@ public final class EffectRegistry {
 				.registerItem(FalsePathsCompassEffect.CODE, FalsePathsCompassEffect::new)
 				.registerItem(SealedFileZeroEffect.CODE, SealedFileZeroEffect::new)
 				.registerItem(ToriiBellEffect.CODE, ToriiBellEffect::new);
+	}
+
+	/**
+	 * Registra l'effetto di una creatura.
+	 *
+	 * @param code    codice dell'effetto
+	 * @param factory crea una nuova istanza dell'effetto
+	 * @return questo registro
+	 * @throws IllegalArgumentException se il codice è vuoto o è già registrato
+	 */
+	public EffectRegistry registerCreature(String code, Supplier<CreatureEffect> factory) {
+		return register(code, CardType.CREATURE, factory);
 	}
 
 	/**
@@ -163,6 +186,17 @@ public final class EffectRegistry {
 		Map<String, CardType> codes = new LinkedHashMap<>();
 		registrations.forEach((code, registration) -> codes.put(code, registration.appliesTo()));
 		return Collections.unmodifiableMap(codes);
+	}
+
+	/**
+	 * Crea l'effetto di una creatura che entra in campo: una nuova istanza per ogni entrata (D-31).
+	 *
+	 * @param code codice dell'effetto
+	 * @return una nuova istanza
+	 * @throws IllegalArgumentException se il codice non è registrato per una creatura
+	 */
+	public CreatureEffect createCreature(String code) {
+		return create(code, CardType.CREATURE, CreatureEffect.class);
 	}
 
 	/**

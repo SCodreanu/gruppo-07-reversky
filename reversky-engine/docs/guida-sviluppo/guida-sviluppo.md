@@ -149,7 +149,7 @@ Se una regola cambia, si aggiorna il CSV, non il codice del test.
 - Con `200` controlla risultato, motivo di fine, round, punti vita e creature sconfitte; con `400` controlla `code`.
 - Il percorso `examples/...` è relativo alla cartella `reversky-engine`, che è la cartella di lavoro dei test con Gradle e con IntelliJ.
 - `@WebMvcTest` non carica i `@Component`: il test importa `EngineConfiguration` e `SimulationMapper`.
-- In attesa degli effetti delle creature (`ENG-23`): l'esempio 90 (`UNKNOWN_EFFECT` su una creatura) si salta con un'assunzione, perché fino ad allora il codice di una creatura non si controlla, e il metodo degli esempi con effetti è `@Disabled` finché `HIDEBEHIND` non è implementato. Nel report compaiono come saltati, non come passati.
+- Da `ENG-23` non si salta più nessun esempio: il 90 dà `UNKNOWN_EFFECT` anche su una creatura e il 09 usa `HIDEBEHIND`.
 
 ### Test di bilanciamento separati
 

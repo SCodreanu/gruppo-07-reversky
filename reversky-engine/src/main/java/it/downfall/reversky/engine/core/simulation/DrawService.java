@@ -2,6 +2,7 @@ package it.downfall.reversky.engine.core.simulation;
 
 import java.util.Optional;
 
+import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
@@ -58,7 +59,7 @@ public final class DrawService {
 		while (drawn.isPresent()) {
 			CardDefinition card = drawn.get();
 			if (card.type() == CardType.CREATURE) {
-				CreatureInPlay creature = new CreatureInPlay(card, player.side());
+				CreatureInPlay creature = new CreatureInPlay(card, player.side(), createEffect(card));
 				player.placeCreature(creature);
 				state.log().creatureEntered(creature);
 				return true;
@@ -79,6 +80,12 @@ public final class DrawService {
 			drawn = player.drawCard();
 		}
 		return false;
+	}
+
+	/** Una nuova istanza dell'effetto per ogni entrata in campo (D-31); le creature senza codice non ne hanno. */
+	private CreatureEffect createEffect(CardDefinition creature) {
+		String code = creature.effectCode();
+		return code == null || code.isBlank() ? null : effects.createCreature(code);
 	}
 
 	/**
@@ -105,7 +112,6 @@ public final class DrawService {
 			state.log().spellResolved(player.side(), spell, "cancelled", creature.get());
 			return;
 		}
-		// TODO(@tommasofatticcioni): gli effetti delle creature (ENG-23, #61) passeranno anche loro dal Fascicolo
 		effects.createSpell(spell.effectCode()).resolve(new EffectContext(state, player.side(), spell));
 		deaths.resolve(state);
 	}

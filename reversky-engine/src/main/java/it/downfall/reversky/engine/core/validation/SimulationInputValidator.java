@@ -62,12 +62,11 @@ public final class SimulationInputValidator {
 
 	/**
 	 * Controllo 9: il codice effetto esiste nel registro, per il tipo della carta. Arriva dopo
-	 * {@link ErrorCode#MISSING_EFFECT}, quindi una carta non creatura qui ha sempre un codice.
+	 * {@link ErrorCode#MISSING_EFFECT}, quindi una carta non creatura qui ha sempre un codice; una creatura può non
+	 * averlo (es. le Common), ma se ce l'ha deve essere registrato (deciso il 18 novembre).
 	 */
 	private boolean hasUnknownEffect(CardDefinition card) {
-		if (card.type() == CardType.CREATURE) {
-			// TODO(@tommasofatticcioni): controllare anche i codici delle creature quando il registro li conosce
-			// (ENG-23, #61); fino ad allora l'effetto di una creatura si ignora e la partita si gioca
+		if (card.type() == CardType.CREATURE && isBlank(card.effectCode())) {
 			return false;
 		}
 		return !effects.exists(card.effectCode(), card.type());

@@ -40,15 +40,17 @@ core/
 ├── simulation/
 │   ├── MatchSimulator      punto d'ingresso: simulate(SimulationInput) → MatchResult
 │   ├── RoundResolver       risolve un singolo round nell'ordine stabilito
+│   ├── CreatureEffectService chiama gli effetti delle creature nei momenti del round, nell'ordine D-30
 │   ├── DeathResolver       morti e danno al giocatore (DEF negativa), dopo ogni fase che toglie DEF (D-08)
 │   ├── DrawService         pesca finché esce una creatura; risolve le Spell, mette coperte le Hidden
 │   ├── TerrainService      mette in gioco il Terreno (uno solo, D-19) e dà o toglie il suo bonus (D-17)
 │   ├── ItemService         Oggetti accanto al mazzo, che scattano una volta nel loro momento (D-47)
 │   └── EndConditionChecker controlla se e come finisce la partita
 ├── effect/
-│   ├── CardEffect          interfaccia chiusa degli effetti di Spell, Hidden, Terreni e Oggetti, una per tipo
-│   ├── EffectContext       partita, proprietario, avversario e carta visti da un effetto
+│   ├── CardEffect          interfaccia chiusa degli effetti, una per tipo di carta
+│   ├── EffectContext       partita, proprietario, avversario e carta visti da un effetto non creatura
 │   ├── CreatureEffect      interfaccia con i "momenti" in cui un effetto di creatura può agire (ENG-23)
+│   ├── CreatureContext     la creatura, l'avversaria, i giocatori e il log visti da un effetto di creatura
 │   ├── EffectRegistry      codice effetto → tipo di carta e implementazione
 │   └── impl/               un file per effetto (HidebehindEffect, WendigoEffect…)
 ├── validation/

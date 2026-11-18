@@ -41,8 +41,8 @@ class EffectControllerTest {
 		String body = mockMvc.perform(get("/api/v1/effects"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$[0].code").value("BITE_OF_REVERSE"))
-				.andExpect(jsonPath("$[0].appliesTo").value("SPELL"))
+				.andExpect(jsonPath("$[0].code").value("HIDEBEHIND"))
+				.andExpect(jsonPath("$[0].appliesTo").value("CREATURE"))
 				.andReturn().getResponse().getContentAsString();
 
 		// Assert: stessi codici del registro, ognuno con il suo tipo
@@ -53,7 +53,7 @@ class EffectControllerTest {
 	}
 
 	@Test
-	@DisplayName("Ordine stabile: per tipo di carta (SPELL, HIDDEN, TERRAIN, ITEM) e poi per codice")
+	@DisplayName("Ordine stabile: per tipo di carta (CREATURE, SPELL, HIDDEN, TERRAIN, ITEM) e poi per codice")
 	void list_sortedByTypeThenCode() throws Exception {
 		// Act
 		String body = mockMvc.perform(get("/api/v1/effects")).andReturn().getResponse().getContentAsString();
@@ -61,6 +61,7 @@ class EffectControllerTest {
 		// Assert
 		List<String> codes = JsonPath.read(body, "$[*].code");
 		assertThat(codes).containsExactly(
+				"HIDEBEHIND", "KAPPA", "NURIKABE", "SCP_096", "SCP_2317", "SMILER",
 				"BITE_OF_REVERSE", "CRACK_CALL", "DISSOLUTION", "FORGOTTEN_ECHO", "RAIN_ARMOR", "REGISTRY_PACT",
 				"REVERSE_FUSION", "SCP_458", "SKIN_FRACTURE", "VEIL_OF_ANCHORED",
 				"BREAKING_POINT", "ECHO_STRIKE", "HOSTILE_PRESENCE", "LAST_SANCTUARY", "SURVIVAL_INSTINCT",
