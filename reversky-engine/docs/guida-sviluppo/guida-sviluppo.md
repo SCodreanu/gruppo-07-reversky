@@ -11,9 +11,9 @@ Ogni passo ha un risultato atteso: se non lo ottieni, fermati e guarda [Problemi
 |---|---|---|
 | 1 | `java -version` | `openjdk version "25…"` e `Temurin` (installazione: [INSTALLAZIONE.md](../../../INSTALLAZIONE.md)) |
 | 2 | `gradlew.bat test` | `BUILD SUCCESSFUL`. La prima volta scarica Gradle e le dipendenze (qualche minuto) |
-| 3 | apri `build\reports\tests\test\index.html` | report dei test: per ora 1 test (`contextLoads`), 100% |
+| 3 | apri `build\reports\tests\test\index.html` | report dei test: nessun fallimento; alcuni test sono *saltati* in attesa degli effetti (vedi [§6](#6-test-di-accettazione-con-gli-esempi)) |
 | 4 | `..\scripts\start-engine.bat` | nel log: `Tomcat started on port 8081` e `Started ReverskyEngineApplication` |
-| 5 | in un altro terminale: `curl -i http://localhost:8081/` | `HTTP/1.1 404`: il server risponde, ma gli endpoint non esistono ancora |
+| 5 | in un altro terminale: `curl -i -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\01-base-esempio-regolamento.json` | `HTTP/1.1 200` e un JSON con `"result":"CHALLENGER_WIN"` |
 | 6 | `Ctrl+C` nel terminale dell'engine | l'engine si ferma |
 
 Quando i 6 passi funzionano sei pronto per la prima issue della [roadmap](../roadmap/roadmap.md).
@@ -30,7 +30,15 @@ Quando i 6 passi funzionano sei pronto per la prima issue della [roadmap](../roa
 La porta è **8081** (`server.port` in `application.properties`). L'API usa la 8080: si possono avviare insieme.
 
 Con Docker l'engine **non** è raggiungibile dal PC (`expose`, non `ports`): solo l'API lo vede. Per provarlo con curl o Swagger
-scommenta le due righe `ports` del servizio `engine` in `compose.yaml` (non committare la modifica).
+scommenta le due righe `ports` del servizio `engine` in `compose.yaml` (non committare la modifica), oppure avvia un container
+usa e getta con la sola immagine dell'engine, senza toccare `compose.yaml` (dalla cartella principale):
+
+```bat
+docker build -t reversky-engine reversky-engine
+docker run --rm --name reversky-engine -p 8081:8081 reversky-engine
+```
+
+`--rm` cancella il container quando lo fermi (`Ctrl+C` o `docker stop reversky-engine`); l'immagine si toglie con `docker rmi reversky-engine`.
 
 Con *devtools* attivo, quando ricompili dall'IDE l'engine si riavvia da solo.
 
