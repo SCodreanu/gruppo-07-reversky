@@ -149,7 +149,7 @@ Se una regola cambia, si aggiorna il CSV, non il codice del test.
 - Con `200` controlla risultato, motivo di fine, round, punti vita e creature sconfitte; con `400` controlla `code`.
 - Il percorso `examples/...` è relativo alla cartella `reversky-engine`, che è la cartella di lavoro dei test con Gradle e con IntelliJ.
 - `@WebMvcTest` non carica i `@Component`: il test importa `EngineConfiguration` e `SimulationMapper`.
-- In attesa degli effetti: l'esempio 90 (`UNKNOWN_EFFECT`) si salta con un'assunzione finché l'`EffectRegistry` non controlla i codici (`ENG-22`), il metodo degli esempi con effetti è `@Disabled` finché `HIDEBEHIND` non è implementato (`ENG-23`). Nel report compaiono come saltati, non come passati.
+- In attesa degli effetti delle creature (`ENG-23`): l'esempio 90 (`UNKNOWN_EFFECT` su una creatura) si salta con un'assunzione, perché fino ad allora il codice di una creatura non si controlla, e il metodo degli esempi con effetti è `@Disabled` finché `HIDEBEHIND` non è implementato. Nel report compaiono come saltati, non come passati.
 
 ### Test di bilanciamento separati
 
@@ -181,7 +181,7 @@ tasks.register('balanceTest', Test) {
 | `Port 8081 was already in use` | c'è già un engine acceso (un altro terminale o Docker): `docker compose down` o chiudi l'altro terminale |
 | I test passano in IntelliJ ma non con Gradle (o viceversa) | *Settings → Build Tools → Gradle → Run tests using: Gradle* |
 | `NoSuchFileException: examples\…` nel test | la cartella di lavoro non è `reversky-engine`: in IntelliJ, *Run configuration → Working directory* = `$MODULE_WORKING_DIR$` |
-| `400` con `UNKNOWN_EFFECT` su una carta valida | l'effetto non è ancora registrato in `EffectRegistry.withAllEffects()` |
+| `400` con `UNKNOWN_EFFECT` su una carta valida | l'effetto non è ancora registrato in `EffectRegistry.withAllEffects()`, oppure il codice è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Nei test si può usare `TestEffects.stubsFor(...)` |
 | Il test con seed fisso è cambiato dopo una modifica | hai aggiunto una chiamata a `random`: è normale se voluto, vedi [mescolamento](../mescolamento/mescolamento.md) |
 | La partita in un test non finisce mai | manca il controllo del limite di round: esempio `06-stallo-limite-round` |
 

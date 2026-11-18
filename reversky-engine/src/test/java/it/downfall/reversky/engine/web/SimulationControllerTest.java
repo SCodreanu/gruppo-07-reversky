@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -103,17 +102,34 @@ class SimulationControllerTest {
 				.andExpect(jsonPath("$.detail").value("Deck without creatures: opponent"));
 	}
 
-	// TODO(@tommasofatticcioni): togliere @Disabled quando l'EffectRegistry controlla i codici (ENG-22, #60)
-	@Disabled("UNKNOWN_EFFECT arriva con l'EffectRegistry (ENG-22, #60): oggi l'effetto si ignora e la partita si gioca")
 	@Test
-	@DisplayName("Un effectCode sconosciuto è rifiutato con 400 UNKNOWN_EFFECT")
+	@DisplayName("Una Spell con un effectCode che non è nel registro è rifiutata con 400 UNKNOWN_EFFECT")
 	void simulate_unknownEffect_returns400() throws Exception {
-		String unknownEffect = VALID_REQUEST.replace("\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": null",
+		// Arrange: una Spell con il codice scritto male nel mazzo dello sfidante, prima di SCP-131
+		String unknownEffect = VALID_REQUEST.replace("{ \"cardId\": 301,", """
+				{ "cardId": 96, "name": "Veil of the Anchored", "type": "SPELL", "rarity": "Common", "rarityOrder": 1,
+				  "factionId": null, "secondaryFactionId": null, "atk": null, "def": null, "subtype": "SHIELD",
+				  "effectCode": "VEIL_OF_ANCHORD" },
+				{ "cardId": 301,""");
+
+		// Act + Assert
+		perform(unknownEffect)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("UNKNOWN_EFFECT"))
+				.andExpect(jsonPath("$.detail").value("Unknown effect VEIL_OF_ANCHORD on card 96"));
+	}
+
+	// TODO(@tommasofatticcioni): da ENG-23 (#61) il codice di una creatura si controlla e questo diventa un 400
+	@Test
+	@DisplayName("Fino a ENG-23 il codice effetto di una creatura non si controlla: la partita si gioca senza effetto")
+	void simulate_unknownCreatureEffect_playedUntilCreatureEffects() throws Exception {
+		String unknownEffect = VALID_REQUEST.replace(
+				"\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": null",
 				"\"atk\": 8, \"def\": 6, \"subtype\": null, \"effectCode\": \"HIDEBEHND\"");
 
 		perform(unknownEffect)
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.code").value("UNKNOWN_EFFECT"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.result").value("CHALLENGER_WIN"));
 	}
 
 	@ParameterizedTest(name = "{0}")

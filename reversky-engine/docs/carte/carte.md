@@ -146,7 +146,7 @@ L'engine **non** controlla le regole del mazzo (numero di carte, copie…): lo f
 - le creature hanno ATK ≥ 0 e DEF > 0;
 - Creature, Terreni e Oggetti hanno un `factionId`; Spell e Hidden non hanno né `factionId` né `secondaryFactionId`;
 - ogni `factionId` e `secondaryFactionId` è tra le `factions` ricevute, e le due fazioni di una carta sono diverse;
-- `effectCode`, se presente, esiste nell'`EffectRegistry`;
+- `effectCode`, se presente, esiste nell'`EffectRegistry` per il tipo della carta (un codice di Terreno su una Spell è sconosciuto); il codice di una creatura si controlla da `ENG-23`, quando arrivano i loro effetti;
 - Spell/Hidden hanno un `subtype`;
 - Spell, Hidden, Terreni e Oggetti hanno un `effectCode` (per le creature è facoltativo).
 

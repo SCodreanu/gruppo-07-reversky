@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.log.EventType;
 import it.downfall.reversky.engine.core.log.MatchEvent;
 import it.downfall.reversky.engine.core.model.BattleResult;
@@ -23,20 +24,23 @@ import it.downfall.reversky.engine.core.model.PlayerInput;
 import it.downfall.reversky.engine.core.model.PlayerResult;
 import it.downfall.reversky.engine.core.model.SimulationInput;
 import it.downfall.reversky.engine.core.rules.FactionBonus;
+import it.downfall.reversky.engine.core.validation.ErrorCode;
 import it.downfall.reversky.engine.core.validation.InvalidSimulationInputException;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestDecks;
+import it.downfall.reversky.engine.support.TestEffects;
 import it.downfall.reversky.engine.support.TestFactions;
 import it.downfall.reversky.engine.support.TestInputs;
 import it.downfall.reversky.engine.support.TestRules;
 
 /**
  * Test di {@link MatchSimulator}: partite complete con il risultato calcolato a mano negli esempi 01–08 e 10–12 di
- * {@code examples/} (stesse carte, stessi id), determinismo e carte non creatura pescate prima di ENG-19.
+ * {@code examples/} (stesse carte, stessi id), determinismo e carte non creatura pescate prima di ENG-19 (con effetti
+ * finti, che non fanno niente).
  */
 class MatchSimulatorTest {
 
-	private final MatchSimulator simulator = new MatchSimulator();
+	private final MatchSimulator simulator = new MatchSimulator(EffectRegistry.withAllEffects());
 
 	@Test
 	@DisplayName("Stesso input e stesso seed producono la stessa identica partita, log compreso")
@@ -44,9 +48,11 @@ class MatchSimulatorTest {
 		// Arrange: mazzi completi del catalogo, anche con Spell, Hidden, Terreno e Oggetto
 		SimulationInput input = TestInputs.of(12345L, TestDecks.full(WOUND), TestDecks.full(DREAM));
 
+		MatchSimulator withStubs = new MatchSimulator(TestEffects.stubsFor(input));
+
 		// Act
-		MatchResult first = simulator.simulate(input);
-		MatchResult second = simulator.simulate(input);
+		MatchResult first = withStubs.simulate(input);
+		MatchResult second = withStubs.simulate(input);
 
 		// Assert
 		assertThat(second).isEqualTo(first);
@@ -196,7 +202,7 @@ class MatchSimulatorTest {
 				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5)));
 
 		// Act
-		MatchResult result = simulator.simulate(input);
+		MatchResult result = new MatchSimulator(TestEffects.stubsFor(input)).simulate(input);
 
 		// Assert: la Spell non ha effetto, la partita è quella dell'esempio 01
 		assertThat(result.log()).filteredOn(event -> event.type() == EventType.CARD_DRAWN)
@@ -214,7 +220,7 @@ class MatchSimulatorTest {
 				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), sanctuary));
 
 		// Act
-		MatchResult result = simulator.simulate(input);
+		MatchResult result = new MatchSimulator(TestEffects.stubsFor(input)).simulate(input);
 
 		// Assert
 		assertThat(result.endReason()).isEqualTo(EndReason.NO_CREATURES_LEFT);
@@ -229,6 +235,20 @@ class MatchSimulatorTest {
 		assertThatThrownBy(() -> simulator.simulate(TestInputs.of(List.of(veil),
 				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5)))))
 				.isInstanceOf(InvalidSimulationInputException.class);
+	}
+
+	@Test
+	@DisplayName("Il simulatore controlla i codici con il suo registro: una Spell che non c'è → UNKNOWN_EFFECT")
+	void simulate_effectNotInRegistry_throwsUnknownEffect() {
+		// Arrange: il registro del gioco non ha ancora gli effetti delle Spell (ENG-19)
+		CardDefinition veil = TestCards.spell(96, "Veil of the Anchored", CardSubtype.SHIELD, "VEIL_OF_ANCHORED");
+		SimulationInput input = TestInputs.of(List.of(veil, creature(301, "SCP-131", ARCHIVE, 8, 6)),
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5)));
+
+		// Act + Assert
+		assertThatThrownBy(() -> simulator.simulate(input))
+				.isInstanceOfSatisfying(InvalidSimulationInputException.class,
+						e -> assertThat(e.code()).isEqualTo(ErrorCode.UNKNOWN_EFFECT));
 	}
 
 	@Test

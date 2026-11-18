@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
@@ -23,14 +24,19 @@ import it.downfall.reversky.engine.core.rules.FactionBonus;
  * dell'avversario, nell'ordine del mazzo ricevuto.
  * <p>
  * L'engine non valida i mazzi secondo il regolamento (numero di carte, copie, rarità): lo fa l'API (AGENTS.md,
- * regola 6). {@link ErrorCode#UNKNOWN_EFFECT} arriva con il registro degli effetti (ENG-22).
+ * regola 6).
  */
 public final class SimulationInputValidator {
 
+	private final EffectRegistry effects;
+
 	/**
-	 * Crea il validatore. Non ha stato: la stessa istanza controlla qualsiasi numero di input.
+	 * Crea il validatore. Non cambia stato: la stessa istanza controlla qualsiasi numero di input.
+	 *
+	 * @param effects registro degli effetti, per il controllo {@link ErrorCode#UNKNOWN_EFFECT}
 	 */
-	public SimulationInputValidator() {
+	public SimulationInputValidator(EffectRegistry effects) {
+		this.effects = effects;
 	}
 
 	/**
@@ -51,6 +57,27 @@ public final class SimulationInputValidator {
 				card -> "Missing or invalid subtype for a " + card.type() + " card: card " + card.cardId());
 		checkEachCard(input, card -> card.type() != CardType.CREATURE && isBlank(card.effectCode()),
 				ErrorCode.MISSING_EFFECT, card -> "Missing effect code on card " + card.cardId());
+		checkEachCard(input, this::hasUnknownEffect, ErrorCode.UNKNOWN_EFFECT, this::describeUnknownEffect);
+	}
+
+	/**
+	 * Controllo 9: il codice effetto esiste nel registro, per il tipo della carta. Arriva dopo
+	 * {@link ErrorCode#MISSING_EFFECT}, quindi una carta non creatura qui ha sempre un codice.
+	 */
+	private boolean hasUnknownEffect(CardDefinition card) {
+		if (card.type() == CardType.CREATURE) {
+			// TODO(@tommasofatticcioni): controllare anche i codici delle creature quando il registro li conosce
+			// (ENG-23, #61); fino ad allora l'effetto di una creatura si ignora e la partita si gioca
+			return false;
+		}
+		return !effects.exists(card.effectCode(), card.type());
+	}
+
+	private String describeUnknownEffect(CardDefinition card) {
+		String code = card.effectCode();
+		return effects.appliesTo(code)
+				.map(type -> "Effect " + code + " is not a " + card.type() + " effect: card " + card.cardId())
+				.orElse("Unknown effect " + code + " on card " + card.cardId());
 	}
 
 	/**
