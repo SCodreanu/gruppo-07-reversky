@@ -5,6 +5,7 @@ import java.util.List;
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.log.MatchLog;
+import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
@@ -31,7 +32,8 @@ public final class RoundResolver {
 	private final FactionMatrix factionMatrix;
 	private final EffectRegistry effects;
 	private final TerrainService terrains;
-	private final DeathResolver deaths = new DeathResolver();
+	private final ItemService items;
+	private final DeathResolver deaths;
 
 	/**
 	 * Crea il risolutore per una partita.
@@ -43,6 +45,8 @@ public final class RoundResolver {
 		this.factionMatrix = factionMatrix;
 		this.effects = effects;
 		this.terrains = new TerrainService(effects);
+		this.items = new ItemService(effects);
+		this.deaths = new DeathResolver(items);
 	}
 
 	/**
@@ -55,6 +59,8 @@ public final class RoundResolver {
 	 * sfidante.</li>
 	 * <li>Ogni creatura della fazione del Terreno in gioco che non ha ancora il suo bonus lo riceve (D-17), prima lo
 	 * sfidante.</li>
+	 * <li>Una Bussola dei Sentieri Falsi del proprietario programma gli scudi a inizio round della sua creatura,
+	 * dopo il Terreno (D-48).</li>
 	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
 	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
 	 * <li>Si fissa la DEF all'entrata delle creature rimaste, al loro primo scontro (M-06).</li>
@@ -71,11 +77,13 @@ public final class RoundResolver {
 		int combat = state.startNextCombat();
 		applyDefenseBonus(challenger, opponent, state.log());
 		applyDefenseBonus(opponent, challenger, state.log());
-		applyPendingModifiers(state.challenger(), challenger, state.log());
-		applyPendingModifiers(state.opponent(), opponent, state.log());
+		applyPendingModifiers(state, state.challenger(), challenger);
+		applyPendingModifiers(state, state.opponent(), opponent);
 		if (!deaths.resolve(state)) {
 			terrains.applyBonus(state, challenger);
 			terrains.applyBonus(state, opponent);
+			items.startCombat(state, challenger);
+			items.startCombat(state, opponent);
 			triggerHiddenCards(state, combat);
 		}
 		state.challenger().creature().ifPresent(CreatureInPlay::recordInitialDefense);
@@ -96,6 +104,10 @@ public final class RoundResolver {
 		CreatureInPlay opponent = requireCreature(state.opponent());
 		MatchLog log = state.log();
 		log.roundStarted(state.startNextRound());
+
+		// Passo 1: scudi a inizio round (Bussola dei Sentieri Falsi)
+		items.startRound(state, challenger);
+		items.startRound(state, opponent);
 
 		// Passo 2: si calcolano entrambi gli attacchi prima di applicare i danni
 		int challengerAttack = computeAttack(challenger, opponent, log);
@@ -125,11 +137,16 @@ public final class RoundResolver {
 	}
 
 	/** D-34: i modificatori in attesa vanno solo a una creatura appena entrata, mai a una sopravvissuta. */
-	private static void applyPendingModifiers(PlayerState owner, CreatureInPlay creature, MatchLog log) {
+	private void applyPendingModifiers(MatchState state, PlayerState owner, CreatureInPlay creature) {
+		MatchLog log = state.log();
 		if (creature.hasStartedCombat()) {
 			return;
 		}
 		for (PendingModifier modifier : owner.takePendingModifiers()) {
+			if (modifier.side() != creature.side()
+					&& items.cancelEnemyEffect(state, owner, modifier.card(), creature.name())) {
+				continue;
+			}
 			modifier.applyTo(creature);
 			log.effectTriggered(creature.side(), creature.name(), MatchLog.describe(modifier) + " from "
 					+ modifier.card() + " (ATK " + MatchLog.number(creature.attack()) + ", DEF "
@@ -148,6 +165,10 @@ public final class RoundResolver {
 				for (SetHidden hidden : owner.hiddenZone()) {
 					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype) {
 						owner.discardHidden(hidden);
+						if (isCancelled(state, side, hidden.card())) {
+							state.log().hiddenTriggered(side, hidden.card(), "cancelled");
+							continue;
+						}
 						effects.createHidden(hidden.card().effectCode())
 								.trigger(new EffectContext(state, side, hidden.card()));
 						if (deaths.resolve(state)) {
@@ -157,6 +178,19 @@ public final class RoundResolver {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Un Oggetto dell'avversario può annullare la Hidden prima del suo effetto: il Campanello del Torii ogni Hidden, il
+	 * Fascicolo Sigillato 0 una Hidden {@code DAMAGE}, che colpirebbe la sua creatura.
+	 */
+	private boolean isCancelled(MatchState state, Side owner, CardDefinition hidden) {
+		PlayerState target = state.opponentOf(owner);
+		if (items.cancelEnemyHidden(state, target, hidden)) {
+			return true;
+		}
+		return hidden.subtype() == CardSubtype.DAMAGE && items.cancelEnemyEffect(state, target, hidden.name(),
+				target.creature().map(CreatureInPlay::name).orElse(null));
 	}
 
 	/** Attacco effettivo: ATK con i modificatori più il bonus di fazione, mai sotto 0 (D-04). */

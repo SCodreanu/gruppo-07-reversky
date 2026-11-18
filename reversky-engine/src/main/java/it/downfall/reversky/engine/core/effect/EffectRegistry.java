@@ -9,10 +9,12 @@ import java.util.function.Supplier;
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
 import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
+import it.downfall.reversky.engine.core.effect.impl.DeniedExitBadgeEffect;
 import it.downfall.reversky.engine.core.effect.impl.DevouringAbyssEffect;
 import it.downfall.reversky.engine.core.effect.impl.DissolutionEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoStrikeEffect;
+import it.downfall.reversky.engine.core.effect.impl.FalsePathsCompassEffect;
 import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
 import it.downfall.reversky.engine.core.effect.impl.HollowClearingEffect;
 import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
@@ -21,8 +23,10 @@ import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
+import it.downfall.reversky.engine.core.effect.impl.SealedFileZeroEffect;
 import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
 import it.downfall.reversky.engine.core.effect.impl.SurvivalInstinctEffect;
+import it.downfall.reversky.engine.core.effect.impl.ToriiBellEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.effect.impl.WatchingRiftEffect;
 import it.downfall.reversky.engine.core.model.CardType;
@@ -54,7 +58,7 @@ public final class EffectRegistry {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry withAllEffects() {
-		// Oggetti con ENG-33, creature con ENG-23
+		// creature con ENG-23
 		return new EffectRegistry()
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
@@ -74,7 +78,11 @@ public final class EffectRegistry {
 				.registerTerrain(EchoRiftEffect.CODE, EchoRiftEffect::new)
 				.registerTerrain(HollowClearingEffect.CODE, HollowClearingEffect::new)
 				.registerTerrain(WatchingRiftEffect.CODE, WatchingRiftEffect::new)
-				.registerTerrain(DevouringAbyssEffect.CODE, DevouringAbyssEffect::new);
+				.registerTerrain(DevouringAbyssEffect.CODE, DevouringAbyssEffect::new)
+				.registerItem(DeniedExitBadgeEffect.CODE, DeniedExitBadgeEffect::new)
+				.registerItem(FalsePathsCompassEffect.CODE, FalsePathsCompassEffect::new)
+				.registerItem(SealedFileZeroEffect.CODE, SealedFileZeroEffect::new)
+				.registerItem(ToriiBellEffect.CODE, ToriiBellEffect::new);
 	}
 
 	/**

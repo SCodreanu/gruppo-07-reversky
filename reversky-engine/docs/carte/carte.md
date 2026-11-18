@@ -142,7 +142,16 @@ Quando viene pescato viene messo **accanto al mazzo**, come un Terreno, e non pu
 
 La fazione dell'Oggetto non limita il suo effetto: vale per qualunque creatura del proprietario.
 
-Quando scattano insieme all'entrata, prima il Terreno e poi l'Oggetto (D-48, deciso l'11 novembre). Implementazione: `ENG-33`.
+Quando scattano insieme all'entrata, prima il Terreno e poi l'Oggetto (D-48, deciso l'11 novembre).
+
+Implementazione (`ENG-33`, `ItemService`):
+- l'Oggetto pescato va accanto al mazzo con `ITEM_PLACED` e non conta come creatura; se un mazzo ne avesse più di uno (lo vieta l'API) l'engine li tiene tutti, nell'ordine di pescata;
+- quando scatta si consuma con `ITEM_CONSUMED`;
+- **Badge di Uscita Negata:** nel controllo delle morti, prima di togliere la creatura. Se morirebbero entrambe, la creatura del proprietario resta con 1 DEF e l'altra muore da sola, quindi il suo proprietario perde la DEF negativa come in ogni morte singola (deciso il 17 novembre);
+- **Bussola dei Sentieri Falsi:** all'inizio del prossimo scontro della creatura del proprietario, dopo il Terreno; lo scudo arriva all'inizio di ognuno dei primi tre round e dura quel round;
+- **Fascicolo Sigillato 0:** annulla tutta la prima Spell `DAMAGE` o Hidden `DAMAGE` avversaria che colpirebbe la creatura del proprietario, anche una Spell `DAMAGE` rimasta in attesa quando raggiunge la creatura all'inizio dello scontro (deciso il 17 novembre). Gli effetti delle creature avversarie si aggiungono con `ENG-23`;
+- **Campanello del Torii:** annulla la prima Hidden avversaria nel momento in cui si attiverebbe, prima del Fascicolo;
+- valgono i testi del catalogo: le riprogettazioni di Fascicolo e Campanello proposte in D-25 non sono ancora decise.
 
 ### Carte condivise
 

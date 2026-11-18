@@ -5,6 +5,7 @@ import java.util.Optional;
 import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.model.CardDefinition;
+import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CardType;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
@@ -21,7 +22,7 @@ import it.downfall.reversky.engine.core.model.SetHidden;
  * Hidden della pescata iniziale salta il primo scontro (D-15).</li>
  * <li>Terreno: entra in gioco e sostituisce quello già in gioco (D-19); il suo bonus va subito alle creature in
  * campo della sua fazione (D-17).</li>
- * <li>Oggetti: per ora si registrano e si scartano (ENG-33).</li>
+ * <li>Oggetto: resta accanto al mazzo finché scatta, poi si consuma (D-47).</li>
  * </ul>
  * Se nel mazzo restano solo carte non creatura si risolvono tutte (D-06); la fine della partita la controlla il
  * simulatore.
@@ -30,7 +31,8 @@ public final class DrawService {
 
 	private final EffectRegistry effects;
 	private final TerrainService terrains;
-	private final DeathResolver deaths = new DeathResolver();
+	private final ItemService items;
+	private final DeathResolver deaths;
 
 	/**
 	 * Crea il servizio. Non conserva stato tra le partite.
@@ -40,6 +42,8 @@ public final class DrawService {
 	public DrawService(EffectRegistry effects) {
 		this.effects = effects;
 		this.terrains = new TerrainService(effects);
+		this.items = new ItemService(effects);
+		this.deaths = new DeathResolver(items);
 	}
 
 	/**
@@ -68,9 +72,10 @@ public final class DrawService {
 					resolveSpell(state, player, card);
 				} else if (card.type() == CardType.TERRAIN) {
 					terrains.place(state, player, card);
+				} else {
+					items.place(state, player, card);
 				}
 			}
-			// TODO(@tommasofatticcioni): per ora gli Oggetti si scartano senza effetto; vanno risolti con ENG-33 (#140)
 			drawn = player.drawCard();
 		}
 		return false;
@@ -87,7 +92,20 @@ public final class DrawService {
 		state.log().hiddenSet(player.side());
 	}
 
+	/**
+	 * Risolve una Spell. Una Spell {@code DAMAGE} che colpirebbe subito la creatura avversaria può essere annullata da
+	 * un Fascicolo Sigillato 0 dell'avversario; senza bersaglio resta in attesa e il Fascicolo si controlla quando
+	 * arriva (passo 0).
+	 */
 	private void resolveSpell(MatchState state, PlayerState player, CardDefinition spell) {
+		PlayerState target = state.opponentOf(player.side());
+		Optional<String> creature = target.creature().map(CreatureInPlay::name);
+		if (spell.subtype() == CardSubtype.DAMAGE && creature.isPresent()
+				&& items.cancelEnemyEffect(state, target, spell.name(), creature.get())) {
+			state.log().spellResolved(player.side(), spell, "cancelled", creature.get());
+			return;
+		}
+		// TODO(@tommasofatticcioni): gli effetti delle creature (ENG-23, #61) passeranno anche loro dal Fascicolo
 		effects.createSpell(spell.effectCode()).resolve(new EffectContext(state, player.side(), spell));
 		deaths.resolve(state);
 	}
