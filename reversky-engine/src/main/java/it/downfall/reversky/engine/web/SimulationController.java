@@ -56,7 +56,9 @@ public class SimulationController {
 					@ExampleObject(name = "basic", summary = "One creature each, ends in round 1",
 							value = OpenApiExamples.BASIC_MATCH),
 					@ExampleObject(name = "full", summary = "Full match with 10 cards each, seed 42",
-							value = OpenApiExamples.FULL_MATCH) }))
+							value = OpenApiExamples.FULL_MATCH),
+					@ExampleObject(name = "special", summary = "Spell, Hidden, Terrain and Item, ends in round 3",
+							value = OpenApiExamples.SPECIAL_CARDS) }))
 	@ApiResponse(responseCode = "200", description = "Match simulated", content = @Content(
 			mediaType = MediaType.APPLICATION_JSON_VALUE,
 			schema = @Schema(implementation = SimulationResponse.class)))

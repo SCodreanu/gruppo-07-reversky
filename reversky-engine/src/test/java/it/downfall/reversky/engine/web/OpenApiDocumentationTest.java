@@ -78,7 +78,8 @@ class OpenApiDocumentationTest {
 	@ParameterizedTest(name = "{0}")
 	@CsvSource({
 			"basic, examples/01-base-esempio-regolamento.json, CHALLENGER_WIN, 1",
-			"full, examples/08-partita-completa-seed-42.json, CHALLENGER_WIN, 14" })
+			"full, examples/08-partita-completa-seed-42.json, CHALLENGER_WIN, 14",
+			"special, examples/13-carte-speciali.json, CHALLENGER_WIN, 3" })
 	@DisplayName("Ogni esempio di Swagger è uguale al suo file di examples/ e dà la partita calcolata a mano")
 	void requestExample_isTheExampleFileAndPlaysTheMatch(String name, String file, String result, int totalRounds)
 			throws Exception {

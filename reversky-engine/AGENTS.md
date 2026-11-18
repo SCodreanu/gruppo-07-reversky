@@ -67,6 +67,7 @@ src/main/java/it/downfall/reversky/engine/
 | Roadmap e divisione del lavoro (issue `ENG-xx`) | [docs/roadmap](docs/roadmap/roadmap.md) |
 | Avviare, chiamare e testare l'engine | [docs/guida-sviluppo](docs/guida-sviluppo/guida-sviluppo.md) |
 | Richieste di esempio con il risultato atteso | [examples/](examples/README.md) |
+| Demo per il SAL del 23 novembre | [docs/demo-sal](docs/demo-sal/demo-sal.md) |
 
 Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirements.md).
 

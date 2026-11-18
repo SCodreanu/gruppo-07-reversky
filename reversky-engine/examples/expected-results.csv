@@ -10,6 +10,7 @@ file,status,result,endReason,totalRounds,challengerLifePoints,opponentLifePoints
 10-punti-vita-a-zero.json,200,CHALLENGER_WIN,LIFE_POINTS_ZERO,1,30,-5,1,0,
 11-doppia-fazione-vantaggio.json,200,CHALLENGER_WIN,NO_CREATURES_LEFT,1,30,28,1,0,
 12-doppia-fazione-svantaggio.json,200,OPPONENT_WIN,NO_CREATURES_LEFT,2,24,30,0,1,
+13-carte-speciali.json,200,CHALLENGER_WIN,NO_CREATURES_LEFT,3,30,27,2,1,
 90-errore-effetto-sconosciuto.json,400,,,,,,,,UNKNOWN_EFFECT
 91-errore-mazzo-senza-creature.json,400,,,,,,,,NO_CREATURES_IN_DECK
 92-errore-fazione-sconosciuta.json,400,,,,,,,,UNKNOWN_FACTION
