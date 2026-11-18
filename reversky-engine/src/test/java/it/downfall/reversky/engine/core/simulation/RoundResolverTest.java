@@ -274,7 +274,8 @@ class RoundResolverTest {
 
 		// Assert
 		assertThat(challenger(state).defense()).isEqualTo(2);
-		assertThat(challenger(state).initialDefense()).isEqualTo(2);
+		// M-06 (deciso il 18 novembre): la DEF all'entrata non conta il danno, 4 + 3 = 7
+		assertThat(challenger(state).initialDefense()).isEqualTo(7);
 		assertThat(state.challenger().pendingModifiers()).isEmpty();
 		assertThat(state.log().events()).extracting(MatchEvent::message).containsExactly(
 				"SCP-1762: +3 DEF faction bonus (DEF 7)",

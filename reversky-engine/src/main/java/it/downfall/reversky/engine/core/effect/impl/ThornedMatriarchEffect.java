@@ -36,10 +36,10 @@ public final class ThornedMatriarchEffect implements CreatureEffect {
 		if (enemy == null || self.defense() <= enemy.defense()) {
 			return;
 		}
-		self.takeDamage(SACRIFICE);
+		self.takeDamage(SACRIFICE, self);
 		List<String> parts = new ArrayList<>();
 		parts.add("sacrifices " + SACRIFICE + " DEF (DEF " + MatchLog.number(self.defense()) + ")");
-		ctx.targetEnemy().ifPresent(target -> parts.add(EffectActions.damage(target, DAMAGE)));
+		ctx.targetEnemy().ifPresent(target -> parts.add(EffectActions.damage(ctx, target, DAMAGE)));
 		EffectActions.log(ctx, parts);
 	}
 }

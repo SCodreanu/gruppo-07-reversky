@@ -35,7 +35,8 @@ public final class Scp106Effect implements CreatureEffect {
 		}
 		attacksReflected++;
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(attacker -> parts.add("reflects: " + EffectActions.damage(attacker, REFLECTED)));
+		ctx.targetEnemy().ifPresent(
+				attacker -> parts.add("reflects: " + EffectActions.damage(ctx, attacker, REFLECTED)));
 		EffectActions.log(ctx, parts);
 	}
 }

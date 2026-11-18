@@ -19,15 +19,16 @@ final class EffectActions {
 	}
 
 	/**
-	 * Danno da effetto (D-08): perdita permanente di DEF, gli scudi assorbono per primi. Le morti le controlla il
-	 * motore.
+	 * Danno da effetto (D-08): perdita permanente di DEF, gli scudi assorbono per primi. La causa della ferita è la
+	 * creatura che porta l'effetto. Le morti le controlla il motore.
 	 *
+	 * @param ctx    contesto dell'effetto
 	 * @param target creatura colpita
 	 * @param amount danno, almeno 0
 	 * @return la parte di messaggio
 	 */
-	static String damage(CreatureInPlay target, int amount) {
-		target.takeDamage(amount);
+	static String damage(CreatureContext ctx, CreatureInPlay target, int amount) {
+		target.takeDamage(amount, ctx.self());
 		return "deals " + amount + " damage to " + target.name() + " (DEF " + MatchLog.number(target.defense()) + ")";
 	}
 

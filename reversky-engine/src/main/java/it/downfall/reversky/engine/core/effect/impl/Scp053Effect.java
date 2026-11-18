@@ -31,7 +31,7 @@ public final class Scp053Effect implements CreatureEffect {
 	public void onEnterPlay(CreatureContext ctx) {
 		List<String> parts = new ArrayList<>();
 		ctx.targetEnemy().ifPresent(enemy -> {
-			parts.add(EffectActions.damage(enemy, DAMAGE));
+			parts.add(EffectActions.damage(ctx, enemy, DAMAGE));
 			parts.add(EffectActions.attack(enemy, ctx.self(), ENEMY_ATTACK_BONUS, ModifierDuration.rounds(1),
 					"in the first round"));
 		});

@@ -26,7 +26,7 @@ public abstract class EntryDamageEffect implements CreatureEffect {
 	@Override
 	public final void onEnterPlay(CreatureContext ctx) {
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(enemy, damage)));
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, damage)));
 		EffectActions.log(ctx, parts);
 	}
 }

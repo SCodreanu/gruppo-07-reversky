@@ -144,13 +144,15 @@ public final class RoundResolver {
 		int[] wounds = new int[Side.values().length];
 		damages[Side.OPPONENT.ordinal()] = toOpponent;
 		damages[Side.CHALLENGER.ordinal()] = toChallenger;
-		wounds[Side.OPPONENT.ordinal()] = opponent.takeDamage(toOpponent);
-		wounds[Side.CHALLENGER.ordinal()] = challenger.takeDamage(toChallenger);
+		wounds[Side.OPPONENT.ordinal()] = opponent.takeDamage(toOpponent, challenger);
+		wounds[Side.CHALLENGER.ordinal()] = challenger.takeDamage(toChallenger, opponent);
 		log.damageDealt(challenger, opponent, toOpponent);
 		log.damageDealt(opponent, challenger, toChallenger);
 
-		// Passi 5 e 6: afterDamage di entrambe, onRoundEnd solo delle vive
+		// Passi 5 e 6: afterDamage di entrambe, poi le ferite e le soglie della DEF (deciso il 18 novembre), onRoundEnd
+		// solo delle vive
 		creatureEffects.afterDamage(state, damages, wounds);
+		creatureEffects.defenseCheck(state);
 		creatureEffects.roundEnd(state);
 
 		endRound(challenger);
@@ -230,14 +232,16 @@ public final class RoundResolver {
 
 	/**
 	 * Attacco effettivo: ATK con i modificatori più il bonus di fazione, poi l'effetto dell'attaccante
-	 * ({@code modifyOutgoingAttack}), mai sotto 0 (D-04).
+	 * ({@code modifyOutgoingAttack}), mai sotto 0 (D-04). Un attacco congelato (Yuki-onna) vale 0, dopo tutto il
+	 * resto (deciso il 18 novembre).
 	 */
 	private int computeAttack(MatchState state, CreatureInPlay attacker, CreatureInPlay defender) {
 		int factionBonus = factionMatrix.atkBonus(attacker.factions(), defender.factions());
 		int attack = attacker.attack() + factionBonus;
 		int effectBonus = creatureEffects.outgoingAttack(state, attacker, attack) - attack;
-		int total = Math.max(0, attack + effectBonus);
-		state.log().attackComputed(attacker, factionBonus, effectBonus, total);
+		boolean frozen = attacker.isAttackFrozen();
+		int total = frozen ? 0 : Math.max(0, attack + effectBonus);
+		state.log().attackComputed(attacker, factionBonus, effectBonus, frozen, total);
 		return total;
 	}
 

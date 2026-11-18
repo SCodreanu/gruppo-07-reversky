@@ -24,6 +24,9 @@ import it.downfall.reversky.engine.core.model.Side;
  * </ul>
  * Prima di togliere una creatura, un Badge di Uscita Negata del proprietario la può salvare (D-36): allora non muore,
  * e se l'altra muore lo stesso è una morte singola, con il danno al giocatore.
+ * <p>
+ * Prima di cercare le morti, e di nuovo dopo gli {@code onDeath}, si riferiscono le ferite e si controllano le soglie
+ * della DEF ({@link CreatureEffectService#defenseCheck}, deciso il 18 novembre): così succede dopo ogni fase.
  */
 public final class DeathResolver {
 
@@ -47,11 +50,14 @@ public final class DeathResolver {
 	 * @return {@code true} se è morta almeno una creatura, cioè lo scontro è finito
 	 */
 	public boolean resolve(MatchState state) {
+		// deciso il 18 novembre: prima si riferiscono le ferite e si controllano le soglie, che possono uccidere
+		creatureEffects.defenseCheck(state);
 		List<CreatureInPlay> dead = new ArrayList<>();
 		List<CreatureInPlay> newlyDead = collectNewDeaths(state, dead);
 		while (!newlyDead.isEmpty()) {
 			dead.addAll(newlyDead);
 			creatureEffects.death(state, newlyDead);
+			creatureEffects.defenseCheck(state);
 			newlyDead = collectNewDeaths(state, dead);
 		}
 		if (dead.isEmpty()) {

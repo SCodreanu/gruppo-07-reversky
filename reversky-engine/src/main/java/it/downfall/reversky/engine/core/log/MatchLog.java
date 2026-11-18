@@ -214,9 +214,11 @@ public final class MatchLog {
 	 * @param attacker     creatura che attacca
 	 * @param factionBonus bonus ATK di fazione contro l'avversaria, anche negativo
 	 * @param effectBonus  modifica dell'effetto dell'attaccante ({@code modifyOutgoingAttack}), anche negativa
+	 * @param frozen       attacco congelato (Yuki-onna): il totale è 0 qualunque siano le altre parti
 	 * @param total        attacco effettivo, già con il minimo 0
 	 */
-	public void attackComputed(CreatureInPlay attacker, int factionBonus, int effectBonus, int total) {
+	public void attackComputed(CreatureInPlay attacker, int factionBonus, int effectBonus, boolean frozen,
+			int total) {
 		int base = attacker.baseAttack();
 		int modifiers = attacker.attackModifiers();
 		StringBuilder parts = new StringBuilder(number(base)).append(" base");
@@ -229,9 +231,12 @@ public final class MatchLog {
 		if (effectBonus != 0) {
 			parts.append(", ").append(signed(effectBonus)).append(" effect");
 		}
+		if (frozen) {
+			parts.append(", frozen");
+		}
 		add(EventType.ATTACK_COMPUTED, attacker.side(),
 				data("attacker", attacker.name(), "baseAttack", base, "factionBonus", factionBonus,
-						"modifiers", modifiers, "effectBonus", effectBonus, "total", total),
+						"modifiers", modifiers, "effectBonus", effectBonus, "frozen", frozen, "total", total),
 				attacker.name() + " attacks with " + number(total) + " (" + parts + ")");
 	}
 

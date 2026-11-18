@@ -32,7 +32,7 @@ public final class NamelessCallerEffect implements CreatureEffect {
 			return;
 		}
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(enemy, damage)));
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, damage)));
 		EffectActions.log(ctx, parts);
 	}
 }

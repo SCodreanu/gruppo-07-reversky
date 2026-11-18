@@ -36,7 +36,7 @@ public final class Scp2317Effect implements CreatureEffect {
 		CreatureInPlay self = ctx.self();
 		List<String> parts = new ArrayList<>();
 		ctx.targetEnemy().ifPresent(enemy -> {
-			enemy.takeDamage(DAMAGE);
+			enemy.takeDamage(DAMAGE, self);
 			parts.add("deals " + DAMAGE + " damage to " + enemy.name() + " (DEF " + MatchLog.number(enemy.defense())
 					+ ")");
 		});

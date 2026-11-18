@@ -11,6 +11,7 @@ import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
 import it.downfall.reversky.engine.core.model.ModifierSource;
+import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.model.StatModifier;
 import it.downfall.reversky.engine.core.simulation.RoundResolver;
@@ -82,6 +83,41 @@ class Scp096EffectTest {
 		resolver.resolve(state);
 
 		// Assert
+		assertThat(scp.attack()).isEqualTo(5);
+	}
+
+	@Test
+	@DisplayName("18 novembre: ferito all'entrata dall'effetto di G, marchia G e attacca già con 8 nel primo round")
+	void woundedByEntryEffect_marksThatCreature() {
+		// Arrange: The Gnawing Witness gli toglie 2 DEF all'entrata
+		MatchState state = TestStates.inCombat(registry, scp096(), TestCards.creature(0, "G", TestFactions.WOUND,
+				null, "Uncommon", 4, 40, "GNAWING_WITNESS"));
+		CreatureInPlay scp = state.challenger().creature().orElseThrow();
+
+		// Act
+		resolver.startCombat(state);
+
+		// Assert
+		assertThat(scp.defense()).isEqualTo(28);
+		assertThat(scp.attack()).isEqualTo(8);
+		assertThat(state.log().events()).anySatisfy(event -> assertThat(event.message())
+				.isEqualTo("SCP-096: marks G: +3 ATK against it (ATK 8)"));
+	}
+
+	@Test
+	@DisplayName("18 novembre: una ferita da una Spell non viene da una creatura e non marchia nessuno")
+	void woundedBySpell_noMark() {
+		// Arrange: Skin Fracture dell'avversario in attesa, 3 danni
+		MatchState state = TestStates.inCombat(registry, scp096(), creature("A", 4, 40));
+		state.challenger().addPendingModifier(
+				new PendingModifier("Skin Fracture", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 3));
+		CreatureInPlay scp = state.challenger().creature().orElseThrow();
+
+		// Act
+		resolver.startCombat(state);
+
+		// Assert
+		assertThat(scp.defense()).isEqualTo(27);
 		assertThat(scp.attack()).isEqualTo(5);
 	}
 

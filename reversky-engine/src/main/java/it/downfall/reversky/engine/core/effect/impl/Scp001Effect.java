@@ -43,7 +43,7 @@ public final class Scp001Effect implements CreatureEffect {
 
 	private static void strike(CreatureContext ctx) {
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(enemy, DAMAGE)));
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, DAMAGE)));
 		EffectActions.log(ctx, parts);
 	}
 }

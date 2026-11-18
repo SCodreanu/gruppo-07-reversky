@@ -1,5 +1,7 @@
 package it.downfall.reversky.engine.core.effect;
 
+import it.downfall.reversky.engine.core.model.Wound;
+
 /**
  * Effetto di una creatura (docs/effetti, "L'interfaccia"): il motore lo chiama nei momenti del round e ogni effetto
  * implementa solo quelli che gli servono.
@@ -84,6 +86,27 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	 * @param wound  ferita subita da questo attacco: la DEF persa davvero sopra 0, dopo gli scudi
 	 */
 	default void afterDamage(CreatureContext ctx, int damage, int wound) {
+	}
+
+	/**
+	 * La creatura ha perso DEF davvero (una ferita), per un attacco o per un danno da effetto di qualunque origine
+	 * (deciso il 18 novembre): si chiama una volta per ferita, al controllo dopo la fase in cui è avvenuta, solo se la
+	 * creatura è ancora viva. Una ferita del passo 4 arriva al controllo del passo 5, dopo {@code afterDamage}.
+	 *
+	 * @param ctx   contesto
+	 * @param wound la ferita, con la creatura che l'ha causata se c'è
+	 */
+	default void onWounded(CreatureContext ctx, Wound wound) {
+	}
+
+	/**
+	 * Controllo della DEF dopo ogni fase in cui può cambiare (deciso il 18 novembre), dopo gli {@code onWounded}, solo
+	 * se la creatura è ancora viva: serve alle soglie "metà DEF" (M-06), sulla propria DEF o su quella avversaria.
+	 * Si ripete finché nessuno subisce nuove ferite, quindi un effetto che lo usa deve ricordare se ha già agito.
+	 *
+	 * @param ctx contesto
+	 */
+	default void onDefenseCheck(CreatureContext ctx) {
 	}
 
 	/**

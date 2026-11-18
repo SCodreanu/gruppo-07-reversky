@@ -40,7 +40,7 @@ public final class BellWitchEffect implements CreatureEffect {
 			return;
 		}
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(enemy, STRIKE_DAMAGE)));
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, STRIKE_DAMAGE)));
 		EffectActions.log(ctx, parts);
 	}
 

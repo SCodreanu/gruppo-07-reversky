@@ -19,8 +19,10 @@ import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.ModifierDuration;
 import it.downfall.reversky.engine.core.model.ModifierSource;
+import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.model.StatModifier;
+import it.downfall.reversky.engine.core.model.Wound;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
 import it.downfall.reversky.engine.support.TestRules;
@@ -35,12 +37,14 @@ class CreatureEffectServiceTest {
 	private static final String RECORDER = "TEST_RECORDER";
 	private static final String NULLIFIER = "TEST_NULLIFIER";
 	private static final String ROUND_START_STRIKE = "TEST_ROUND_START_STRIKE";
+	private static final String WOUND_RECORDER = "TEST_WOUND_RECORDER";
 
 	private final List<String> calls = new ArrayList<>();
 	private final EffectRegistry registry = new EffectRegistry()
 			.registerCreature(RECORDER, () -> new Recorder(RECORDER, EffectPriority.NORMAL, calls))
 			.registerCreature(NULLIFIER, () -> new Recorder(NULLIFIER, EffectPriority.NULLIFY, calls))
-			.registerCreature(ROUND_START_STRIKE, RoundStartStrike::new);
+			.registerCreature(ROUND_START_STRIKE, RoundStartStrike::new)
+			.registerCreature(WOUND_RECORDER, () -> new WoundRecorder(WOUND_RECORDER, calls));
 	private final RoundResolver resolver = new RoundResolver(TestFactions.noBonuses(), registry);
 
 	@Test
@@ -142,6 +146,42 @@ class CreatureEffectServiceTest {
 		assertThat(state.log().events()).extracting(MatchEvent::type).doesNotContain(EventType.EFFECT_TRIGGERED);
 	}
 
+	@Test
+	@DisplayName("18 novembre: onWounded una volta per ferita, con la causa, dopo la fase; poi onDefenseCheck")
+	void wounds_reportedOncePerWoundWithCause() {
+		// Arrange: A riceve due danni in attesa (1 e 2) da una Spell, poi B la colpisce con 2
+		MatchState state = TestStates.inCombat(registry, creature("A", WOUND_RECORDER, 3, 20),
+				creature("B", null, 2, 20));
+		state.challenger().addPendingModifier(new PendingModifier("X", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 1));
+		state.challenger().addPendingModifier(new PendingModifier("Y", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 2));
+
+		// Act
+		resolver.startCombat(state);
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(calls).containsSubsequence("A wounded 1 by none", "A wounded 2 by none", "A check 17",
+				"A wounded 2 by B", "A check 15");
+		assertThat(calls).filteredOn(call -> call.contains("wounded")).hasSize(3);
+	}
+
+	@Test
+	@DisplayName("Una creatura morta non riceve onWounded né onDefenseCheck")
+	void deadCreature_notReported() {
+		// Arrange: A 3/2 muore al round 1
+		MatchState state = TestStates.inCombat(registry, creature("A", WOUND_RECORDER, 3, 2),
+				creature("B", null, 5, 20));
+		resolver.startCombat(state);
+		calls.clear();
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert: il controllo del passo 1 la vede ancora viva; la ferita letale non arriva e dopo non c'è altro
+		assertThat(state.challenger().creature()).isEmpty();
+		assertThat(calls).containsOnly("A check 2");
+	}
+
 	private static CardDefinition creature(String name, String code, int attack, int defense) {
 		return TestCards.creature(0, name, TestFactions.WOUND, null, "Uncommon", attack, defense, code);
 	}
@@ -179,6 +219,21 @@ class CreatureEffectServiceTest {
 		@Override
 		public void onRoundEnd(CreatureContext ctx) {
 			calls.add(ctx.self().name() + " roundEnd");
+		}
+	}
+
+	/** Effetto di prova: registra le ferite riferite e i controlli della DEF. */
+	private record WoundRecorder(String code, List<String> calls) implements CreatureEffect {
+
+		@Override
+		public void onWounded(CreatureContext ctx, Wound wound) {
+			calls.add(ctx.self().name() + " wounded " + wound.amount() + " by "
+					+ wound.cause().map(CreatureInPlay::name).orElse("none"));
+		}
+
+		@Override
+		public void onDefenseCheck(CreatureContext ctx) {
+			calls.add(ctx.self().name() + " check " + ctx.self().defense());
 		}
 	}
 

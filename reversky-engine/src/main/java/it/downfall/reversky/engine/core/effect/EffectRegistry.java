@@ -10,6 +10,7 @@ import it.downfall.reversky.engine.core.effect.impl.BellWitchEffect;
 import it.downfall.reversky.engine.core.effect.impl.BigfootEffect;
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
 import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
+import it.downfall.reversky.engine.core.effect.impl.BuildingDirectorEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.DeniedExitBadgeEffect;
 import it.downfall.reversky.engine.core.effect.impl.DevouringAbyssEffect;
@@ -17,22 +18,34 @@ import it.downfall.reversky.engine.core.effect.impl.DissolutionEffect;
 import it.downfall.reversky.engine.core.effect.impl.DrownedMemoryEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.EchoStrikeEffect;
+import it.downfall.reversky.engine.core.effect.impl.FaceCollectorEffect;
+import it.downfall.reversky.engine.core.effect.impl.FadedTagEffect;
 import it.downfall.reversky.engine.core.effect.impl.FalsePathsCompassEffect;
 import it.downfall.reversky.engine.core.effect.impl.FootprintGathererEffect;
 import it.downfall.reversky.engine.core.effect.impl.ForgottenEchoEffect;
+import it.downfall.reversky.engine.core.effect.impl.GnawingWitnessEffect;
 import it.downfall.reversky.engine.core.effect.impl.HidebehindEffect;
 import it.downfall.reversky.engine.core.effect.impl.HollowClearingEffect;
 import it.downfall.reversky.engine.core.effect.impl.HostilePresenceEffect;
+import it.downfall.reversky.engine.core.effect.impl.HoundsEffect;
+import it.downfall.reversky.engine.core.effect.impl.HowlersEffect;
 import it.downfall.reversky.engine.core.effect.impl.IndexMawEffect;
+import it.downfall.reversky.engine.core.effect.impl.JorogumoEffect;
 import it.downfall.reversky.engine.core.effect.impl.KappaEffect;
 import it.downfall.reversky.engine.core.effect.impl.LastSanctuaryEffect;
+import it.downfall.reversky.engine.core.effect.impl.LivingWaitingRoomEffect;
+import it.downfall.reversky.engine.core.effect.impl.MaskedBloomEffect;
 import it.downfall.reversky.engine.core.effect.impl.MothmanEffect;
 import it.downfall.reversky.engine.core.effect.impl.NameCollectorEffect;
 import it.downfall.reversky.engine.core.effect.impl.NamelessCallerEffect;
+import it.downfall.reversky.engine.core.effect.impl.NopperaBoEffect;
+import it.downfall.reversky.engine.core.effect.impl.NureOnnaEffect;
 import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
+import it.downfall.reversky.engine.core.effect.impl.RokurokubiEffect;
+import it.downfall.reversky.engine.core.effect.impl.RootboundDoppelgangerEffect;
 import it.downfall.reversky.engine.core.effect.impl.Scp001Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp049Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp053Effect;
@@ -45,17 +58,26 @@ import it.downfall.reversky.engine.core.effect.impl.Scp3000Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp682Effect;
 import it.downfall.reversky.engine.core.effect.impl.SealedFileZeroEffect;
+import it.downfall.reversky.engine.core.effect.impl.ServiceDoubleEffect;
+import it.downfall.reversky.engine.core.effect.impl.ShutenDojiEffect;
 import it.downfall.reversky.engine.core.effect.impl.SilentShepherdEffect;
 import it.downfall.reversky.engine.core.effect.impl.SkinFractureEffect;
+import it.downfall.reversky.engine.core.effect.impl.SkinStealersEffect;
 import it.downfall.reversky.engine.core.effect.impl.SmilerEffect;
 import it.downfall.reversky.engine.core.effect.impl.SpearfingerEffect;
+import it.downfall.reversky.engine.core.effect.impl.StitchedCorridorEffect;
 import it.downfall.reversky.engine.core.effect.impl.SurvivalInstinctEffect;
 import it.downfall.reversky.engine.core.effect.impl.ThornedMatriarchEffect;
+import it.downfall.reversky.engine.core.effect.impl.ThreadboundDollEffect;
 import it.downfall.reversky.engine.core.effect.impl.ToriiBellEffect;
+import it.downfall.reversky.engine.core.effect.impl.ToriiShadowEffect;
+import it.downfall.reversky.engine.core.effect.impl.UnseenMatriarchEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.effect.impl.WampusCatEffect;
 import it.downfall.reversky.engine.core.effect.impl.WatchingRiftEffect;
 import it.downfall.reversky.engine.core.effect.impl.WhiteStagEffect;
+import it.downfall.reversky.engine.core.effect.impl.WretchesEffect;
+import it.downfall.reversky.engine.core.effect.impl.YukiOnnaEffect;
 import it.downfall.reversky.engine.core.model.CardType;
 
 /**
@@ -113,6 +135,28 @@ public final class EffectRegistry {
 				.registerCreature(DrownedMemoryEffect.CODE, DrownedMemoryEffect::new)
 				.registerCreature(Scp3000Effect.CODE, Scp3000Effect::new)
 				.registerCreature(Scp001Effect.CODE, Scp001Effect::new)
+				.registerCreature(HowlersEffect.CODE, HowlersEffect::new)
+				.registerCreature(WretchesEffect.CODE, WretchesEffect::new)
+				.registerCreature(FadedTagEffect.CODE, FadedTagEffect::new)
+				.registerCreature(LivingWaitingRoomEffect.CODE, LivingWaitingRoomEffect::new)
+				.registerCreature(GnawingWitnessEffect.CODE, GnawingWitnessEffect::new)
+				.registerCreature(SkinStealersEffect.CODE, SkinStealersEffect::new)
+				.registerCreature(ServiceDoubleEffect.CODE, ServiceDoubleEffect::new)
+				.registerCreature(BuildingDirectorEffect.CODE, BuildingDirectorEffect::new)
+				.registerCreature(HoundsEffect.CODE, HoundsEffect::new)
+				.registerCreature(NopperaBoEffect.CODE, NopperaBoEffect::new)
+				.registerCreature(RokurokubiEffect.CODE, RokurokubiEffect::new)
+				.registerCreature(ThreadboundDollEffect.CODE, ThreadboundDollEffect::new)
+				.registerCreature(ToriiShadowEffect.CODE, ToriiShadowEffect::new)
+				.registerCreature(MaskedBloomEffect.CODE, MaskedBloomEffect::new)
+				.registerCreature(YukiOnnaEffect.CODE, YukiOnnaEffect::new)
+				.registerCreature(JorogumoEffect.CODE, JorogumoEffect::new)
+				.registerCreature(NureOnnaEffect.CODE, NureOnnaEffect::new)
+				.registerCreature(FaceCollectorEffect.CODE, FaceCollectorEffect::new)
+				.registerCreature(UnseenMatriarchEffect.CODE, UnseenMatriarchEffect::new)
+				.registerCreature(ShutenDojiEffect.CODE, ShutenDojiEffect::new)
+				.registerCreature(RootboundDoppelgangerEffect.CODE, RootboundDoppelgangerEffect::new)
+				.registerCreature(StitchedCorridorEffect.CODE, StitchedCorridorEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)

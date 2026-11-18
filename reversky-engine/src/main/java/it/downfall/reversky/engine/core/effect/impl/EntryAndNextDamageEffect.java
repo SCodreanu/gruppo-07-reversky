@@ -34,7 +34,7 @@ public abstract class EntryAndNextDamageEffect implements CreatureEffect {
 	public final void onEnterPlay(CreatureContext ctx) {
 		CreatureInPlay self = ctx.self();
 		List<String> parts = new ArrayList<>();
-		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(enemy, damage)));
+		ctx.targetEnemy().ifPresent(enemy -> parts.add(EffectActions.damage(ctx, enemy, damage)));
 		ctx.opponent().addPendingModifier(new PendingModifier(self.name(), ModifierSource.EFFECT, self.side(), 0, 0,
 				damage));
 		parts.add(MatchLog.signed(-damage) + " DEF to the next enemy creature");
