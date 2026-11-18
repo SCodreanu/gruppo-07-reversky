@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import it.downfall.reversky.engine.core.effect.impl.BellWitchEffect;
 import it.downfall.reversky.engine.core.effect.impl.BigfootEffect;
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
+import it.downfall.reversky.engine.core.effect.impl.BloodlessHoundEffect;
 import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
 import it.downfall.reversky.engine.core.effect.impl.BuildingDirectorEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
@@ -51,6 +52,7 @@ import it.downfall.reversky.engine.core.effect.impl.Scp049Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp053Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp096Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp106Effect;
+import it.downfall.reversky.engine.core.effect.impl.Scp109Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp173Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp2006Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp2317Effect;
@@ -75,6 +77,7 @@ import it.downfall.reversky.engine.core.effect.impl.UnseenMatriarchEffect;
 import it.downfall.reversky.engine.core.effect.impl.VeilOfAnchoredEffect;
 import it.downfall.reversky.engine.core.effect.impl.WampusCatEffect;
 import it.downfall.reversky.engine.core.effect.impl.WatchingRiftEffect;
+import it.downfall.reversky.engine.core.effect.impl.WendigoEffect;
 import it.downfall.reversky.engine.core.effect.impl.WhiteStagEffect;
 import it.downfall.reversky.engine.core.effect.impl.WretchesEffect;
 import it.downfall.reversky.engine.core.effect.impl.YukiOnnaEffect;
@@ -157,6 +160,8 @@ public final class EffectRegistry {
 				.registerCreature(ShutenDojiEffect.CODE, ShutenDojiEffect::new)
 				.registerCreature(RootboundDoppelgangerEffect.CODE, RootboundDoppelgangerEffect::new)
 				.registerCreature(StitchedCorridorEffect.CODE, StitchedCorridorEffect::new)
+				.registerCreature(BloodlessHoundEffect.CODE, BloodlessHoundEffect::new)
+				.registerCreature(WendigoEffect.CODE, WendigoEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)
@@ -164,6 +169,7 @@ public final class EffectRegistry {
 				.registerSpell(RegistryPactEffect.CODE, RegistryPactEffect::new)
 				.registerSpell(RainArmorEffect.CODE, RainArmorEffect::new)
 				.registerSpell(Scp458Effect.CODE, Scp458Effect::new)
+				.registerSpell(Scp109Effect.CODE, Scp109Effect::new)
 				.registerSpell(CallOfTheRiftEffect.CODE, CallOfTheRiftEffect::new)
 				.registerSpell(ReverseFusionEffect.CODE, ReverseFusionEffect::new)
 				.registerSpell(ForgottenEchoEffect.CODE, ForgottenEchoEffect::new)

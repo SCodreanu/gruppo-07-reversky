@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.log.MatchLog;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
@@ -73,6 +74,22 @@ class PendingModifierTest {
 				.isEqualTo("−3 ATK");
 		assertThat(MatchLog.describe(new PendingModifier("Skin", ModifierSource.SPELL, Side.CHALLENGER, 0, 0, 5)))
 				.isEqualTo("−5 DEF");
+	}
+
+	@Test
+	@DisplayName("ENG-34: un effetto collegato basta a fare un modificatore e passa alla creatura che lo riceve")
+	void applyTo_attachedEffect_attachedToCreature() {
+		// Arrange
+		CreatureEffect flask = () -> "FLASK";
+		PendingModifier modifier = new PendingModifier("Flask", ModifierSource.SPELL, Side.OPPONENT, 0, 0, 0, flask);
+
+		// Act
+		modifier.applyTo(state, kappa);
+
+		// Assert
+		assertThat(kappa.effects()).containsExactly(flask);
+		assertThat(kappa.defense()).isEqualTo(7);
+		assertThat(new PendingModifier("Pact", ModifierSource.SPELL, Side.OPPONENT, 1, 0, 0).attached()).isNull();
 	}
 
 	@Test

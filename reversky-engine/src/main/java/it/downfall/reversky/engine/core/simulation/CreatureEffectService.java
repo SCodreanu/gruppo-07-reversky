@@ -23,6 +23,9 @@ import it.downfall.reversky.engine.core.model.Wound;
  * {@link EffectPriority#NORMAL}), poi la creatura dello sfidante (D-30). Ogni chiamata ha il suo
  * {@link CreatureContext}; prima di colpire la creatura avversaria il contesto chiede a {@link ItemService} se un
  * Fascicolo Sigillato 0 annulla l'attivazione. Le morti le controlla chi chiama (D-08).
+ * <p>
+ * Per ogni creatura si chiama prima il suo effetto, poi quelli collegati da altre carte, nell'ordine in cui sono
+ * arrivati (SCP-109, ENG-34); la priorità D-30 la decide l'effetto della creatura.
  */
 public final class CreatureEffectService {
 
@@ -52,14 +55,14 @@ public final class CreatureEffectService {
 		for (CreatureInPlay creature : inOrder(inPlay(state))) {
 			if (!creature.hasEntered()) {
 				creature.recordEntered();
-				creature.effect().ifPresent(effect -> effect.onEnterPlay(context(state, creature)));
+				creature.effects().forEach(effect -> effect.onEnterPlay(context(state, creature)));
 				if (deaths.resolve(state)) {
 					return true;
 				}
 			}
 		}
 		for (CreatureInPlay creature : inOrder(inPlay(state))) {
-			creature.effect().ifPresent(effect -> effect.onCombatStart(context(state, creature)));
+			creature.effects().forEach(effect -> effect.onCombatStart(context(state, creature)));
 			if (deaths.resolve(state)) {
 				return true;
 			}
@@ -85,9 +88,11 @@ public final class CreatureEffectService {
 	 * @return l'attacco modificato, prima del minimo 0
 	 */
 	public int outgoingAttack(MatchState state, CreatureInPlay attacker, int attack) {
-		return attacker.effect()
-				.map(effect -> effect.modifyOutgoingAttack(context(state, attacker), attack))
-				.orElse(attack);
+		int modified = attack;
+		for (CreatureEffect effect : attacker.effects()) {
+			modified = effect.modifyOutgoingAttack(context(state, attacker), modified);
+		}
+		return modified;
 	}
 
 	/**
@@ -99,14 +104,16 @@ public final class CreatureEffectService {
 	 * @return il danno da applicare, almeno 0
 	 */
 	public int incomingDamage(MatchState state, CreatureInPlay defender, int damage) {
-		int modified = defender.effect()
-				.map(effect -> effect.modifyIncomingDamage(context(state, defender), damage))
-				.orElse(damage);
-		return Math.max(0, modified);
+		int modified = damage;
+		for (CreatureEffect effect : defender.effects()) {
+			modified = Math.max(0, effect.modifyIncomingDamage(context(state, defender), modified));
+		}
+		return modified;
 	}
 
 	/**
-	 * Passo 5: {@code afterDamage} di ogni creatura colpita, anche se ha DEF 0 o meno.
+	 * Passo 5: {@code afterDamage} di ogni creatura colpita, anche se ha DEF 0 o meno, poi il suo {@code afterAttack}
+	 * se il suo attacco ha fatto danni (ENG-34).
 	 *
 	 * @param state   stato della partita
 	 * @param damages danno dell'attacco ricevuto da ogni creatura, indicizzato per {@link Side#ordinal()}
@@ -114,8 +121,12 @@ public final class CreatureEffectService {
 	 */
 	public void afterDamage(MatchState state, int[] damages, int[] wounds) {
 		forEachEffect(state, inPlay(state), (effect, ctx) -> {
-			int side = ctx.self().side().ordinal();
-			effect.afterDamage(ctx, damages[side], wounds[side]);
+			Side side = ctx.self().side();
+			effect.afterDamage(ctx, damages[side.ordinal()], wounds[side.ordinal()]);
+			int dealt = damages[ctx.opponent().side().ordinal()];
+			if (dealt > 0) {
+				effect.afterAttack(ctx, dealt);
+			}
 		});
 	}
 
@@ -136,15 +147,17 @@ public final class CreatureEffectService {
 			for (CreatureInPlay creature : inOrder(alive(state))) {
 				Optional<PlacedTerrain> terrain = state.terrain().filter(placed -> placed.affects(creature));
 				for (Wound wound : creature.takeUnreportedWounds()) {
-					creature.effect().ifPresent(effect -> effect.onWounded(context(state, creature), wound));
+					creature.effects().forEach(effect -> effect.onWounded(context(state, creature), wound));
 					// Echo Rift (ENG-27): dopo l'effetto della creatura
 					terrain.ifPresent(placed -> placed.effect().onWounded(state, placed, creature, wound));
 				}
 			}
 			for (CreatureInPlay creature : inOrder(alive(state))) {
 				// un controllo prima può averla uccisa
-				if (!creature.isDead()) {
-					creature.effect().ifPresent(effect -> effect.onDefenseCheck(context(state, creature)));
+				for (CreatureEffect effect : creature.effects()) {
+					if (!creature.isDead()) {
+						effect.onDefenseCheck(context(state, creature));
+					}
 				}
 			}
 		} while (alive(state).stream().anyMatch(CreatureInPlay::hasUnreportedWounds));
@@ -169,10 +182,22 @@ public final class CreatureEffectService {
 		forEachEffect(state, dead, CreatureEffect::onDeath);
 	}
 
+	/**
+	 * Fine di uno scontro con una sola morte (ENG-34): {@code onKill} della sopravvissuta, dopo che l'avversaria ha
+	 * lasciato il campo e i modificatori fino a fine scontro sono scaduti.
+	 *
+	 * @param state    stato della partita
+	 * @param survivor creatura sopravvissuta
+	 * @param defeated creatura eliminata, già fuori dal campo
+	 */
+	public void kill(MatchState state, CreatureInPlay survivor, CreatureInPlay defeated) {
+		forEachEffect(state, List.of(survivor), (effect, ctx) -> effect.onKill(ctx, defeated));
+	}
+
 	private void forEachEffect(MatchState state, List<CreatureInPlay> creatures,
 			BiConsumer<CreatureEffect, CreatureContext> moment) {
 		for (CreatureInPlay creature : inOrder(creatures)) {
-			creature.effect().ifPresent(effect -> moment.accept(effect, context(state, creature)));
+			creature.effects().forEach(effect -> moment.accept(effect, context(state, creature)));
 		}
 	}
 

@@ -34,6 +34,9 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	/** Dopo che i danni del round sono stati applicati, anche se la creatura è morta (passo 5). */
 	default void afterDamage(CreatureContext ctx, int damage, int wound) { }
 
+	/** Subito dopo il suo afterDamage, se il suo attacco ha fatto danni (passo 5, ENG-34). */
+	default void afterAttack(CreatureContext ctx, int damage) { }
+
 	/** Una ferita, da un attacco o da un effetto: al controllo dopo la fase, se la creatura è ancora viva. */
 	default void onWounded(CreatureContext ctx, Wound wound) { }
 
@@ -45,10 +48,13 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 	/** La creatura muore, prima di lasciare il campo (passo 7). */
 	default void onDeath(CreatureContext ctx) { }
+
+	/** L'avversaria è morta e questa creatura è sopravvissuta, a scontro finito (passo 7, ENG-34). */
+	default void onKill(CreatureContext ctx, CreatureInPlay defeated) { }
 }
 ```
 
-`code()` viene da `CardEffect`. `onKill` arriverà con il primo effetto che lo usa (The Bloodless Hound, Wendigo, La Regina dei Sentieri Perduti), con le sue regole.
+`code()` viene da `CardEffect`.
 
 `CreatureContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria in campo (`enemy()`, per leggerla), i due giocatori (`owner()`, `opponent()`), il round (`round()`) e il `MatchLog` (`log()`). Per **colpire** la creatura avversaria (danno o malus) un effetto usa `targetEnemy()`: è vuoto se l'avversaria non c'è o ha già DEF 0 o meno, e se un Fascicolo Sigillato 0 dell'avversario annulla l'attivazione (deciso il 18 novembre). Si crea un contesto per ogni chiamata, quindi il Fascicolo si controlla una volta per attivazione.
 
@@ -62,11 +68,20 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 Li usano Wretches, Shuten-dōji e SCP-096 (`onWounded`), Nure-onna e The Unseen Matriarch (`onDefenseCheck`). SCP-096 marchia solo una ferita causata da una creatura avversaria.
 
+`afterAttack` e `onKill` (aggiunti il 18 novembre con `ENG-34`):
+
+- `afterAttack` riceve il danno che l'attacco della creatura ha fatto all'avversaria, dopo il passo 3, scudi e DEF sotto 0 compresi; si chiama al passo 5 subito dopo il suo `afterDamage`, solo con danno sopra 0, anche se la creatura ha DEF 0 o meno (The Bloodless Hound);
+- `onKill` scatta per **ogni** morte dell'avversaria, per qualunque causa, come `creaturesDefeated` (D-42): attacco, effetto, Spell, Hidden, Terreno. Lo chiama il `DeathResolver` a scontro finito, quando l'avversaria ha lasciato il campo, il suo proprietario ha perso i punti vita e i modificatori fino a fine scontro della sopravvissuta sono scaduti. In una morte doppia nessuno lo riceve (The Bloodless Hound, Wendigo; poi La Regina dei Sentieri Perduti).
+
+La **guarigione** è `CreatureInPlay.heal(n)` (deciso il 18 novembre): DEF permanente in più, senza superare la DEF all'entrata, scudi compresi, quindi uno scudo dell'entrata scaduto si può recuperare. Una creatura con DEF 0 o meno è morta e non recupera niente (D-16), quindi una guarigione non salva mai da una morte. Le ferite già subite restano in `woundsTaken()`. Nel log è un `EFFECT_TRIGGERED` ("recovers 3 DEF (DEF 9)"), nessun evento nuovo.
+
+Un **effetto collegato** è l'effetto di un'altra carta che la creatura porta finché resta in campo (deciso il 18 novembre, `ENG-34`): arriva con un modificatore in attesa (`PendingModifier.attached()`), che lo passa alla creatura (`CreatureInPlay.attachEffect`). Il motore chiama tutti gli effetti di una creatura (`CreatureInPlay.effects()`): prima il suo, poi quelli collegati, nell'ordine in cui sono arrivati; la priorità D-30 la decide l'effetto della creatura. Un effetto collegato è della Spell, non della creatura: annullare l'effetto della creatura non lo tocca. Lo usa SCP-109.
+
 `onCombatStart` (aggiunto il 18 novembre con `ENG-25`, D-31) scatta a ogni inizio di scontro per entrambe le creature, cioè ogni volta che una creatura affronta una nuova avversaria: quando entra e quando sopravvive e ne arriva un'altra. Serve agli effetti "contro ogni avversaria" (Mothman, Spearfinger, Bigfoot). `onEnterPlay` resta una volta per entrata.
 
 Ogni effetto tiene da sé lo stato che gli serve per "primo round", "una volta", "contro ogni avversaria" (D-31, deciso il 18 novembre): non c'è un contatore di attivazioni nel motore. I bonus ATK degli effetti si danno come `StatModifier` con origine `EFFECT` e una durata, non in `modifyOutgoingAttack` (deciso il 18 novembre): così compaiono nell'ATK e nel log e gli effetti che sospendono i bonus ATK (Static Interference, L'Addetto alle Uscite, Deathmoths) li vedono. `modifyOutgoingAttack` resta per i casi che dipendono dall'avversaria del momento; la sua modifica compare in `ATTACK_COMPUTED` come `effectBonus`.
 
-L'istanza dell'effetto sta nella creatura (`CreatureInPlay.effect()`): `DrawService` la crea dal registro quando la creatura entra in campo. `CreatureEffectService` chiama i momenti nei passi del round; `DeathResolver` chiama `onDeath`.
+L'istanza dell'effetto sta nella creatura (`CreatureInPlay.effect()`): `DrawService` la crea dal registro quando la creatura entra in campo. `CreatureEffectService` chiama i momenti nei passi del round; `DeathResolver` chiama `onDeath` e `onKill`.
 
 ## Ordine di risoluzione di un round
 
@@ -92,9 +107,10 @@ L'ordine fa parte delle regole: **non cambiarlo senza aggiornare questo document
    congelato (Yuki-onna) vale 0
 3. Calcolo danno ricevuto: modifyIncomingDamage della creatura colpita
 4. Applicazione SIMULTANEA dei danni
-5. afterDamage, poi il controllo della DEF: onWounded per ogni ferita, poi onDefenseCheck
+5. afterDamage e afterAttack, poi il controllo della DEF: onWounded per ogni ferita, poi onDefenseCheck
 6. onRoundEnd (solo creature con DEF > 0)
-7. Morti: onDeath / onKill, poi danno al giocatore = DEF negativa della sconfitta (vedi regole-base)
+7. Morti: onDeath, poi danno al giocatore = DEF negativa della sconfitta (vedi regole-base), poi onKill della
+   sopravvissuta
 ```
 
 Dopo **ogni** passo si controllano le morti con le regole del passo 7 (D-08), con il `DeathResolver`: una creatura uccisa da un danno da effetto prima del passo 4 non attacca. Ogni controllo delle morti comincia con il controllo della DEF (`onWounded`, `onDefenseCheck`, deciso il 18 novembre), che può uccidere a sua volta.
@@ -302,6 +318,8 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `SHUTEN_DOJI` | Shuten-dōji | creatura, `onWounded` (+4 ATK per ferita, massimo +12) | fatto, `DreamEffectsTest` |
 | `ROOTBOUND_DOPPELGANGER` | The Rootbound Doppelganger (Mutant) | creatura, `modifyIncomingDamage`, `onRoundStart` (classe base `FirstAttackShieldEffect`) | fatto, `MutantEffectsTest` |
 | `STITCHED_CORRIDOR` | The Stitched Corridor (Mutant) | creatura, `onCombatStart`, `modifyIncomingDamage` (classe base `FirstAttackShieldEffect`) | fatto, `MutantEffectsTest` |
+| `BLOODLESS_HOUND` | The Bloodless Hound | creatura, `afterAttack` (recupera metà del danno), `onKill` (recupera 4) | fatto, `HealEffectsTest` |
+| `WENDIGO` | Wendigo | creatura, `onRoundEnd` (3 danni più 1 per eliminazione, massimo 6), `onKill` (recupera 5) | fatto, `HealEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
@@ -309,6 +327,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `REGISTRY_PACT` | Patto del Registro (Registry Pact) | Spell `SHIELD`, in attesa | fatto, `ShieldSpellEffectTest` |
 | `RAIN_ARMOR` | Armatura della Pioggia (Rain Armor) | Spell `SHIELD`, in attesa | fatto, `ShieldSpellEffectTest` |
 | `SCP_458` | SCP-458 · Pizza Senza Fine | Spell `SHIELD`, in attesa per due creature | fatto, `ShieldSpellEffectTest` |
+| `SCP_109` | SCP-109 · Acqua Infinita | Spell `SHIELD`, in attesa, con un effetto collegato (`onDefenseCheck`, recupera 3 una volta) | fatto, `HealEffectsTest` |
 | `CRACK_CALL` | Richiamo della Crepa (Call of the Rift) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
 | `REVERSE_FUSION` | Fusione del Rovescio (Reverse Fusion) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
 | `FORGOTTEN_ECHO` | Eco dei Dimenticati (Echo of the Forgotten) | Spell `BURN`, in attesa | fatto, `BurnSpellEffectTest` |
@@ -328,7 +347,7 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 
 Gli effetti delle creature uguali condividono una classe base (D-37): `FirstAttackShieldEffect` (Hidebehind, Nurikabe, Sala d'Attesa Vivente, e con altre parti le due Mutant, tramite `afterFirstAttack`), `EntryDamageEffect` (SCP-173, The Gnawing Witness), `EntryAndNextDamageEffect` (Cervo Bianco, Il Collezionista di Nomi, Cartellino Sbiadito, Rokurokubi), `FadingAttackPenaltyEffect` (SCP-049, Howlers, Noppera-bō, The Masked Bloom), `EntryDefenseEffect`; `EffectActions` scrive danni, modificatori e log nello stesso modo per tutti.
 Yuki-onna usa un modificatore "attacco congelato" (`StatModifier.freezeAttack`, deciso il 18 novembre): finché è attivo l'attacco vale 0 dopo tutto il resto e `ATTACK_COMPUTED` riporta `frozen`. The Rootbound Doppelganger dà il suo −2 ATK all'inizio del round dopo il primo attacco dell'avversaria, per due round (deciso il 18 novembre). L'Ombra del Torii riconosce il Terreno della sua fazione dalle fazioni della carta del Terreno. Bigfoot e SCP-3000 riconoscono "Rare o superiore" con `RARE_ORDER = 3` (`rarityOrder` di Rare): va tenuto uguale al seed delle rarità dell'API (deciso il 18 novembre).
-Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. Mancano `SCP_500` e `SCP_109` (`P2`): finché il loro effetto non esiste, le carte non entrano nel catalogo.
+Le Spell di uno stesso sottotipo condividono una classe base (`DamageSpellEffect`, `ShieldSpellEffect`, `BurnSpellEffect`, D-37): ogni carta ha la sua classe con il testo della carta e i suoi numeri. SCP-109 ha una classe sua (`Scp109Effect`, `ENG-34`), perché collega un effetto alla creatura. Manca `SCP_500`: finché il suo effetto non esiste, la carta non entra nel catalogo.
 I Terreni hanno il bonus base (`BaseTerrainEffect`) e, dal 18 novembre (`ENG-27`), l'effetto secondario. L'effetto sta nel Terreno in gioco (`PlacedTerrain.effect()`), una nuova istanza per ogni messa in gioco, che tiene lo stato "una volta per scontro" e riparte quando il Terreno è sostituito. Il motore lo chiama solo per le creature della sua fazione (`PlacedTerrain.affects`), di entrambi i giocatori, anche prima che ricevano il bonus:
 
 - **Echo Rift:** al controllo della DEF, dopo l'`onWounded` della creatura, la prima ferita di ogni scontro dà +1 ATK fino a fine scontro, con origine `TERRAIN` (sparisce se il Terreno esce).

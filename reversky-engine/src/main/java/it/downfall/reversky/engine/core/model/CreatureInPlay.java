@@ -24,6 +24,8 @@ public final class CreatureInPlay {
 	private final Side side;
 	/** Effetto della creatura, una nuova istanza per ogni entrata in campo (D-31), o {@code null} se non ne ha. */
 	private final CreatureEffect effect;
+	/** Effetti collegati da altre carte (SCP-109, ENG-34), nell'ordine in cui sono arrivati. */
+	private final List<CreatureEffect> attachedEffects = new ArrayList<>();
 	private final List<StatModifier> modifiers = new ArrayList<>();
 	/** Ferite non ancora riferite all'effetto, nell'ordine in cui sono avvenute (deciso il 18 novembre). */
 	private final List<Wound> unreportedWounds = new ArrayList<>();
@@ -79,6 +81,29 @@ public final class CreatureInPlay {
 	 */
 	public Optional<CreatureEffect> effect() {
 		return Optional.ofNullable(effect);
+	}
+
+	/**
+	 * Tutti gli effetti che il motore chiama per questa creatura (ENG-34, deciso il 18 novembre): prima il suo, poi
+	 * quelli collegati da altre carte, nell'ordine in cui sono arrivati.
+	 *
+	 * @return gli effetti, anche nessuno
+	 */
+	public List<CreatureEffect> effects() {
+		List<CreatureEffect> effects = new ArrayList<>();
+		effect().ifPresent(effects::add);
+		effects.addAll(attachedEffects);
+		return effects;
+	}
+
+	/**
+	 * Collega alla creatura l'effetto di un'altra carta finché resta in campo (es. SCP-109, ENG-34). Non è l'effetto
+	 * della creatura: annullare il suo effetto non lo tocca.
+	 *
+	 * @param attached nuova istanza dell'effetto, solo per questa creatura
+	 */
+	public void attachEffect(CreatureEffect attached) {
+		attachedEffects.add(Objects.requireNonNull(attached, "attached"));
 	}
 
 	/**
@@ -284,6 +309,27 @@ public final class CreatureInPlay {
 			throw new IllegalArgumentException("Per togliere DEF si usa takeDamage: " + amount);
 		}
 		permanentDefense += amount;
+	}
+
+	/**
+	 * Recupera DEF (ENG-34, deciso il 18 novembre): DEF permanente in più, senza superare la DEF all'entrata, scudi
+	 * compresi; uno scudo scaduto si può quindi recuperare. Una creatura con DEF 0 o meno è morta e non recupera
+	 * niente (D-16). Le ferite già subite restano nel conto di {@link #woundsTaken()}.
+	 *
+	 * @param amount DEF da recuperare, almeno 0
+	 * @return la DEF recuperata davvero, almeno 0
+	 * @throws IllegalArgumentException se {@code amount} è negativo
+	 */
+	public int heal(int amount) {
+		if (amount < 0) {
+			throw new IllegalArgumentException("Recupero negativo: " + amount);
+		}
+		if (isDead()) {
+			return 0;
+		}
+		int healed = Math.min(amount, Math.max(0, initialDefense() - defense()));
+		permanentDefense += healed;
+		return healed;
 	}
 
 	/**

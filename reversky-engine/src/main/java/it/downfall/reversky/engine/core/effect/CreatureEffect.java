@@ -1,5 +1,6 @@
 package it.downfall.reversky.engine.core.effect;
 
+import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.Wound;
 
 /**
@@ -89,6 +90,16 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	}
 
 	/**
+	 * Passo 5, subito dopo il suo {@code afterDamage}: l'attacco di questa creatura ha fatto danni (ENG-34, deciso il
+	 * 18 novembre). Si chiama solo con danno sopra 0, anche se la creatura ha DEF 0 o meno (es. The Bloodless Hound).
+	 *
+	 * @param ctx    contesto
+	 * @param damage danno del suo attacco dopo il passo 3, scudi e DEF sotto 0 compresi
+	 */
+	default void afterAttack(CreatureContext ctx, int damage) {
+	}
+
+	/**
 	 * La creatura ha perso DEF davvero (una ferita), per un attacco o per un danno da effetto di qualunque origine
 	 * (deciso il 18 novembre): si chiama una volta per ferita, al controllo dopo la fase in cui è avvenuta, solo se la
 	 * creatura è ancora viva. Una ferita del passo 4 arriva al controllo del passo 5, dopo {@code afterDamage}.
@@ -124,5 +135,17 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	 * @param ctx contesto
 	 */
 	default void onDeath(CreatureContext ctx) {
+	}
+
+	/**
+	 * L'avversaria è morta e questa creatura è sopravvissuta (ENG-34, deciso il 18 novembre): conta ogni morte
+	 * dell'avversaria, per qualunque causa, come {@code creaturesDefeated} (D-42). Si chiama a scontro finito, quando
+	 * l'avversaria ha lasciato il campo e i modificatori fino a fine scontro sono scaduti; in una morte doppia nessuno
+	 * lo riceve.
+	 *
+	 * @param ctx      contesto; il campo avversario è vuoto
+	 * @param defeated la creatura eliminata
+	 */
+	default void onKill(CreatureContext ctx, CreatureInPlay defeated) {
 	}
 }
