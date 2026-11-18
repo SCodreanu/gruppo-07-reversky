@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	@EntityGraph(attributePaths = "role")
 	Optional<User> findByEmail(String email);
 
+	// Usato dalle amicizie: POST /friends/requests riceve lo username, non l'id.
+	Optional<User> findByUsername(String username);
+
 	// Controlla che un utente esista dal suo username.
 	boolean existsByUsername(String username);
 
