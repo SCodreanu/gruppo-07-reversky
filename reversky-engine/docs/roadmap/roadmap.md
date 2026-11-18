@@ -101,7 +101,12 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
 |---|---|---|---|---|
-| `ENG-25` / `ENG-26` | Effetti `P2` (tutti decisi l'11 novembre, servono i pezzi di motore del [catalogo](../effetti/catalogo-effetti.md#pezzi-di-motore-richiesti-dagli-effetti)) | A / B | M | D-xx |
+| `ENG-34` | Effetti `P2`: guarigione e momento "a ogni eliminazione" (The Bloodless Hound, Wendigo, SCP-109) | A + B | M | `ENG-26` |
+| `ENG-35` | Effetti `P2`: sospensione e rimozione dei bonus (L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference) | A + B | M | `ENG-23` |
+| `ENG-36` | Effetti `P2`: rimozione del Terreno (The Null Witness, The Hollow Wyrm) | A + B | M | `ENG-27`, `ENG-35` |
+| `ENG-37` | Effetti `P2`: sopravvivenza al danno letale e condizioni delle Hidden (The Undying Blossom, Unseen Exit, Remnants of Reality) | A + B | L | `ENG-34`, `ENG-35` |
+| `ENG-38` | Effetti `P2`: effetti annullati, rubati e copiati (Il Predicatore sotto la Pioggia, SCP-2521, Kitsune, Baku, Il Custode delle Porte Incrociate) | A + B | L | `ENG-35` |
+| `ENG-39` | Effetti `P2`: mazzo e Hidden dell'avversario (La Regina dei Sentieri Perduti, L'Operatore della Stanza 0) | A + B | M | `ENG-34` |
 | `ENG-27` | Effetti secondari dei Terreni, decisi l'11 novembre (D-18) | A | M | `ENG-21` |
 | `ENG-28` | Report di bilanciamento con gli effetti, dopo le modifiche dei DSG alle statistiche | B | S | `ENG-26` |
 | `ENG-29` | Casi limite e correzione bug; Javadoc su tutto il core pubblico | A + B | M | `ENG-25`, `ENG-26` |

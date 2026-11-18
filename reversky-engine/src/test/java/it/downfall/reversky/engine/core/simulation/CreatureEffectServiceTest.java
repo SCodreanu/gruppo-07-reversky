@@ -59,7 +59,7 @@ class CreatureEffectServiceTest {
 
 		// Assert
 		assertThat(calls).containsExactly("A enter", "A roundStart", "A outgoing 3", "A incoming 2",
-				"A afterDamage 2", "A roundEnd");
+				"A afterDamage 2", "A afterAttack 3", "A roundEnd");
 	}
 
 	@Test
@@ -182,6 +182,83 @@ class CreatureEffectServiceTest {
 		assertThat(calls).containsOnly("A check 2");
 	}
 
+	@Test
+	@DisplayName("ENG-34: afterAttack solo se l'attacco ha fatto danni sopra 0")
+	void afterAttack_onlyWithDamage() {
+		// Arrange: A ha ATK 0
+		MatchState state = TestStates.inCombat(registry, creature("A", RECORDER, 0, 20), creature("B", null, 2, 20));
+		resolver.startCombat(state);
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(calls).contains("A afterDamage 2").noneMatch(call -> call.contains("afterAttack"));
+	}
+
+	@Test
+	@DisplayName("ENG-34: onKill della sopravvissuta a scontro finito: l'avversaria è uscita, lo scudo è scaduto")
+	void onKill_survivorAfterCombatEnd() {
+		// Arrange: A 9/20 con uno scudo fino a fine scontro di 4 uccide B 1/5
+		MatchState state = TestStates.inCombat(registry, creature("A", RECORDER, 9, 20), creature("B", null, 1, 5));
+		state.challenger().creature().orElseThrow().addModifier(StatModifier.shield(ModifierSource.HIDDEN,
+				Side.CHALLENGER, 4, ModifierDuration.untilCombatEnd()));
+		resolver.startCombat(state);
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert: il colpo di B lo prende lo scudo, poi lo scudo scade
+		assertThat(calls).containsSubsequence("A roundEnd", "A kill B, enemy out, DEF 20");
+	}
+
+	@Test
+	@DisplayName("ENG-34: una morte fuori dal round (danno da Spell) conta come eliminazione (D-42)")
+	void onKill_deathOutsideRound() {
+		// Arrange
+		MatchState state = TestStates.inCombat(registry, creature("A", RECORDER, 3, 20), creature("B", null, 1, 5));
+		state.opponent().creature().orElseThrow().takeDamage(5);
+
+		// Act
+		new DeathResolver(new ItemService(registry)).resolve(state);
+
+		// Assert
+		assertThat(calls).containsExactly("A kill B, enemy out, DEF 20");
+	}
+
+	@Test
+	@DisplayName("ENG-34: in una morte doppia nessuno riceve onKill")
+	void onKill_doubleDeath_none() {
+		// Arrange: A 9/1 e B 5/5 muoiono insieme
+		MatchState state = TestStates.inCombat(registry, creature("A", RECORDER, 9, 1), creature("B", null, 5, 5));
+		resolver.startCombat(state);
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(state.challenger().creature()).isEmpty();
+		assertThat(state.opponent().creature()).isEmpty();
+		assertThat(calls).noneMatch(call -> call.contains("kill"));
+	}
+
+	@Test
+	@DisplayName("ENG-34: un effetto collegato riceve i momenti subito dopo quello della creatura")
+	void attachedEffect_calledAfterOwn() {
+		// Arrange
+		MatchState state = TestStates.inCombat(registry, creature("A", RECORDER, 3, 20), creature("B", null, 2, 20));
+		state.challenger().creature().orElseThrow().attachEffect(new AttachedProbe(calls));
+		resolver.startCombat(state);
+		calls.clear();
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(calls).containsSubsequence("A roundStart", "attached roundStart", "A roundEnd",
+				"attached roundEnd");
+	}
+
 	private static CardDefinition creature(String name, String code, int attack, int defense) {
 		return TestCards.creature(0, name, TestFactions.WOUND, null, "Uncommon", attack, defense, code);
 	}
@@ -217,8 +294,38 @@ class CreatureEffectServiceTest {
 		}
 
 		@Override
+		public void afterAttack(CreatureContext ctx, int damage) {
+			calls.add(ctx.self().name() + " afterAttack " + damage);
+		}
+
+		@Override
 		public void onRoundEnd(CreatureContext ctx) {
 			calls.add(ctx.self().name() + " roundEnd");
+		}
+
+		@Override
+		public void onKill(CreatureContext ctx, CreatureInPlay defeated) {
+			calls.add(ctx.self().name() + " kill " + defeated.name() + ", enemy "
+					+ (ctx.enemy().isPresent() ? "in" : "out") + ", DEF " + ctx.self().defense());
+		}
+	}
+
+	/** Effetto collegato di prova (ENG-34): registra inizio e fine del round. */
+	private record AttachedProbe(List<String> calls) implements CreatureEffect {
+
+		@Override
+		public String code() {
+			return "TEST_ATTACHED";
+		}
+
+		@Override
+		public void onRoundStart(CreatureContext ctx) {
+			calls.add("attached roundStart");
+		}
+
+		@Override
+		public void onRoundEnd(CreatureContext ctx) {
+			calls.add("attached roundEnd");
 		}
 	}
 

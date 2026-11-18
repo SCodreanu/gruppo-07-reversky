@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
 
@@ -18,6 +19,7 @@ import it.downfall.reversky.engine.support.TestFactions;
 class CreatureInPlayTest {
 
 	private static final CardDefinition CRAWLERS = TestCards.creature("Crawlers", TestFactions.WOUND, 4, 5);
+	private static final CardDefinition BRUTE = TestCards.creature("Brute", TestFactions.WOUND, 3, 10);
 
 	@Test
 	@DisplayName("Appena entrata ha ATK e DEF del catalogo (4/5) ed è viva")
@@ -386,5 +388,76 @@ class CreatureInPlayTest {
 		assertThatThrownBy(() -> StatModifier.shield(ModifierSource.HIDDEN, Side.CHALLENGER, 0,
 				ModifierDuration.untilCombatEnd())).isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(() -> ModifierDuration.rounds(0)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-34: heal rende DEF fino alla DEF all'entrata (10 − 6 + 4 = 8, poi solo +2), le ferite restano")
+	void heal_upToInitialDefense() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.recordInitialDefense();
+		brute.takeDamage(6);
+
+		// Act + Assert
+		assertThat(brute.heal(4)).isEqualTo(4);
+		assertThat(brute.defense()).isEqualTo(8);
+		assertThat(brute.heal(5)).isEqualTo(2);
+		assertThat(brute.defense()).isEqualTo(10);
+		assertThat(brute.heal(3)).isZero();
+		assertThat(brute.woundsTaken()).isEqualTo(6);
+	}
+
+	@Test
+	@DisplayName("ENG-34: lo scudo dell'entrata scaduto si recupera (10 + 3 = 13 all'entrata, scudo finito, +3)")
+	void heal_expiredEntryShield_restored() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addModifier(StatModifier.shield(ModifierSource.HIDDEN, Side.CHALLENGER, 3,
+				ModifierDuration.untilCombatEnd()));
+		brute.recordInitialDefense();
+		brute.endCombat();
+
+		// Act
+		int healed = brute.heal(5);
+
+		// Assert
+		assertThat(healed).isEqualTo(3);
+		assertThat(brute.defense()).isEqualTo(13);
+	}
+
+	@Test
+	@DisplayName("ENG-34: con DEF 0 o meno è morta e non recupera niente (D-16); un recupero negativo non esiste")
+	void heal_deadOrNegative() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.recordInitialDefense();
+		brute.takeDamage(12);
+
+		// Act + Assert
+		assertThat(brute.heal(5)).isZero();
+		assertThat(brute.defense()).isEqualTo(-2);
+		assertThatThrownBy(() -> brute.heal(-1)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-34: gli effetti collegati vengono dopo il proprio, nell'ordine in cui arrivano")
+	void attachEffect_afterOwnEffect() {
+		// Arrange
+		CreatureEffect own = () -> "OWN";
+		CreatureEffect first = () -> "FIRST";
+		CreatureEffect second = () -> "SECOND";
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, own);
+		CreatureInPlay plain = new CreatureInPlay(BRUTE, Side.OPPONENT);
+
+		// Act
+		brute.attachEffect(first);
+		brute.attachEffect(second);
+		plain.attachEffect(first);
+
+		// Assert
+		assertThat(brute.effects()).containsExactly(own, first, second);
+		assertThat(brute.effect()).contains(own);
+		assertThat(plain.effects()).containsExactly(first);
+		assertThat(plain.effect()).isEmpty();
 	}
 }

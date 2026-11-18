@@ -58,7 +58,8 @@ public final class Penalties {
 	/**
 	 * Applica un modificatore in attesa o il colpo di una Spell {@code DAMAGE} (D-34): ATK e scudo, poi il danno, che
 	 * lo scudo appena dato assorbe per primo (D-35). Una Spell {@code DAMAGE} dell'avversario può perdere un punto per
-	 * il Terreno in gioco (Watching Rift): prima dalla DEF, poi dall'ATK. Le morti le controlla il motore.
+	 * il Terreno in gioco (Watching Rift): prima dalla DEF, poi dall'ATK. Un effetto collegato passa alla creatura
+	 * (SCP-109, ENG-34). Le morti le controlla il motore.
 	 *
 	 * @param state    partita
 	 * @param target   creatura che lo riceve
@@ -86,6 +87,9 @@ public final class Penalties {
 		if (modifier.shield() > 0) {
 			target.addModifier(StatModifier.shield(modifier.source(), modifier.side(), modifier.shield(),
 					ModifierDuration.whileInPlay()));
+		}
+		if (modifier.attached() != null) {
+			target.attachEffect(modifier.attached());
 		}
 		if (damage > 0) {
 			defense(state, target, damage, modifier.side(), null);

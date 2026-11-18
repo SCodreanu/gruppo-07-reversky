@@ -18,8 +18,8 @@ import it.downfall.reversky.engine.core.model.Side;
  * <li>una creatura con DEF ≤ 0 lascia il campo e conta come sconfitta per chi la stava affrontando (D-42);</li>
  * <li>prima che lasci il campo scatta il suo {@code onDeath} (es. SCP-2317), poi le morti si ricontrollano: un effetto
  * alla morte può uccidere anche l'altra creatura (docs/effetti, "Effetto alla morte");</li>
- * <li>se ne muore una sola, il suo proprietario perde la parte negativa della DEF (D-03) e la sopravvissuta perde i
- * modificatori che duravano fino a fine scontro;</li>
+ * <li>se ne muore una sola, il suo proprietario perde la parte negativa della DEF (D-03), la sopravvissuta perde i
+ * modificatori che duravano fino a fine scontro e poi riceve {@code onKill} (ENG-34);</li>
  * <li>se muoiono entrambe nello stesso controllo, nessun giocatore perde punti vita.</li>
  * </ul>
  * Prima di togliere una creatura, un Badge di Uscita Negata del proprietario la può salvare (D-36): allora non muore,
@@ -68,7 +68,11 @@ public final class DeathResolver {
 		if (dead.size() == 1) {
 			CreatureInPlay defeated = dead.getFirst();
 			damageOwner(state, defeated);
-			state.opponentOf(defeated.side()).creature().ifPresent(CreatureInPlay::endCombat);
+			state.opponentOf(defeated.side()).creature().ifPresent(survivor -> {
+				survivor.endCombat();
+				// ENG-34: l'eliminazione, a scontro finito
+				creatureEffects.kill(state, survivor, defeated);
+			});
 		}
 		return true;
 	}

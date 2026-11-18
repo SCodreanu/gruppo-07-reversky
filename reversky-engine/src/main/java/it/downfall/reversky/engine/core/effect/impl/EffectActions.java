@@ -1,6 +1,7 @@
 package it.downfall.reversky.engine.core.effect.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import it.downfall.reversky.engine.core.effect.CreatureContext;
 import it.downfall.reversky.engine.core.effect.Penalties;
@@ -62,6 +63,23 @@ final class EffectActions {
 	static String defense(CreatureInPlay target, int amount) {
 		target.addDefense(amount);
 		return MatchLog.signed(amount) + " DEF (DEF " + MatchLog.number(target.defense()) + ")";
+	}
+
+	/**
+	 * Recupero di DEF (ENG-34): fino alla DEF all'entrata, niente per una creatura morta
+	 * ({@link CreatureInPlay#heal(int)}).
+	 *
+	 * @param target creatura che recupera
+	 * @param amount DEF da recuperare, almeno 0
+	 * @param reason perché recupera, per il log (es. " after defeating B"), o vuoto
+	 * @return la parte di messaggio, o vuoto se non ha recuperato niente
+	 */
+	static Optional<String> heal(CreatureInPlay target, int amount, String reason) {
+		int healed = target.heal(amount);
+		if (healed == 0) {
+			return Optional.empty();
+		}
+		return Optional.of("recovers " + healed + " DEF" + reason + " (DEF " + MatchLog.number(target.defense()) + ")");
 	}
 
 	/**
