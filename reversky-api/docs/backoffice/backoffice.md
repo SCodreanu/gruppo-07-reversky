@@ -13,6 +13,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
   - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80); le fazioni sono nell'entità ma `PUT` non le riceve ancora (task #81), e i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
   - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
+  - bonus di fazione: `GET/PUT /admin/faction-bonuses` (`AdminFactionBonusController`, `catalog/service/FactionBonusService`), inclusi anche in `GET /rules`. Dettagli in "Bonus di fazione: comportamento già implementato" qui sotto.
 
 ## Carte — `catalog_cards`
 
@@ -105,6 +106,28 @@ Non ancora implementato: il controllo che `effectCode` esista nell'engine (regol
 
 Modificare `faction_bonuses` cambia il bilanciamento di **tutte** le partite future: va fatto solo dopo aver verificato l'effetto con le simulazioni dell'engine.
 
+### Bonus di fazione: comportamento già implementato
+
+Le classi stanno in `catalog/` insieme a fazioni e rarità (`FactionBonusService`, `FactionBonusRepository`, entità `FactionBonus` con chiave `FactionBonusId`, DTO ed eccezioni `FactionBonus*`); il controller è `admin/controller/AdminFactionBonusController`. `FactionBonus` implementa `Persistable`, quindi il `PUT` reinserisce le righe con soli `INSERT`, senza una `SELECT` per riga.
+
+- `GET /admin/faction-bonuses` restituisce tutte le righe con i nomi delle due fazioni (`originFactionId`, `originFactionName`, `targetFactionId`, `targetFactionName`, `atkBonus`, `defBonus`), ordinate per origine e poi per bersaglio.
+- `PUT /admin/faction-bonuses` riceve **tutta** la matrice (una lista di `{ originFactionId, targetFactionId, atkBonus, defBonus }`) e la sostituisce in una sola transazione: le coppie che non compaiono vengono eliminate, `[]` svuota la matrice. Risponde `200` con la nuova matrice, nello stesso ordine del `GET`.
+- `A → B` e `B → A` sono due righe diverse: il bonus di una fazione contro un'altra non implica quello inverso.
+- Tutte le righe si controllano prima di toccare la tabella: se una è sbagliata la matrice resta quella di prima.
+- Due `PUT` contemporanei si mettono in fila (blocco `SHARE ROW EXCLUSIVE` sulla tabella) e vince l'ultimo; le letture non aspettano e vedono la matrice precedente finché la sostituzione non è confermata.
+- Le stesse regole le controlla l'engine nella validazione dell'input (`INVALID_FACTION_BONUS`), quindi una matrice salvata qui è sempre accettata dall'engine.
+- La matrice non è versionata con il rule set: `GET /rules` restituisce sempre quella in vigore. Le partite giocate restano coerenti perché ne salvano una copia (vedi [sfide](../sfide/sfide.md)).
+- Senza audit, come il resto del backoffice (task API-52).
+
+| Caso | Status | `code` |
+|---|---|---|
+| riga `null`, campo mancante o `defBonus` negativo (`errors[].field` con l'indice della riga, es. `[1].defBonus`) | `400` | `VALIDATION_FAILED` |
+| fazione abbinata a se stessa | `422` | `FACTION_BONUS_SELF_MATCHUP` |
+| fazione inesistente | `422` | `FACTION_BONUS_FACTION_NOT_FOUND` |
+| stessa coppia due volte nel corpo | `422` | `FACTION_BONUS_DUPLICATE` |
+
+Chi chiama `FactionBonusService.replaceAll` senza passare dal controller riceve `FACTION_BONUS_RULES_VIOLATED` (`422`) per una riga `null`, un campo mancante o un `defBonus` negativo.
+
 `sorting_order` non si modifica perché arriva all'engine come `rarityOrder` e alcuni effetti lo confrontano con soglie scritte nel codice (es. SCP-3000: `rarityOrder ≥ 3`). Una nuova rarità può usare solo un numero libero.
 
 ## Regole di gioco — `rule_sets`
@@ -132,7 +155,7 @@ Un mazzo valido con il vecchio rule set può diventare non valido con il nuovo: 
 - `GET /admin/rule-sets` restituisce `id`, `version`, `isActive` e `createdAt` di ogni versione, la più recente per prima (`id` decrescente); `POST`, `PUT` e `activate` restituiscono il rule set completo.
 - Anche la versione attiva si può modificare con `PUT`, finché nessuna partita l'ha usata.
 - `activate` risponde `200` con il rule set ed è idempotente (attivare la versione già attiva non cambia niente). Blocca la versione attiva, quindi due attivazioni contemporanee si mettono in fila e vince l'ultima; se non c'era nessuna versione attiva, la seconda riceve `409` e basta ripeterla.
-- `GET /rules` (pubblico, senza token) restituisce i valori della versione attiva senza `id`, `isActive`, `createdAt` e `createdById`; `404` se nessuna versione è attiva (prima del seed di #85). I bonus di fazione previsti da [api-rest](../api-rest/api-rest.md) si aggiungeranno quando esisterà `faction_bonuses`.
+- `GET /rules` (pubblico, senza token) restituisce i valori della versione attiva senza `id`, `isActive`, `createdAt` e `createdById`; `404` se nessuna versione è attiva (prima del seed di #85). Contiene anche `factionBonuses`, la matrice corrente dei bonus di fazione senza i nomi (`originFactionId`, `targetFactionId`, `atkBonus`, `defBonus`), ordinata per origine e bersaglio; lista vuota se non ci sono bonus.
 - Il controllo "mai usata da una partita" legge `battles` con una query nativa, perché l'entità `Battle` non esiste ancora: con `battle/` passerà al suo service.
 
 I controlli avvengono prima di modificare il rule set, in questo ordine:

@@ -1,11 +1,17 @@
 package it.downfall.reversky.api.ruleset.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
 
 /**
  * Regole attive per GET /rules (pubblico): niente id, niente {@code createdBy}, niente
  * {@code isActive}, perché c'è solo quella attiva.
+ * <p>
+ * {@code factionBonuses} è la matrice corrente: così client ed engine hanno un solo punto da
+ * leggere e il rule set resta autoconsistente (bonus e regole viaggiano insieme).
  */
 public record RuleSetPublicResponse(
 
@@ -49,13 +55,17 @@ public record RuleSetPublicResponse(
 	Integer winReward,
 
 	@Schema(example = "10")
-	Integer drawReward
+	Integer drawReward,
+
+	@Schema(description = "Current ATK/DEF bonuses between factions, sorted by origin then target id. "
+		+ "Not versioned with the rule set: always the matrix in effect now. Empty list if there are none.")
+	List<FactionBonusSummaryResponse> factionBonuses
 ) {
 
 	/**
-	 * Converte l'entità nel DTO.
+	 * Converte l'entità nel DTO, allega la matrice dei bonus passata dal service.
 	 */
-	public static RuleSetPublicResponse from(RuleSet ruleSet) {
+	public static RuleSetPublicResponse from(RuleSet ruleSet, List<FactionBonusSummaryResponse> factionBonuses) {
 		return new RuleSetPublicResponse(
 			ruleSet.getVersion(),
 			ruleSet.getStartingLifePoints(),
@@ -70,6 +80,7 @@ public record RuleSetPublicResponse(
 			ruleSet.getMaxHiddenDamage(),
 			ruleSet.getSignupBonus(),
 			ruleSet.getWinReward(),
-			ruleSet.getDrawReward());
+			ruleSet.getDrawReward(),
+			factionBonuses);
 	}
 }

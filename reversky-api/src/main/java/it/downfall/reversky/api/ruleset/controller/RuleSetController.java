@@ -17,7 +17,8 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * Endpoint pubblico: SecurityConfig non richiede token su GET /rules.
  * <p>
- * docs/api-rest prevede anche i bonus di fazione: si aggiungeranno quando esisterà {@code faction_bonuses}.
+ * La risposta contiene anche la matrice corrente dei bonus di fazione ({@code faction_bonuses}),
+ * come prevede docs/api-rest: client ed engine leggono regole e bonus da un solo punto.
  */
 @Tag(name = "Rules", description = "Game rules currently in effect")
 @RestController
@@ -28,7 +29,8 @@ public class RuleSetController {
 	private final RuleSetService ruleSetService;
 
 	@Operation(summary = "Get the active rule set",
-		description = "Returns starting life points, max rounds, deck composition and credit rewards in effect.")
+		description = "Returns starting life points, max rounds, deck composition and credit rewards in effect, "
+			+ "plus the current ATK/DEF bonuses between factions.")
 	@ApiResponse(responseCode = "200", description = "Active rule set returned")
 	@ApiResponse(responseCode = "404", description = "No active rule set")
 	@GetMapping

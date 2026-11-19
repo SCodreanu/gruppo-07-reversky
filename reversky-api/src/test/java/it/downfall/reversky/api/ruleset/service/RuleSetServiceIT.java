@@ -295,9 +295,11 @@ class RuleSetServiceIT {
 		// Act
 		RuleSetPublicResponse response = ruleSetService.findActive();
 
-		// Assert
+		// Assert: factionBonuses è un campo nuovo della response (matrice di bonus); si ignora
+		// esplicitamente perché RuleSetRequest non lo ha e non ha senso confrontarlo qui
 		assertThat(response)
 			.usingRecursiveComparison()
+			.ignoringFields("factionBonuses")
 			.isEqualTo(request(created.version()));
 	}
 

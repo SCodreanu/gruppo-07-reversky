@@ -8,6 +8,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
+import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.ruleset.dto.RuleSetPublicResponse;
 import it.downfall.reversky.api.ruleset.dto.RuleSetRequest;
 import it.downfall.reversky.api.ruleset.dto.RuleSetResponse;
@@ -28,12 +30,17 @@ import lombok.RequiredArgsConstructor;
  * I controlli ripetono i CHECK del database, che restano come rete di sicurezza: version univoca,
  * punti vita e round ≥ 1 e crediti ≥ 0 (annotazioni del DTO), somma delle parti del mazzo uguale a
  * deckSize (qui). Una versione già usata da una partita non si modifica.
+ * <p>
+ * {@code findActive} allega alla risposta anche la matrice corrente dei bonus di fazione
+ * (vedi {@link FactionBonusService}): GET /rules è il punto unico in cui client ed engine leggono
+ * regole e bonus insieme.
  */
 @Service
 @RequiredArgsConstructor
 public class RuleSetService {
 
 	private final RuleSetRepository ruleSetRepository;
+	private final FactionBonusService factionBonusService;
 	private final Clock clock;
 
 	/**
@@ -48,15 +55,19 @@ public class RuleSetService {
 	}
 
 	/**
-	 * La versione attiva, per la pagina del regolamento (GET /rules).
+	 * La versione attiva, per la pagina del regolamento (GET /rules). Include la matrice dei
+	 * bonus di fazione corrente.
 	 *
 	 * @throws NoActiveRuleSetException se nessuna versione è attiva
 	 */
 	@Transactional(readOnly = true)
 	public RuleSetPublicResponse findActive() {
-		return ruleSetRepository.findByIsActiveTrue()
-			.map(RuleSetPublicResponse::from)
+		RuleSet active = ruleSetRepository.findByIsActiveTrue()
 			.orElseThrow(() -> new NoActiveRuleSetException());
+
+		List<FactionBonusSummaryResponse> factionBonuses = factionBonusService.findAllSummaries();
+
+		return RuleSetPublicResponse.from(active, factionBonuses);
 	}
 
 	/**

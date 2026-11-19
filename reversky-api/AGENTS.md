@@ -132,10 +132,11 @@ Catalogo (`catalog/`):
 - carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
 - rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
 - fazioni delle carte: l'entità `CatalogCard` ha `faction` e `secondaryFaction` e `CardType` ha `ITEM`, come la baseline. `PUT /admin/cards` non riceve ancora le fazioni (#81): una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto (`422`), mentre una carta che diventa Spell o Hidden perde le fazioni.
+- bonus di fazione: `GET/PUT /api/v1/admin/faction-bonuses` (`admin/controller/AdminFactionBonusController`, `catalog/service/FactionBonusService`): il `PUT` sostituisce tutta la matrice in una transazione, con due `PUT` contemporanei messi in fila. Senza audit. La matrice corrente compare anche in `GET /rules`. Dettagli ed errori in [docs/backoffice](docs/backoffice/backoffice.md#bonus-di-fazione-comportamento-già-implementato).
 
 Regole di gioco (`ruleset/`):
 
-- `GET /api/v1/rules` pubblico (rule set attivo, senza i bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo arriva con il seed di #85.
+- `GET /api/v1/rules` pubblico (rule set attivo, con la matrice corrente dei bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo arriva con il seed di #85.
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
