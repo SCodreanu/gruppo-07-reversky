@@ -18,6 +18,7 @@ import it.downfall.reversky.api.factionbonus.dto.FactionBonusRequest;
 import it.downfall.reversky.api.factionbonus.dto.FactionBonusResponse;
 import it.downfall.reversky.api.factionbonus.service.FactionBonusService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -26,6 +27,11 @@ import lombok.RequiredArgsConstructor;
  * Solo ADMIN: lo garantisce SecurityConfig con la regola su /api/v1/admin/**.
  * <p>
  * Il PUT è collection-level: sostituisce l'intera matrice. Il body vuoto {@code []} la svuota.
+ * <p>
+ * Il corpo è una lista, quindi i vincoli di ogni riga ({@code @NotNull} sulla riga, annotazioni di
+ * {@link FactionBonusRequest}) li controlla la validazione dei metodi di Spring: l'errore è una
+ * {@code HandlerMethodValidationException}, che GlobalExceptionHandler trasforma nello stesso
+ * {@code 400 VALIDATION_FAILED} degli altri DTO, con l'indice della riga nel campo.
  */
 @Tag(name = "Admin: faction bonuses", description = "Backoffice management of the ATK/DEF bonuses between factions")
 @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
@@ -47,16 +53,20 @@ public class AdminFactionBonusController {
 	}
 
 	@Operation(summary = "Replace the faction bonuses",
-		description = "Replaces the entire matrix in a single transaction. "
-			+ "Each row needs existing factions, origin != target, DEF bonus >= 0. "
-			+ "ATK bonus can be negative. An empty body clears the matrix.")
-	@ApiResponse(responseCode = "200", description = "Faction bonuses replaced")
-	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
+		description = "Replaces the entire matrix in a single transaction: pairs missing from the body are deleted. "
+			+ "Each row needs two different existing factions and a DEF bonus >= 0; the ATK bonus can be negative (malus). "
+			+ "If any row is invalid nothing changes. An empty body [] clears the matrix. "
+			+ "Two replacements at the same time are queued and the last one wins. "
+			+ "The change applies to every future battle.")
+	@ApiResponse(responseCode = "200", description = "Faction bonuses replaced: the new matrix, sorted by origin then target id")
+	@ApiResponse(responseCode = "400", description = "Null row, missing field or negative DEF bonus (VALIDATION_FAILED, "
+		+ "with the row index in errors[].field, e.g. [0].defBonus)")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
-	@ApiResponse(responseCode = "422", description = "Rule violation: self-matchup, unknown faction, duplicate pair, negative DEF bonus")
+	@ApiResponse(responseCode = "422", description = "Faction matched against itself (FACTION_BONUS_SELF_MATCHUP), "
+		+ "unknown faction (FACTION_BONUS_FACTION_NOT_FOUND) or pair repeated in the body (FACTION_BONUS_DUPLICATE)")
 	@PutMapping
-	public ResponseEntity<List<FactionBonusResponse>> replaceAll(@Valid @RequestBody List<FactionBonusRequest> requests) {
+	public ResponseEntity<List<FactionBonusResponse>> replaceAll(@RequestBody List<@NotNull @Valid FactionBonusRequest> requests) {
 		return ResponseEntity.ok(factionBonusService.replaceAll(requests));
 	}
 }

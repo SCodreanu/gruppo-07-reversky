@@ -1,5 +1,6 @@
 package it.downfall.reversky.api.factionbonus.service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,15 @@ public class FactionBonusService {
 	/**
 	 * PUT /admin/faction-bonuses: sostituisce l'intera matrice. Il body vuoto (o {@code null})
 	 * svuota la tabella.
+	 * <p>
+	 * Tutte le righe si controllano prima di toccare la tabella: se una è sbagliata la matrice resta
+	 * quella di prima. Due sostituzioni contemporanee si mettono in fila e vince l'ultima
+	 * (vedi {@link FactionBonusRepository#lockForReplace()}).
+	 *
+	 * @throws FactionBonusRulesViolatedException   se una riga è {@code null} o ha {@code defBonus} negativo
+	 * @throws FactionBonusSelfMatchupException     se una riga abbina una fazione a se stessa
+	 * @throws FactionBonusFactionNotFoundException se una fazione non esiste
+	 * @throws FactionBonusDuplicateException       se la stessa coppia compare due volte
 	 */
 	@Transactional
 	public List<FactionBonusResponse> replaceAll(List<FactionBonusRequest> requests) {
@@ -72,6 +82,7 @@ public class FactionBonusService {
 			validateOne(request, names, seen);
 		}
 
+		factionBonusRepository.lockForReplace();
 		factionBonusRepository.deleteAllInBatch();
 		factionBonusRepository.flush();
 
@@ -81,7 +92,9 @@ public class FactionBonusService {
 
 		List<FactionBonus> saved = factionBonusRepository.saveAll(toSave);
 
+		// Stesso ordine di GET /admin/faction-bonuses, non quello del body
 		return saved.stream()
+			.sorted(Comparator.comparing(FactionBonus::getOriginFactionId).thenComparing(FactionBonus::getTargetFactionId))
 			.map(b -> FactionBonusResponse.from(
 				b,
 				names.get(b.getOriginFactionId()),
@@ -112,6 +125,12 @@ public class FactionBonusService {
 	}
 
 	private void validateOne(FactionBonusRequest request, Map<Integer, String> names, Set<FactionBonusId> seen) {
+		// Dal controller non arriva mai (List<@NotNull @Valid ...>): serve a chi chiama il service
+		// direttamente, che altrimenti riceverebbe un NullPointerException
+		if (request == null || request.originFactionId() == null || request.targetFactionId() == null
+				|| request.atkBonus() == null || request.defBonus() == null) {
+			throw new FactionBonusRulesViolatedException("Every faction bonus row needs origin, target, ATK and DEF bonus");
+		}
 		if (request.originFactionId().equals(request.targetFactionId())) {
 			throw new FactionBonusSelfMatchupException(request.originFactionId());
 		}

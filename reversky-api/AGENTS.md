@@ -135,7 +135,11 @@ Catalogo (`catalog/`):
 
 Regole di gioco (`ruleset/`):
 
-- `GET /api/v1/rules` pubblico (rule set attivo, senza i bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo arriva con il seed di #85.
+- `GET /api/v1/rules` pubblico (rule set attivo, con la matrice corrente dei bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo arriva con il seed di #85.
+
+Bonus di fazione (`factionbonus/`):
+
+- `GET/PUT /api/v1/admin/faction-bonuses` (`admin/controller/AdminFactionBonusController`): il `PUT` sostituisce tutta la matrice in una transazione, con due `PUT` contemporanei messi in fila. Senza audit. Dettagli ed errori in [docs/backoffice](docs/backoffice/backoffice.md#bonus-di-fazione-comportamento-già-implementato).
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 

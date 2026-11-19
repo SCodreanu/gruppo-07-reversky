@@ -57,6 +57,8 @@ public record RuleSetPublicResponse(
 	@Schema(example = "10")
 	Integer drawReward,
 
+	@Schema(description = "Current ATK/DEF bonuses between factions, sorted by origin then target id. "
+		+ "Not versioned with the rule set: always the matrix in effect now. Empty list if there are none.")
 	List<FactionBonusSummaryResponse> factionBonuses
 ) {
 

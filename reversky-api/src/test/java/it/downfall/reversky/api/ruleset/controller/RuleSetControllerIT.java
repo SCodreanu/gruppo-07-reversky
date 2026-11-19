@@ -1,6 +1,5 @@
 package it.downfall.reversky.api.ruleset.controller;
 
-import static it.downfall.reversky.api.support.TestUsers.uniqueSuffix;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,7 +20,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
-import it.downfall.reversky.api.catalog.dto.FactionRequest;
 import it.downfall.reversky.api.catalog.dto.FactionResponse;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
@@ -30,6 +28,7 @@ import it.downfall.reversky.api.factionbonus.service.FactionBonusService;
 import it.downfall.reversky.api.ruleset.dto.RuleSetResponse;
 import it.downfall.reversky.api.ruleset.repository.RuleSetRepository;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
+import it.downfall.reversky.api.support.TestFactionBonuses;
 import it.downfall.reversky.api.support.TestRuleSets;
 import it.downfall.reversky.api.support.TestUsers;
 
@@ -68,20 +67,26 @@ class RuleSetControllerIT {
 	@Autowired
 	private TestUsers testUsers;
 
+	// Non serve al test: stessa configurazione degli altri ControllerIT, così Spring riusa il contesto
 	@MockitoBean
 	private EmailSender emailSender;
 
 	private TestRuleSets testRuleSets;
 
+	private TestFactionBonuses testFactionBonuses;
+
 	@BeforeEach
 	void setUp() {
 		testRuleSets = new TestRuleSets(ruleSetService, ruleSetRepository, jdbcTemplate, testUsers);
 		testRuleSets.rememberActive();
+		testFactionBonuses = new TestFactionBonuses(factionBonusService, factionService);
+		testFactionBonuses.rememberMatrix();
 	}
 
 	@AfterEach
 	void tearDown() {
 		testRuleSets.restoreActive();
+		testFactionBonuses.restoreMatrix();
 	}
 
 	@Test
@@ -117,37 +122,34 @@ class RuleSetControllerIT {
 	}
 
 	@Test
-	@DisplayName("GET /rules includes the current faction bonuses")
+	@DisplayName("GET /rules includes the current faction bonuses, without faction names")
 	void findActive_includesFactionBonuses() throws Exception {
-		// Arrange: due fazioni e una coppia di bonus
-		FactionResponse a = factionService.create(new FactionRequest("Faction A " + uniqueSuffix(), "factions/a.svg", null));
-		FactionResponse b = factionService.create(new FactionRequest("Faction B " + uniqueSuffix(), "factions/b.svg", null));
+		// Arrange: due fazioni e una coppia di bonus (la matrice di prima torna in tearDown)
+		FactionResponse a = testFactionBonuses.createFaction();
+		FactionResponse b = testFactionBonuses.createFaction();
+		factionBonusService.replaceAll(List.of(
+			new FactionBonusRequest(a.id(), b.id(), 2, 1),
+			new FactionBonusRequest(b.id(), a.id(), -1, 0)));
+		RuleSetResponse created = testRuleSets.create();
+		ruleSetService.activate(created.id());
 
-		try {
-			factionBonusService.replaceAll(List.of(
-				new FactionBonusRequest(a.id(), b.id(), 2, 1),
-				new FactionBonusRequest(b.id(), a.id(), -1, 0)));
-
-			RuleSetResponse created = testRuleSets.create();
-			ruleSetService.activate(created.id());
-
-			mockMvc.perform(get(BASE_PATH))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.factionBonuses", hasSize(2)))
-				.andExpect(jsonPath("$.factionBonuses[?(@.originFactionId == " + a.id()
-					+ " && @.targetFactionId == " + b.id() + ")].atkBonus").value(2))
-				.andExpect(jsonPath("$.factionBonuses[?(@.originFactionId == " + b.id()
-					+ " && @.targetFactionId == " + a.id() + ")].atkBonus").value(-1));
-		} finally {
-			// La matrice dei bonus è globale: non lasciarla sporca agli altri IT
-			factionBonusService.replaceAll(List.of());
-		}
+		// Act + Assert: le fazioni create dopo hanno id più grandi, quindi A → B viene prima
+		mockMvc.perform(get(BASE_PATH))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.factionBonuses", hasSize(2)))
+			.andExpect(jsonPath("$.factionBonuses[0].originFactionId").value(a.id()))
+			.andExpect(jsonPath("$.factionBonuses[0].targetFactionId").value(b.id()))
+			.andExpect(jsonPath("$.factionBonuses[0].atkBonus").value(2))
+			.andExpect(jsonPath("$.factionBonuses[0].defBonus").value(1))
+			.andExpect(jsonPath("$.factionBonuses[0].originFactionName").doesNotExist())
+			.andExpect(jsonPath("$.factionBonuses[1].originFactionId").value(b.id()))
+			.andExpect(jsonPath("$.factionBonuses[1].atkBonus").value(-1));
 	}
 
 	@Test
 	@DisplayName("GET /rules with an empty bonus matrix returns an empty list, not a missing field")
 	void findActive_emptyBonusMatrix_returnsEmptyList() throws Exception {
-		// Arrange
+		// Arrange (la matrice di prima torna in tearDown)
 		factionBonusService.replaceAll(List.of());
 		RuleSetResponse created = testRuleSets.create();
 		ruleSetService.activate(created.id());

@@ -1,8 +1,10 @@
 package it.downfall.reversky.api.common.exception;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -10,10 +12,14 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -84,13 +90,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.map(error -> new FieldViolation(error.getField(), error.getDefaultMessage()))
 			.toList();
 
-		// getDescription(false) restituisce "uri=/api/v1/...": serve solo il percorso
-		String path = request.getDescription(false).replace("uri=", "");
+		return validationProblem(errors, request);
+	}
 
-		ProblemDetail problem = createProblem(HttpStatus.BAD_REQUEST, "Invalid data", "One or more fields are invalid", "VALIDATION_FAILED", path);
-		problem.setProperty("errors", errors);
+	/**
+	 * Validazione dei parametri fallita con la validazione dei metodi di Spring: succede quando il corpo
+	 * è una lista ({@code List<@NotNull @Valid XxxRequest>}, es. PUT /admin/faction-bonuses) o quando un
+	 * parametro ha un vincolo diretto. Stessa risposta di {@link #handleMethodArgumentNotValid}:
+	 * {@code 400 VALIDATION_FAILED} con {@code errors}.
+	 * <p>
+	 * Per un elemento di una lista il campo comincia con l'indice: {@code [2].defBonus} per un campo
+	 * della terza riga, {@code [2]} per una riga {@code null}. Per un parametro semplice è il suo nome.
+	 */
+	@Override
+	protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		List<FieldViolation> errors = new ArrayList<>();
 
-		return ResponseEntity.badRequest().body(problem);
+		for (ParameterValidationResult result : ex.getParameterValidationResults()) {
+			String index = result.getContainerIndex() != null ? "[" + result.getContainerIndex() + "]" : null;
+
+			if (result instanceof ParameterErrors parameterErrors) {
+				// Errori sui campi di un oggetto (DTO), anche dentro una lista
+				for (FieldError error : parameterErrors.getFieldErrors()) {
+					String field = index != null ? index + "." + error.getField() : error.getField();
+					errors.add(new FieldViolation(field, error.getDefaultMessage()));
+				}
+			} else {
+				// Errori sul valore stesso: un elemento null di una lista o un parametro con un vincolo
+				String field = index != null ? index : result.getMethodParameter().getParameterName();
+				for (MessageSourceResolvable error : result.getResolvableErrors()) {
+					errors.add(new FieldViolation(field, error.getDefaultMessage()));
+				}
+			}
+		}
+
+		return validationProblem(errors, request);
 	}
 
 	/**
@@ -116,6 +150,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			case RULE_VIOLATION -> HttpStatus.UNPROCESSABLE_CONTENT;
 			case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
 		};
+	}
+
+	// 400 VALIDATION_FAILED con l'elenco dei campi non validi (docs/api-rest)
+	private ResponseEntity<Object> validationProblem(List<FieldViolation> errors, WebRequest request) {
+		// getDescription(false) restituisce "uri=/api/v1/...": serve solo il percorso
+		String path = request.getDescription(false).replace("uri=", "");
+
+		ProblemDetail problem = createProblem(HttpStatus.BAD_REQUEST, "Invalid data", "One or more fields are invalid", "VALIDATION_FAILED", path);
+		problem.setProperty("errors", errors);
+
+		return ResponseEntity.badRequest().body(problem);
 	}
 
 	// Formato comune di tutte le risposte di errore (docs/api-rest)

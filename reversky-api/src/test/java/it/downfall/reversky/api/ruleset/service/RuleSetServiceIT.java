@@ -60,6 +60,7 @@ class RuleSetServiceIT {
 	@Autowired
 	private TestUsers testUsers;
 
+	// Non serve al test: stessa configurazione degli altri IT, così Spring riusa il contesto
 	@MockitoBean
 	private EmailSender emailSender;
 
