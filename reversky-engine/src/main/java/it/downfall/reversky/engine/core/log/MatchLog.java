@@ -319,7 +319,13 @@ public final class MatchLog {
 		return data;
 	}
 
-	private static String player(Side side) {
+	/**
+	 * Nome di un giocatore nei messaggi del log.
+	 *
+	 * @param side il lato
+	 * @return "Challenger" o "Opponent"
+	 */
+	public static String player(Side side) {
 		return side == Side.CHALLENGER ? "Challenger" : "Opponent";
 	}
 

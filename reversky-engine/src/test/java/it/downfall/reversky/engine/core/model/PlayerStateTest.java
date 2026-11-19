@@ -244,6 +244,38 @@ class PlayerStateTest {
 		return new PendingModifier(card, ModifierSource.SPELL, Side.CHALLENGER, attack, shield, 0);
 	}
 
+	@Test
+	@DisplayName("ENG-39: moveToBottom sposta la carta in fondo al mazzo e dà la nuova posizione, da 1")
+	void moveToBottom_movesCardToLastPosition() {
+		// Arrange
+		PlayerState player = player(List.of(KAPPA, VEIL, CRAWLERS));
+
+		// Act
+		int position = player.moveToBottom(0);
+
+		// Assert
+		assertThat(position).isEqualTo(3);
+		assertThat(player.deck()).containsExactly(VEIL, CRAWLERS, KAPPA);
+		assertThatThrownBy(() -> player.moveToBottom(3)).isInstanceOf(IndexOutOfBoundsException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-39: gli incroci delle Hidden si sommano e si usano nell'ordine in cui sono arrivati")
+	void crossNextHidden_queuesInOrder() {
+		// Arrange
+		PlayerState player = player(List.of());
+
+		// Act
+		player.crossNextHidden("Operator A");
+		player.crossNextHidden("Operator B");
+
+		// Assert
+		assertThat(player.pendingCrossings()).containsExactly("Operator A", "Operator B");
+		assertThat(player.takeCrossing()).contains("Operator A");
+		assertThat(player.takeCrossing()).contains("Operator B");
+		assertThat(player.takeCrossing()).isEmpty();
+	}
+
 	private static PlayerState player(List<CardDefinition> deck) {
 		return new PlayerState(Side.CHALLENGER, 7, 30, deck);
 	}

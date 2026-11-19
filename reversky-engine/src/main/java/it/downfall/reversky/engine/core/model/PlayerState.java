@@ -8,7 +8,8 @@ import java.util.Optional;
 
 /**
  * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, modificatori in attesa
- * della prossima creatura, zona Hidden, Oggetto accanto al mazzo e creature avversarie sconfitte.
+ * della prossima creatura, zona Hidden (con gli incroci dell'Operatore della Stanza 0), Oggetto accanto al mazzo e
+ * creature avversarie sconfitte.
  */
 public final class PlayerState {
 
@@ -21,6 +22,11 @@ public final class PlayerState {
 	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
 	/** Zona Hidden (D-15): le Hidden coperte, nell'ordine in cui sono state pescate. */
 	private final List<SetHidden> hiddenZone = new ArrayList<>();
+	/**
+	 * Incroci in attesa sulla zona Hidden (L'Operatore della Stanza 0, ENG-39): per ognuno, la prossima Hidden che si
+	 * attiva da questa zona lavora per l'avversario. Il nome è quello della carta che l'ha messo, per il log.
+	 */
+	private final Deque<String> crossings = new ArrayDeque<>();
 	/** Oggetti accanto al mazzo non ancora consumati (D-47), nell'ordine in cui sono stati pescati. */
 	private final List<CardDefinition> items = new ArrayList<>();
 	private int creaturesDefeated;
@@ -105,6 +111,22 @@ public final class PlayerState {
 	 */
 	public Optional<CardDefinition> peekCard() {
 		return Optional.ofNullable(deck.peekFirst());
+	}
+
+	/**
+	 * Manda una carta in fondo al mazzo (La Regina dei Sentieri Perduti, ENG-39): le altre restano nel loro ordine.
+	 *
+	 * @param index posizione della carta nel mazzo, da 0 (la prossima da pescare)
+	 * @return la nuova posizione della carta, da 1: il numero di carte del mazzo
+	 * @throws IndexOutOfBoundsException se nel mazzo non c'è quella posizione
+	 */
+	public int moveToBottom(int index) {
+		List<CardDefinition> cards = new ArrayList<>(deck);
+		CardDefinition card = cards.remove(index);
+		cards.add(card);
+		deck.clear();
+		deck.addAll(cards);
+		return cards.size();
 	}
 
 	/**
@@ -246,6 +268,35 @@ public final class PlayerState {
 		if (!hiddenZone.remove(hidden)) {
 			throw new IllegalStateException(side + " non ha la Hidden " + hidden.card().name());
 		}
+	}
+
+	/**
+	 * Incrocia la prossima Hidden di questa zona (L'Operatore della Stanza 0, ENG-39, deciso il 19 novembre): la
+	 * prossima che si attiva, in qualunque momento e di qualunque tipo, lavora per l'avversario. Gli incroci si
+	 * sommano: due Operatori incrociano le prossime due.
+	 *
+	 * @param source nome della carta che incrocia, per il log
+	 */
+	public void crossNextHidden(String source) {
+		crossings.addLast(source);
+	}
+
+	/**
+	 * Incroci in attesa sulla zona Hidden, nell'ordine in cui sono arrivati.
+	 *
+	 * @return copia non modificabile, con i nomi delle carte che li hanno messi
+	 */
+	public List<String> pendingCrossings() {
+		return List.copyOf(crossings);
+	}
+
+	/**
+	 * Usa il primo incrocio in attesa: la Hidden che si sta attivando lavora per l'avversario.
+	 *
+	 * @return il nome della carta che l'ha messo, o vuoto se non ce ne sono
+	 */
+	public Optional<String> takeCrossing() {
+		return Optional.ofNullable(crossings.pollFirst());
 	}
 
 	/**

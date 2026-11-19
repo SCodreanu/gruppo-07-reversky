@@ -1,5 +1,6 @@
 package it.downfall.reversky.engine.core.simulation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +8,8 @@ import it.downfall.reversky.engine.core.effect.EffectContext;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.effect.HiddenCondition;
 import it.downfall.reversky.engine.core.effect.HiddenEffect;
+import it.downfall.reversky.engine.core.log.MatchLog;
+import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.Penalty;
@@ -24,6 +27,10 @@ import it.downfall.reversky.engine.core.model.Side;
  * <li>{@link HiddenCondition#LETHAL_ATTACK} (Unseen Exit): al passo 3, se l'attacco avversario ucciderebbe la
  * creatura ({@link #lethalAttack}).</li>
  * </ul>
+ * Una zona Hidden incrociata dall'Operatore della Stanza 0 (ENG-39, deciso il 19 novembre) lavora per l'avversario:
+ * finché l'incrocio è in attesa, le sue Hidden con condizione si controllano sulla creatura dell'avversario, dopo le
+ * Hidden di quella creatura, e non aiutano più la creatura del loro proprietario. La prima che si attiva usa
+ * l'incrocio.
  */
 public final class HiddenConditionService {
 
@@ -81,23 +88,58 @@ public final class HiddenConditionService {
 	}
 
 	/**
-	 * Scarta la prima Hidden pronta con quella condizione; se il Campanello del Torii la annulla lo dice nel log.
+	 * Una Hidden si sta attivando dalla zona del suo proprietario (ENG-39, deciso il 19 novembre): se la zona ha un
+	 * incrocio in attesa lo usa, lo scrive nel log e la Hidden lavora per l'avversario. Da qui in poi tutto (Oggetti
+	 * che la annullano, contesto, log) guarda il proprietario effettivo.
 	 *
+	 * @param state  stato della partita
+	 * @param owner  proprietario della zona da cui si attiva
+	 * @param hidden la Hidden
+	 * @return il lato per cui lavora la Hidden
+	 */
+	static Side effectiveOwner(MatchState state, PlayerState owner, CardDefinition hidden) {
+		Optional<String> crossing = owner.takeCrossing();
+		if (crossing.isEmpty()) {
+			return owner.side();
+		}
+		Side crossed = state.opponentOf(owner.side()).side();
+		state.log().effectTriggered(crossed, crossing.get(), "crosses the lines: " + hidden.name() + " works for the "
+				+ MatchLog.player(crossed));
+		return crossed;
+	}
+
+	/**
+	 * Cerca la prima Hidden pronta con quella condizione per la creatura di un giocatore: prima nella sua zona, se non
+	 * è incrociata, poi in quella dell'avversario, se lo è (ENG-39). La scarta; se il Campanello del Torii
+	 * dell'avversario del proprietario effettivo la annulla lo dice nel log.
+	 *
+	 * @param beneficiary giocatore la cui creatura soddisfa la condizione
 	 * @return la Hidden da attivare, o vuoto se non ce n'è una o è stata annullata
 	 */
-	private Optional<Found> activate(MatchState state, PlayerState owner, HiddenCondition condition) {
+	private Optional<Found> activate(MatchState state, PlayerState beneficiary, HiddenCondition condition) {
+		PlayerState enemy = state.opponentOf(beneficiary.side());
+		List<PlayerState> zones = new ArrayList<>();
+		if (beneficiary.pendingCrossings().isEmpty()) {
+			zones.add(beneficiary);
+		}
+		if (!enemy.pendingCrossings().isEmpty()) {
+			zones.add(enemy);
+		}
 		int combat = state.combatsStarted();
-		for (SetHidden hidden : owner.hiddenZone()) {
-			HiddenEffect effect = effects.createHidden(hidden.card().effectCode());
-			if (!hidden.isReadyIn(combat) || effect.condition() != condition) {
-				continue;
+		for (PlayerState zone : zones) {
+			for (SetHidden hidden : zone.hiddenZone()) {
+				HiddenEffect effect = effects.createHidden(hidden.card().effectCode());
+				if (!hidden.isReadyIn(combat) || effect.condition() != condition) {
+					continue;
+				}
+				zone.discardHidden(hidden);
+				Side owner = effectiveOwner(state, zone, hidden.card());
+				if (items.cancelEnemyHidden(state, state.opponentOf(owner), hidden.card())) {
+					state.log().hiddenTriggered(owner, hidden.card(), "cancelled");
+					return Optional.empty();
+				}
+				return Optional.of(new Found(effect, new EffectContext(state, owner, hidden.card())));
 			}
-			owner.discardHidden(hidden);
-			if (items.cancelEnemyHidden(state, state.opponentOf(owner.side()), hidden.card())) {
-				state.log().hiddenTriggered(owner.side(), hidden.card(), "cancelled");
-				return Optional.empty();
-			}
-			return Optional.of(new Found(effect, new EffectContext(state, owner.side(), hidden.card())));
 		}
 		return Optional.empty();
 	}
