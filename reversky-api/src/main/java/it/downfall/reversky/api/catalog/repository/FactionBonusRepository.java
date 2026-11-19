@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.repository;
+package it.downfall.reversky.api.catalog.repository;
 
 import java.util.List;
 
@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import it.downfall.reversky.api.factionbonus.entity.FactionBonus;
-import it.downfall.reversky.api.factionbonus.entity.FactionBonusId;
+import it.downfall.reversky.api.catalog.entity.FactionBonus;
+import it.downfall.reversky.api.catalog.entity.FactionBonusId;
 
 /**
  * Accesso alla tabella {@code faction_bonuses}.

@@ -3,7 +3,7 @@ package it.downfall.reversky.api.ruleset.dto;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusSummaryResponse;
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
 
 /**

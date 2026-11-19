@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.service;
+package it.downfall.reversky.api.catalog.service;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,18 +10,18 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
+import it.downfall.reversky.api.catalog.dto.FactionBonusResponse;
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
 import it.downfall.reversky.api.catalog.entity.Faction;
+import it.downfall.reversky.api.catalog.entity.FactionBonus;
+import it.downfall.reversky.api.catalog.entity.FactionBonusId;
+import it.downfall.reversky.api.catalog.exception.FactionBonusDuplicateException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusFactionNotFoundException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusSelfMatchupException;
+import it.downfall.reversky.api.catalog.repository.FactionBonusRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusRequest;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusResponse;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusSummaryResponse;
-import it.downfall.reversky.api.factionbonus.entity.FactionBonus;
-import it.downfall.reversky.api.factionbonus.entity.FactionBonusId;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusDuplicateException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusFactionNotFoundException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusRulesViolatedException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusSelfMatchupException;
-import it.downfall.reversky.api.factionbonus.repository.FactionBonusRepository;
 import lombok.RequiredArgsConstructor;
 
 /**

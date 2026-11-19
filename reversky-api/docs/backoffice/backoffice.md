@@ -13,7 +13,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
   - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80); le fazioni sono nell'entità ma `PUT` non le riceve ancora (task #81), e i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
   - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
-  - bonus di fazione: `GET/PUT /admin/faction-bonuses` (`AdminFactionBonusController`, `factionbonus/service/FactionBonusService`), inclusi anche in `GET /rules`. Dettagli in "Bonus di fazione: comportamento già implementato" qui sotto.
+  - bonus di fazione: `GET/PUT /admin/faction-bonuses` (`AdminFactionBonusController`, `catalog/service/FactionBonusService`), inclusi anche in `GET /rules`. Dettagli in "Bonus di fazione: comportamento già implementato" qui sotto.
 
 ## Carte — `catalog_cards`
 
@@ -108,7 +108,7 @@ Modificare `faction_bonuses` cambia il bilanciamento di **tutte** le partite fut
 
 ### Bonus di fazione: comportamento già implementato
 
-Package `factionbonus/` (`FactionBonusService`, `FactionBonusRepository`, entità `FactionBonus` con chiave `FactionBonusId`) e `AdminFactionBonusController`.
+Le classi stanno in `catalog/` insieme a fazioni e rarità (`FactionBonusService`, `FactionBonusRepository`, entità `FactionBonus` con chiave `FactionBonusId`, DTO ed eccezioni `FactionBonus*`); il controller è `admin/controller/AdminFactionBonusController`. `FactionBonus` implementa `Persistable`, quindi il `PUT` reinserisce le righe con soli `INSERT`, senza una `SELECT` per riga.
 
 - `GET /admin/faction-bonuses` restituisce tutte le righe con i nomi delle due fazioni (`originFactionId`, `originFactionName`, `targetFactionId`, `targetFactionName`, `atkBonus`, `defBonus`), ordinate per origine e poi per bersaglio.
 - `PUT /admin/faction-bonuses` riceve **tutta** la matrice (una lista di `{ originFactionId, targetFactionId, atkBonus, defBonus }`) e la sostituisce in una sola transazione: le coppie che non compaiono vengono eliminate, `[]` svuota la matrice. Risponde `200` con la nuova matrice, nello stesso ordine del `GET`.

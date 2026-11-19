@@ -27,12 +27,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
+import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
 import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusRequest;
-import it.downfall.reversky.api.factionbonus.service.FactionBonusService;
 import it.downfall.reversky.api.support.TestFactionBonuses;
 import it.downfall.reversky.api.support.TestUsers;
 

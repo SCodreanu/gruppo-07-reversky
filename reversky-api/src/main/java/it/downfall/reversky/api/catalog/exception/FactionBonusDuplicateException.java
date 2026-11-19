@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.exception;
+package it.downfall.reversky.api.catalog.exception;
 
 import it.downfall.reversky.api.common.exception.BusinessException;
 

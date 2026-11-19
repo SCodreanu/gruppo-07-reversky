@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.entity;
+package it.downfall.reversky.api.catalog.entity;
 
 import java.io.Serializable;
 

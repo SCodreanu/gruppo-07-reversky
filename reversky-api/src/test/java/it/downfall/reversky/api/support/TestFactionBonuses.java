@@ -3,11 +3,11 @@ package it.downfall.reversky.api.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
 import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusRequest;
-import it.downfall.reversky.api.factionbonus.service.FactionBonusService;
 
 /**
  * Helper per i test dei bonus di fazione (docs/backoffice, "Dati di riferimento").

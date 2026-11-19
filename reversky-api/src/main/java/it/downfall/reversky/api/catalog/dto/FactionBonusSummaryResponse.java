@@ -1,7 +1,7 @@
-package it.downfall.reversky.api.factionbonus.dto;
+package it.downfall.reversky.api.catalog.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import it.downfall.reversky.api.factionbonus.entity.FactionBonus;
+import it.downfall.reversky.api.catalog.entity.FactionBonus;
 
 /**
  * Riga di {@code faction_bonuses} per GET /rules: solo i valori, senza nomi,

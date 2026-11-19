@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.dto;
+package it.downfall.reversky.api.catalog.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;

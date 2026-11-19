@@ -1,4 +1,4 @@
-package it.downfall.reversky.api.factionbonus.service;
+package it.downfall.reversky.api.catalog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,16 +21,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
+import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
+import it.downfall.reversky.api.catalog.dto.FactionBonusResponse;
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
 import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.exception.FactionBonusDuplicateException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusFactionNotFoundException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.FactionBonusSelfMatchupException;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusRequest;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusResponse;
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusSummaryResponse;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusDuplicateException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusFactionNotFoundException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusRulesViolatedException;
-import it.downfall.reversky.api.factionbonus.exception.FactionBonusSelfMatchupException;
 import it.downfall.reversky.api.support.TestFactionBonuses;
 import it.downfall.reversky.api.support.TestUsers;
 

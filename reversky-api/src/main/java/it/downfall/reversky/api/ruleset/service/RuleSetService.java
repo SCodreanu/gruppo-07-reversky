@@ -8,8 +8,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import it.downfall.reversky.api.factionbonus.dto.FactionBonusSummaryResponse;
-import it.downfall.reversky.api.factionbonus.service.FactionBonusService;
+import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
+import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.ruleset.dto.RuleSetPublicResponse;
 import it.downfall.reversky.api.ruleset.dto.RuleSetRequest;
 import it.downfall.reversky.api.ruleset.dto.RuleSetResponse;
