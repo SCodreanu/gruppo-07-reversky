@@ -25,9 +25,10 @@ public record FriendRequestResponse(
 	@Schema(example = "mario_rossi")
 	String recipientUsername,
 
-	@Schema(example = "PENDING")
+	@Schema(example = "PENDING", allowableValues = {"PENDING", "ACCEPTED"})
 	String status,
 
+	@Schema(example = "2026-11-19T16:30:00Z", description = "When the request was sent")
 	Instant createdAt
 ) {
 

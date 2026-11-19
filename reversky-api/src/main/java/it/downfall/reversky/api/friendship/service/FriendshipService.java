@@ -37,6 +37,11 @@ public class FriendshipService {
 	// --- letture ---
 
 	/** GET /friends: amici ACCEPTED dell'utente, in entrambe le direzioni. */
+	// TODO(@acistar0): togliere l'N+1. Ora si fa una query per ogni amico (userService.getById).
+	// Raccogliere prima gli id con otherUserId(...), poi caricare tutti gli utenti con una sola query
+	// (es. un UserService.getAllById(Collection<Integer>) che usa userRepository.findAllById e
+	// restituisce una Map<Integer, User>) e costruire le risposte leggendo dalla mappa.
+	// Lo stesso vale per toResponse(...), usato dalle liste delle richieste: due query per riga.
 	@Transactional(readOnly = true)
 	public List<FriendResponse> findFriends(Integer currentUserId) {
 		return friendshipRepository.findForUserWithStatus(FriendshipStatus.ACCEPTED, currentUserId)
@@ -104,8 +109,10 @@ public class FriendshipService {
 			return toResponse(existing);
 		}
 
-		// Nessuna relazione: crea PENDING. Il vincolo uq_friendships_pair fa da arbitro
-		// se un'altra transazione inserisce la stessa coppia nello stesso momento.
+		// Nessuna relazione: crea PENDING. Se un'altra transazione inserisce la stessa coppia nello
+		// stesso momento fa da arbitro il database: la chiave primaria nella stessa direzione,
+		// uq_friendships_pair in quella opposta. Friendship è Persistable, quindi saveAndFlush fa
+		// sempre un INSERT (mai un merge su una riga trovata nel frattempo).
 		Friendship created = new Friendship(currentUserId, target.getId());
 		try {
 			friendshipRepository.saveAndFlush(created);

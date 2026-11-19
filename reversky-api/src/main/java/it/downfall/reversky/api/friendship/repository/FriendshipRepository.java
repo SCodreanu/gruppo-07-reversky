@@ -31,6 +31,11 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Friendsh
 	Optional<Friendship> findBetween(@Param("a") Integer a, @Param("b") Integer b);
 
 	/** Amici (ACCEPTED) di un utente, in qualsiasi direzione. */
+	// TODO(@acistar0): la query non ha ORDER BY, quindi GET /friends può restituire gli amici in un
+	// ordine diverso a ogni chiamata. Aggiungere un ordine fisso: il più semplice è
+	// "ORDER BY f.createdAt DESC, f.id.requesterId, f.id.recipientId" (come le richieste qui sotto,
+	// con gli id come spareggio). Se si preferisce l'ordine per username, ordinare nel service dopo
+	// aver caricato gli utenti (vedi il TODO in FriendshipService.findFriends).
 	@Query("""
 		SELECT f FROM Friendship f
 		WHERE f.status = :status
