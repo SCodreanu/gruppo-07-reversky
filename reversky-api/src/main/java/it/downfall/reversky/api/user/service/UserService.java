@@ -70,6 +70,17 @@ public class UserService {
 	}
 
 	/**
+	 * Restituisce un utente dal suo username (usato dalle amicizie).
+	 *
+	 * @throws UserNotFoundException se l'utente non esiste
+	 */
+	@Transactional(readOnly = true)
+	public User getByUsername(String username) {
+		return userRepository.findByUsername(username)
+			.orElseThrow(() -> new UserNotFoundException());
+	}
+
+	/**
 	 * Crea un nuovo utente con ruolo USER, abilitato e con email non verificata.
 	 *
 	 * @param passwordHash password già cifrata con BCrypt
