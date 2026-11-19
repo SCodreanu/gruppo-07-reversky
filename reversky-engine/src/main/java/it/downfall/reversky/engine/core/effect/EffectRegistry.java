@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import it.downfall.reversky.engine.core.effect.impl.BakuEffect;
 import it.downfall.reversky.engine.core.effect.impl.BellWitchEffect;
 import it.downfall.reversky.engine.core.effect.impl.BigfootEffect;
 import it.downfall.reversky.engine.core.effect.impl.BiteOfReverseEffect;
@@ -13,6 +14,7 @@ import it.downfall.reversky.engine.core.effect.impl.BloodlessHoundEffect;
 import it.downfall.reversky.engine.core.effect.impl.BreakingPointEffect;
 import it.downfall.reversky.engine.core.effect.impl.BuildingDirectorEffect;
 import it.downfall.reversky.engine.core.effect.impl.CallOfTheRiftEffect;
+import it.downfall.reversky.engine.core.effect.impl.CrossedDoorsKeeperEffect;
 import it.downfall.reversky.engine.core.effect.impl.DeathmothsEffect;
 import it.downfall.reversky.engine.core.effect.impl.DeniedExitBadgeEffect;
 import it.downfall.reversky.engine.core.effect.impl.DevouringAbyssEffect;
@@ -36,6 +38,7 @@ import it.downfall.reversky.engine.core.effect.impl.HowlersEffect;
 import it.downfall.reversky.engine.core.effect.impl.IndexMawEffect;
 import it.downfall.reversky.engine.core.effect.impl.JorogumoEffect;
 import it.downfall.reversky.engine.core.effect.impl.KappaEffect;
+import it.downfall.reversky.engine.core.effect.impl.KitsuneEffect;
 import it.downfall.reversky.engine.core.effect.impl.LastSanctuaryEffect;
 import it.downfall.reversky.engine.core.effect.impl.LivingWaitingRoomEffect;
 import it.downfall.reversky.engine.core.effect.impl.MaskedBloomEffect;
@@ -47,6 +50,7 @@ import it.downfall.reversky.engine.core.effect.impl.NullWitnessEffect;
 import it.downfall.reversky.engine.core.effect.impl.NureOnnaEffect;
 import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
+import it.downfall.reversky.engine.core.effect.impl.RainPreacherEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.RemnantsOfRealityEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
@@ -61,6 +65,7 @@ import it.downfall.reversky.engine.core.effect.impl.Scp109Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp173Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp2006Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp2317Effect;
+import it.downfall.reversky.engine.core.effect.impl.Scp2521Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp3000Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp3999Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
@@ -177,6 +182,11 @@ public final class EffectRegistry {
 				.registerCreature(NullWitnessEffect.CODE, NullWitnessEffect::new)
 				.registerCreature(HollowWyrmEffect.CODE, HollowWyrmEffect::new)
 				.registerCreature(UndyingBlossomEffect.CODE, UndyingBlossomEffect::new)
+				.registerCreature(RainPreacherEffect.CODE, RainPreacherEffect::new)
+				.registerCreature(Scp2521Effect.CODE, Scp2521Effect::new)
+				.registerCreature(BakuEffect.CODE, BakuEffect::new)
+				.registerCreature(KitsuneEffect.CODE, KitsuneEffect::new)
+				.registerCreature(CrossedDoorsKeeperEffect.CODE, CrossedDoorsKeeperEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)

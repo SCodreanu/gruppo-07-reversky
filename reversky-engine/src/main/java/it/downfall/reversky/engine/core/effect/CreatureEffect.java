@@ -14,8 +14,11 @@ import it.downfall.reversky.engine.core.model.Wound;
  * con {@link EffectPriority#NULLIFY}, poi la creatura dello sfidante (D-30).
  * <p>
  * Un effetto che colpisce la creatura avversaria la prende da {@link CreatureContext#targetEnemy()}, che controlla il
- * Fascicolo Sigillato 0 dell'avversario. I bonus ATK si danno come {@code StatModifier} con origine
- * {@code EFFECT} (deciso il 18 novembre), così gli effetti che sospendono i bonus ATK li vedono.
+ * Custode delle Porte Incrociate e il Fascicolo Sigillato 0 dell'avversario. I bonus ATK si danno come
+ * {@code StatModifier} con origine {@code EFFECT} (deciso il 18 novembre), così gli effetti che sospendono i bonus ATK
+ * li vedono.
+ * <p>
+ * Un effetto annullato (ENG-38) non viene più chiamato in nessun momento: lo decide il motore, non l'effetto.
  */
 public non-sealed interface CreatureEffect extends CardEffect {
 
@@ -171,6 +174,31 @@ public non-sealed interface CreatureEffect extends CardEffect {
 	 * @return {@code true} se la creatura sopravvive
 	 */
 	default boolean onLethalDamage(CreatureContext ctx) {
+		return false;
+	}
+
+	/**
+	 * L'effetto di una creatura avversaria sta per attivarsi (M-10, ENG-38, deciso il 19 novembre): il motore lo chiede
+	 * agli effetti dell'avversaria prima di chiamare un qualunque momento degli effetti della creatura (il suo e
+	 * quello in prestito, non quelli collegati da una Spell). Se l'effetto lo divora (Baku), il motore non chiama il
+	 * momento; per spegnere anche le attivazioni dopo, chi divora annulla l'effetto.
+	 *
+	 * @param ctx   contesto della creatura che porta questo effetto
+	 * @param enemy creatura avversaria il cui effetto sta per attivarsi
+	 * @return {@code true} se l'attivazione è divorata
+	 */
+	default boolean onEnemyEffectActivating(CreatureContext ctx, CreatureInPlay enemy) {
+		return false;
+	}
+
+	/**
+	 * Indica se gli effetti delle creature avversarie non colpiscono la creatura (Il Custode delle Porte Incrociate,
+	 * ENG-38): niente danni da effetto, malus, sigilli, annullamenti, né modificatori in attesa da effetti avversari.
+	 * Gli attacchi, le Spell, le Hidden, i Terreni e gli Oggetti avversari la colpiscono normalmente.
+	 *
+	 * @return {@code true} se l'effetto rende la creatura immune
+	 */
+	default boolean immuneToEnemyCreatureEffects() {
 		return false;
 	}
 }

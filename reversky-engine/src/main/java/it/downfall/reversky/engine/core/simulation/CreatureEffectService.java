@@ -5,16 +5,19 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import it.downfall.reversky.engine.core.effect.CreatureContext;
 import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.effect.EffectPriority;
+import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.effect.EnemyEffectGuard;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlacedTerrain;
 import it.downfall.reversky.engine.core.model.Side;
+import it.downfall.reversky.engine.core.model.StatModifier;
 import it.downfall.reversky.engine.core.model.Wound;
 
 /**
@@ -25,21 +28,29 @@ import it.downfall.reversky.engine.core.model.Wound;
  * {@link CreatureContext}; prima di colpire la creatura avversaria il contesto chiede a {@link ItemService} se un
  * Fascicolo Sigillato 0 annulla l'attivazione. Le morti le controlla chi chiama (D-08).
  * <p>
- * Per ogni creatura si chiama prima il suo effetto, poi quelli collegati da altre carte, nell'ordine in cui sono
- * arrivati (SCP-109, ENG-34); la priorità D-30 la decide l'effetto della creatura.
+ * Per ogni creatura si chiama prima il suo effetto, poi quello in prestito (SCP-2521, Kitsune, ENG-38), poi quelli
+ * collegati da altre carte, nell'ordine in cui sono arrivati (SCP-109, ENG-34); la priorità D-30 la decide l'effetto
+ * della creatura, e un effetto annullato ha priorità {@link EffectPriority#NORMAL}.
+ * <p>
+ * Effetti annullati e divorati (ENG-38, deciso il 19 novembre): un effetto annullato non si chiama in nessun momento.
+ * Prima di ogni chiamata di un effetto della creatura (il suo o quello in prestito) si chiede agli effetti
+ * dell'avversaria se la divorano ({@link CreatureEffect#onEnemyEffectActivating}, Baku, M-10). Intorno a ogni
+ * chiamata si ricordano i bonus ATK che l'effetto dà alla creatura stessa: sono quelli che un annullamento sospende.
  */
 public final class CreatureEffectService {
 
 	private final EnemyEffectGuard guard;
+	private final EffectRegistry effects;
 
 	/**
 	 * Crea il servizio. Non conserva stato tra le partite: lo stato degli effetti sta nelle creature.
 	 *
-	 * @param items Oggetti, per il Fascicolo Sigillato 0
+	 * @param items Oggetti, per il Fascicolo Sigillato 0, e il registro, per gli effetti rubati o copiati
 	 */
 	public CreatureEffectService(ItemService items) {
 		this.guard = (state, source, target) -> items.cancelEnemyEffect(state, state.player(target.side()),
 				source.name(), target.name());
+		this.effects = items.effects();
 	}
 
 	/**
@@ -56,14 +67,14 @@ public final class CreatureEffectService {
 		for (CreatureInPlay creature : inOrder(inPlay(state))) {
 			if (!creature.hasEntered()) {
 				creature.recordEntered();
-				creature.effects().forEach(effect -> effect.onEnterPlay(context(state, creature)));
+				call(state, creature, CreatureEffect::onEnterPlay);
 				if (deaths.resolve(state)) {
 					return true;
 				}
 			}
 		}
 		for (CreatureInPlay creature : inOrder(inPlay(state))) {
-			creature.effects().forEach(effect -> effect.onCombatStart(context(state, creature)));
+			call(state, creature, CreatureEffect::onCombatStart);
 			if (deaths.resolve(state)) {
 				return true;
 			}
@@ -89,11 +100,8 @@ public final class CreatureEffectService {
 	 * @return l'attacco modificato, prima del minimo 0
 	 */
 	public int outgoingAttack(MatchState state, CreatureInPlay attacker, int attack) {
-		int modified = attack;
-		for (CreatureEffect effect : attacker.effects()) {
-			modified = effect.modifyOutgoingAttack(context(state, attacker), modified);
-		}
-		return modified;
+		return call(state, attacker, attack, (effect, ctx, value) -> effect.modifyOutgoingAttack(ctx, value),
+				value -> false);
 	}
 
 	/**
@@ -105,11 +113,8 @@ public final class CreatureEffectService {
 	 * @return il danno da applicare, almeno 0
 	 */
 	public int incomingDamage(MatchState state, CreatureInPlay defender, int damage) {
-		int modified = damage;
-		for (CreatureEffect effect : defender.effects()) {
-			modified = Math.max(0, effect.modifyIncomingDamage(context(state, defender), modified));
-		}
-		return modified;
+		return call(state, defender, damage,
+				(effect, ctx, value) -> Math.max(0, effect.modifyIncomingDamage(ctx, value)), value -> false);
 	}
 
 	/**
@@ -148,18 +153,17 @@ public final class CreatureEffectService {
 			for (CreatureInPlay creature : inOrder(alive(state))) {
 				Optional<PlacedTerrain> terrain = state.terrain().filter(placed -> placed.affects(creature));
 				for (Wound wound : creature.takeUnreportedWounds()) {
-					creature.effects().forEach(effect -> effect.onWounded(context(state, creature), wound));
+					call(state, creature, (effect, ctx) -> effect.onWounded(ctx, wound));
 					// Echo Rift (ENG-27): dopo l'effetto della creatura
 					terrain.ifPresent(placed -> placed.effect().onWounded(state, placed, creature, wound));
 				}
 			}
 			for (CreatureInPlay creature : inOrder(alive(state))) {
-				// un controllo prima può averla uccisa
-				for (CreatureEffect effect : creature.effects()) {
-					if (!creature.isDead()) {
-						effect.onDefenseCheck(context(state, creature));
-					}
-				}
+				// un controllo prima può averla uccisa: allora i suoi effetti dopo non si chiamano
+				call(state, creature, false, (effect, ctx, dead) -> {
+					effect.onDefenseCheck(ctx);
+					return false;
+				}, dead -> creature.isDead());
 			}
 		} while (alive(state).stream().anyMatch(CreatureInPlay::hasUnreportedWounds));
 	}
@@ -204,12 +208,7 @@ public final class CreatureEffectService {
 	 * @return {@code true} se un effetto l'ha salvata
 	 */
 	public boolean surviveLethal(MatchState state, CreatureInPlay creature) {
-		for (CreatureEffect effect : creature.effects()) {
-			if (effect.onLethalDamage(context(state, creature))) {
-				return true;
-			}
-		}
-		return false;
+		return call(state, creature, false, (effect, ctx, saved) -> effect.onLethalDamage(ctx), saved -> saved);
 	}
 
 	/**
@@ -222,10 +221,9 @@ public final class CreatureEffectService {
 	 */
 	public boolean terrainArriving(MatchState state, CardDefinition terrain) {
 		for (CreatureInPlay creature : inOrder(alive(state))) {
-			for (CreatureEffect effect : creature.effects()) {
-				if (effect.onTerrainArriving(context(state, creature), terrain)) {
-					return true;
-				}
+			if (call(state, creature, false, (effect, ctx, swallowed) -> effect.onTerrainArriving(ctx, terrain),
+					swallowed -> swallowed)) {
+				return true;
 			}
 		}
 		return false;
@@ -234,21 +232,97 @@ public final class CreatureEffectService {
 	private void forEachEffect(MatchState state, List<CreatureInPlay> creatures,
 			BiConsumer<CreatureEffect, CreatureContext> moment) {
 		for (CreatureInPlay creature : inOrder(creatures)) {
-			creature.effects().forEach(effect -> moment.accept(effect, context(state, creature)));
+			call(state, creature, moment);
 		}
 	}
 
-	private CreatureContext context(MatchState state, CreatureInPlay creature) {
-		return new CreatureContext(state, creature, guard);
+	private void call(MatchState state, CreatureInPlay creature, BiConsumer<CreatureEffect, CreatureContext> moment) {
+		call(state, creature, null, (effect, ctx, ignored) -> {
+			moment.accept(effect, ctx);
+			return null;
+		}, ignored -> false);
 	}
 
-	/** D-30: prima la priorità, poi lo sfidante. L'ordinamento è stabile e la lista parte dallo sfidante. */
+	/**
+	 * Chiama un momento su tutti gli effetti di una creatura, nell'ordine di {@link CreatureInPlay#effects()}, con il
+	 * valore che passa da un effetto al successivo (ENG-38). Un effetto annullato nel frattempo non si chiama; prima
+	 * di ogni effetto della creatura (non quelli collegati) l'avversaria può divorare l'attivazione (Baku); dopo, si
+	 * ricordano i bonus ATK che l'effetto le ha dato.
+	 *
+	 * @param state    stato della partita
+	 * @param creature creatura che porta gli effetti
+	 * @param initial  valore iniziale
+	 * @param moment   il momento
+	 * @param done     quando il valore è questo, gli effetti dopo non si chiamano (es. una creatura salvata)
+	 * @return il valore dopo l'ultimo effetto chiamato
+	 */
+	private <T> T call(MatchState state, CreatureInPlay creature, T initial, Moment<T> moment, Predicate<T> done) {
+		T value = initial;
+		for (CreatureEffect effect : creature.effects()) {
+			if (done.test(value) || !creature.effects().contains(effect)) {
+				continue;
+			}
+			boolean own = creature.ownEffects().contains(effect);
+			if (own && devoured(state, creature)) {
+				continue;
+			}
+			List<StatModifier> before = own ? List.copyOf(creature.modifiers()) : List.of();
+			value = moment.call(effect, context(state, creature), value);
+			if (own) {
+				creature.recordOwnEffectBonuses(before);
+			}
+		}
+		return value;
+	}
+
+	/** M-10: gli effetti dell'avversaria in campo (Baku) divorano l'attivazione di un effetto della creatura. */
+	private boolean devoured(MatchState state, CreatureInPlay creature) {
+		Optional<CreatureInPlay> enemy = state.opponentOf(creature.side()).creature();
+		if (enemy.isEmpty()) {
+			return false;
+		}
+		for (CreatureEffect effect : enemy.get().ownEffects()) {
+			if (effect.onEnemyEffectActivating(context(state, enemy.get()), creature)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private CreatureContext context(MatchState state, CreatureInPlay creature) {
+		return new CreatureContext(state, creature, guard, effects);
+	}
+
+	/**
+	 * D-30: prima la priorità, poi lo sfidante. L'ordinamento è stabile e la lista parte dallo sfidante. Un effetto
+	 * annullato ha priorità {@link EffectPriority#NORMAL} (ENG-38).
+	 */
 	private static List<CreatureInPlay> inOrder(List<CreatureInPlay> creatures) {
 		List<CreatureInPlay> ordered = new ArrayList<>(creatures);
-		ordered.sort(Comparator.comparing((CreatureInPlay creature) -> creature.effect()
-						.map(CreatureEffect::priority).orElse(EffectPriority.NORMAL))
-				.thenComparing(CreatureInPlay::side));
+		ordered.sort(Comparator.comparing(CreatureEffectService::priority).thenComparing(CreatureInPlay::side));
 		return ordered;
+	}
+
+	private static EffectPriority priority(CreatureInPlay creature) {
+		if (creature.isEffectCancelled()) {
+			return EffectPriority.NORMAL;
+		}
+		return creature.effect().map(CreatureEffect::priority).orElse(EffectPriority.NORMAL);
+	}
+
+	/** Un momento dell'interfaccia chiamato su un effetto, con il valore che passa da un effetto all'altro. */
+	@FunctionalInterface
+	private interface Moment<T> {
+
+		/**
+		 * Chiama il momento.
+		 *
+		 * @param effect l'effetto
+		 * @param ctx    contesto dell'attivazione
+		 * @param value  valore dagli effetti prima
+		 * @return il nuovo valore
+		 */
+		T call(CreatureEffect effect, CreatureContext ctx, T value);
 	}
 
 	private static List<CreatureInPlay> alive(MatchState state) {
