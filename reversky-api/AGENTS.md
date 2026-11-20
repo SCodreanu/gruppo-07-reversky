@@ -142,6 +142,10 @@ Amicizie (`friendship/`):
 
 - `GET /api/v1/friends`, `GET /api/v1/friends/requests?box=incoming|outgoing`, `POST /api/v1/friends/requests`, `POST /api/v1/friends/requests/{requesterId}/accept` e `/reject`, `DELETE /api/v1/friends/{userId}` (`FriendshipController`). La richiesta inversa accetta quella esistente; rimuovere un amico elimina anche gli inviti di sfida `PENDING` tra i due (query nativa finché non esiste `battle/`). Dettagli ed errori in [docs/amicizie](docs/amicizie/amicizie.md#comportamento-già-implementato).
 
+Collezione (`collection/`):
+
+- `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
+
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
 Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.

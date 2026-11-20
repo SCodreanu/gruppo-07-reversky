@@ -179,6 +179,20 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Filtro `factionId` su `GET /cards` e `GET /admin/cards`, sulla prima o sulla seconda fazione; un id inesistente dà una pagina vuota (20 nov) | come `rarityId`; Spell e Hidden non hanno fazioni | #81 |
 | `GET /rarities` ordinato per `sorting_order` | ordine naturale per il frontend | #75 |
 
+### Collezione implementata (task API-23, #93, 20 novembre)
+
+| Decisione | Perché |
+|---|---|
+| Branch sopra API-11 (#81): la carta della collezione mostra già le fazioni | serve la forma della carta con `faction` |
+| `card` è `CatalogCardResponse`, la stessa di `GET /cards` | una sola forma della carta |
+| `reservedQuantity` e `usedInDecks` subito, con SQL nativo su `trade_offers` e `deck_cards` | numeri giusti da subito; diventano query JPA con API-31 e API-26 |
+| `GET /users/{id}/collection` per ogni utente autenticato, con `availableQuantity` (anche 0) | gli scambi non sono limitati agli amici e si chiede solo quello che è disponibile |
+| `sort` solo su `name`, `rarity`, `type`, `quantity`, spareggio per nome e id; altrimenti `400 INVALID_COLLECTION_SORT`, con un codice proprio come `INVALID_FRIENDSHIP_BOX` | niente `500` su proprietà sconosciute, pagine stabili |
+| Riepilogo sulle originali attive, per rarità | una carta ritirata non deve impedire il 100% |
+| `removeCards` conta le copie possedute, `422 NOT_ENOUGH_COPIES`; `addCards` e `removeCards` con `propagation = MANDATORY` | lo scambio sposta copie che lui stesso riserva; la transazione è del chiamante (docs/collezione) |
+| Carte disattivate e varianti elencate nella collezione | restano possedute (Q-07) |
+| Tutti gli endpoint in `collection/`, anche `/users/{id}/collection` | la funzionalità resta insieme |
+
 ## Prima della consegna
 
 Cose decise ma non ancora fatte, da non dimenticare:
