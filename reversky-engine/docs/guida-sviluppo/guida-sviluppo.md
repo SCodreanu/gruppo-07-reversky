@@ -79,7 +79,7 @@ In *Try it out* scegli l'esempio `basic` (esempio 01) o `full` (esempio 08, seed
 | Rilanciare anche se nulla è cambiato | `gradlew.bat cleanTest test` |
 | Rilanciare a ogni salvataggio | `gradlew.bat test --continuous` |
 | Compilazione + test (prima della PR) | `gradlew.bat build` |
-| Test di bilanciamento (lenti) | `gradlew.bat balanceTest` — dopo `ENG-28`, vedi sotto |
+| Test di bilanciamento (lenti) | `gradlew.bat balanceTest`, vedi sotto |
 
 Dall'IDE: clic sulla freccia verde accanto alla classe o al metodo di test. Per il debug: *Debug* invece di *Run*.
 
@@ -153,25 +153,14 @@ Se una regola cambia, si aggiorna il CSV, non il codice del test.
 
 ### Test di bilanciamento separati
 
-Proposta per `ENG-28` (da confermare con chi gestisce `build.gradle`): i test con `@Tag("balance")` non partono con `test`, ma con un task a parte.
+Dal 20 novembre (`ENG-28`) i test con `@Tag("balance")` non partono con `test` né con `build`, ma con il task `balanceTest` di `build.gradle`:
 
-```groovy
-tasks.named('test') {
-	useJUnitPlatform {
-		excludeTags 'balance'
-	}
-}
-
-tasks.register('balanceTest', Test) {
-	description = 'Simulazioni di bilanciamento (lente, si lanciano a mano)'
-	group = 'verification'
-	testClassesDirs = sourceSets.test.output.classesDirs
-	classpath = sourceSets.test.runtimeClasspath
-	useJUnitPlatform {
-		includeTags 'balance'
-	}
-}
+```bash
+gradlew.bat balanceTest    # alcuni minuti; scrive docs/bilanciamento/report-bilanciamento.md e report-carte.csv
+gradlew.bat balanceTest -PbalanceGrid=forme   # forme del bonus di D-04: report-forme-bonus.md e il suo CSV
 ```
+
+Il task si rilancia sempre (non è mai "up to date") e mostra l'avanzamento per configurazione. Come sono fatti mazzi, seed, configurazioni e avvisi: [test](../test/test.md#test-di-bilanciamento-eng-28).
 
 ## 7. Problemi comuni
 

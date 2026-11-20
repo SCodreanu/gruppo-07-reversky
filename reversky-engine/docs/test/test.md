@@ -12,7 +12,7 @@ Il brief chiede esplicitamente che il motore sia **coperto da test automatici JU
 | **Effetti** | un effetto alla volta | JUnit 5 + AssertJ | `HidebehindEffectTest` |
 | **Partita completa** | `MatchSimulator` dall'inizio alla fine | JUnit 5 | `MatchSimulatorTest` |
 | **Web** | JSON, validazione, status HTTP | `@WebMvcTest` | `SimulationControllerTest` |
-| **Bilanciamento** (facoltativo) | migliaia di partite simulate | JUnit 5, `@Tag("balance")` | `BalanceSimulationTest` |
+| **Bilanciamento** (`ENG-28`) | migliaia di partite simulate, report per i DSG | JUnit 5, `@Tag("balance")`, `gradlew balanceTest` | `BalanceSimulationTest` |
 
 I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto Spring. Partono in millisecondi.
 
@@ -132,23 +132,67 @@ Il test è `SimulationExamplesTest`; come funziona e quali esempi sono ancora sa
 
 Servono a due cose: dimostrano che regole e contratto REST funzionano insieme, e sono gli stessi file che l'API può usare per il proprio test di contratto.
 
-## Test di bilanciamento (facoltativo, molto utile)
+## Test di bilanciamento (`ENG-28`)
 
-Si fanno giocare migliaia di partite tra mazzi casuali o tra mazzi "tipo" (uno per fazione) e si contano le vittorie. Serve ai DSG per il bilanciamento delle carte e a decidere il limite di round.
+Migliaia di partite simulate tra mazzi casuali di una fazione, per decidere i valori delle carte e delle regole: il report va ai DSG.
+Sono lenti: hanno il tag `balance`, sono esclusi da `gradlew build` e `gradlew test` e si lanciano a mano.
 
-```java
-@Tag("balance")
-@Test
-void factionsWinRateIsBalanced() {
-	Map<Faction, Integer> wins = ...;
-	for (long seed = 0; seed < 10_000; seed++) { ... }
-	// nessuna fazione sopra il 60% di vittorie contro le altre
-}
+```bash
+./gradlew balanceTest       # Windows: gradlew.bat balanceTest; alcuni minuti
 ```
 
-Questi test sono lenti: si escludono dalla build normale e si lanciano a mano.
+Il codice è in `src/test/java/.../balance/`; solo `BalanceSimulationTest` ha il tag, le altre classi hanno test veloci che girano nella build normale (`CatalogCsvTest`, `BalanceDeckBuilderTest`, `BalanceStatsTest`, `BalanceReportTest`, `BalanceRunnerTest`).
+Il report si scrive in `docs/bilanciamento/` (cartella diversa con `-Dbalance.outputDir`, già impostata dal task):
 
-Altre domande a cui rispondono:
-- quante partite finiscono per `ROUND_LIMIT`? (se sono tante, il limite è troppo basso);
-- quanto dura in media una partita?
-- c'è una carta che vince troppo spesso quando è in campo?
+- [`report-bilanciamento.md`](../bilanciamento/report-bilanciamento.md): sintesi, fazioni, scontri diretti, durata, motivi di fine, rarità, avvisi;
+- [`report-carte.csv`](../bilanciamento/report-carte.csv): una riga per carta e configurazione.
+
+Il report è deterministico: con lo stesso engine e lo stesso catalogo esce identico, quindi `git diff` mostra solo quello che una modifica ha spostato. Non si modifica a mano.
+
+Scelte decise il 20 novembre:
+
+| Cosa | Scelta |
+|---|---|
+| Catalogo | `docs/bilanciamento/catalogo-finale.csv` (`CatalogCsv`); id = numero di riga, nome com'è nel CSV; Spell e Hidden contano come Uncommon |
+| Mazzi | di una sola fazione, nuovi a ogni partita: 20 creature della fazione (le Mutant valgono per entrambe), Terreno e Oggetto della fazione, 6 Spell, 2 Hidden. Ogni carta si sceglie a caso, con la stessa probabilità, tra quelle ancora ammesse (`BalanceDeckBuilder`) |
+| Limiti dei mazzi | quelli dell'API, ancora proposte (Q-02, Q-03): copie Common 3, Uncommon 2, Rare 2, Mythic, Legendary e Mutant 1; massimo 2 Legendary, 2 Mythic, 1 Mutant, 5 Rare contando Terreno e Oggetto; al massimo una Hidden `DAMAGE` |
+| Partite | 16 accoppiamenti ordinati di fazioni (speculari compresi) × 2.500 = 40.000 per configurazione |
+| Seed | partita `i` dell'accoppiamento `p`: `20261120 + p × 2500 + i`, per costruire i mazzi e per il mescolamento; uguale in tutte le configurazioni, così cambiano solo le regole. I mazzi si costruiscono con uno `SplittableRandom` del seed, non correlato al `java.util.Random` con cui l'engine mescola |
+| Configurazioni | griglia 2 × 2: 30 e 25 punti vita (D-01) × bonus D-04 (+2/−1 ATK) e bonus di prova del 13 novembre (+1 DEF contro la fazione che si batte); 75 round (D-02) |
+| Punteggio | vittoria 1, pareggio ½, sconfitta 0 |
+| Fazioni | senza le partite speculari; scontri diretti nei due posti |
+| Carte | punteggio "nel mazzo" e "giocata" (creatura entrata, Spell risolta, Hidden attivata, Terreno o Oggetto messo), una volta per lato e partita; attivazioni per partita giocata |
+| Gruppi | rarità per le creature, tipo per le altre carte; media del gruppo pesata sulle partite. Il punteggio da giocata è spostato verso il basso (chi perde gioca più carte): la banda delle carte lo usa, perché il confronto dentro un gruppo resta valido; la scala delle rarità usa il punteggio nel mazzo |
+| Invarianti (fanno fallire il test) | nessun errore dell'engine, ogni partita finisce con `MATCH_ENDED` entro il limite di round, le prime 200 partite di ogni configurazione danno lo stesso risultato due volte |
+| Avvisi (solo nel report) | scontro di vantaggio fuori da 55–65%, scontro neutro e fazione fuori da 45–55%, `ROUND_LIMIT` sopra il 5%, primo giocatore fuori da 45–55%, carta a più di 10 punti dalla media del gruppo con almeno 500 partite giocata (sotto: "campione basso"), scala delle rarità delle creature non crescente (nel mazzo); quota delle partite finite per punti vita mostrata senza avviso |
+
+### Forme del bonus di fazione (D-04)
+
+La griglia `forme` (`BalanceGrid.FORME`, scelta il 20 novembre) prova altre forme del bonus con gli stessi mazzi e seed della griglia base, quindi cambia solo il bonus. Si lancia a parte e scrive un report suo, [`report-forme-bonus.md`](../bilanciamento/report-forme-bonus.md) con [`report-forme-bonus-carte.csv`](../bilanciamento/report-forme-bonus-carte.csv):
+
+```bash
+./gradlew balanceTest -PbalanceGrid=forme   # Windows: gradlew.bat balanceTest -PbalanceGrid=forme
+```
+
+Le forme usano solo righe intere di `faction_bonuses`, senza modifiche all'engine:
+
+- **+1 ATK contro +1 DEF:** chi batte l'avversaria ha +1 ATK in ogni round dello scontro; chi è battuto ha +1 DEF una volta per scontro contro chi lo batte.
+- **Per coppia:** come sopra, ma +2 DEF invece di +1 a Wound contro Archive e a Invitation contro Dream, le due coppie che restavano alte.
+
+Risultati del 20 novembre. Scontri di vantaggio (la prima fazione contro quella che batte) e partite finite per punti vita, con 30 PV / 25 PV; in grassetto quelli dentro 55–65%:
+
+| Forma | Wound–Dream | Invitation–Archive | Archive–Wound | Dream–Invitation | Fazioni fuori da 45–55% | Finite per PV |
+|---|---|---|---|---|---|---|
+| D-04, +2/−1 ATK (griglia base) | 99,8 / 99,8 | 100,0 / 99,9 | 100,0 / 99,9 | 100,0 / 100,0 | nessuna / nessuna | 53,6 / 72,9 |
+| Bonus di prova, +1 DEF (griglia base) | 79,9 / 77,3 | 78,2 / 74,3 | 90,2 / 84,6 | 89,8 / 88,7 | Invitation 44,6, Archive 55,5 / Invitation 42,5 | 28,8 / 54,0 |
+| +1 ATK contro +1 DEF | **57,2 / 61,2** | **58,2 / 58,0** | 71,6 / 67,9 | 75,5 / 76,0 | Invitation 42,5, Archive 56,1 / Invitation 41,3 | 32,3 / 57,5 |
+| Per coppia (+2 DEF a Wound e Invitation) | **57,2 / 61,2** | **58,2 / 58,0** | 30,6 / 33,2 | 41,6 / 47,7 | Wound 60,6, Archive 42,4, Dream 43,2 / Wound 62,0, Archive 43,2, Dream 44,1 | 30,9 / 55,9 |
+
+Cosa dicono:
+
+- Nessuna forma con righe intere mette tutti e quattro gli scontri di vantaggio in 55–65%. +1 ATK contro +1 DEF è la più vicina: Wound–Dream e Invitation–Archive ci stanno, Archive–Wound e Dream–Invitation restano al 68–76%.
+- Un punto di DEF in più a chi è battuto sposta lo scontro di 28–41 punti (Archive–Wound da 71,6 a 30,6, Dream–Invitation da 75,5 a 41,6 con 30 PV): il passo intero è troppo grosso per una banda di 10 punti. Per stringere ancora servono una forma che l'engine oggi non ha (per esempio il bonus ATK solo nel primo round dello scontro) o una ritaratura del catalogo.
+- Invitation sta al 41–45% contro le altre con il bonus di prova e con +1 ATK contro +1 DEF, e Dream la batte al 75–76% anche con il bonus più piccolo: il problema è anche nelle carte di Invitation, non solo nel bonus. Lo scontro neutro Wound–Invitation esce dalla banda con 25 PV in tutte le forme (58,0–58,2%).
+- D-01: con +1 ATK contro +1 DEF finisce per punti vita il 57,5% delle partite con 25 PV e il 32,3% con 30 PV; come il bonus di prova, questa forma va con 25 PV.
+
+D-04 e D-01 restano aperti: le forme sono proposte per i DSG, non decisioni.
