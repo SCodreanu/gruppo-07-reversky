@@ -93,7 +93,8 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 | `ENG-23` | Effetti delle creature: `CreatureEffect` con numero massimo di attivazioni (D-31) e priorità (D-30), collegati al registro di `ENG-22`. Primi effetti `P1`: Hidebehind (esempio 09), Nurikabe, Kappa, SCP-096, SCP-2317, Smiler. A chiama i momenti dal `RoundResolver`, B scrive gli effetti | A + B | L | `ENG-22` |
 | `ENG-25` | Effetti Theory of the Invitation e Theory of the Archive ([catalogo](../effetti/catalogo-effetti.md)): i `P1` entro il 30 | A | L | `ENG-22`, `ENG-23` |
 | `ENG-26` | Effetti Theory of the Wound e Theory of the Dream: i `P1` entro il 30 | B | L | `ENG-22`, `ENG-23` |
-| `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26` |
+| `ENG-41` | Una sola Hidden attiva per giocatore, le altre in fila (regola dei DSG del 20 novembre, D-15); prima di `ENG-28`, così il report misura la regola definitiva | A + B | S | `ENG-20` |
+| `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26`, `ENG-41` |
 
 **Versione completa (30 novembre):** effetti `P1` nel registro, report di bilanciamento consegnato ai DSG.
 

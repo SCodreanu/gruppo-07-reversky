@@ -132,7 +132,8 @@ public final class HiddenConditionService {
 				if (!hidden.isReadyIn(combat) || effect.condition() != condition) {
 					continue;
 				}
-				zone.discardHidden(hidden);
+				// ENG-41: la Hidden in fila diventa attiva dallo scontro dopo
+				zone.discardHidden(hidden, combat + 1);
 				Side owner = effectiveOwner(state, zone, hidden.card());
 				if (items.cancelEnemyHidden(state, state.opponentOf(owner), hidden.card())) {
 					state.log().hiddenTriggered(owner, hidden.card(), "cancelled");

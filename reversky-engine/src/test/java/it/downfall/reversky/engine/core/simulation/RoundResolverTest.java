@@ -38,6 +38,7 @@ class RoundResolverTest {
 	private static final int ARCHIVE = TestFactions.ARCHIVE;
 	private static final CardDefinition SANCTUARY = hidden("Last Sanctuary", CardSubtype.SURVIVAL, "LAST_SANCTUARY");
 	private static final CardDefinition PRESENCE = hidden("Hostile Presence", CardSubtype.DAMAGE, "HOSTILE_PRESENCE");
+	private static final CardDefinition ECHO_STRIKE = hidden("Echo Strike", CardSubtype.DAMAGE, "ECHO_STRIKE");
 
 	private final RoundResolver noBonuses = resolver(TestFactions.noBonuses());
 	private final RoundResolver standard = resolver(TestFactions.standardMatrix());
@@ -344,22 +345,40 @@ class RoundResolverTest {
 	@Test
 	@DisplayName("D-15: a inizio scontro si attivano le Hidden pronte, prima DAMAGE e poi SURVIVAL, e si scartano")
 	void startCombat_readyHidden_damageBeforeSurvival() {
-		// Arrange: lo sfidante ha una SURVIVAL pescata prima di una DAMAGE, l'avversario una DAMAGE
+		// Arrange: lo sfidante ha una SURVIVAL, l'avversario una DAMAGE
 		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
 		state.challenger().setHidden(new SetHidden(SANCTUARY, 1));
-		state.challenger().setHidden(new SetHidden(hidden("Echo Strike", CardSubtype.DAMAGE, "ECHO_STRIKE"), 1));
 		state.opponent().setHidden(new SetHidden(PRESENCE, 1));
 
 		// Act
 		noBonuses.startCombat(state);
 
-		// Assert: DAMAGE dello sfidante, DAMAGE dell'avversario, poi SURVIVAL dello sfidante
+		// Assert: prima la DAMAGE dell'avversario, poi la SURVIVAL dello sfidante
 		assertThat(state.log().events()).extracting(event -> event.data().get("card"))
-				.containsExactly("Echo Strike", "Hostile Presence", "Last Sanctuary");
+				.containsExactly("Hostile Presence", "Last Sanctuary");
 		assertThat(state.challenger().hiddenZone()).isEmpty();
 		assertThat(state.opponent().hiddenZone()).isEmpty();
 		assertThat(challenger(state).attack()).isEqualTo(3);
 		assertThat(challenger(state).defense()).isEqualTo(11);
+	}
+
+	@Test
+	@DisplayName("ENG-41: la Hidden in fila non si attiva nello scontro in cui si scarta la prima, ma in quello dopo")
+	void startCombat_waitingHidden_triggersFromNextCombat() {
+		// Arrange: lo sfidante ha Last Sanctuary attiva ed Echo Strike in fila
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		state.challenger().setHidden(new SetHidden(SANCTUARY, 1));
+		state.challenger().setHidden(new SetHidden(ECHO_STRIKE, 1));
+
+		// Act + Assert: nello scontro 1 solo Last Sanctuary; Echo Strike diventa attiva, pronta dal 2
+		noBonuses.startCombat(state);
+		assertThat(state.log().events()).extracting(event -> event.data().get("card"))
+				.containsExactly("Last Sanctuary");
+		assertThat(state.challenger().hiddenZone()).containsExactly(new SetHidden(ECHO_STRIKE, 2));
+		assertThat(state.challenger().waitingHidden()).isEmpty();
+		assertThat(opponent(state).defense()).isEqualTo(9);
+		noBonuses.startCombat(state);
+		assertThat(state.challenger().hiddenZone()).isEmpty();
 		assertThat(opponent(state).defense()).isEqualTo(7);
 	}
 

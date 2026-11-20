@@ -106,6 +106,7 @@ void hidebehind_preventsTwoDamageOnFirstAttackOfEachOpponent() {
 ### Carte speciali
 - [ ] Spell pescata: effetto applicato subito, carta scartata, si continua a pescare;
 - [ ] Hidden pescata: messa coperta; senza condizione si attiva all'inizio del prossimo scontro del proprietario, con una condizione quando la condizione si verifica (D-15);
+- [ ] una sola Hidden attiva per giocatore: la seconda aspetta in fila e diventa attiva dal prossimo scontro dopo che la prima si scarta, anche se annullata (`ENG-41`);
 - [ ] Terreno pescato: dà il bonus alle creature della sua fazione di entrambi i giocatori; un secondo Terreno, di chiunque, lo sostituisce e i suoi bonus si tolgono (D-17, D-19);
 - [ ] Oggetto pescato: resta accanto al mazzo, scatta una volta sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma (D-47, `ENG-33`);
 - [ ] DEF temporanea: assorbe i danni per prima; alla scadenza su una creatura danneggiata la creatura non muore (D-35).

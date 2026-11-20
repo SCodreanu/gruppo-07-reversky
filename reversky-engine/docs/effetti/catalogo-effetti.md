@@ -179,7 +179,8 @@ Senza fazione. Valore di ognuna circa 4–5 PS. Messe coperte quando pescate, po
 - quelle **con una condizione** (Remnants of Reality, Unseen Exit) restano coperte finché la condizione si verifica;
 - le altre si attivano **all'inizio del prossimo scontro del proprietario**, contro la creatura avversaria in campo in quel momento;
 - una Hidden pescata nella pescata iniziale **non si attiva nel primo scontro** ("non nel primo turno" del catalogo);
-- se più Hidden si attivano insieme, prima le `DAMAGE` e poi le `SURVIVAL`.
+- se più Hidden si attivano insieme (una per giocatore), prima le `DAMAGE` e poi le `SURVIVAL`;
+- una sola Hidden attiva per giocatore (deciso il 20 novembre, `ENG-41`): le altre aspettano in fila e diventano attive, una alla volta, dal prossimo scontro dopo che la precedente si è scartata.
 
 "Nello scontro corrente": il bonus dura finché una delle due creature muore; la DEF in più funziona da scudo e la scadenza non uccide (D-35).
 "Prima del calcolo dello scontro" (Hidden `DAMAGE`): il malus ATK vale **solo il primo round** dello scontro; il danno alla DEF è permanente.
