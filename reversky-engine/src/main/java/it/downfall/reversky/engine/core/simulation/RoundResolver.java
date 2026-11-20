@@ -223,7 +223,8 @@ public final class RoundResolver {
 				for (SetHidden hidden : owner.hiddenZone()) {
 					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype
 							&& effects.createHidden(hidden.card().effectCode()).condition() == HiddenCondition.NONE) {
-						owner.discardHidden(hidden);
+						// ENG-41: la Hidden in fila diventa attiva dallo scontro dopo
+						owner.discardHidden(hidden, combat + 1);
 						// ENG-39: una zona incrociata dall'Operatore della Stanza 0 lavora per l'avversario
 						Side effective = HiddenConditionService.effectiveOwner(state, owner, hidden.card());
 						if (isCancelled(state, effective, hidden.card())) {

@@ -8,8 +8,8 @@ import java.util.Optional;
 
 /**
  * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, modificatori in attesa
- * della prossima creatura, zona Hidden (con gli incroci dell'Operatore della Stanza 0), Oggetto accanto al mazzo e
- * creature avversarie sconfitte.
+ * della prossima creatura, zona Hidden (una Hidden attiva, le altre in fila, e gli incroci dell'Operatore della
+ * Stanza 0), Oggetto accanto al mazzo e creature avversarie sconfitte.
  */
 public final class PlayerState {
 
@@ -20,8 +20,10 @@ public final class PlayerState {
 	private CreatureInPlay creature;
 	/** Modificatori in attesa (D-34): la posizione 0 è per la prossima creatura, la 1 per quella dopo, e così via. */
 	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
-	/** Zona Hidden (D-15): le Hidden coperte, nell'ordine in cui sono state pescate. */
+	/** Zona Hidden (D-15): la Hidden coperta attiva; al massimo una (ENG-41, deciso il 20 novembre). */
 	private final List<SetHidden> hiddenZone = new ArrayList<>();
+	/** Hidden pescate mentre un'altra era attiva (ENG-41): aspettano in fila, nell'ordine di pescata. */
+	private final Deque<CardDefinition> waitingHidden = new ArrayDeque<>();
 	/**
 	 * Incroci in attesa sulla zona Hidden (L'Operatore della Stanza 0, ENG-39): per ognuno, la prossima Hidden che si
 	 * attiva da questa zona lavora per l'avversario. Il nome è quello della carta che l'ha messo, per il log.
@@ -241,32 +243,55 @@ public final class PlayerState {
 	}
 
 	/**
-	 * Mette una Hidden coperta nella zona Hidden (D-15).
+	 * Mette una Hidden coperta (D-15). Un giocatore ha una sola Hidden attiva alla volta (ENG-41, regola dei DSG del
+	 * 20 novembre): se ce n'è già una, la nuova aspetta in fila e il suo scontro di partenza non conta, perché si
+	 * ricalcola quando diventa attiva.
 	 *
 	 * @param hidden la Hidden e lo scontro da cui può attivarsi
+	 * @return {@code true} se è diventata la Hidden attiva, {@code false} se aspetta in fila
 	 */
-	public void setHidden(SetHidden hidden) {
-		hiddenZone.add(hidden);
+	public boolean setHidden(SetHidden hidden) {
+		if (hiddenZone.isEmpty()) {
+			hiddenZone.add(hidden);
+			return true;
+		}
+		waitingHidden.addLast(hidden.card());
+		return false;
 	}
 
 	/**
-	 * Hidden coperte, nell'ordine in cui sono state pescate.
+	 * Hidden attiva: è l'unica che può attivarsi e di cui si controlla la condizione (ENG-41).
 	 *
-	 * @return copia non modificabile
+	 * @return copia non modificabile, vuota o con una sola Hidden
 	 */
 	public List<SetHidden> hiddenZone() {
 		return List.copyOf(hiddenZone);
 	}
 
 	/**
-	 * Toglie una Hidden dalla zona: si è attivata e si scarta (D-15).
+	 * Hidden in fila dietro quella attiva (ENG-41): non si attivano e non controllano la condizione.
 	 *
-	 * @param hidden la Hidden da togliere
-	 * @throws IllegalStateException se non è nella zona
+	 * @return copia non modificabile, nell'ordine di pescata; vuota se non ce ne sono
 	 */
-	public void discardHidden(SetHidden hidden) {
+	public List<CardDefinition> waitingHidden() {
+		return List.copyOf(waitingHidden);
+	}
+
+	/**
+	 * Scarta la Hidden attiva, che si è attivata o è stata annullata (D-15). La prima Hidden in fila diventa attiva e
+	 * può attivarsi dal prossimo scontro, come una Hidden appena pescata: due Hidden dello stesso giocatore non si
+	 * attivano mai nello stesso scontro (ENG-41).
+	 *
+	 * @param hidden     la Hidden da togliere
+	 * @param nextCombat numero del prossimo scontro, da cui può attivarsi la Hidden che era in fila
+	 * @throws IllegalStateException se non è la Hidden attiva
+	 */
+	public void discardHidden(SetHidden hidden, int nextCombat) {
 		if (!hiddenZone.remove(hidden)) {
 			throw new IllegalStateException(side + " non ha la Hidden " + hidden.card().name());
+		}
+		if (!waitingHidden.isEmpty()) {
+			hiddenZone.add(new SetHidden(waitingHidden.removeFirst(), nextCombat));
 		}
 	}
 

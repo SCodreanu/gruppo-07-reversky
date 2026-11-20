@@ -37,6 +37,8 @@ class SurvivalEffectsTest {
 			"REMNANTS_OF_REALITY");
 	private static final CardDefinition UNSEEN_EXIT = TestCards.hidden(107, "Unseen Exit", CardSubtype.SURVIVAL,
 			"UNSEEN_EXIT");
+	private static final CardDefinition SANCTUARY = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL,
+			"LAST_SANCTUARY");
 
 	private final EffectRegistry registry = EffectRegistry.withAllEffects();
 	private final RoundResolver resolver = new RoundResolver(TestFactions.noBonuses(), registry);
@@ -215,6 +217,39 @@ class SurvivalEffectsTest {
 		// Assert
 		assertThat(state.challenger().creature()).isEmpty();
 		assertThat(state.challenger().hiddenZone()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("ENG-41: Unseen Exit in fila non è attiva e non controlla la condizione: A muore")
+	void unseenExit_waiting_doesNotTrigger() {
+		// Arrange: attiva una Last Sanctuary non ancora pronta (pescata iniziale), Unseen Exit in fila
+		MatchState state = startedCombat(plain("A", 1, 5), plain("B", 8, 40));
+		state.challenger().setHidden(new SetHidden(SANCTUARY, 2));
+		state.challenger().setHidden(new SetHidden(UNSEEN_EXIT, 1));
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(state.challenger().creature()).isEmpty();
+		assertThat(state.challenger().waitingHidden()).containsExactly(UNSEEN_EXIT);
+	}
+
+	@Test
+	@DisplayName("ENG-41: Unseen Exit attivata libera il posto; la Hidden in fila è pronta dal prossimo scontro")
+	void unseenExit_used_promotesWaitingFromNextCombat() {
+		// Arrange
+		MatchState state = startedCombat(plain("A", 1, 5), plain("B", 8, 40));
+		state.challenger().setHidden(new SetHidden(UNSEEN_EXIT, 1));
+		state.challenger().setHidden(new SetHidden(REMNANTS, 1));
+
+		// Act
+		resolver.resolve(state);
+
+		// Assert
+		assertThat(self(state).defense()).isEqualTo(2);
+		assertThat(state.challenger().hiddenZone()).containsExactly(new SetHidden(REMNANTS, 2));
+		assertThat(state.challenger().waitingHidden()).isEmpty();
 	}
 
 	// ---- The Undying Blossom ----

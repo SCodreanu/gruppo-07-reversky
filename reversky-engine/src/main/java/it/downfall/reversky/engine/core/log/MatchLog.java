@@ -126,6 +126,16 @@ public final class MatchLog {
 	}
 
 	/**
+	 * {@code HIDDEN_SET} di una Hidden che aspetta in fila dietro quella attiva (ENG-41): stesso evento e nessun dato,
+	 * così il contratto non cambia; cambia solo il messaggio. La carta non si nomina.
+	 *
+	 * @param side giocatore che la mette coperta
+	 */
+	public void hiddenSetBehind(Side side) {
+		add(EventType.HIDDEN_SET, side, data(), player(side) + " sets a Hidden card behind the other one");
+	}
+
+	/**
 	 * {@code HIDDEN_TRIGGERED}: una Hidden si attiva.
 	 *
 	 * @param side   proprietario della Hidden

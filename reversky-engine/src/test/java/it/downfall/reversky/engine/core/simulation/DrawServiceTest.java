@@ -37,6 +37,8 @@ class DrawServiceTest {
 			"SEALED_FILE_ZERO");
 	private static final CardDefinition SANCTUARY = TestCards.hidden(105, "Last Sanctuary", CardSubtype.SURVIVAL,
 			"LAST_SANCTUARY");
+	private static final CardDefinition PRESENCE = TestCards.hidden(109, "Hostile Presence", CardSubtype.DAMAGE,
+			"HOSTILE_PRESENCE");
 	private static final CardDefinition FRACTURE = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE,
 			"SKIN_FRACTURE");
 
@@ -155,6 +157,27 @@ class DrawServiceTest {
 				.containsExactly(EventType.HIDDEN_SET, EventType.CREATURE_ENTERED);
 		assertThat(state.log().events().getFirst().message()).isEqualTo("Challenger sets a Hidden card");
 		assertThat(state.log().events().getFirst().data()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("ENG-41: una seconda Hidden pescata aspetta in fila dietro la prima, senza nome nel log")
+	void drawCreature_secondHidden_waitsBehindFirst() {
+		// Arrange: sono già iniziati 2 scontri
+		MatchState state = TestStates.withDecks(List.of(SANCTUARY, PRESENCE, CRAWLERS), List.of());
+		state.startNextCombat();
+		state.startNextCombat();
+
+		// Act
+		draws.drawCreature(state, state.challenger());
+
+		// Assert
+		assertThat(state.challenger().hiddenZone()).containsExactly(new SetHidden(SANCTUARY, 3));
+		assertThat(state.challenger().waitingHidden()).containsExactly(PRESENCE);
+		assertThat(state.log().events()).extracting(MatchEvent::type)
+				.containsExactly(EventType.HIDDEN_SET, EventType.HIDDEN_SET, EventType.CREATURE_ENTERED);
+		assertThat(state.log().events().get(1).message())
+				.isEqualTo("Challenger sets a Hidden card behind the other one");
+		assertThat(state.log().events().get(1).data()).isEmpty();
 	}
 
 	@Test

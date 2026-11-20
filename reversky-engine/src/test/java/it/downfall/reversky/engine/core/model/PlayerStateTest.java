@@ -25,6 +25,8 @@ class PlayerStateTest {
 			"LAST_SANCTUARY");
 	private static final CardDefinition PRESENCE = TestCards.hidden(109, "Hostile Presence", CardSubtype.DAMAGE,
 			"HOSTILE_PRESENCE");
+	private static final CardDefinition SURVIVAL_INSTINCT = TestCards.hidden(106, "Survival Instinct",
+			CardSubtype.SURVIVAL, "SURVIVAL_INSTINCT");
 	private static final CardDefinition TORII_BELL = TestCards.item(120, "Campanello del Torii",
 			TestFactions.DREAM, "TORII_BELL");
 
@@ -209,21 +211,59 @@ class PlayerStateTest {
 	}
 
 	@Test
-	@DisplayName("D-15: le Hidden coperte restano nella zona nell'ordine di pescata finché si scartano")
-	void hiddenZone_setThenDiscard() {
+	@DisplayName("ENG-41: con la zona vuota la Hidden diventa quella attiva; scartata, la zona torna vuota")
+	void setHidden_emptyZone_becomesActive() {
 		// Arrange
 		PlayerState player = player(List.of());
 		SetHidden sanctuary = new SetHidden(SANCTUARY, 2);
-		SetHidden presence = new SetHidden(PRESENCE, 3);
+
+		// Act
+		boolean active = player.setHidden(sanctuary);
+
+		// Assert
+		assertThat(active).isTrue();
+		assertThat(player.hiddenZone()).containsExactly(sanctuary);
+		assertThat(player.waitingHidden()).isEmpty();
+		player.discardHidden(sanctuary, 3);
+		assertThat(player.hiddenZone()).isEmpty();
+		assertThatThrownBy(() -> player.discardHidden(sanctuary, 3)).isInstanceOf(IllegalStateException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-41: una sola Hidden attiva; le altre aspettano in fila nell'ordine di pescata")
+	void setHidden_activeHidden_waitsInLine() {
+		// Arrange
+		PlayerState player = player(List.of());
+		SetHidden sanctuary = new SetHidden(SANCTUARY, 2);
 
 		// Act
 		player.setHidden(sanctuary);
-		player.setHidden(presence);
-		player.discardHidden(sanctuary);
+		boolean presenceActive = player.setHidden(new SetHidden(PRESENCE, 2));
+		boolean instinctActive = player.setHidden(new SetHidden(SURVIVAL_INSTINCT, 3));
 
 		// Assert
-		assertThat(player.hiddenZone()).containsExactly(presence);
-		assertThatThrownBy(() -> player.discardHidden(sanctuary)).isInstanceOf(IllegalStateException.class);
+		assertThat(presenceActive).isFalse();
+		assertThat(instinctActive).isFalse();
+		assertThat(player.hiddenZone()).containsExactly(sanctuary);
+		assertThat(player.waitingHidden()).containsExactly(PRESENCE, SURVIVAL_INSTINCT);
+	}
+
+	@Test
+	@DisplayName("ENG-41: scartata la Hidden attiva, la prima in fila diventa attiva, pronta dal prossimo scontro")
+	void discardHidden_withWaiting_promotesFirstFromNextCombat() {
+		// Arrange
+		PlayerState player = player(List.of());
+		SetHidden sanctuary = new SetHidden(SANCTUARY, 1);
+		player.setHidden(sanctuary);
+		player.setHidden(new SetHidden(PRESENCE, 1));
+		player.setHidden(new SetHidden(SURVIVAL_INSTINCT, 1));
+
+		// Act: la prima si scarta nello scontro 4
+		player.discardHidden(sanctuary, 5);
+
+		// Assert
+		assertThat(player.hiddenZone()).containsExactly(new SetHidden(PRESENCE, 5));
+		assertThat(player.waitingHidden()).containsExactly(SURVIVAL_INSTINCT);
 	}
 
 	@Test

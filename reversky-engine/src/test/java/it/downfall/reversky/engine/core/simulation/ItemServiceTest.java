@@ -192,20 +192,24 @@ class ItemServiceTest {
 	@Test
 	@DisplayName("Fascicolo Sigillato 0 annulla una Hidden DAMAGE avversaria, non una SURVIVAL che non la tocca")
 	void sealedFile_cancelsDamageHiddenOnly() {
-		// Arrange: l'avversario ha Echo Strike (DAMAGE) e Last Sanctuary (SURVIVAL); il Fascicolo è dello sfidante
+		// Arrange: l'avversario ha Echo Strike (DAMAGE) attiva e Last Sanctuary (SURVIVAL) in fila; il Fascicolo è
+		// dello sfidante
 		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
 		state.challenger().placeItem(SEALED_FILE);
 		state.opponent().setHidden(new SetHidden(ECHO_STRIKE, 1));
 		state.opponent().setHidden(new SetHidden(SANCTUARY, 1));
 
-		// Act
+		// Act + Assert: scontro 1, Echo Strike annullata; A non perde niente e il Fascicolo si consuma
 		resolver.startCombat(state);
-
-		// Assert: A non perde niente, B riceve +5 DEF
 		assertThat(challenger(state).attack()).isEqualTo(8);
 		assertThat(challenger(state).defense()).isEqualTo(6);
-		assertThat(opponent(state).defense()).isEqualTo(14);
 		assertThat(state.challenger().items()).isEmpty();
+
+		// ENG-41: la Hidden annullata libera il posto; Last Sanctuary si attiva nello scontro dopo, B riceve +5 DEF
+		assertThat(state.opponent().hiddenZone()).containsExactly(new SetHidden(SANCTUARY, 2));
+		assertThat(opponent(state).defense()).isEqualTo(9);
+		resolver.startCombat(state);
+		assertThat(opponent(state).defense()).isEqualTo(14);
 	}
 
 	@Test

@@ -91,12 +91,16 @@ public final class DrawService {
 	/**
 	 * D-15: la Hidden si attiva nel prossimo scontro, cioè quello che inizia dopo questa pescata. Nella pescata
 	 * iniziale (nessuno scontro ancora iniziato) il prossimo è il primo, che la Hidden salta: si attiva dal secondo.
+	 * ENG-41: se il giocatore ha già una Hidden attiva, la nuova aspetta in fila.
 	 */
 	private static void setHidden(MatchState state, PlayerState player, CardDefinition hidden) {
 		int nextCombat = state.combatsStarted() + 1;
 		int readyFrom = state.combatsStarted() == 0 ? nextCombat + 1 : nextCombat;
-		player.setHidden(new SetHidden(hidden, readyFrom));
-		state.log().hiddenSet(player.side());
+		if (player.setHidden(new SetHidden(hidden, readyFrom))) {
+			state.log().hiddenSet(player.side());
+		} else {
+			state.log().hiddenSetBehind(player.side());
+		}
 	}
 
 	/**

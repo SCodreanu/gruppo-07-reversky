@@ -143,6 +143,15 @@ class MatchLogTest {
 	}
 
 	@Test
+	@DisplayName("ENG-41: HIDDEN_SET di una Hidden in fila, stesso evento senza dati, messaggio diverso")
+	void hiddenSetBehind() {
+		log.hiddenSetBehind(Side.CHALLENGER);
+
+		assertEvent(EventType.HIDDEN_SET, Side.CHALLENGER, "Challenger sets a Hidden card behind the other one");
+		assertThat(last().data()).isEmpty();
+	}
+
+	@Test
 	@DisplayName("HIDDEN_TRIGGERED: card ed effect")
 	void hiddenTriggered() {
 		log.hiddenTriggered(Side.CHALLENGER, LAST_SANCTUARY, "LAST_SANCTUARY");
