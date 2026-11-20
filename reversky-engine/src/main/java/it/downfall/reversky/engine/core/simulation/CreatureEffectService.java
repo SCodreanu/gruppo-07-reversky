@@ -12,6 +12,7 @@ import it.downfall.reversky.engine.core.effect.CreatureEffect;
 import it.downfall.reversky.engine.core.effect.EffectPriority;
 import it.downfall.reversky.engine.core.effect.EffectRegistry;
 import it.downfall.reversky.engine.core.effect.EnemyEffectGuard;
+import it.downfall.reversky.engine.core.effect.Penalties;
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
@@ -105,7 +106,9 @@ public final class CreatureEffectService {
 	}
 
 	/**
-	 * Passo 3: l'effetto della creatura colpita modifica il danno dell'attacco che riceve.
+	 * Passo 3: l'effetto della creatura colpita modifica il danno dell'attacco che riceve. Prima la protezione dal
+	 * primo danno (SCP-500, ENG-40, deciso il 20 novembre), così le riduzioni vengono prima del dimezzamento di
+	 * SCP-3000.
 	 *
 	 * @param state    stato della partita
 	 * @param defender creatura colpita
@@ -113,7 +116,7 @@ public final class CreatureEffectService {
 	 * @return il danno da applicare, almeno 0
 	 */
 	public int incomingDamage(MatchState state, CreatureInPlay defender, int damage) {
-		return call(state, defender, damage,
+		return call(state, defender, Penalties.ward(state, defender, damage),
 				(effect, ctx, value) -> Math.max(0, effect.modifyIncomingDamage(ctx, value)), value -> false);
 	}
 

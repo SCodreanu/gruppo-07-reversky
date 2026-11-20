@@ -71,6 +71,7 @@ import it.downfall.reversky.engine.core.effect.impl.Scp2521Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp3000Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp3999Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp458Effect;
+import it.downfall.reversky.engine.core.effect.impl.Scp500Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp682Effect;
 import it.downfall.reversky.engine.core.effect.impl.SealedFileZeroEffect;
 import it.downfall.reversky.engine.core.effect.impl.ServiceDoubleEffect;
@@ -199,6 +200,7 @@ public final class EffectRegistry {
 				.registerSpell(RainArmorEffect.CODE, RainArmorEffect::new)
 				.registerSpell(Scp458Effect.CODE, Scp458Effect::new)
 				.registerSpell(Scp109Effect.CODE, Scp109Effect::new)
+				.registerSpell(Scp500Effect.CODE, Scp500Effect::new)
 				.registerSpell(CallOfTheRiftEffect.CODE, CallOfTheRiftEffect::new)
 				.registerSpell(ReverseFusionEffect.CODE, ReverseFusionEffect::new)
 				.registerSpell(ForgottenEchoEffect.CODE, ForgottenEchoEffect::new)

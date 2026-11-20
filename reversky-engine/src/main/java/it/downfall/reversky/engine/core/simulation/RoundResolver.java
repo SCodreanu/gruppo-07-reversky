@@ -1,5 +1,7 @@
 package it.downfall.reversky.engine.core.simulation;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import it.downfall.reversky.engine.core.effect.EffectContext;
@@ -188,7 +190,10 @@ public final class RoundResolver {
 		if (creature.hasStartedCombat()) {
 			return;
 		}
-		for (PendingModifier modifier : owner.takePendingModifiers()) {
+		List<PendingModifier> pending = new ArrayList<>(owner.takePendingModifiers());
+		// ENG-40: le protezioni dal primo danno (SCP-500) prima degli altri, così fermano anche un danno in attesa
+		pending.sort(Comparator.comparingInt(modifier -> modifier.ward() > 0 ? 0 : 1));
+		for (PendingModifier modifier : pending) {
 			if (modifier.side() != creature.side() && modifier.source() == ModifierSource.EFFECT
 					&& creature.isImmuneToEnemyCreatureEffects()) {
 				// ENG-38: Il Custode delle Porte Incrociate, prima del Fascicolo Sigillato 0 che così non si consuma

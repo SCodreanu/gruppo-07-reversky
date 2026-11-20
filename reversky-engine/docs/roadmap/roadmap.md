@@ -107,6 +107,7 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 | `ENG-37` | Effetti `P2`: sopravvivenza al danno letale e condizioni delle Hidden (The Undying Blossom, Unseen Exit, Remnants of Reality) | A + B | L | `ENG-34`, `ENG-35` |
 | `ENG-38` | Effetti `P2`: effetti annullati, rubati e copiati (Il Predicatore sotto la Pioggia, SCP-2521, Kitsune, Baku, Il Custode delle Porte Incrociate) | A + B | L | `ENG-35` |
 | `ENG-39` | Effetti `P2`: mazzo e Hidden dell'avversario (La Regina dei Sentieri Perduti, L'Operatore della Stanza 0) | A + B | M | `ENG-34` |
+| `ENG-40` | Effetto `P1` rimasto: la Spell SCP-500 e la protezione dal primo danno di qualunque tipo (D-14, D-33) | A + B | S | `ENG-34` |
 | `ENG-27` | Effetti secondari dei Terreni, decisi l'11 novembre (D-18) | A | M | `ENG-21` |
 | `ENG-28` | Report di bilanciamento con gli effetti, dopo le modifiche dei DSG alle statistiche | B | S | `ENG-26` |
 | `ENG-29` | Casi limite e correzione bug; Javadoc su tutto il core pubblico | A + B | M | `ENG-25`, `ENG-26` |

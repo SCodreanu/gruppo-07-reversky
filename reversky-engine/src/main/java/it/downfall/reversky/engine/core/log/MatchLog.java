@@ -346,6 +346,9 @@ public final class MatchLog {
 		if (modifier.damage() > 0) {
 			parts.add(signed(-modifier.damage()) + " DEF");
 		}
+		if (modifier.ward() > 0) {
+			parts.add(signed(-modifier.ward()) + " to the first damage");
+		}
 		return String.join(", ", parts);
 	}
 
