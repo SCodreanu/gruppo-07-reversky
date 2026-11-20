@@ -173,6 +173,10 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Rarità: due DTO, `RarityCreateRequest` con `sortingOrder` e `RarityUpdateRequest` senza | `sorting_order` arriva all'engine come `rarityOrder` e gli effetti lo confrontano con soglie nel codice | #75 |
 | `sorting_order` univoco, scelto alla creazione e poi immutabile; doppia protezione con `@Column(updatable = false)` | come sopra | #75 |
 | Un `sortingOrder` inviato nel `PUT` viene ignorato, non rifiutato (verificato da un test: Jackson ignora i campi sconosciuti) | client più semplici | #75 |
+| Fazioni della carta nella risposta come `faction` e `secondaryFaction` `{ id, name }` (`FactionSummaryResponse`), come in docs/collezione (20 nov) | il frontend mostra il nome senza chiamare `GET /factions` | #81 |
+| Fazione inesistente: `422 CARD_FACTION_INVALID` (`InvalidCardFactionException`); fazioni non coerenti con il tipo: `422 CARD_RULES_VIOLATED` (20 nov) | come la rarità: un riferimento sbagliato nel corpo non è un `404` | #81 |
+| Ordine dei controlli del `PUT`: riferimenti (rarità, poi fazioni), regole del tipo (fazioni dopo statistiche, sottotipo ed effetto), rarità ammessa, nome (20 nov) | ogni riferimento sbagliato si segnala prima delle regole | #81 |
+| Filtro `factionId` su `GET /cards` e `GET /admin/cards`, sulla prima o sulla seconda fazione; un id inesistente dà una pagina vuota (20 nov) | come `rarityId`; Spell e Hidden non hanno fazioni | #81 |
 | `GET /rarities` ordinato per `sorting_order` | ordine naturale per il frontend | #75 |
 
 ## Prima della consegna

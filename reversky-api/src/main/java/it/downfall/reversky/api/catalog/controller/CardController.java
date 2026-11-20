@@ -41,8 +41,8 @@ public class CardController {
 	@ApiResponse(responseCode = "200", description = "Page of cards returned")
 	@ApiResponse(responseCode = "400", description = "Unknown card type")
 	@GetMapping
-	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "Only cards of this rarity (id from GET /rarities). An unknown id returns an empty page", example = "3") @RequestParam(required = false) Integer rarityId, @Parameter(hidden = true) Pageable pageable) {
-		return ResponseEntity.ok(catalogCardService.findActive(type, name, rarityId, pageable));
+	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "Only cards of this rarity (id from GET /rarities). An unknown id returns an empty page", example = "3") @RequestParam(required = false) Integer rarityId, @Parameter(description = "Only cards of this faction, as first or second faction (id from GET /factions). Never returns SPELL or HIDDEN cards. An unknown id returns an empty page", example = "2") @RequestParam(required = false) Integer factionId, @Parameter(hidden = true) Pageable pageable) {
+		return ResponseEntity.ok(catalogCardService.findActive(type, name, rarityId, factionId, pageable));
 	}
 
 	@Operation(summary = "Get a card", description = "Returns one card, even if it is deactivated: collections and battle history still use it. No token needed.")
