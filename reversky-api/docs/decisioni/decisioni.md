@@ -164,6 +164,16 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Il Terreno occupa uno dei posti delle Rare in `max_per_deck` | scelta del team | 4 nov |
 | Le varianti contano insieme all'originale per il limite di copie | cambiano solo la grafica | 4 nov |
 
+### Dati di riferimento (`V9__insert_reference_data.sql`, API-15, #85)
+
+| Decisione | Perché | Quando |
+|---|---|---|
+| Una sola migrazione `V9` per rarità, fazioni e rule set | un cambiamento logico | 20 nov |
+| Le sei rarità del catalogo con `sorting_order` 1–6 e le proposte di Q-02 e Q-03 (**[DA CONFERMARE]**); Special (D-23) arriva con la prima carta speciale | Special non ha ancora carte né limiti decisi | 20 nov |
+| Fazioni con il nome completo (`Theory of the Wound`, `Theory of the Invitation`, `Theory of the Archive`, `Theory of the Dream`), id 1–4 in quest'ordine come negli esempi dell'engine; `emblem_path` segnaposto `factions/<nome>.svg`, `description` vuota finché i DSG non danno il testo | gli id coincidono con l'engine; senza id espliciti la sequenza resta allineata e il primo `POST /admin/factions` riceve il 5 | 20 nov |
+| **Nessuna riga** in `faction_bonuses`: le partite si giocano senza bonus finché i DSG non decidono D-04 dopo il report di bilanciamento (ENG-28); si inseriscono con `PUT /admin/faction-bonuses` | il bonus +2/−1 ATK porta lo scontro di vantaggio al 99,8–100% | 20 nov |
+| Rule set `1.0` attivo con le proposte: 30 punti vita (D-01), 75 round (D-02, deciso), mazzo 30 = 20 / 6 / 2 / 1 / 1, Hidden `SURVIVAL` 2 e `DAMAGE` 1, `signup_bonus` 500 (Q-11), vittoria 30 e pareggio 10 (Q-12); `created_by_id` nullo. I valori aperti restano **[DA CONFERMARE]** | si cambiano dal backoffice | 20 nov |
+
 ### Catalogo implementato
 
 | Decisione | Perché | Task |
