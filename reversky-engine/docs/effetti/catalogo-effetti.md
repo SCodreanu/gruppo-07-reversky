@@ -243,9 +243,9 @@ Prima degli effetti di Spell, Hidden, Terreni e Oggetti serve il registro (`ENG-
 | Effetto rubato o copiato: nuova istanza dal registro collegata a un'altra creatura | SCP-2521 (ruba e annulla), Kitsune (copia senza annullare): fatto con `ENG-38` (`CreatureContext.borrowEffect`, un solo effetto in prestito per creatura) | — |
 | Filtro sul bersaglio | Il Custode delle Porte Incrociate (tutti gli effetti di creatura avversari), Fascicolo Sigillato 0 (una sola applicazione, anche Spell e Hidden): Il Custode fatto con `ENG-38` (`immuneToEnemyCreatureEffects`, in `targetEnemy()` prima del Fascicolo e sui modificatori in attesa) | — |
 | Spell che collega un effetto alla creatura che la riceve | SCP-109: fatto con `ENG-34` (effetto collegato nel modificatore in attesa) | — |
-| Modifica dell'ordine del mazzo avversario | La Regina dei Sentieri Perduti (`DECK_REORDERED`) | — |
+| Modifica dell'ordine del mazzo avversario | La Regina dei Sentieri Perduti (`DECK_REORDERED`): fatto con `ENG-39` (`PlayerState.moveToBottom`) | — |
 | Rivelazione della prossima carta del mazzo | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati (`BURN_REVEALED`) | D-13, M-15 |
-| Azioni sulle Hidden avversarie | L'Operatore della Stanza 0 (la prossima Hidden lavora per l'altro giocatore), Campanello del Torii (la annulla) | D-15, M-11 |
+| Azioni sulle Hidden avversarie | L'Operatore della Stanza 0 (la prossima Hidden lavora per l'altro giocatore), Campanello del Torii (la annulla): l'Operatore fatto con `ENG-39` (incroci in attesa nel `PlayerState` avversario, `HiddenConditionService.effectiveOwner`) | D-15, M-11 |
 | Controllo delle condizioni delle Hidden nei passi del round | Remnants of Reality, Unseen Exit: fatto con `ENG-37` (`HiddenConditionService`, penalità in coda nella creatura) | D-15 |
 | Sostituzione e rimozione del Terreno in gioco, con rimozione dei suoi modificatori | tutti i Terreni, The Null Witness, The Hollow Wyrm (`TERRAIN_REMOVED`): rimozione fatta con `ENG-36` (`Terrains.remove`, `onTerrainArriving`) | D-19, D-35 |
 | DEF temporanea come scudo (assorbe i danni per prima, la scadenza non uccide) | Last Sanctuary, Survival Instinct, Bussola dei Sentieri Falsi | D-35 |

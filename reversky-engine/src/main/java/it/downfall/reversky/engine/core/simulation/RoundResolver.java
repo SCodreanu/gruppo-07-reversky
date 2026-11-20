@@ -219,12 +219,14 @@ public final class RoundResolver {
 					if (hidden.isReadyIn(combat) && hidden.card().subtype() == subtype
 							&& effects.createHidden(hidden.card().effectCode()).condition() == HiddenCondition.NONE) {
 						owner.discardHidden(hidden);
-						if (isCancelled(state, side, hidden.card())) {
-							state.log().hiddenTriggered(side, hidden.card(), "cancelled");
+						// ENG-39: una zona incrociata dall'Operatore della Stanza 0 lavora per l'avversario
+						Side effective = HiddenConditionService.effectiveOwner(state, owner, hidden.card());
+						if (isCancelled(state, effective, hidden.card())) {
+							state.log().hiddenTriggered(effective, hidden.card(), "cancelled");
 							continue;
 						}
 						effects.createHidden(hidden.card().effectCode())
-								.trigger(new EffectContext(state, side, hidden.card()));
+								.trigger(new EffectContext(state, effective, hidden.card()));
 						if (deaths.resolve(state)) {
 							return true;
 						}

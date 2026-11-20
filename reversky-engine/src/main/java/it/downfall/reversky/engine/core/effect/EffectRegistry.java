@@ -49,12 +49,14 @@ import it.downfall.reversky.engine.core.effect.impl.NopperaBoEffect;
 import it.downfall.reversky.engine.core.effect.impl.NullWitnessEffect;
 import it.downfall.reversky.engine.core.effect.impl.NureOnnaEffect;
 import it.downfall.reversky.engine.core.effect.impl.NurikabeEffect;
+import it.downfall.reversky.engine.core.effect.impl.QueenOfLostPathsEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainArmorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RainPreacherEffect;
 import it.downfall.reversky.engine.core.effect.impl.RegistryPactEffect;
 import it.downfall.reversky.engine.core.effect.impl.RemnantsOfRealityEffect;
 import it.downfall.reversky.engine.core.effect.impl.ReverseFusionEffect;
 import it.downfall.reversky.engine.core.effect.impl.RokurokubiEffect;
+import it.downfall.reversky.engine.core.effect.impl.RoomZeroOperatorEffect;
 import it.downfall.reversky.engine.core.effect.impl.RootboundDoppelgangerEffect;
 import it.downfall.reversky.engine.core.effect.impl.Scp001Effect;
 import it.downfall.reversky.engine.core.effect.impl.Scp049Effect;
@@ -187,6 +189,8 @@ public final class EffectRegistry {
 				.registerCreature(BakuEffect.CODE, BakuEffect::new)
 				.registerCreature(KitsuneEffect.CODE, KitsuneEffect::new)
 				.registerCreature(CrossedDoorsKeeperEffect.CODE, CrossedDoorsKeeperEffect::new)
+				.registerCreature(QueenOfLostPathsEffect.CODE, QueenOfLostPathsEffect::new)
+				.registerCreature(RoomZeroOperatorEffect.CODE, RoomZeroOperatorEffect::new)
 				.registerSpell(BiteOfReverseEffect.CODE, BiteOfReverseEffect::new)
 				.registerSpell(SkinFractureEffect.CODE, SkinFractureEffect::new)
 				.registerSpell(DissolutionEffect.CODE, DissolutionEffect::new)

@@ -192,6 +192,14 @@ public void onEnterPlay(CreatureContext ctx) {
 
 **Il Custode delle Porte Incrociate** non è un effetto `NULLIFY`: è un filtro sul bersaglio (`immuneToEnemyCreatureEffects()`). `targetEnemy()` degli effetti avversari non lo trova (niente danni, malus, sigilli, congelamenti, annullamenti, né Baku), e lo controlla prima del Fascicolo Sigillato 0, che così non si consuma; il `RoundResolver` scarta i modificatori in attesa con origine `EFFECT` dell'avversario che arrivano a lui (Bell Witch, il gruppo di Cervo Bianco), senza log. Gli effetti avversari che lo leggono soltanto (Hounds, Bigfoot, Skin-Stealers, SCP-2006) funzionano; Spell, Hidden, Terreni e Oggetti avversari lo colpiscono normalmente. Il suo +2 ATK contro una creatura con effetto sta in `modifyOutgoingAttack`, quindi nessun sigillo lo tocca.
 
+### Mazzo e Hidden dell'avversario
+
+Deciso il 19 novembre (`ENG-39`):
+
+- **La Regina dei Sentieri Perduti** sposta una carta nel mazzo avversario con `PlayerState.moveToBottom(indice)` ed evento `DECK_REORDERED` (lato del proprietario del mazzo, posizione da 1). Guarda le prossime tre creature (Spell, Hidden, Terreni e Oggetti restano al loro posto) e manda in fondo a tutto il mazzo la più rara per `rarityOrder`, a parità quella che verrebbe pescata prima; con meno di due creature nel mazzo non fa niente, e se la carta scelta è già l'ultima non c'è evento. Lo fa all'entrata, prima del −2 DEF, e a ogni eliminazione (`onKill`). Lo spostamento non colpisce la creatura avversaria: Il Custode delle Porte Incrociate e il Fascicolo Sigillato 0 non lo fermano, il −2 DEF sì.
+- **L'Operatore della Stanza 0** mette all'entrata un **incrocio** sulla zona Hidden avversaria (`PlayerState.crossNextHidden`), se `targetEnemy()` c'è: Il Custode ne è immune e il Fascicolo Sigillato 0 dell'avversario lo ferma. Gli incroci si sommano (due Operatori incrociano le prossime due Hidden) e restano anche dopo la morte dell'Operatore. La prossima Hidden che si attiva da quella zona, di qualunque tipo e in qualunque momento, usa un incrocio (`HiddenConditionService.effectiveOwner`) e lavora per l'avversario del suo proprietario: il suo `EffectContext` ha come proprietario il lato dell'Operatore, quindi una `DAMAGE` colpisce la creatura del suo proprietario e una `SURVIVAL` aiuta quella dell'Operatore. Da lì in poi tutto guarda il proprietario effettivo: il Campanello del Torii e il Fascicolo Sigillato 0 del proprietario originale la possono annullare (una Hidden annullata usa l'incrocio lo stesso), e `HIDDEN_TRIGGERED` ha il lato del proprietario effettivo, preceduto da un `EFFECT_TRIGGERED` dell'Operatore ("crosses the lines: Hostile Presence works for the Challenger").
+- Finché l'incrocio è in attesa, le Hidden **con condizione** di quella zona si controllano sulla creatura dell'Operatore e non aiutano più quella del loro proprietario. Quando la creatura di un giocatore soddisfa una condizione, il motore cerca prima nella sua zona (se non è incrociata), poi in quella dell'avversario (se è incrociata).
+
 ## Esempi
 
 ### Effetto semplice: Hidebehind
@@ -365,6 +373,8 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `BAKU` | Baku | creatura, `onEnemyEffectActivating`, `NULLIFY` (divora l'effetto avversario fino a fine scontro, +2 DEF una volta per avversaria) | fatto, `NullifyEffectsTest` |
 | `KITSUNE` | Kitsune | creatura, `onCombatStart` (copia l'effetto dell'avv. fino a fine scontro, +3 DEF se copia, sigillo di 3) | fatto, `CopyAndImmunityEffectsTest` |
 | `CROSSED_DOORS_KEEPER` | Il Custode delle Porte Incrociate (The Crossed Doors Keeper) | creatura, `immuneToEnemyCreatureEffects`, `modifyOutgoingAttack` (+2 contro una creatura con effetto) | fatto, `CopyAndImmunityEffectsTest` |
+| `QUEEN_OF_LOST_PATHS` | La Regina dei Sentieri Perduti | creatura, `onEnterPlay`, `onKill` (manda in fondo la più rara delle prossime tre creature del mazzo avversario; all'entrata avv. −2 DEF) | fatto, `OpponentDeckAndHiddenEffectsTest` |
+| `ROOM_ZERO_OPERATOR` | L'Operatore della Stanza 0 | creatura, `onEnterPlay` (la prossima Hidden avversaria lavora per il suo proprietario) | fatto, `OpponentDeckAndHiddenEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
