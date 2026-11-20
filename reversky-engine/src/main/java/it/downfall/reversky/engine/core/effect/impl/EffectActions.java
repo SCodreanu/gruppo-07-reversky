@@ -99,6 +99,30 @@ final class EffectActions {
 	}
 
 	/**
+	 * Indica se la carta di una creatura ha un effetto (ENG-38, deciso il 19 novembre): conta il codice della carta,
+	 * anche se l'effetto è annullato (Il Predicatore sotto la Pioggia, SCP-2521, Kitsune, Il Custode delle Porte
+	 * Incrociate).
+	 *
+	 * @param creature la creatura
+	 * @return {@code true} se la carta ha un codice d'effetto
+	 */
+	static boolean hasEffect(CreatureInPlay creature) {
+		String code = creature.card().effectCode();
+		return code != null && !code.isBlank();
+	}
+
+	/**
+	 * Parte di messaggio di un annullamento finché la creatura resta in campo (ENG-38); l'annullamento lo fa chi
+	 * chiama, con {@link CreatureInPlay#cancelEffect}.
+	 *
+	 * @param target creatura il cui effetto è annullato
+	 * @return la parte di messaggio
+	 */
+	static String cancel(CreatureInPlay target) {
+		return "cancels " + target.name() + "'s effect while it stays in play";
+	}
+
+	/**
 	 * Registra le parti in un solo evento, se ce ne sono.
 	 *
 	 * @param ctx   contesto dell'effetto

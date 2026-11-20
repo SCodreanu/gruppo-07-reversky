@@ -26,6 +26,14 @@ public final class CreatureInPlay {
 	private final CreatureEffect effect;
 	/** Effetti collegati da altre carte (SCP-109, ENG-34), nell'ordine in cui sono arrivati. */
 	private final List<CreatureEffect> attachedEffects = new ArrayList<>();
+	/** Effetto preso in prestito da un'altra creatura (SCP-2521, Kitsune, ENG-38), o {@code null}. */
+	private CreatureEffect borrowedEffect;
+	/** Quanto dura il prestito: per tutta la permanenza o fino a fine scontro. */
+	private ModifierDuration.Kind borrowedUntil;
+	/** Annullamento del suo effetto (ENG-38): per tutta la permanenza o fino a fine scontro, o {@code null}. */
+	private ModifierDuration.Kind cancelledUntil;
+	/** Bonus ATK che il suo effetto (o quello in prestito) le ha dato: li sospende l'annullamento (ENG-38). */
+	private final List<StatModifier> ownEffectBonuses = new ArrayList<>();
 	private final List<StatModifier> modifiers = new ArrayList<>();
 	/** Ferite non ancora riferite all'effetto, nell'ordine in cui sono avvenute (deciso il 18 novembre). */
 	private final List<Wound> unreportedWounds = new ArrayList<>();
@@ -86,16 +94,133 @@ public final class CreatureInPlay {
 	}
 
 	/**
-	 * Tutti gli effetti che il motore chiama per questa creatura (ENG-34, deciso il 18 novembre): prima il suo, poi
-	 * quelli collegati da altre carte, nell'ordine in cui sono arrivati.
+	 * Tutti gli effetti che il motore chiama per questa creatura (ENG-34, deciso il 18 novembre): prima i suoi
+	 * ({@link #ownEffects()}), poi quelli collegati da altre carte, nell'ordine in cui sono arrivati.
 	 *
 	 * @return gli effetti, anche nessuno
 	 */
 	public List<CreatureEffect> effects() {
-		List<CreatureEffect> effects = new ArrayList<>();
-		effect().ifPresent(effects::add);
+		List<CreatureEffect> effects = ownEffects();
 		effects.addAll(attachedEffects);
 		return effects;
+	}
+
+	/**
+	 * Gli effetti che sono della creatura (ENG-38, deciso il 19 novembre): il suo e quello in prestito, se c'è. Sono
+	 * quelli che un annullamento spegne e che Baku divora; gli effetti collegati da una Spell non ne fanno parte.
+	 *
+	 * @return il suo effetto e quello in prestito, o nessuno se l'effetto è annullato
+	 */
+	public List<CreatureEffect> ownEffects() {
+		List<CreatureEffect> effects = new ArrayList<>();
+		if (cancelledUntil == null) {
+			effect().ifPresent(effects::add);
+			if (borrowedEffect != null) {
+				effects.add(borrowedEffect);
+			}
+		}
+		return effects;
+	}
+
+	/**
+	 * Effetto preso in prestito da un'altra creatura: rubato (SCP-2521) o copiato (Kitsune).
+	 *
+	 * @return l'effetto in prestito, anche se annullato, o vuoto
+	 */
+	public Optional<CreatureEffect> borrowedEffect() {
+		return Optional.ofNullable(borrowedEffect);
+	}
+
+	/**
+	 * Prende in prestito l'effetto di un'altra creatura (ENG-38, deciso il 19 novembre): una nuova istanza, che il
+	 * motore chiama dopo il suo effetto come se fosse suo. Ce n'è uno solo alla volta, così un effetto in prestito non
+	 * ne prende un altro (SCP-2521 contro SCP-2521, Kitsune che copia SCP-2521).
+	 *
+	 * @param borrowed nuova istanza dell'effetto, solo per questa creatura
+	 * @param duration {@code whileInPlay} (SCP-2521) o {@code untilCombatEnd} (Kitsune: si toglie quando l'avversaria
+	 *                 esce)
+	 * @return {@code false} se ha già un effetto in prestito: allora non cambia niente
+	 * @throws IllegalArgumentException se la durata è a round
+	 */
+	public boolean borrowEffect(CreatureEffect borrowed, ModifierDuration duration) {
+		Objects.requireNonNull(borrowed, "borrowed");
+		ModifierDuration.Kind until = withoutRounds(duration);
+		if (borrowedEffect != null) {
+			return false;
+		}
+		borrowedEffect = borrowed;
+		borrowedUntil = until;
+		return true;
+	}
+
+	/**
+	 * Indica se l'effetto della creatura è annullato.
+	 *
+	 * @return {@code true} se nessuno dei suoi effetti scatta
+	 */
+	public boolean isEffectCancelled() {
+		return cancelledUntil != null;
+	}
+
+	/**
+	 * Annulla l'effetto della creatura e quello in prestito (ENG-38, regola degli effetti annullati, deciso il 19
+	 * novembre): non scattano più, e i bonus ATK che si sono dati sono sospesi per la stessa durata; la DEF già
+	 * guadagnata resta. Gli effetti collegati da una Spell non si annullano. Un annullamento per tutta la permanenza
+	 * vince su uno fino a fine scontro.
+	 *
+	 * @param duration {@code whileInPlay} (Il Predicatore sotto la Pioggia, SCP-2521) o {@code untilCombatEnd} (Baku:
+	 *                 finché Baku è in campo)
+	 * @return {@code true} se l'annullamento è nuovo o dura di più; {@code false} se c'era già
+	 * @throws IllegalArgumentException se la durata è a round
+	 */
+	public boolean cancelEffect(ModifierDuration duration) {
+		ModifierDuration.Kind until = withoutRounds(duration);
+		if (cancelledUntil == ModifierDuration.Kind.WHILE_IN_PLAY || cancelledUntil == until) {
+			return false;
+		}
+		cancelledUntil = until;
+		for (StatModifier bonus : ownEffectBonuses) {
+			bonus.suspend(duration);
+		}
+		return true;
+	}
+
+	/**
+	 * Ricorda i bonus ATK che un suo effetto le ha appena dato (ENG-38): i modificatori di ATK positivi con origine
+	 * {@code EFFECT} e il suo lato arrivati dopo {@code before}. Lo chiama il motore intorno a ogni chiamata dei suoi
+	 * effetti, così l'annullamento sospende solo quelli (non, per esempio, il +1 ATK di SCP-2317 a un'alleata).
+	 *
+	 * @param before i modificatori prima della chiamata
+	 */
+	public void recordOwnEffectBonuses(List<StatModifier> before) {
+		for (StatModifier modifier : modifiers) {
+			if (modifier.source() == ModifierSource.EFFECT && modifier.side() == side
+					&& modifier.stat() == Stat.ATTACK && modifier.amount() > 0 && !containsSame(before, modifier)
+					&& !containsSame(ownEffectBonuses, modifier)) {
+				ownEffectBonuses.add(modifier);
+			}
+		}
+	}
+
+	/**
+	 * Indica se gli effetti delle creature avversarie non la colpiscono (Il Custode delle Porte Incrociate, ENG-38).
+	 *
+	 * @return {@code true} se uno dei suoi effetti la rende immune
+	 */
+	public boolean isImmuneToEnemyCreatureEffects() {
+		return ownEffects().stream().anyMatch(CreatureEffect::immuneToEnemyCreatureEffects);
+	}
+
+	private static boolean containsSame(List<StatModifier> list, StatModifier modifier) {
+		return list.stream().anyMatch(item -> item == modifier);
+	}
+
+	private static ModifierDuration.Kind withoutRounds(ModifierDuration duration) {
+		if (duration.kind() == ModifierDuration.Kind.ROUNDS) {
+			throw new IllegalArgumentException("Serve una durata finché resta in campo o fino a fine scontro: "
+					+ duration);
+		}
+		return duration.kind();
 	}
 
 	/**
@@ -560,6 +685,15 @@ public final class CreatureInPlay {
 		modifiers.removeIf(StatModifier::endCombat);
 		// "nei primi round dello scontro": se lo scontro finisce prima, i round restanti si perdono
 		roundStartShield = null;
+		// ENG-38: finisce l'annullamento di Baku (le sospensioni dei bonus sono finite qui sopra) e la copia di Kitsune
+		if (cancelledUntil == ModifierDuration.Kind.UNTIL_COMBAT_END) {
+			cancelledUntil = null;
+		}
+		if (borrowedUntil == ModifierDuration.Kind.UNTIL_COMBAT_END) {
+			borrowedEffect = null;
+			borrowedUntil = null;
+		}
+		ownEffectBonuses.removeIf(bonus -> !containsSame(modifiers, bonus));
 	}
 
 	private List<StatModifier> shieldsInAbsorbOrder() {

@@ -42,7 +42,7 @@ class EffectControllerTest {
 		String body = mockMvc.perform(get("/api/v1/effects"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$[0].code").value("BELL_WITCH"))
+				.andExpect(jsonPath("$[0].code").value("BAKU"))
 				.andExpect(jsonPath("$[0].appliesTo").value("CREATURE"))
 				.andReturn().getResponse().getContentAsString();
 

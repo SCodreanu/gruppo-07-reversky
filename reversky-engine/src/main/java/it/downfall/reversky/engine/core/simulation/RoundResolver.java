@@ -10,6 +10,7 @@ import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
 import it.downfall.reversky.engine.core.model.CreatureInPlay;
 import it.downfall.reversky.engine.core.model.MatchState;
+import it.downfall.reversky.engine.core.model.ModifierSource;
 import it.downfall.reversky.engine.core.model.PendingModifier;
 import it.downfall.reversky.engine.core.model.PlayerState;
 import it.downfall.reversky.engine.core.model.SetHidden;
@@ -188,6 +189,11 @@ public final class RoundResolver {
 			return;
 		}
 		for (PendingModifier modifier : owner.takePendingModifiers()) {
+			if (modifier.side() != creature.side() && modifier.source() == ModifierSource.EFFECT
+					&& creature.isImmuneToEnemyCreatureEffects()) {
+				// ENG-38: Il Custode delle Porte Incrociate, prima del Fascicolo Sigillato 0 che così non si consuma
+				continue;
+			}
 			if (modifier.side() != creature.side()
 					&& items.cancelEnemyEffect(state, owner, modifier.card(), creature.name())) {
 				continue;

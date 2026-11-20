@@ -57,12 +57,18 @@ public non-sealed interface CreatureEffect extends CardEffect {
 
 	/** La creatura ha DEF 0 o meno e sta per morire: true se l'effetto la salva (ENG-37, D-36). */
 	default boolean onLethalDamage(CreatureContext ctx) { return false; }
+
+	/** L'effetto di una creatura avversaria sta per attivarsi: true se l'effetto lo divora (Baku, M-10, ENG-38). */
+	default boolean onEnemyEffectActivating(CreatureContext ctx, CreatureInPlay enemy) { return false; }
+
+	/** Gli effetti delle creature avversarie non colpiscono la creatura (Il Custode delle Porte Incrociate, ENG-38). */
+	default boolean immuneToEnemyCreatureEffects() { return false; }
 }
 ```
 
 `code()` viene da `CardEffect`.
 
-`CreatureContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria in campo (`enemy()`, per leggerla), i due giocatori (`owner()`, `opponent()`), il round (`round()`) e il `MatchLog` (`log()`). Per **colpire** la creatura avversaria (danno o malus) un effetto usa `targetEnemy()`: è vuoto se l'avversaria non c'è o ha già DEF 0 o meno, e se un Fascicolo Sigillato 0 dell'avversario annulla l'attivazione (deciso il 18 novembre). Si crea un contesto per ogni chiamata, quindi il Fascicolo si controlla una volta per attivazione.
+`CreatureContext` dà accesso a: la creatura stessa (`self()`), la creatura avversaria in campo (`enemy()`, per leggerla), i due giocatori (`owner()`, `opponent()`), il round (`round()`) e il `MatchLog` (`log()`). Per **colpire** la creatura avversaria (danno o malus) un effetto usa `targetEnemy()`: è vuoto se l'avversaria non c'è o ha già DEF 0 o meno, se è Il Custode delle Porte Incrociate (deciso il 19 novembre, `ENG-38`) e se un Fascicolo Sigillato 0 dell'avversario annulla l'attivazione (deciso il 18 novembre). Si crea un contesto per ogni chiamata, quindi il Fascicolo si controlla una volta per attivazione. Per un effetto rubato o copiato ci sono `borrowEffect(codice, durata)` e `nextActivation()` (vedi [Effetti annullati, divorati, rubati e copiati](#effetti-annullati-divorati-rubati-e-copiati)).
 
 `afterDamage` riceve il **danno** dell'attacco (dopo il passo 3: "un attacco subito" conta solo con danno sopra 0, D-33) e la **ferita**: la DEF persa davvero sopra 0, dopo gli scudi (`CreatureInPlay.takeDamage` la restituisce).
 
@@ -81,13 +87,13 @@ Li usano Wretches, Shuten-dōji e SCP-096 (`onWounded`), Nure-onna e The Unseen 
 
 La **guarigione** è `CreatureInPlay.heal(n)` (deciso il 18 novembre): DEF permanente in più, senza superare la DEF all'entrata, scudi compresi, quindi uno scudo dell'entrata scaduto si può recuperare. Una creatura con DEF 0 o meno è morta e non recupera niente (D-16), quindi una guarigione non salva mai da una morte. Le ferite già subite restano in `woundsTaken()`. Nel log è un `EFFECT_TRIGGERED` ("recovers 3 DEF (DEF 9)"), nessun evento nuovo.
 
-Il **sigillo dei bonus ATK** (deciso il 18 novembre, `ENG-35`) è un modificatore (`StatModifier.sealAttack`, `Stat.ATTACK_SEAL`) con origine, lato e durata come gli altri: finché è attivo, i bonus ATK della creatura (i modificatori di ATK positivi, di qualunque origine, anche quelli ricevuti dopo) contano tanti punti in meno, mai sotto 0. I malus contano sempre per intero e il bonus di fazione, che non è un modificatore, non si sigilla. `CreatureInPlay.effectiveAttackBonus()` dà i bonus che contano davvero: "se non ne ha" (L'Addetto alle Uscite, Static Interference) vuol dire che è 0, quindi un bonus già tutto sigillato non conta. Il sigillo dell'Addetto e di Deathmoths resta sull'avversaria per tutta la sua permanenza, anche dopo la loro morte; quello di Static Interference dura fino a fine scontro. Lo userà anche Kitsune (`ENG-38`).
+Il **sigillo dei bonus ATK** (deciso il 18 novembre, `ENG-35`) è un modificatore (`StatModifier.sealAttack`, `Stat.ATTACK_SEAL`) con origine, lato e durata come gli altri: finché è attivo, i bonus ATK della creatura (i modificatori di ATK positivi, di qualunque origine, anche quelli ricevuti dopo) contano tanti punti in meno, mai sotto 0. I malus contano sempre per intero e il bonus di fazione, che non è un modificatore, non si sigilla. `CreatureInPlay.effectiveAttackBonus()` dà i bonus che contano davvero: "se non ne ha" (L'Addetto alle Uscite, Static Interference) vuol dire che è 0, quindi un bonus già tutto sigillato non conta. Il sigillo dell'Addetto e di Deathmoths resta sull'avversaria per tutta la sua permanenza, anche dopo la loro morte; quello di Static Interference dura fino a fine scontro. Lo usa anche Kitsune (`ENG-38`), fino a fine scontro.
 
 SCP-3999 **toglie** i bonus (`CreatureInPlay.removeBonuses()`, deciso il 18 novembre): i modificatori di ATK positivi e gli scudi, di qualunque origine, per sempre. Restano malus, sigilli, congelamenti e la DEF permanente (bonus DEF di fazione e "+N DEF" degli effetti compresi); dello scudo sparisce solo la parte non usata, quindi non uccide mai. Il bonus del Terreno tolto non torna finché non arriva un altro Terreno (D-17). Il suo +1 ATK arriva anche se il Fascicolo Sigillato 0 annulla l'attivazione sull'avversaria, come il bonus di Smiler.
 
 Un Terreno **esce** per un effetto (deciso il 18 novembre, `ENG-36`) con `Terrains.remove`: evento `TERRAIN_REMOVED` con la causa, poi le creature perdono i suoi bonus come quando è sostituito (D-19). The Null Witness lo toglie solo se l'ha pescato l'avversario, e lo toglie anche se il Fascicolo Sigillato 0 salva la creatura, perché il Terreno non è la creatura. The Hollow Wyrm inghiotte quello in gioco all'entrata e quelli pescati dopo: prima di piazzare un Terreno, il `TerrainService` chiede alle creature vive, nell'ordine D-30, `onTerrainArriving`; se una lo inghiotte, il Terreno non si piazza, non sostituisce niente e non c'è `TERRAIN_PLACED`. The Null Witness toglie all'avversaria, dopo i 4 danni, i **modificatori temporanei** (`CreatureInPlay.removeTemporaryModifiers()`): tutti quelli con una durata a round o fino a fine scontro, di ogni segno; restano quelli che durano finché la creatura resta in campo, come le Spell (D-12).
 
-Un **effetto collegato** è l'effetto di un'altra carta che la creatura porta finché resta in campo (deciso il 18 novembre, `ENG-34`): arriva con un modificatore in attesa (`PendingModifier.attached()`), che lo passa alla creatura (`CreatureInPlay.attachEffect`). Il motore chiama tutti gli effetti di una creatura (`CreatureInPlay.effects()`): prima il suo, poi quelli collegati, nell'ordine in cui sono arrivati; la priorità D-30 la decide l'effetto della creatura. Un effetto collegato è della Spell, non della creatura: annullare l'effetto della creatura non lo tocca. Lo usa SCP-109.
+Un **effetto collegato** è l'effetto di un'altra carta che la creatura porta finché resta in campo (deciso il 18 novembre, `ENG-34`): arriva con un modificatore in attesa (`PendingModifier.attached()`), che lo passa alla creatura (`CreatureInPlay.attachEffect`). Il motore chiama tutti gli effetti di una creatura (`CreatureInPlay.effects()`): prima il suo, poi quello in prestito (`ENG-38`), poi quelli collegati, nell'ordine in cui sono arrivati; la priorità D-30 la decide l'effetto della creatura. Un effetto collegato è della Spell, non della creatura: annullare l'effetto della creatura non lo tocca. Lo usa SCP-109.
 
 `onCombatStart` (aggiunto il 18 novembre con `ENG-25`, D-31) scatta a ogni inizio di scontro per entrambe le creature, cioè ogni volta che una creatura affronta una nuova avversaria: quando entra e quando sopravvive e ne arriva un'altra. Serve agli effetti "contro ogni avversaria" (Mothman, Spearfinger, Bigfoot). `onEnterPlay` resta una volta per entrata.
 
@@ -152,26 +158,39 @@ Il danno inflitto da un effetto, una Spell, una Hidden, un Terreno o un Oggetto 
 
 Così l'ordine è sempre lo stesso e la partita è riproducibile. Approvato dai DSG il 9 novembre (D-30).
 
-### Effetti annullati
+### Effetti annullati, divorati, rubati e copiati
 
-Il Predicatore sotto la Pioggia e SCP-2521 annullano l'effetto della creatura avversaria **finché resta in campo**; Baku divora ogni attivazione di un effetto avversario **finché Baku è in campo**. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento.
+Il Predicatore sotto la Pioggia e SCP-2521 annullano l'effetto della creatura avversaria **finché resta in campo**; Baku divora ogni attivazione di un effetto avversario **finché Baku è in campo**. Hanno priorità `NULLIFY`, quindi agiscono **prima** che l'effetto avversario possa partire nello stesso momento; se due effetti `NULLIFY` si incontrano, agisce prima quello dello sfidante. Il motore è fatto con `ENG-38` (deciso il 19 novembre).
 
-Regola degli effetti annullati:
-- un effetto annullato **non scatta** più (nessun momento dell'interfaccia viene chiamato);
-- i suoi **bonus ATK sono sospesi** finché resta annullato;
-- la **DEF già guadagnata resta**.
+**Annullamento.** `CreatureInPlay.cancelEffect(durata)` annulla l'effetto della creatura e quello che ha in prestito. La durata è `whileInPlay` (Il Predicatore, SCP-2521: tutta la permanenza della creatura annullata, anche dopo la morte di chi l'ha annullata, come il sigillo dell'Addetto alle Uscite) o `untilCombatEnd` (Baku: finché Baku è in campo); un annullamento per tutta la permanenza vince su uno fino a fine scontro. Regola degli effetti annullati:
+
+- un effetto annullato **non scatta** più: `CreatureInPlay.effects()` dà solo gli effetti collegati da una Spell, quindi il motore non chiama nessun momento del suo effetto né di quello in prestito (`onDeath`, `onLethalDamage`, `onTerrainArriving` compresi), e la sua priorità D-30 diventa `NORMAL`;
+- i **bonus ATK che l'effetto si è dato** sono sospesi per la stessa durata. Intorno a ogni chiamata degli effetti della creatura il `CreatureEffectService` ricorda i modificatori di ATK positivi con origine `EFFECT` che le arrivano (`CreatureInPlay.recordOwnEffectBonuses`): sono quelli che l'annullamento sospende. Restano i malus dati all'avversaria, la DEF, gli scudi, i bonus di Spell, Hidden, Terreni e Oggetti e i regali di un'alleata (il +1 ATK di SCP-2317);
+- la **DEF già guadagnata resta**. The Hollow Wyrm annullato perde il +3 ATK, tiene il +3 DEF e non inghiotte più i Terreni.
+
+"Avere un effetto" vuol dire che la carta ha un codice, anche se l'effetto è annullato: il Predicatore non dà il −2 ATK a una creatura con l'effetto già annullato (lo annulla di nuovo, senza log), SCP-2521 la deruba e Kitsune la copia. Annullare passa da `targetEnemy()`: Il Custode delle Porte Incrociate non si annulla, e il Fascicolo Sigillato 0 dell'avversario ferma il primo annullamento (niente −2 ATK, niente furto).
 
 ```java
 @Override
-public void onEnterPlay(EffectContext ctx) {
-	ctx.opponent().disableEffect();
-	ctx.log().effect(ctx.self(), "cancels the effect of " + ctx.opponent().name());
+public void onEnterPlay(CreatureContext ctx) {
+	List<String> parts = new ArrayList<>();
+	ctx.targetEnemy().ifPresent(enemy -> {
+		if (!EffectActions.hasEffect(enemy)) {
+			parts.add(EffectActions.attack(enemy, ctx.self(), PENALTY, ModifierDuration.whileInPlay(),
+					"while in play"));
+		} else if (enemy.cancelEffect(ModifierDuration.whileInPlay())) {
+			parts.add(EffectActions.cancel(enemy));
+		}
+	});
+	EffectActions.log(ctx, parts);
 }
 ```
 
-Se due effetti `NULLIFY` si incontrano, agisce prima quello dello sfidante e annulla l'altro.
+**Baku** (momento M-10). Prima di chiamare un qualunque momento di un effetto della creatura (il suo o quello in prestito, non quelli collegati), il motore chiede agli effetti dell'avversaria in campo `onEnemyEffectActivating`; se uno divora l'attivazione, il momento non si chiama. Baku è pronto dopo il suo `onEnterPlay` (tra due Baku divora quello che risolve per primo nell'ordine D-30), annulla l'effetto fino a fine scontro e prende +2 DEF permanente al massimo una volta per creatura avversaria. Siccome la prima chiamata di un effetto è il suo `onEnterPlay`, il suo `onCombatStart` o un controllo della DEF, in pratica Baku divora ogni avversaria con un effetto appena si affrontano, anche quella il cui effetto non sarebbe mai scattato (The Undying Blossom); allo stesso modo il Fascicolo Sigillato 0 dell'avversario si consuma sulla prima chiamata, anche se non avrebbe fatto niente, e Baku divora la chiamata dopo. Quando Baku esce (fine scontro) l'effetto della sopravvissuta riparte, già per il suo `onKill`. Contro Kitsune, Baku divora la copia stessa: niente copia, sigillo e DEF.
 
-Il Custode delle Porte Incrociate **non** è un effetto `NULLIFY`: è immune agli effetti delle creature avversarie (filtro sul bersaglio), quindi non li spegne ma non ne subisce le conseguenze. Spell, Hidden, Terreni e Oggetti avversari lo colpiscono normalmente.
+**Effetti in prestito.** Un effetto rubato (SCP-2521) o copiato (Kitsune) è una nuova istanza dal registro, con contatori nuovi: `CreatureContext.borrowEffect(codice, durata)` la crea e la mette nella creatura (`CreatureInPlay.borrowEffect`), che la chiama dopo il suo effetto e prima di quelli collegati, come se fosse sua ("sé" e "alleate" si leggono dal suo lato). Parte come appena entrata: chi la prende chiama subito i suoi momenti d'entrata con `ctx.nextActivation()`, un contesto nuovo (SCP-2521 il suo `onEnterPlay`, poi il suo `onCombatStart` arriva nel passo dopo; Kitsune, che copia in `onCombatStart`, tutti e due). Una creatura ha un solo effetto in prestito, quindi un effetto in prestito non ne prende un altro (SCP-2521 contro SCP-2521, Kitsune che copia SCP-2521) e non ci sono cicli. L'effetto rubato da SCP-2521 resta finché SCP-2521 è in campo, anche dopo la morte della vittima; la copia di Kitsune si toglie a fine scontro, e quello che ha già dato a Kitsune resta.
+
+**Il Custode delle Porte Incrociate** non è un effetto `NULLIFY`: è un filtro sul bersaglio (`immuneToEnemyCreatureEffects()`). `targetEnemy()` degli effetti avversari non lo trova (niente danni, malus, sigilli, congelamenti, annullamenti, né Baku), e lo controlla prima del Fascicolo Sigillato 0, che così non si consuma; il `RoundResolver` scarta i modificatori in attesa con origine `EFFECT` dell'avversario che arrivano a lui (Bell Witch, il gruppo di Cervo Bianco), senza log. Gli effetti avversari che lo leggono soltanto (Hounds, Bigfoot, Skin-Stealers, SCP-2006) funzionano; Spell, Hidden, Terreni e Oggetti avversari lo colpiscono normalmente. Il suo +2 ATK contro una creatura con effetto sta in `modifyOutgoingAttack`, quindi nessun sigillo lo tocca.
 
 ## Esempi
 
@@ -341,6 +360,11 @@ L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API 
 | `UNDYING_BLOSSOM` | The Undying Blossom | creatura, `onLethalDamage` (una volta resta con 4 DEF, perde i bonus a durata, 3 danni all'avversaria) | fatto, `SurvivalEffectsTest` |
 | `NULL_WITNESS` | The Null Witness | creatura, `onEnterPlay` (4 danni, poi via i modificatori temporanei; toglie il Terreno pescato dall'avversario) | fatto, `TerrainRemovalEffectsTest` |
 | `HOLLOW_WYRM` | The Hollow Wyrm | creatura, `onEnterPlay`, `onTerrainArriving` (inghiotte i Terreni, +3 ATK e +3 DEF per ognuno; senza Terreno all'entrata 4 danni) | fatto, `TerrainRemovalEffectsTest` |
+| `RAIN_PREACHER` | Il Predicatore sotto la Pioggia (The Rain Preacher) | creatura, `onEnterPlay`, `NULLIFY` (annulla l'effetto dell'avv. finché resta in campo; senza effetto −2 ATK) | fatto, `NullifyEffectsTest` |
+| `SCP_2521` | SCP-2521 | creatura, `onEnterPlay`, `NULLIFY` (annulla l'effetto dell'avv.; contro Rare o inferiore lo ruba) | fatto, `NullifyEffectsTest` |
+| `BAKU` | Baku | creatura, `onEnemyEffectActivating`, `NULLIFY` (divora l'effetto avversario fino a fine scontro, +2 DEF una volta per avversaria) | fatto, `NullifyEffectsTest` |
+| `KITSUNE` | Kitsune | creatura, `onCombatStart` (copia l'effetto dell'avv. fino a fine scontro, +3 DEF se copia, sigillo di 3) | fatto, `CopyAndImmunityEffectsTest` |
+| `CROSSED_DOORS_KEEPER` | Il Custode delle Porte Incrociate (The Crossed Doors Keeper) | creatura, `immuneToEnemyCreatureEffects`, `modifyOutgoingAttack` (+2 contro una creatura con effetto) | fatto, `CopyAndImmunityEffectsTest` |
 | `BITE_OF_REVERSE` | Morso del Rovescio (Bite of the Reverse) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `SKIN_FRACTURE` | Frattura della Pelle (Skin Fracture) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |
 | `DISSOLUTION` | Dissoluzione (Dissolution) | Spell `DAMAGE`, alla pescata | fatto, `DamageSpellEffectTest` |

@@ -609,4 +609,111 @@ class CreatureInPlayTest {
 		assertThat(brute.attack()).isEqualTo(3);
 		assertThat(brute.defense()).isEqualTo(10);
 	}
+
+	@Test
+	@DisplayName("ENG-38: un effetto annullato sparisce da effects() con quello preso in prestito; i collegati restano")
+	void cancelEffect_hidesOwnAndBorrowedKeepsAttached() {
+		// Arrange
+		CreatureEffect own = () -> "OWN";
+		CreatureEffect borrowed = () -> "BORROWED";
+		CreatureEffect attached = () -> "ATTACHED";
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, own);
+		brute.attachEffect(attached);
+		assertThat(brute.borrowEffect(borrowed, ModifierDuration.whileInPlay())).isTrue();
+		assertThat(brute.effects()).containsExactly(own, borrowed, attached);
+		assertThat(brute.ownEffects()).containsExactly(own, borrowed);
+
+		// Act
+		boolean cancelled = brute.cancelEffect(ModifierDuration.whileInPlay());
+
+		// Assert
+		assertThat(cancelled).isTrue();
+		assertThat(brute.isEffectCancelled()).isTrue();
+		assertThat(brute.effects()).containsExactly(attached);
+		assertThat(brute.ownEffects()).isEmpty();
+		assertThat(brute.cancelEffect(ModifierDuration.whileInPlay())).isFalse();
+	}
+
+	@Test
+	@DisplayName("ENG-38: l'annullamento sospende solo i bonus ATK che l'effetto si è dato; DEF e altri bonus restano")
+	void cancelEffect_suspendsOnlyOwnEffectBonuses() {
+		// Arrange: Brute 3/10 con +2 ATK dal suo effetto, +1 ATK da un alleato (SCP-2317), +1 da una Spell, +2 DEF
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, () -> "OWN");
+		List<StatModifier> before = List.copyOf(brute.modifiers());
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, 2,
+				ModifierDuration.whileInPlay()));
+		brute.addDefense(2);
+		brute.recordOwnEffectBonuses(before);
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, 1,
+				ModifierDuration.whileInPlay()));
+		brute.addModifier(StatModifier.attack(ModifierSource.SPELL, Side.CHALLENGER, 1,
+				ModifierDuration.whileInPlay()));
+		assertThat(brute.attack()).isEqualTo(7);
+
+		// Act
+		brute.cancelEffect(ModifierDuration.whileInPlay());
+
+		// Assert: 3 + 1 + 1 = 5, DEF 12
+		assertThat(brute.attack()).isEqualTo(5);
+		assertThat(brute.defense()).isEqualTo(12);
+		brute.endCombat();
+		assertThat(brute.attack()).isEqualTo(5);
+	}
+
+	@Test
+	@DisplayName("ENG-38: un annullamento fino a fine scontro (Baku) finisce con lo scontro e i bonus tornano")
+	void cancelEffect_untilCombatEnd_liftsAtCombatEnd() {
+		// Arrange
+		CreatureEffect own = () -> "OWN";
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, own);
+		List<StatModifier> before = List.copyOf(brute.modifiers());
+		brute.addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.CHALLENGER, 2,
+				ModifierDuration.whileInPlay()));
+		brute.recordOwnEffectBonuses(before);
+		brute.cancelEffect(ModifierDuration.untilCombatEnd());
+		brute.endRound();
+		assertThat(brute.attack()).isEqualTo(3);
+
+		// Act
+		brute.endCombat();
+
+		// Assert
+		assertThat(brute.isEffectCancelled()).isFalse();
+		assertThat(brute.effects()).containsExactly(own);
+		assertThat(brute.attack()).isEqualTo(5);
+	}
+
+	@Test
+	@DisplayName("ENG-38: un annullamento per tutta la permanenza vince su uno fino a fine scontro")
+	void cancelEffect_whileInPlayWinsOverCombat() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, () -> "OWN");
+		brute.cancelEffect(ModifierDuration.untilCombatEnd());
+
+		// Act + Assert
+		assertThat(brute.cancelEffect(ModifierDuration.whileInPlay())).isTrue();
+		assertThat(brute.cancelEffect(ModifierDuration.untilCombatEnd())).isFalse();
+		brute.endCombat();
+		assertThat(brute.isEffectCancelled()).isTrue();
+		assertThatThrownBy(() -> brute.cancelEffect(ModifierDuration.rounds(1)))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-38: un solo effetto in prestito; quello fino a fine scontro (Kitsune) se ne va con lo scontro")
+	void borrowEffect_singleSlot_untilCombatEndRemoved() {
+		// Arrange
+		CreatureEffect copy = () -> "COPY";
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, () -> "OWN");
+
+		// Act + Assert
+		assertThat(brute.borrowEffect(copy, ModifierDuration.untilCombatEnd())).isTrue();
+		assertThat(brute.borrowEffect(() -> "OTHER", ModifierDuration.whileInPlay())).isFalse();
+		assertThat(brute.borrowedEffect()).contains(copy);
+		brute.endCombat();
+		assertThat(brute.borrowedEffect()).isEmpty();
+		assertThat(brute.borrowEffect(() -> "STOLEN", ModifierDuration.whileInPlay())).isTrue();
+		brute.endCombat();
+		assertThat(brute.borrowedEffect()).map(CreatureEffect::code).contains("STOLEN");
+	}
 }

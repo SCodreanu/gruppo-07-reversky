@@ -30,7 +30,7 @@ L'engine si sviluppa e si testa con **dati di prova** ([`examples/`](../../examp
 | *penalità* | riduzione di ATK da una carta avversaria, oppure DEF persa per un effetto, una Spell, una Hidden, un danno in attesa o un Terreno (Devouring Abyss) dell'avversario (18 novembre, `ENG-27`); il danno di un attacco e il sacrificio di una creatura (The Thorned Matriarch) non sono penalità |
 | *bonus ATK* | qualunque modificatore ATK positivo, di qualunque origine; **non** il bonus di fazione, che non è un modificatore (D-35) |
 | *"primo", "una volta"* | si contano **per entrata in campo** e con danno > 0 (D-31, D-33); *per avversaria* = di nuovo contro ogni nuova creatura avversaria (stato "ultima avversaria") |
-| *annullato* | un effetto annullato non scatta e i suoi bonus ATK sono sospesi; la DEF già guadagnata resta |
+| *annullato* | un effetto annullato non scatta e i suoi bonus ATK sono sospesi; la DEF già guadagnata resta. Dura per tutta la permanenza della creatura annullata (Il Predicatore sotto la Pioggia, SCP-2521) o finché Baku è in campo (deciso il 19 novembre, `ENG-38`) |
 
 ## Quadro numerico
 
@@ -63,7 +63,7 @@ Common senza effetto: Squonk, Fuoco fatuo (Will-o'-the-Wisp), Corvo di Cenere (A
 | Il Raccoglitore di Orme | Uncommon | `FOOTPRINT_GATHERER` | all'entrata +2 DEF finché resta in campo | `onEnterPlay` | — | P1 | DEF permanente |
 | Spearfinger | Rare | `SPEARFINGER` | il primo attacco contro ogni nuova creatura avversaria fa +2 | `modifyOutgoingAttack` | ultima avversaria | P1 | è un bonus ATK |
 | Bell Witch | Rare | `BELL_WITCH` | *Infestazione che resta*: all'inizio del secondo round 2 danni all'avv., una volta; quando muore, la prossima creatura avversaria entra con −2 DEF | `onRoundStart`, `onDeath` | `used` | P1 | D-08, D-34 |
-| Il Predicatore sotto la Pioggia (The Rain Preacher) | Rare | `RAIN_PREACHER` | *Sermone che cancella*: all'entrata annulla l'effetto dell'avv. finché resta in campo; se non ha effetto, ha invece −2 ATK finché resta in campo | `onEnterPlay` (`NULLIFY`) | — | P2 | regola degli effetti annullati ([effetti](effetti.md#effetti-annullati)) |
+| Il Predicatore sotto la Pioggia (The Rain Preacher) | Rare | `RAIN_PREACHER` | *Sermone che cancella*: all'entrata annulla l'effetto dell'avv. finché resta in campo; se non ha effetto, ha invece −2 ATK finché resta in campo | `onEnterPlay` (`NULLIFY`) | — | P2 | regola degli effetti annullati ([effetti](effetti.md#effetti-annullati-divorati-rubati-e-copiati)) |
 | The Bloodless Hound | Rare | `BLOODLESS_HOUND` | *Drenaggio senza sangue*: dopo ogni suo attacco che infligge danni recupera metà dei danni inflitti (per difetto), senza superare la DEF all'entrata; dopo un'eliminazione recupera altri 4 | `afterDamage`, `onKill` | — | P2 | `heal()` con tetto alla DEF all'entrata |
 | Mothman | Mythic | `MOTHMAN` | *Disastro annunciato*: all'entrata, e ogni volta che una creatura avversaria entra mentre Mothman è in campo, quella creatura subisce 3 danni | `onEnterPlay`, entrata avversaria | — | P1 | controllo all'entrata delle creature avversarie; D-08 |
 | Bigfoot | Mythic | `BIGFOOT` | *Ammazzagiganti*: contro Rare o superiori +4 ATK e 2 danni in meno da ogni loro attacco; contro Common e Uncommon +2 ATK | `modifyOutgoingAttack`, `modifyIncomingDamage` | — | P1 | `rarityOrder`, Mutant sopra Legendary (D-20); si controlla contro ogni avversaria |
@@ -237,11 +237,11 @@ Prima degli effetti di Spell, Hidden, Terreni e Oggetti serve il registro (`ENG-
 | `CreatureInPlay.heal()` con tetto alla DEF all'entrata (o ai valori di prima) | The Bloodless Hound, Wendigo, SCP-109, Remnants of Reality: fatto con `ENG-34` (scudi compresi nel tetto, niente per una creatura morta), "ai valori di prima" arriva con Remnants of Reality | — |
 | Soglia "metà DEF" controllata dopo ogni fase in cui cambia la DEF | Nure-onna, The Unseen Matriarch, SCP-109: fatto con `onDefenseCheck` (`ENG-26`) | M-06 |
 | Sopravvivenza a un danno letale, prima del controllo morti | The Undying Blossom, Badge di Uscita Negata (Unseen Exit agisce prima, come prevenzione al passo 3): The Undying Blossom fatta con `ENG-37` (`onLethalDamage`, prima del Badge) | D-36 |
-| Controllo all'entrata delle creature avversarie mentre una creatura è in campo | Mothman, The Stitched Corridor, The Rootbound Doppelganger, Kitsune; esteso all'arrivo di un Terreno per The Hollow Wyrm | — |
-| Effetti annullati (`NULLIFY`) | Il Predicatore sotto la Pioggia, SCP-2521 | D-30 |
-| Momento "prima dell'attivazione di un effetto avversario" | Baku | M-10 |
-| Effetto rubato o copiato: nuova istanza dal registro collegata a un'altra creatura | SCP-2521 (ruba e annulla), Kitsune (copia senza annullare) | — |
-| Filtro sul bersaglio | Il Custode delle Porte Incrociate (tutti gli effetti di creatura avversari), Fascicolo Sigillato 0 (una sola applicazione, anche Spell e Hidden) | — |
+| Controllo all'entrata delle creature avversarie mentre una creatura è in campo | Mothman, The Stitched Corridor, The Rootbound Doppelganger, Kitsune; esteso all'arrivo di un Terreno per The Hollow Wyrm. Kitsune fatta con `ENG-38` (`onCombatStart`) | — |
+| Effetti annullati (`NULLIFY`) | Il Predicatore sotto la Pioggia, SCP-2521: fatto con `ENG-38` (`CreatureInPlay.cancelEffect` con durata; sospende i bonus ATK che l'effetto si è dato) | D-30 |
+| Momento "prima dell'attivazione di un effetto avversario" | Baku: fatto con `ENG-38` (`onEnemyEffectActivating`, chiesto prima di ogni chiamata di un effetto avversario) | M-10 |
+| Effetto rubato o copiato: nuova istanza dal registro collegata a un'altra creatura | SCP-2521 (ruba e annulla), Kitsune (copia senza annullare): fatto con `ENG-38` (`CreatureContext.borrowEffect`, un solo effetto in prestito per creatura) | — |
+| Filtro sul bersaglio | Il Custode delle Porte Incrociate (tutti gli effetti di creatura avversari), Fascicolo Sigillato 0 (una sola applicazione, anche Spell e Hidden): Il Custode fatto con `ENG-38` (`immuneToEnemyCreatureEffects`, in `targetEnemy()` prima del Fascicolo e sui modificatori in attesa) | — |
 | Spell che collega un effetto alla creatura che la riceve | SCP-109: fatto con `ENG-34` (effetto collegato nel modificatore in attesa) | — |
 | Modifica dell'ordine del mazzo avversario | La Regina dei Sentieri Perduti (`DECK_REORDERED`) | — |
 | Rivelazione della prossima carta del mazzo | Richiamo della Crepa, Fusione del Rovescio, Eco dei Dimenticati (`BURN_REVEALED`) | D-13, M-15 |
