@@ -33,5 +33,26 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	// I test di bilanciamento sono lenti: si lanciano a mano con balanceTest (ENG-28, docs/test)
+	useJUnitPlatform {
+		excludeTags 'balance'
+	}
+}
+
+tasks.register('balanceTest', Test) {
+	description = 'Simulazione di bilanciamento (ENG-28): scrive il report in docs/bilanciamento.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'balance'
+	}
+	systemProperty 'balance.outputDir', file('docs/bilanciamento').absolutePath
+	// Griglia da simulare: base (default) o forme, con -PbalanceGrid=forme (BalanceGrid)
+	systemProperty 'balance.grid', findProperty('balanceGrid') ?: 'base'
+	// Il report dipende dal codice dell'engine e dal catalogo: si rigenera a ogni lancio
+	outputs.upToDateWhen { false }
+	testLogging {
+		showStandardStreams = true
+	}
 }

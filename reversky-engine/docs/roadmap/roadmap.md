@@ -98,6 +98,8 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 
 **Versione completa (30 novembre):** effetti `P1` nel registro, report di bilanciamento consegnato ai DSG.
 
+Primo report di bilanciamento con l'engine vero (20 novembre, `ENG-28`): [report-bilanciamento](../bilanciamento/report-bilanciamento.md), si rigenera con `gradlew balanceTest`. Le forme del bonus di fazione da proporre per D-04: [report-forme-bonus](../bilanciamento/report-forme-bonus.md), con `gradlew balanceTest -PbalanceGrid=forme`.
+
 ## Sprint 7 — 30 novembre – 6 dicembre: test e rifinitura
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
