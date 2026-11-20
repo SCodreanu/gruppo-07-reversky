@@ -54,6 +54,10 @@ public final class CreatureInPlay {
 	private PlacedTerrain terrainBonus;
 	/** Scudo a inizio round programmato da un Oggetto (Bussola dei Sentieri Falsi), o {@code null}. */
 	private RoundStartShield roundStartShield;
+	/** Danni prevenuti dal primo danno sopra 0 (SCP-500, ENG-40); 0 se non c'è protezione. */
+	private int damageWard;
+	/** Carte che hanno dato la protezione dal primo danno, per il log. */
+	private final List<String> damageWardCards = new ArrayList<>();
 
 	/**
 	 * Mette in campo una creatura senza effetto, con la DEF del catalogo.
@@ -231,6 +235,60 @@ public final class CreatureInPlay {
 	 */
 	public void attachEffect(CreatureEffect attached) {
 		attachedEffects.add(Objects.requireNonNull(attached, "attached"));
+	}
+
+	/**
+	 * Aggiunge una protezione dal primo danno (SCP-500, ENG-40, deciso il 20 novembre): il primo danno sopra 0 che la
+	 * creatura subisce, da un attacco o da un effetto, perde questi punti. Più protezioni si sommano sullo stesso
+	 * primo danno. Non è un modificatore né l'effetto della creatura: annullamenti e rimozioni di bonus non la toccano,
+	 * e se ne va solo con la creatura.
+	 *
+	 * @param card   nome della carta che la dà, per il log
+	 * @param amount danni prevenuti, almeno 1
+	 * @throws IllegalArgumentException se {@code amount} è minore di 1
+	 */
+	public void addDamageWard(String card, int amount) {
+		Objects.requireNonNull(card, "card");
+		if (amount < 1) {
+			throw new IllegalArgumentException("Protezione non positiva: " + amount);
+		}
+		damageWard += amount;
+		damageWardCards.add(card);
+	}
+
+	/**
+	 * Danni che la protezione dal primo danno toglierà ancora (SCP-500, ENG-40).
+	 *
+	 * @return la protezione, 0 se non ce n'è o è già stata usata
+	 */
+	public int damageWard() {
+		return damageWard;
+	}
+
+	/**
+	 * Carte che hanno dato la protezione dal primo danno ancora da usare, nell'ordine in cui sono arrivate.
+	 *
+	 * @return copia non modificabile, vuota se non c'è protezione
+	 */
+	public List<String> damageWardCards() {
+		return List.copyOf(damageWardCards);
+	}
+
+	/**
+	 * Usa la protezione dal primo danno (SCP-500, ENG-40): un danno sopra 0 la consuma tutta, anche se è più piccolo
+	 * (D-33); un danno da 0 non la tocca.
+	 *
+	 * @param damage danno in arrivo, almeno 0
+	 * @return il danno che resta, almeno 0
+	 */
+	public int useDamageWard(int damage) {
+		if (damage <= 0 || damageWard == 0) {
+			return damage;
+		}
+		int remaining = Math.max(0, damage - damageWard);
+		damageWard = 0;
+		damageWardCards.clear();
+		return remaining;
 	}
 
 	/**

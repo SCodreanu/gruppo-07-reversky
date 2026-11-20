@@ -20,6 +20,9 @@ import it.downfall.reversky.engine.core.model.StatModifier;
  * creature della sua fazione (Hollow Clearing), anche prima che ricevano il suo bonus. La prima Spell {@code DAMAGE}
  * di ogni scontro può essere ridotta a sua volta (Watching Rift). Gli attacchi e le perdite che una creatura si
  * infligge da sola (The Thorned Matriarch) non passano da qui.
+ * <p>
+ * Qui c'è anche la protezione dal primo danno (SCP-500, ENG-40, deciso il 20 novembre), che vale per il danno da
+ * effetto, dopo il Terreno, e per gli attacchi, prima degli effetti della creatura colpita.
  */
 public final class Penalties {
 
@@ -47,6 +50,8 @@ public final class Penalties {
 				dealt = terrain.get().effect().reduceDefensePenalty(state, terrain.get(), target, amount);
 			}
 		}
+		// ENG-40: dopo il Terreno, così una penalità che il Terreno porta a 0 non usa la protezione
+		dealt = ward(state, target, dealt);
 		if (cause == null) {
 			target.takeDamage(dealt);
 		} else {
@@ -95,9 +100,32 @@ public final class Penalties {
 		if (modifier.attached() != null) {
 			target.attachEffect(modifier.attached());
 		}
+		if (modifier.ward() > 0) {
+			target.addDamageWard(modifier.card(), modifier.ward());
+		}
 		if (damage > 0) {
 			defense(state, target, damage, modifier.side(), null);
 		}
+	}
+
+	/**
+	 * Riduce un danno con la protezione dal primo danno della creatura (SCP-500, ENG-40, deciso il 20 novembre), da
+	 * chiunque venga: un danno sopra 0 la usa tutta e lo scrive nel log, un danno da 0 non la tocca.
+	 *
+	 * @param state  partita, per il log
+	 * @param target creatura colpita
+	 * @param damage danno in arrivo, almeno 0
+	 * @return il danno che resta, almeno 0
+	 */
+	public static int ward(MatchState state, CreatureInPlay target, int damage) {
+		if (damage <= 0 || target.damageWard() == 0) {
+			return damage;
+		}
+		String cards = String.join(" and ", target.damageWardCards().stream().distinct().toList());
+		int remaining = target.useDamageWard(damage);
+		state.log().effectTriggered(target.side(), target.name(),
+				"prevents " + (damage - remaining) + " of the first damage with " + cards);
+		return remaining;
 	}
 
 	private static Optional<PlacedTerrain> terrainFor(MatchState state, CreatureInPlay target) {

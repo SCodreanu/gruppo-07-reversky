@@ -716,4 +716,43 @@ class CreatureInPlayTest {
 		brute.endCombat();
 		assertThat(brute.borrowedEffect()).map(CreatureEffect::code).contains("STOLEN");
 	}
+
+	@Test
+	@DisplayName("ENG-40: la protezione dal primo danno si somma e si usa tutta sul primo danno sopra 0")
+	void damageWard_sumsAndUsedOnFirstPositiveDamage() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER);
+		brute.addDamageWard("SCP-500", 5);
+		brute.addDamageWard("SCP-500", 5);
+
+		// Act + Assert: un danno da 0 non la usa
+		assertThat(brute.useDamageWard(0)).isZero();
+		assertThat(brute.damageWard()).isEqualTo(10);
+		assertThat(brute.damageWardCards()).containsExactly("SCP-500", "SCP-500");
+
+		// Act + Assert: il primo danno sopra 0 la usa tutta, anche se è più piccolo
+		assertThat(brute.useDamageWard(4)).isZero();
+		assertThat(brute.damageWard()).isZero();
+		assertThat(brute.damageWardCards()).isEmpty();
+		assertThat(brute.useDamageWard(4)).isEqualTo(4);
+		assertThatThrownBy(() -> brute.addDamageWard("SCP-500", 0)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("ENG-40: né l'annullamento dell'effetto né la rimozione di bonus e modificatori tolgono la protezione")
+	void damageWard_notRemovedByCancelOrBonusRemoval() {
+		// Arrange
+		CreatureInPlay brute = new CreatureInPlay(BRUTE, Side.CHALLENGER, () -> "OWN");
+		brute.addDamageWard("SCP-500", 5);
+
+		// Act
+		brute.cancelEffect(ModifierDuration.whileInPlay());
+		brute.removeBonuses();
+		brute.removeTemporaryBonuses();
+		brute.removeTemporaryModifiers();
+		brute.endCombat();
+
+		// Assert
+		assertThat(brute.damageWard()).isEqualTo(5);
+	}
 }

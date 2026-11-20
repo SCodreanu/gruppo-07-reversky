@@ -104,4 +104,22 @@ class PendingModifierTest {
 		assertThatThrownBy(() -> new PendingModifier(null, ModifierSource.SPELL, Side.CHALLENGER, 1, 0, 0))
 				.isInstanceOf(NullPointerException.class);
 	}
+
+	@Test
+	@DisplayName("ENG-40: una protezione dal primo danno basta a fare un modificatore e passa alla creatura")
+	void applyTo_ward_givenToCreature() {
+		// Arrange
+		PendingModifier pill = PendingModifier.firstDamageWard("SCP-500", ModifierSource.SPELL, Side.CHALLENGER, 5);
+
+		// Act
+		pill.applyTo(state, kappa);
+
+		// Assert
+		assertThat(kappa.damageWard()).isEqualTo(5);
+		assertThat(kappa.defense()).isEqualTo(7);
+		assertThat(MatchLog.describe(pill)).isEqualTo("−5 to the first damage");
+		assertThat(new PendingModifier("Pact", ModifierSource.SPELL, Side.OPPONENT, 1, 0, 0).ward()).isZero();
+		assertThatThrownBy(() -> PendingModifier.firstDamageWard("X", ModifierSource.SPELL, Side.CHALLENGER, -1))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
 }
