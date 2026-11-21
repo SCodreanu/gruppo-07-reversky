@@ -35,6 +35,7 @@ import it.downfall.reversky.api.battle.entity.BattleStats.PlayerStats;
 import it.downfall.reversky.api.battle.entity.DeckCardSnapshot;
 import it.downfall.reversky.api.battle.exception.BattleInviteNotFoundException;
 import it.downfall.reversky.api.battle.exception.BattleNotFoundException;
+import it.downfall.reversky.api.battle.exception.EngineInputRejectedException;
 import it.downfall.reversky.api.battle.exception.EngineUnavailableException;
 import it.downfall.reversky.api.battle.exception.InviteAlreadyAcceptedException;
 import it.downfall.reversky.api.battle.exception.NotFriendsException;
@@ -95,6 +96,8 @@ public class BattleService {
 	 * @throws InvalidDeckException            se uno dei due mazzi oggi non è valido: l'invito resta in attesa
 	 * @throws EngineUnavailableException      se l'engine non simula: la partita resta preparata, con {@code battleId}
 	 *                                         per il retry
+	 * @throws EngineInputRejectedException    se l'engine rifiuta i dati della partita: resta preparata, con
+	 *                                         {@code battleId}, ma il retry darebbe lo stesso errore
 	 */
 	public BattleDetailResponse accept(Integer userId, UUID inviteId, Integer deckId) {
 		Battle battle = transactionTemplate.execute(status -> prepareFriendly(userId, inviteId, deckId));
@@ -107,7 +110,8 @@ public class BattleService {
 	 * backoffice le ha cambiate. Una partita già completata si restituisce così com'è, senza chiamare l'engine.
 	 *
 	 * @throws BattleNotFoundException     se la partita non esiste o non l'ho giocata
-	 * @throws EngineUnavailableException  se l'engine non simula ancora, con {@code battleId}
+	 * @throws EngineUnavailableException    se l'engine non simula ancora, con {@code battleId}
+	 * @throws EngineInputRejectedException  se l'engine rifiuta i dati salvati della partita, con {@code battleId}
 	 */
 	public BattleDetailResponse retry(Integer userId, UUID battleId) {
 		Battle battle = transactionTemplate.execute(status -> getOwnBattle(userId, battleId));
@@ -216,6 +220,10 @@ public class BattleService {
 			response = engineClient.simulate(toRequest(battle));
 		} catch (EngineUnavailableException e) {
 			log.warn("Battle {} prepared but not simulated: the engine is unavailable", battle.getId());
+			throw e.withBattleId(battle.getId());
+		} catch (EngineInputRejectedException e) {
+			// API-71: dati che l'engine non accetta; il retry riceverebbe lo stesso rifiuto
+			log.error("Battle {} prepared but rejected by the engine", battle.getId());
 			throw e.withBattleId(battle.getId());
 		}
 		return transactionTemplate.execute(status -> save(battle.getId(), response, viewerId));

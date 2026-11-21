@@ -24,6 +24,7 @@ public abstract class BusinessException extends RuntimeException {
 		NOT_FOUND,          // 404 inesistente o non visibile all'utente
 		CONFLICT,           // 409 stato non compatibile
 		RULE_VIOLATION,     // 422 regola di gioco violata
+		INTERNAL_ERROR,     // 500 errore nostro, previsto ma non risolvibile dal client (es. input rifiutato dall'engine)
 		SERVICE_UNAVAILABLE // 503 engine non raggiungibile
 	}
 

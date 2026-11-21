@@ -341,7 +341,26 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 
 - `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
 - `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
-- Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. L'API chiama **solo** `POST /api/v1/simulations`: gli effetti validi stanno nella tabella `effects` dell'API (API-36, vedi [backoffice](../backoffice/backoffice.md#effetti-comportamento-già-implementato-task-api-36-106)), e `GET /api/v1/effects` dell'engine non si usa.
+- Engine spento, timeout o risposta `5xx` → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita.
+- Risposta `4xx` → `EngineInputRejectedException`, `500 ENGINE_INPUT_REJECTED` (API-71, deciso il 22 novembre): l'engine ha rifiutato i dati della partita, un errore nostro. Il `code` e il `detail` del `ProblemDetail` dell'engine (es. `UNKNOWN_EFFECT`) vanno solo nel log, a livello `error`, con il seed. La partita resta senza risultato e la risposta porta `battleId`, ma il retry manda la stessa fotografia e riceve lo stesso `500`. L'API chiama **solo** `POST /api/v1/simulations`: gli effetti validi stanno nella tabella `effects` dell'API (API-36, vedi [backoffice](../backoffice/backoffice.md#effetti-comportamento-già-implementato-task-api-36-106)), e `GET /api/v1/effects` dell'engine non si usa.
+
+### Controlli dell'engine e dell'API (API-71, #146)
+
+Ogni controllo della tabella "Errori" di `reversky-engine/docs/api-engine` è già garantito dai dati dell'API, così una partita preparata da dati validi del database non riceve mai `400`:
+
+| Controllo dell'engine | Dove lo garantisce l'API |
+|---|---|
+| `VALIDATION_FAILED` (campi obbligatori, `rulesVersion` vuota, regole < 1, mazzo vuoto, fazione ripetuta) | colonne `NOT NULL`, `RuleSetRequest` (`version` non vuota, punti vita e round ≥ 1, `chk_rule_sets_match`), chiave primaria di `factions`, composizione esatta del rule set nel `DeckValidator` |
+| `UNKNOWN_FACTION` | `BattleService` manda **tutte** le fazioni; le carte e i bonus hanno chiavi esterne verso `factions` |
+| `INVALID_FACTION_BONUS` | chiave primaria `(origin, target)`, `chk_faction_bonuses_no_self_matchup`, `chk_faction_bonuses_def_nonnegative` e i controlli di `FactionBonusService` |
+| `INVALID_CARD_FACTIONS` | `chk_catalog_cards_faction_matches_type`, `chk_catalog_cards_distinct_factions`, `chk_catalog_cards_secondary_faction_creature_only` (`V14`) e `CatalogCardService` |
+| `NO_CREATURES_IN_DECK` | `deck_creatures ≥ 1` nel rule set e composizione esatta nel `DeckValidator` |
+| `INVALID_STATS` | `chk_catalog_cards_stats_match_type` (ATK ≥ 0, DEF ≥ 1) |
+| `MISSING_SUBTYPE` | `chk_catalog_cards_subtype_matches_type` e `CardType.acceptsSubtype` |
+| `MISSING_EFFECT` | `chk_catalog_cards_effect_required`, `effectCode` non vuoto nel DTO, e un codice vuoto non è in `effects` |
+| `UNKNOWN_EFFECT` | `fk_catalog_cards_effect` verso la tabella `effects` (`V13`, API-36) |
+
+Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o una tabella `effects` diversa dal registro dell'engine: in quel caso la partita risponde `500 ENGINE_INPUT_REJECTED` e il log dice quale controllo è fallito.
 
 ### Inviti amichevoli (API-37 #107, API-38 #108, API-39 #109)
 

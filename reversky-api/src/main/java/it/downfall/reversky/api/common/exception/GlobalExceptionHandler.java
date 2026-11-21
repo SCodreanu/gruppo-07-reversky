@@ -149,6 +149,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			case NOT_FOUND -> HttpStatus.NOT_FOUND;
 			case CONFLICT -> HttpStatus.CONFLICT;
 			case RULE_VIOLATION -> HttpStatus.UNPROCESSABLE_CONTENT;
+			case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
 			case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
 		};
 	}

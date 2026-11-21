@@ -38,7 +38,7 @@ Campi:
 | `variantOfId` | carta originale, solo per una versione evento (vedi sotto) |
 | `rarityId` | riferimento a `rarities` |
 | `factionId` | riferimento a `factions`: obbligatorio per Creature, Terreni e Oggetti, **vuoto** per Spell e Hidden, che sono condivise tra tutte le fazioni |
-| `secondaryFactionId` | seconda fazione facoltativa (es. Mutant), diversa da `factionId`: la carta prende vantaggi e svantaggi di entrambe. Sempre vuota per Spell e Hidden |
+| `secondaryFactionId` | seconda fazione facoltativa (es. Mutant), diversa da `factionId`: la carta prende vantaggi e svantaggi di entrambe. Solo per le creature: sempre vuota per Spell, Hidden, Terreni e Oggetti (D-22, API-71) |
 | `atk`, `def` | obbligatori e ≥ 0 per le creature (DEF > 0); vuoti per le altre carte |
 | `copyLimit` | ≥ 1, oppure vuoto se vale solo il limite della rarità; il limite reale nel mazzo è `min(deck_limit della rarità, copyLimit)` |
 | `imagePath` | illustrazione |
@@ -85,12 +85,12 @@ Endpoint pubblici, senza token (`CardController`):
 | solo per un'originale: `rarityId` inesistente | `422` | `CARD_RARITY_INVALID` |
 | solo per un'originale: `factionId` o `secondaryFactionId` inesistente | `422` | `CARD_FACTION_INVALID` |
 | statistiche, sottotipo o effetto non coerenti con il tipo (regole 2 e 3 e la riga `atk`, `def` dei campi) | `422` | `CARD_RULES_VIOLATED` |
-| fazioni non coerenti con il tipo (righe `factionId` e `secondaryFactionId` dei campi): Creatura, Terreno o Oggetto senza fazione, Spell o Hidden con una fazione, seconda fazione uguale alla prima | `422` | `CARD_RULES_VIOLATED` |
+| fazioni non coerenti con il tipo (righe `factionId` e `secondaryFactionId` dei campi): Creatura, Terreno o Oggetto senza fazione, Spell o Hidden con una fazione, Terreno o Oggetto con una seconda fazione (API-71), seconda fazione uguale alla prima | `422` | `CARD_RULES_VIOLATED` |
 | rarità non ammessa per il tipo (regola 4) | `422` | `CARD_RARITY_INVALID` |
 | nome già usato da un'altra carta originale (regola 7) | `409` | `CARD_NAME_TAKEN` |
 | solo per un'originale con `effectCode`: il codice non è in `effects`, o c'è per un altro tipo di carta (regola 2) | `422` | `CARD_EFFECT_INVALID` |
 
-Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card must not have a faction", "The second faction must be different from the first", "The faction 7 does not exist". Una carta che diventa Spell o Hidden perde le fazioni (la richiesta non può averne), e con lei le sue varianti.
+Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card must not have a faction", "A TERRAIN card must not have a second faction", "The second faction must be different from the first", "The faction 7 does not exist". Una carta che diventa Spell o Hidden perde le fazioni (la richiesta non può averne), e con lei le sue varianti. Solo le creature hanno due fazioni anche nel database (`chk_catalog_cards_secondary_faction_creature_only`, `V14`, API-71): l'engine rifiuta un Terreno o un Oggetto con due fazioni (`INVALID_CARD_FACTIONS`). Come ogni regola del catalogo controllata anche dall'engine, vedi la tabella in [sfide](../sfide/sfide.md#controlli-dellengine-e-dellapi-api-71-146).
 
 `variantOfId`, `rarityId` e le fazioni inesistenti sono `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo. Le regole del tipo vengono prima di quelle della rarità: una Spell Rare con ATK riceve "must not have ATK or DEF", non un errore sulla rarità.
 
