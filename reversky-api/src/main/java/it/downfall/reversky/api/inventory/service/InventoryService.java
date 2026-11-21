@@ -14,10 +14,14 @@ import it.downfall.reversky.api.inventory.dto.InventoryResponse;
 import it.downfall.reversky.api.inventory.entity.CreditReason;
 import it.downfall.reversky.api.inventory.entity.CreditTransaction;
 import it.downfall.reversky.api.inventory.entity.Inventory;
+import it.downfall.reversky.api.inventory.entity.PackInventory;
 import it.downfall.reversky.api.inventory.exception.InsufficientCreditsException;
 import it.downfall.reversky.api.inventory.exception.InventoryNotFoundException;
+import it.downfall.reversky.api.inventory.exception.NoPackToOpenException;
 import it.downfall.reversky.api.inventory.repository.CreditTransactionRepository;
 import it.downfall.reversky.api.inventory.repository.InventoryRepository;
+import it.downfall.reversky.api.inventory.repository.PackInventoryRepository;
+import it.downfall.reversky.api.pack.entity.Pack;
 import it.downfall.reversky.api.ruleset.exception.NoActiveRuleSetException;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,7 @@ public class InventoryService {
 
 	private final InventoryRepository inventoryRepository;
 	private final CreditTransactionRepository creditTransactionRepository;
+	private final PackInventoryRepository packInventoryRepository;
 	private final RuleSetService ruleSetService;
 	private final Clock clock;
 
@@ -65,7 +70,56 @@ public class InventoryService {
 	 */
 	@Transactional(readOnly = true)
 	public InventoryResponse getInventory(Integer userId) {
-		return InventoryResponse.from(findInventory(userId));
+		return toResponse(findInventory(userId));
+	}
+
+	/**
+	 * Pacchetti di quel tipo comprati e non ancora aperti dall'utente; 0 se non ce ne sono.
+	 */
+	@Transactional(readOnly = true)
+	public int getPackQuantity(Integer userId, Integer packId) {
+		return packInventoryRepository.findByIdUserIdAndIdPackId(userId, packId)
+			.map(PackInventory::getQuantity)
+			.orElse(0);
+	}
+
+	/**
+	 * Aggiunge pacchetti comprati all'inventario, creando la riga se non c'è. Gira nella transazione dell'acquisto,
+	 * che ha già bloccato l'inventario dell'utente.
+	 *
+	 * @param quantity pacchetti da aggiungere, almeno 1
+	 * @throws IllegalArgumentException se la quantità è minore di 1 (errore di programmazione)
+	 */
+	@Transactional
+	public void addPacks(Integer userId, Pack pack, int quantity) {
+		if (quantity < 1) {
+			throw new IllegalArgumentException("Quantity must be at least 1: " + quantity);
+		}
+
+		packInventoryRepository.findByIdUserIdAndIdPackId(userId, pack.getId())
+			.ifPresentOrElse(row -> row.add(quantity),
+				() -> packInventoryRepository.save(new PackInventory(userId, pack, quantity)));
+	}
+
+	/**
+	 * Toglie dall'inventario un pacchetto da aprire, bloccando prima la riga dell'inventario; a 0 la riga si elimina.
+	 *
+	 * @return i pacchetti di quel tipo che restano
+	 * @throws NoPackToOpenException      se l'utente non ha pacchetti di quel tipo
+	 * @throws InventoryNotFoundException se l'utente non ha un inventario
+	 */
+	@Transactional
+	public int takePack(Integer userId, Integer packId) {
+		lockInventory(userId);
+		PackInventory row = packInventoryRepository.findByIdUserIdAndIdPackId(userId, packId)
+			.orElseThrow(() -> new NoPackToOpenException(packId));
+
+		row.removeOne();
+		if (row.getQuantity() == 0) {
+			packInventoryRepository.delete(row);
+			return 0;
+		}
+		return row.getQuantity();
 	}
 
 	/**
@@ -169,7 +223,12 @@ public class InventoryService {
 		// TODO(@tommasofatticcioni): scrivere il motivo in audit_logs.new_values con API-52 (#122), al posto del log
 		log.info("Credits of user {} adjusted by {}: {}", userId, amount, reason);
 
-		return InventoryResponse.from(findInventory(userId));
+		return toResponse(findInventory(userId));
+	}
+
+	private InventoryResponse toResponse(Inventory inventory) {
+		return InventoryResponse.from(inventory,
+			packInventoryRepository.findAllByIdUserIdOrderByIdPackIdAsc(inventory.getUserId()));
 	}
 
 	private Inventory findInventory(Integer userId) {

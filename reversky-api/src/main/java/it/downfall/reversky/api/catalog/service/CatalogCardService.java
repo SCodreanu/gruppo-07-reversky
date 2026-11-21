@@ -105,6 +105,15 @@ public class CatalogCardService {
 	}
 
 	/**
+	 * Le carte attive e originali, con rarità e fazioni già caricate: tra queste si pescano le carte dei pacchetti
+	 * (docs/pacchetti). Le varianti escono solo dai pacchetti con i loro tag, che arrivano con API-21.
+	 */
+	@Transactional(readOnly = true)
+	public List<CatalogCard> getActiveOriginals() {
+		return catalogCardRepository.findAllByIsActiveTrueAndVariantOfIsNullOrderByIdAsc();
+	}
+
+	/**
 	 * Le carte con quegli id, anche disattivate, per gli altri service (mazzi): rarità, fazioni e carta originale sono
 	 * già caricate. Gli id che non esistono mancano dalla lista, senza errore: decide chi chiama.
 	 */

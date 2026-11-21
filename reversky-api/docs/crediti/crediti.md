@@ -100,7 +100,7 @@ public Inventory spendCredits(Integer userId, int amount, CreditReason reason) {
 	- `lockInventories(userIds)` blocca gli inventari di più utenti in ordine di `user_id` crescente: va chiamato all'inizio di ogni operazione che sposta crediti, carte o pacchetti tra più utenti;
 	- `adjustCredits` per la correzione dal backoffice (vedi [backoffice](../backoffice/backoffice.md#correzione-dei-crediti-comportamento-già-implementato-api-17-87)).
 - `InventoryService` non dipende da `UserService`: è `UserService.getProfile` a chiedere il saldo per `GET /users/me`.
-- `GET /api/v1/inventory` restituisce `{ "credits": 350 }`; i pacchetti non aperti si aggiungono con API-22 (#92).
+- `GET /api/v1/inventory` restituisce `{ "credits": 350, "packs": [{ "packId": 1, "name": "Base Pack", "imagePath": "packs/base.webp", "quantity": 2 }] }`, pacchetti in ordine di id (API-22, #92). `InventoryService` gestisce anche `pack_inventory`: `addPacks` nell'acquisto, `takePack` (blocca l'inventario, a 0 elimina la riga) nell'apertura.
 - Gli utenti registrati prima di API-17 ricevono l'inventario dalla migrazione `V10__create_missing_inventories.sql`.
 
 | Caso | Status | `code` |
