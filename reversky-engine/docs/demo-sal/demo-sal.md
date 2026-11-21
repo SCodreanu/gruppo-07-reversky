@@ -29,7 +29,7 @@ Durata: circa 10 minuti. Le richieste sono gli esempi di [`examples/`](../../exa
    - `HIDDEN_SET` senza nome (la carta è coperta) e, nel secondo scontro, `Echo Strike triggers`;
    - `SPELL_RESOLVED` di Skin Fracture, che colpisce subito Archive Puppet.
    I passaggi del calcolo sono in [`examples/README.md`](../../examples/README.md#come-sono-stati-calcolati).
-5. **Errori (opzionale, 1 minuto).** Una richiesta con un `effectCode` scritto male (es. `VEIL_OF_ANCHORD` su una Spell) dà `400` con `code` `UNKNOWN_EFFECT`; `GET /api/v1/effects` mostra i 23 effetti implementati.
+5. **Errori (opzionale, 1 minuto).** Una richiesta con un `effectCode` scritto male (es. `VEIL_OF_ANCHORD` su una Spell) dà `400` con `code` `UNKNOWN_EFFECT`.
 
 ## Riferimenti rapidi
 

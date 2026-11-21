@@ -169,18 +169,11 @@ Un JSON malformato, o con un `type`/`subtype` che non esiste, ha `detail` "Malfo
 
 Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERNAL_ERROR` e un `detail` generico: la causa e il **seed** della partita vanno solo nel log tecnico dell'engine (`Simulazione fallita: seed ...`), da cui la partita si riproduce.
 
-## `GET /api/v1/effects`
+## Elenco degli effetti: niente `GET /api/v1/effects`
 
-Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
-Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
-L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati: con `ENG-26` ci sono tutti gli effetti `P1` delle creature; con `ENG-34`…`ENG-37` (18 novembre) anche The Bloodless Hound, Wendigo, SCP-109, L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference, The Null Witness, The Hollow Wyrm, The Undying Blossom, Remnants of Reality e Unseen Exit; con `ENG-38` (19 novembre) Il Predicatore sotto la Pioggia, SCP-2521, Baku, Kitsune e Il Custode delle Porte Incrociate; con `ENG-39` La Regina dei Sentieri Perduti e L'Operatore della Stanza 0; con `ENG-40` (20 novembre) la Spell SCP-500. Ci sono tutti i 92 effetti del catalogo, 64 di creature.
-
-```json
-[
-  { "code": "HIDEBEHIND", "appliesTo": "CREATURE" },
-  { "code": "VEIL_OF_ANCHORED", "appliesTo": "SPELL" }
-]
-```
+L'engine espone solo `POST /api/v1/simulations` (deciso il 22 novembre, `API-36`; l'endpoint `GET /api/v1/effects` di `ENG-14` è stato tolto con `ENG-43`).
+L'elenco dei codici effetto validi, con il tipo di carta che può portarli, sta nella tabella `effects` dell'API (migrazione `V13__create_effects.sql`, `API-36`): `catalog_cards` la richiama con una chiave esterna e il backoffice la legge con `GET /api/v1/admin/effects` dell'API.
+La tabella va **tenuta allineata a mano** con `EffectRegistry.withAllEffects()`: chi aggiunge, toglie o rinomina un effetto nell'engine aggiunge una migrazione nell'API. Se i due elenchi non coincidono, una carta con un codice che l'engine non conosce, o registrato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
 
 ## Regole della partita: niente `GET /api/v1/rules`
 
