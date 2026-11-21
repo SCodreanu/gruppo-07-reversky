@@ -9,8 +9,7 @@ import it.downfall.reversky.api.catalog.entity.CatalogCard;
  * Filtri facoltativi per la ricerca delle carte (GET /cards e GET /admin/cards).
  * <p>
  * Ogni metodo restituisce un predicato null quando il filtro è vuoto: Spring Data lo salta
- * quando li combina con {@code Specification.allOf(...)}. #81 e #82 aggiungono qui
- * factionId e tag.
+ * quando li combina con {@code Specification.allOf(...)}. #82 aggiunge qui il tag.
  */
 public final class CatalogCardSpecifications {
 
@@ -58,6 +57,25 @@ public final class CatalogCardSpecifications {
 			}
 
 			return builder.equal(root.get("rarity").get("id"), rarityId);
+		};
+	}
+
+	/**
+	 * Solo carte che hanno la fazione come prima o come seconda; id null = nessun filtro.
+	 * <p>
+	 * Spell e Hidden non hanno fazioni, quindi non compaiono mai. Un id che non esiste dà una pagina vuota, come
+	 * per la rarità. Come {@code rarity.id}, {@code faction.id} e {@code secondaryFaction.id} si leggono dalle
+	 * colonne di catalog_cards senza join, quindi una carta senza seconda fazione resta nel risultato.
+	 */
+	public static Specification<CatalogCard> hasFaction(Integer factionId) {
+		return (root, query, builder) -> {
+			if (factionId == null) {
+				return null;
+			}
+
+			return builder.or(
+				builder.equal(root.get("faction").get("id"), factionId),
+				builder.equal(root.get("secondaryFaction").get("id"), factionId));
 		};
 	}
 

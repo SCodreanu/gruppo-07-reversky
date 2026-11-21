@@ -49,6 +49,20 @@ public class CatalogCardRulesViolatedException extends BusinessException {
 	}
 
 	/**
+	 * Spell o Hidden con una fazione, prima o seconda: sono condivise tra tutte le fazioni.
+	 */
+	public static CatalogCardRulesViolatedException unexpectedFaction(CardType type) {
+		return new CatalogCardRulesViolatedException("A " + type + " card must not have a faction");
+	}
+
+	/**
+	 * Seconda fazione uguale alla prima (chk_catalog_cards_distinct_factions).
+	 */
+	public static CatalogCardRulesViolatedException sameFactions() {
+		return new CatalogCardRulesViolatedException("The second faction must be different from the first");
+	}
+
+	/**
 	 * Effetto mancante su un tipo che lo richiede.
 	 */
 	public static CatalogCardRulesViolatedException missingEffect(CardType type) {

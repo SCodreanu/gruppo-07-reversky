@@ -8,7 +8,7 @@ import it.downfall.reversky.api.catalog.entity.CatalogCard;
 /**
  * Carta restituita da GET /cards, GET /cards/{id} e dagli endpoint di /admin/cards.
  * <p>
- * Fazioni e tag si aggiungono con #81 e #82.
+ * Rarità e fazioni hanno la forma breve { id, name } di docs/collezione. I tag si aggiungono con #82.
  */
 public record CatalogCardResponse(
 
@@ -23,6 +23,14 @@ public record CatalogCardResponse(
 
 	@Schema(description = "For a variant, the rarity of its original card")
 	RaritySummaryResponse rarity,
+
+	@Schema(description = "Null for SPELL and HIDDEN cards, which belong to every faction. For a variant, the faction of "
+		+ "its original card")
+	FactionSummaryResponse faction,
+
+	@Schema(description = "Optional second faction (e.g. a Mutant): the card gets the bonuses and penalties of both. "
+		+ "Null if the card has only one faction")
+	FactionSummaryResponse secondaryFaction,
 
 	@Schema(example = "BURN", description = "Only for SPELL and HIDDEN cards, null otherwise")
 	CardSubtype subtype,
@@ -59,7 +67,7 @@ public record CatalogCardResponse(
 	 * Converte l'entità nel DTO.
 	 * <p>
 	 * {@code getVariantOf().getId()} non carica l'originale: Hibernate conosce già l'id del proxy.
-	 * Il nome della rarità invece la carica, quindi va chiamato dentro la transazione del service.
+	 * I nomi di rarità e fazioni invece le caricano, quindi va chiamato dentro la transazione del service.
 	 */
 	public static CatalogCardResponse from(CatalogCard card) {
 		Integer variantOfId = card.isVariant() ? card.getVariantOf().getId() : null;
@@ -69,6 +77,8 @@ public record CatalogCardResponse(
 			card.getName(),
 			card.getCardType(),
 			RaritySummaryResponse.from(card.getRarity()),
+			FactionSummaryResponse.from(card.getFaction()),
+			FactionSummaryResponse.from(card.getSecondaryFaction()),
 			card.getCardSubtype(),
 			card.getEffectCode(),
 			variantOfId,

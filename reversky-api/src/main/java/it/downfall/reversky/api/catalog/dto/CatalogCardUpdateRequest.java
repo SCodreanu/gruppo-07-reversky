@@ -30,15 +30,24 @@ public record CatalogCardUpdateRequest(
 	@NotNull(message = "Type is required")
 	CardType type,
 
-	@Schema(example = "5", description = "SPELL and HIDDEN must be Common or Uncommon, TERRAIN must be Rare, CREATURE accepts any rarity; "
-			+ "a creature's ATK and DEF must not exceed the rarity maximums. Ignored for a variant: copied from the original")
+	@Schema(example = "5", description = "SPELL and HIDDEN must be Common or Uncommon, TERRAIN and ITEM must be Rare, "
+			+ "CREATURE accepts any rarity. Ignored for a variant: copied from the original")
 	@NotNull(message = "Rarity is required")
 	Integer rarityId,
+
+	@Schema(example = "2", description = "Required for CREATURE, TERRAIN and ITEM, empty for SPELL and HIDDEN (id from "
+			+ "GET /factions). Ignored for a variant: copied from the original")
+	Integer factionId,
+
+	@Schema(example = "4", description = "Optional second faction (e.g. a Mutant), different from factionId; always "
+			+ "empty for SPELL and HIDDEN. Ignored for a variant: copied from the original")
+	Integer secondaryFactionId,
 
 	@Schema(example = "BURN", description = "Required for SPELL (DAMAGE, SHIELD, BURN) and HIDDEN (SURVIVAL, DAMAGE), empty otherwise. Ignored for a variant")
 	CardSubtype subtype,
 
-	@Schema(example = "WENDIGO", description = "Required for SPELL, HIDDEN and TERRAIN, optional for CREATURE. Ignored for a variant")
+	@Schema(example = "WENDIGO", description = "Required for SPELL, HIDDEN, TERRAIN and ITEM, optional for CREATURE. "
+			+ "Ignored for a variant")
 	@Size(max = 100, message = "Effect code must not exceed 100 characters")
 	@Pattern(regexp = ".*\\S.*", message = "Effect code must not be blank")
 	String effectCode,

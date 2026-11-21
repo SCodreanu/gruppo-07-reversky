@@ -11,7 +11,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
 - Già implementato, senza audit (task API-52, #122):
   - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
-  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80); le fazioni sono nell'entità ma `PUT` non le riceve ancora (task #81), e i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
+  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80) e le fazioni (task API-11, #81); i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
   - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
   - bonus di fazione: `GET/PUT /admin/faction-bonuses` (`AdminFactionBonusController`, `catalog/service/FactionBonusService`), inclusi anche in `GET /rules`. Dettagli in "Bonus di fazione: comportamento già implementato" qui sotto.
 
@@ -63,10 +63,10 @@ Endpoint pubblici, senza token (`CardController`):
 
 | Metodo | URL | Descrizione |
 |---|---|---|
-| `GET` | `/cards` | carte **attive**, varianti comprese, paginate; filtri facoltativi `type`, `name` (contiene, senza maiuscole) e `rarityId` (un id inesistente dà una pagina vuota, non `404`) |
+| `GET` | `/cards` | carte **attive**, varianti comprese, paginate; filtri facoltativi `type`, `name` (contiene, senza maiuscole), `rarityId` e `factionId` (prima o seconda fazione; non restituisce mai Spell né Hidden). Un id inesistente dà una pagina vuota, non `404` |
 | `GET` | `/cards/{id}` | una carta, **anche disattivata** (collezioni e storico la usano ancora); `404` se non esiste |
 
-`GET /admin/cards` ha in più il filtro `active` (`true`, `false`, vuoto = tutte). Ogni carta restituita ha `rarity: { id, name }`, la stessa forma di [collezione](../collezione/collezione.md); per una variante è la rarità dell'originale. Le liste sono sempre ordinate per nome e poi per `id`: il parametro `sort` del client si ignora, quindi Swagger documenta solo `page` e `size`.
+`GET /admin/cards` ha in più il filtro `active` (`true`, `false`, vuoto = tutte). Ogni carta restituita ha `rarity: { id, name }`, `faction: { id, name }` e `secondaryFaction: { id, name }`, la stessa forma di [collezione](../collezione/collezione.md); `faction` è `null` per Spell e Hidden, `secondaryFaction` è `null` se la carta ha una sola fazione; per una variante sono quelle dell'originale. Le liste sono sempre ordinate per nome e poi per `id`: il parametro `sort` del client si ignora, quindi Swagger documenta solo `page` e `size`.
 
 `PUT /admin/cards/{id}` (`CatalogCardUpdateRequest`):
 
@@ -74,6 +74,7 @@ Endpoint pubblici, senza token (`CardController`):
 - `variantOfId` vuoto rende la carta originale, valorizzato la rende variante di quella carta;
 - `rarityId` è obbligatorio (come `type`) anche per una variante, ma su una variante si ignora: non si controlla nemmeno che esista;
 - su una variante i campi di gioco della richiesta, rarità compresa, si ignorano e si copiano dall'originale; modificare la rarità di un'originale la cambia anche alle sue varianti;
+- `factionId` e `secondaryFactionId` (task #81, deciso il 20 novembre) sostituiscono le fazioni della carta, come il resto del `PUT`: una Creatura, un Terreno o un Oggetto inviati senza `factionId` sono rifiutati. Su una variante si ignorano, senza controllare che esistano, e si copiano dall'originale; le fazioni nuove di un'originale passano alle sue varianti;
 - tutti i controlli avvengono prima di modificare la carta, in questo ordine:
 
 | Caso | Status | `code` |
@@ -82,14 +83,15 @@ Endpoint pubblici, senza token (`CardController`):
 | carta inesistente | `404` | `CARD_NOT_FOUND` |
 | `variantOfId` uguale alla carta stessa, inesistente, che indica una variante, oppure carta che ha già varianti | `422` | `CARD_VARIANT_INVALID` |
 | solo per un'originale: `rarityId` inesistente | `422` | `CARD_RARITY_INVALID` |
+| solo per un'originale: `factionId` o `secondaryFactionId` inesistente | `422` | `CARD_FACTION_INVALID` |
 | statistiche, sottotipo o effetto non coerenti con il tipo (regole 2 e 3 e la riga `atk`, `def` dei campi) | `422` | `CARD_RULES_VIOLATED` |
+| fazioni non coerenti con il tipo (righe `factionId` e `secondaryFactionId` dei campi): Creatura, Terreno o Oggetto senza fazione, Spell o Hidden con una fazione, seconda fazione uguale alla prima | `422` | `CARD_RULES_VIOLATED` |
 | rarità non ammessa per il tipo (regola 4) | `422` | `CARD_RARITY_INVALID` |
-| il nuovo tipo richiede una fazione ma la carta non ne ha (riga `factionId` dei campi) | `422` | `CARD_RULES_VIOLATED` |
 | nome già usato da un'altra carta originale (regola 7) | `409` | `CARD_NAME_TAKEN` |
 
-Fazioni finché `PUT` non le riceve (task #81): la carta tiene quelle che ha. Una Spell o una Hidden non ne ha, quindi non può diventare Creatura, Terreno o Oggetto ("A CREATURE card must have a faction"); una carta che diventa Spell o Hidden perde le fazioni, e con lei le sue varianti.
+Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card must not have a faction", "The second faction must be different from the first", "The faction 7 does not exist". Una carta che diventa Spell o Hidden perde le fazioni (la richiesta non può averne), e con lei le sue varianti.
 
-`variantOfId` e `rarityId` inesistenti sono `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo. Le regole del tipo vengono prima di quelle della rarità: una Spell Rare con ATK riceve "must not have ATK or DEF", non un errore sulla rarità.
+`variantOfId`, `rarityId` e le fazioni inesistenti sono `422` e non `404`: la carta dell'URL esiste, è sbagliato un riferimento nel corpo. Le regole del tipo vengono prima di quelle della rarità: una Spell Rare con ATK riceve "must not have ATK or DEF", non un errore sulla rarità.
 
 `POST /admin/cards/{id}/deactivate` e `/activate` rispondono `200` con la carta e sono idempotenti (disattivare una carta già disattivata non cambia niente). Non toccano le varianti: una versione evento si attiva e disattiva per conto suo.
 

@@ -13,14 +13,17 @@ import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardFactionException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.CatalogCardSpecifications;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,19 +44,23 @@ public class CatalogCardService {
 
 	private final CatalogCardRepository catalogCardRepository;
 	private final RarityRepository rarityRepository;
+	private final FactionRepository factionRepository;
 
 	/**
 	 * Carte attive, con filtri facoltativi (GET /cards, pubblico).
 	 *
-	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Integer factionId,
+			Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
+			CatalogCardSpecifications.hasFaction(factionId),
 			CatalogCardSpecifications.isActive(true)
 		);
 
@@ -64,16 +71,19 @@ public class CatalogCardService {
 	/**
 	 * Tutte le carte, anche disattivate, con filtri facoltativi (GET /admin/cards).
 	 *
-	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
-	 * @param active   null = attive e disattivate
+	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
+	 * @param active    null = attive e disattivate
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Boolean active, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Integer factionId,
+			Boolean active, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
+			CatalogCardSpecifications.hasFaction(factionId),
 			CatalogCardSpecifications.isActive(active)
 		);
 
@@ -98,10 +108,14 @@ public class CatalogCardService {
 	 * dall'originale. Per un'originale, dopo la modifica, le sue varianti ricevono gli stessi campi di gioco.
 	 * Tutti i controlli avvengono prima di modificare la carta.
 	 *
+	 * Per un'originale prima si controllano i riferimenti (rarità e fazioni esistono), poi le regole del tipo
+	 * (statistiche, sottotipo, effetto, fazioni), poi la rarità ammessa e infine il nome (deciso il 20 novembre, #81).
+	 *
 	 * @throws CatalogCardNotFoundException         se la carta non esiste
 	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale valida
 	 * @throws InvalidCardRarityException           se la rarità non esiste o non è ammessa per il tipo
-	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazione non vanno con il tipo
+	 * @throws InvalidCardFactionException          se la prima o la seconda fazione non esiste
+	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazioni non vanno con il tipo
 	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
 	 */
 	@Transactional
@@ -110,13 +124,17 @@ public class CatalogCardService {
 		CatalogCard card = loadCard(id);
 		CatalogCard original = resolveOriginal(card, request.variantOfId());
 		Rarity rarity = null;
+		Faction faction = null;
+		Faction secondaryFaction = null;
 
 		if (original == null) {
 			rarity = loadRarity(request.rarityId());
+			faction = loadFaction(request.factionId());
+			secondaryFaction = loadFaction(request.secondaryFactionId());
 
 			validateRules(request.type(), request.subtype(), request.effectCode(), request.atk(), request.def());
+			validateFactions(request.type(), request.factionId(), request.secondaryFactionId());
 			validateRarity(request.type(), rarity);
-			validateFaction(request.type(), card);
 		}
 
 		Integer excludedId = (original != null) ? original.getId() : card.getId();
@@ -127,10 +145,8 @@ public class CatalogCardService {
 			card.copyRulesFrom(original);
 		} else {
 			card.updateRules(rarity, request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
-			if (!request.type().hasFaction()) {
-				// Spell e Hidden sono condivise: una carta che lo diventa perde le fazioni
-				card.changeFactions(null, null);
-			}
+			// PUT sostituisce tutta la carta: per Spell e Hidden le fazioni sono null, già controllato
+			card.changeFactions(faction, secondaryFaction);
 		}
 
 		card.updateDetails(request.name(), request.flavorText());
@@ -235,12 +251,29 @@ public class CatalogCardService {
 		}
 	}
 
-	// chk_catalog_cards_faction_matches_type. Le fazioni non si modificano ancora da PUT (arriva con #81):
-	// una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto perché non ha una fazione.
-	// Il caso opposto va bene: update toglie le fazioni.
-	private void validateFaction(CardType type, CatalogCard card) {
-		if (type.hasFaction() && card.getFaction() == null) {
+	// La fazione indicata, o null se l'id è null; 422 e non 404 se non esiste, come la rarità
+	private Faction loadFaction(Integer factionId) {
+		if (factionId == null) {
+			return null;
+		}
+
+		return factionRepository.findById(factionId)
+			.orElseThrow(() -> InvalidCardFactionException.notFound(factionId));
+	}
+
+	// chk_catalog_cards_faction_matches_type e chk_catalog_cards_distinct_factions di V3. Una seconda fazione
+	// senza la prima cade sempre in uno dei primi due casi: o il tipo vuole la fazione, o non ne ammette.
+	private void validateFactions(CardType type, Integer factionId, Integer secondaryFactionId) {
+		if (type.hasFaction() && factionId == null) {
 			throw CatalogCardRulesViolatedException.missingFaction(type);
+		}
+
+		if (!type.hasFaction() && (factionId != null || secondaryFactionId != null)) {
+			throw CatalogCardRulesViolatedException.unexpectedFaction(type);
+		}
+
+		if (secondaryFactionId != null && secondaryFactionId.equals(factionId)) {
+			throw CatalogCardRulesViolatedException.sameFactions();
 		}
 	}
 
