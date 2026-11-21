@@ -16,7 +16,8 @@ import it.downfall.reversky.engine.support.TestFactions;
 import it.downfall.reversky.engine.support.TestStates;
 
 /**
- * Smiler: "per ogni round in cui sopravvive, +2 ATK (massimo +6) e l'avv. −2 ATK (massimo −4)".
+ * Smiler: "per ogni round in cui sopravvive, +3 ATK (massimo +9) e l'avv. −3 ATK (massimo −6)" (ENG-42, 21 novembre:
+ * erano +2, massimo +6, e −2, massimo −4).
  */
 class SmilerEffectTest {
 
@@ -24,7 +25,7 @@ class SmilerEffectTest {
 	private final RoundResolver resolver = new RoundResolver(TestFactions.noBonuses(), registry);
 
 	@Test
-	@DisplayName("Ogni round +2 ATK fino a +6 e l'avversaria −2 fino a −4: ATK 7, 9, 11, 11; A 1, −1, −1")
+	@DisplayName("Ogni round +3 ATK fino a +9 e l'avversaria −3 fino a −6: ATK 8, 11, 14, 14; A 0, −3, −3")
 	void bonusAndPenalty_capped() {
 		// Arrange
 		MatchState state = TestStates.inCombat(registry, smiler(), creature("A", 3, 60));
@@ -34,21 +35,21 @@ class SmilerEffectTest {
 
 		// Act + Assert
 		resolver.resolve(state);
-		assertThat(smiler.attack()).isEqualTo(7);
-		assertThat(a.attack()).isEqualTo(1);
+		assertThat(smiler.attack()).isEqualTo(8);
+		assertThat(a.attack()).isEqualTo(0);
 		assertThat(state.log().events()).anySatisfy(event -> assertThat(event.message())
-				.isEqualTo("Smiler: +2 ATK (ATK 7), A −2 ATK (ATK 1)"));
-		resolver.resolve(state);
-		assertThat(smiler.attack()).isEqualTo(9);
-		assertThat(a.attack()).isEqualTo(-1);
-		resolver.resolve(state);
+				.isEqualTo("Smiler: +3 ATK (ATK 8), A −3 ATK (ATK 0)"));
 		resolver.resolve(state);
 		assertThat(smiler.attack()).isEqualTo(11);
-		assertThat(a.attack()).isEqualTo(-1);
+		assertThat(a.attack()).isEqualTo(-3);
+		resolver.resolve(state);
+		resolver.resolve(state);
+		assertThat(smiler.attack()).isEqualTo(14);
+		assertThat(a.attack()).isEqualTo(-3);
 	}
 
 	@Test
-	@DisplayName("Uccide A nel round: +2 ATK lo stesso (18 novembre); contro B il malus riparte da 0, il bonus resta")
+	@DisplayName("Uccide A nel round: +3 ATK lo stesso (18 novembre); contro B il malus riparte da 0, il bonus resta")
 	void killsInRound_stillGainsAndPenaltyRestarts() {
 		// Arrange: A muore al round 1
 		MatchState state = TestStates.inCombat(registry, smiler(), creature("A", 3, 5));
@@ -56,7 +57,7 @@ class SmilerEffectTest {
 		resolver.startCombat(state);
 		resolver.resolve(state);
 		assertThat(state.opponent().creature()).isEmpty();
-		assertThat(smiler.attack()).isEqualTo(7);
+		assertThat(smiler.attack()).isEqualTo(8);
 
 		// Act
 		state.opponent().placeCreature(new CreatureInPlay(creature("B", 3, 60), Side.OPPONENT));
@@ -65,9 +66,9 @@ class SmilerEffectTest {
 		resolver.resolve(state);
 		resolver.resolve(state);
 
-		// Assert: bonus al massimo, B −4
-		assertThat(smiler.attack()).isEqualTo(11);
-		assertThat(state.opponent().creature().orElseThrow().attack()).isEqualTo(-1);
+		// Assert: bonus al massimo (+9), B −6
+		assertThat(smiler.attack()).isEqualTo(14);
+		assertThat(state.opponent().creature().orElseThrow().attack()).isEqualTo(-3);
 	}
 
 	@Test
@@ -82,11 +83,11 @@ class SmilerEffectTest {
 
 		// Act + Assert
 		resolver.resolve(state);
-		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(7);
+		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(8);
 		assertThat(a.attack()).isEqualTo(3);
 		assertThat(state.opponent().items()).isEmpty();
 		resolver.resolve(state);
-		assertThat(a.attack()).isEqualTo(1);
+		assertThat(a.attack()).isEqualTo(0);
 	}
 
 	private static CardDefinition smiler() {

@@ -37,7 +37,7 @@ class TerrainServiceTest {
 	private final TerrainService terrains = new TerrainService(EffectRegistry.withAllEffects());
 
 	@ParameterizedTest(name = "{0}")
-	@CsvSource({ "ECHO_RIFT, 1, 0", "HOLLOW_CLEARING, 0, 2", "WATCHING_RIFT, 1, 1", "DEVOURING_ABYSS, 1, 0" })
+	@CsvSource({ "ECHO_RIFT, 1, 0", "HOLLOW_CLEARING, 0, 2", "WATCHING_RIFT, 1, 0", "DEVOURING_ABYSS, 0, 1" })
 	@DisplayName("I quattro Terreni del gioco e il loro bonus base")
 	void registry_baseBonus(String code, int attack, int defense) {
 		EffectRegistry registry = EffectRegistry.withAllEffects();
@@ -89,7 +89,7 @@ class TerrainServiceTest {
 	}
 
 	@Test
-	@DisplayName("D-19: il nuovo Terreno sostituisce il vecchio, che toglie l'ATK e la parte non usata dello scudo")
+	@DisplayName("D-19: il nuovo Terreno sostituisce il vecchio, che toglie la parte non usata dello scudo")
 	void place_replaces_oldBonusRemoved() {
 		// Arrange: Kappa (Dream) con Devouring Abyss; Squonk (Invitation) con Hollow Clearing, scudo usato a metà
 		MatchState state = TestStates.inCombat(creature("Squonk", TestFactions.INVITATION, 3, 2),
@@ -103,11 +103,12 @@ class TerrainServiceTest {
 		// Assert: Squonk aveva 2 + 2 DEF, ne ha persi 3 (2 dallo scudo): resta a 1, l'uscita non la uccide
 		assertThat(challenger(state).defense()).isEqualTo(1);
 		assertThat(challenger(state).isDead()).isFalse();
-		assertThat(opponent(state).attack()).isEqualTo(7);
+		// Devouring Abyss dà a Kappa uno scudo di 1 DEF (ENG-42)
+		assertThat(opponent(state).defense()).isEqualTo(8);
 		assertThat(state.log().events()).extracting(MatchEvent::message).endsWith(
 				"Devouring Abyss enters play, replacing Hollow Clearing",
 				"Squonk: loses the Hollow Clearing bonus (ATK 3, DEF 1)",
-				"Kappa: +1 ATK from Devouring Abyss (ATK 7, DEF 7)");
+				"Kappa: +1 DEF from Devouring Abyss (ATK 6, DEF 8)");
 	}
 
 	@Test
@@ -139,8 +140,8 @@ class TerrainServiceTest {
 		terrains.place(state, state.challenger(), DEVOURING_ABYSS);
 		terrains.applyBonus(state, challenger(state));
 
-		// Assert
-		assertThat(challenger(state).attack()).isEqualTo(9);
+		// Assert: uno scudo di 1 DEF, non 2 (ENG-42: Devouring Abyss dà +1 DEF)
+		assertThat(challenger(state).defense()).isEqualTo(10);
 	}
 
 	@Test

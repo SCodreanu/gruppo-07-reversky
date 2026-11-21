@@ -139,12 +139,12 @@ DEF dopo ogni round: 2/6 → **−6**/1. Rootbound Doppelganger muore, lo sfidan
 **13** — Seed `2219`: entrambi pescano nell'ordine del file. Sfidante (Archive): Veil of the Anchored, Watching Rift, SCP-131 8/6, Echo Strike, Archive Puppet 3/10. Avversario (Wound): Badge di Uscita Negata, Faceling 7/9, Skin Fracture, Crawlers 4/5. Archive batte Wound: +2 ATK per lo sfidante, −1 per l'avversario.
 
 - Pescata iniziale: Veil (+5 DEF) resta in attesa della prossima creatura dello sfidante; Watching Rift entra in gioco senza creature da potenziare; SCP-131 entra. L'avversario mette il Badge accanto al mazzo e gioca Faceling.
-- Inizio del primo scontro: SCP-131 riceve Veil (DEF 11), poi il bonus di Watching Rift (+1 ATK, +1 DEF: 9/12). Faceling è Wound, niente bonus.
-- Round 1: SCP-131 attacca con 9 + 2 = 11, Faceling con 7 − 1 = 6. Faceling 9 − 11 = −2; SCP-131 perde 6 (prima lo scudo del Terreno, 1, poi quello di Veil, 5): DEF 6. Il Badge salva Faceling, che resta con 1 DEF.
-- Round 2: Faceling 1 − 11 = −10, SCP-131 6 − 6 = 0: muoiono entrambe, nessun danno ai giocatori.
-- Lo sfidante pesca Echo Strike (coperta, pronta dal secondo scontro) e Archive Puppet. L'avversario pesca Skin Fracture, che colpisce subito Archive Puppet (10 − 5 = 5), poi Crawlers.
+- Inizio del primo scontro: SCP-131 riceve Veil (DEF 11), poi il bonus di Watching Rift (+1 ATK: 9/11; dal 21 novembre, `ENG-42`, il Terreno non dà più +1 DEF). Faceling è Wound, niente bonus.
+- Round 1: SCP-131 attacca con 9 + 2 = 11, Faceling con 7 − 1 = 6. Faceling 9 − 11 = −2; SCP-131 perde 6 (prima lo scudo di Veil, 5, poi 1): DEF 5. Il Badge salva Faceling, che resta con 1 DEF.
+- Round 2: Faceling 1 − 11 = −10, SCP-131 5 − 6 = −1: muoiono entrambe, nessun danno ai giocatori.
+- Lo sfidante pesca Echo Strike (coperta, pronta dal secondo scontro) e Archive Puppet. L'avversario pesca Skin Fracture, che colpisce subito Archive Puppet: Watching Rift toglie 1 punto alla prima Spell `DAMAGE` (10 − 4 = 6), poi Crawlers.
 - Inizio del secondo scontro: Archive Puppet riceve Watching Rift (4/6); Echo Strike si attiva su Crawlers (−2 ATK nel primo round, −2 DEF: DEF 3).
-- Round 3: Archive Puppet attacca con 4 + 2 = 6, Crawlers con 4 − 1 − 2 = 1. Crawlers 3 − 6 = **−3** (muore), Archive Puppet perde 1 dallo scudo del Terreno: DEF 5. L'avversario perde **3** PV → 27 e non ha più creature → `CHALLENGER_WIN`, `NO_CREATURES_LEFT`.
+- Round 3: Archive Puppet attacca con 4 + 2 = 6, Crawlers con 4 − 1 − 2 = 1. Crawlers 3 − 6 = **−3** (muore), Archive Puppet perde 1: DEF 5. L'avversario perde **3** PV → 27 e non ha più creature → `CHALLENGER_WIN`, `NO_CREATURES_LEFT`.
 - Creature sconfitte: lo sfidante 2 (Faceling, Crawlers), l'avversario 1 (SCP-131).
 
 ## Log minimo atteso (esempio 01)

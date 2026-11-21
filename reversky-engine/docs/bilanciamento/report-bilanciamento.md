@@ -17,10 +17,10 @@ Generato da `BalanceSimulationTest` con `gradlew balanceTest` (`ENG-28`): non si
 
 | Configurazione | Partite | Fazione migliore | Fazione peggiore | ROUND_LIMIT | Durata media | Primo giocatore | Avvisi |
 |---|---|---|---|---|---|---|---|
-| 30 PV, bonus D-04 (+2/−1 ATK) | 40.000 | Wound 51,5% | Invitation 48,4% | 0,0% | 36,6 | 49,9% | 4 |
-| 30 PV, bonus di prova (+1 DEF) | 40.000 | Archive 55,5% | Invitation 44,6% | 0,0% | 44,4 | 49,7% | 7 |
-| 25 PV, bonus D-04 (+2/−1 ATK) | 40.000 | Wound 52,7% | Invitation 47,2% | 0,0% | 33,1 | 49,8% | 6 |
-| 25 PV, bonus di prova (+1 DEF) | 40.000 | Archive 54,6% | Invitation 42,5% | 0,0% | 41,3 | 49,6% | 7 |
+| 30 PV, bonus D-04 (+2/−1 ATK) | 40.000 | Archive 51,0% | Dream 49,0% | 0,0% | 31,7 | 50,0% | 4 |
+| 30 PV, bonus di prova (+1 DEF) | 40.000 | Invitation 51,7% | Dream 48,1% | 0,0% | 37,8 | 49,4% | 4 |
+| 25 PV, bonus D-04 (+2/−1 ATK) | 40.000 | Archive 51,5% | Dream 48,5% | 0,0% | 28,4 | 49,7% | 4 |
+| 25 PV, bonus di prova (+1 DEF) | 40.000 | Wound 52,3% | Dream 46,8% | 0,0% | 34,9 | 49,4% | 5 |
 
 ## 30 PV, bonus D-04 (+2/−1 ATK)
 
@@ -30,10 +30,10 @@ Contro le altre fazioni, senza le partite speculari.
 
 | Fazione | Partite | Vittorie | Pareggi | Sconfitte | Punteggio |
 |---|---|---|---|---|---|
-| Wound | 15.000 | 7.713 | 25 | 7.262 | 51,5% |
-| Invitation | 15.000 | 7.254 | 25 | 7.721 | 48,4% |
-| Archive | 15.000 | 7.664 | 22 | 7.314 | 51,2% |
-| Dream | 15.000 | 7.322 | 22 | 7.656 | 48,9% |
+| Wound | 15.000 | 7.507 | 29 | 7.464 | 50,1% |
+| Invitation | 15.000 | 7.461 | 29 | 7.510 | 49,8% |
+| Archive | 15.000 | 7.646 | 21 | 7.333 | 51,0% |
+| Dream | 15.000 | 7.336 | 21 | 7.643 | 49,0% |
 
 ### Scontri diretti
 
@@ -41,24 +41,24 @@ Punteggio della fazione della riga contro quella della colonna, nei due posti. O
 
 | | Wound | Invitation | Archive | Dream |
 |---|---|---|---|---|
-| Wound (Dream) | — | 54,7% | 0,0% | 99,8% |
-| Invitation (Archive) | 45,4% | — | 100,0% | 0,0% |
-| Archive (Wound) | 100,0% | 0,0% | — | 53,5% |
-| Dream (Invitation) | 0,2% | 100,0% | 46,5% | — |
+| Wound (Dream) | — | 50,5% | 0,0% | 99,9% |
+| Invitation (Archive) | 49,5% | — | 100,0% | 0,0% |
+| Archive (Wound) | 100,0% | 0,0% | — | 53,2% |
+| Dream (Invitation) | 0,1% | 100,0% | 46,9% | — |
 
 ### Partite
 
-- Primo giocatore (sfidante): 49,9%.
-- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 53,6%. D-01 cercava circa metà.
-- Durata in round: media 36,6, minimo 8, mediana 37, 90° percentile 48, massimo 75.
+- Primo giocatore (sfidante): 50,0%.
+- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 56,4%. D-01 cercava circa metà.
+- Durata in round: media 31,7, minimo 7, mediana 32, 90° percentile 41, massimo 75.
 
 | Motivo di fine | Partite | Quota |
 |---|---|---|
-| `BOTH_LIFE_POINTS_ZERO` | 4 | 0,0% |
-| `LIFE_POINTS_ZERO` | 21.452 | 53,6% |
-| `BOTH_DECKS_EMPTY` | 1.577 | 3,9% |
-| `NO_CREATURES_LEFT` | 16.965 | 42,4% |
-| `ROUND_LIMIT` | 2 | 0,0% |
+| `BOTH_LIFE_POINTS_ZERO` | 10 | 0,0% |
+| `LIFE_POINTS_ZERO` | 22.548 | 56,4% |
+| `BOTH_DECKS_EMPTY` | 1.701 | 4,3% |
+| `NO_CREATURES_LEFT` | 15.740 | 39,4% |
+| `ROUND_LIMIT` | 1 | 0,0% |
 
 ### Rarità e tipi
 
@@ -66,20 +66,20 @@ Punteggio del lato che ha una carta del gruppo nel mazzo e del lato che l'ha gio
 
 | Gruppo | Carte | Partite giocata | Nel mazzo | Da giocata |
 |---|---|---|---|---|
-| Common | 28 | 334.925 | 49,9% | 46,9% |
-| Uncommon | 26 | 307.115 | 50,0% | 46,7% |
-| Rare | 16 | 148.991 | 50,1% | 46,3% |
-| Mythic | 12 | 112.185 | 50,1% | 45,6% |
-| Legendary | 8 | 87.681 | 50,4% | 46,0% |
-| Mutant | 2 | 43.723 | 50,7% | 46,4% |
-| Spell | 12 | 336.011 | 50,0% | 46,5% |
-| Hidden | 8 | 115.239 | 50,0% | 46,7% |
-| Terreno | 4 | 66.158 | 50,0% | 47,1% |
-| Oggetto | 4 | 65.858 | 50,0% | 45,7% |
+| Common | 28 | 333.445 | 49,9% | 47,3% |
+| Uncommon | 26 | 305.826 | 50,0% | 47,2% |
+| Rare | 16 | 147.957 | 50,2% | 46,9% |
+| Mythic | 12 | 111.474 | 50,2% | 46,2% |
+| Legendary | 8 | 86.883 | 50,3% | 46,5% |
+| Mutant | 2 | 43.255 | 50,4% | 46,7% |
+| Spell | 12 | 333.803 | 50,0% | 47,1% |
+| Hidden | 8 | 114.140 | 50,0% | 47,4% |
+| Terreno | 4 | 65.388 | 50,0% | 47,6% |
+| Oggetto | 4 | 65.375 | 50,0% | 46,4% |
 
 ### Avvisi
 
-- Scontro di vantaggio Wound contro Dream: 99,8% (atteso 55-65%).
+- Scontro di vantaggio Wound contro Dream: 99,9% (atteso 55-65%).
 - Scontro di vantaggio Invitation contro Archive: 100,0% (atteso 55-65%).
 - Scontro di vantaggio Archive contro Wound: 100,0% (atteso 55-65%).
 - Scontro di vantaggio Dream contro Invitation: 100,0% (atteso 55-65%).
@@ -104,10 +104,10 @@ Contro le altre fazioni, senza le partite speculari.
 
 | Fazione | Partite | Vittorie | Pareggi | Sconfitte | Punteggio |
 |---|---|---|---|---|---|
-| Wound | 15.000 | 7.196 | 46 | 7.758 | 48,1% |
-| Invitation | 15.000 | 6.667 | 38 | 8.295 | 44,6% |
-| Archive | 15.000 | 8.302 | 42 | 6.656 | 55,5% |
-| Dream | 15.000 | 7.750 | 44 | 7.206 | 51,8% |
+| Wound | 15.000 | 7.435 | 55 | 7.510 | 49,8% |
+| Invitation | 15.000 | 7.739 | 47 | 7.214 | 51,7% |
+| Archive | 15.000 | 7.544 | 43 | 7.413 | 50,4% |
+| Dream | 15.000 | 7.181 | 57 | 7.762 | 48,1% |
 
 ### Scontri diretti
 
@@ -115,24 +115,24 @@ Punteggio della fazione della riga contro quella della colonna, nei due posti. O
 
 | | Wound | Invitation | Archive | Dream |
 |---|---|---|---|---|
-| Wound (Dream) | — | 54,7% | 9,8% | 79,9% |
-| Invitation (Archive) | 45,3% | — | 78,2% | 10,2% |
-| Archive (Wound) | 90,2% | 21,8% | — | 54,5% |
-| Dream (Invitation) | 20,1% | 89,8% | 45,5% | — |
+| Wound (Dream) | — | 50,7% | 12,3% | 86,2% |
+| Invitation (Archive) | 49,3% | — | 89,0% | 17,0% |
+| Archive (Wound) | 87,7% | 11,0% | — | 52,7% |
+| Dream (Invitation) | 13,8% | 83,0% | 47,3% | — |
 
 ### Partite
 
-- Primo giocatore (sfidante): 49,7%.
-- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 28,8%. D-01 cercava circa metà.
-- Durata in round: media 44,4, minimo 14, mediana 44, 90° percentile 52, massimo 75.
+- Primo giocatore (sfidante): 49,4%.
+- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 33,4%. D-01 cercava circa metà.
+- Durata in round: media 37,8, minimo 11, mediana 38, 90° percentile 44, massimo 75.
 
 | Motivo di fine | Partite | Quota |
 |---|---|---|
-| `BOTH_LIFE_POINTS_ZERO` | 9 | 0,0% |
-| `LIFE_POINTS_ZERO` | 11.525 | 28,8% |
-| `BOTH_DECKS_EMPTY` | 2.426 | 6,1% |
-| `NO_CREATURES_LEFT` | 26.037 | 65,1% |
-| `ROUND_LIMIT` | 3 | 0,0% |
+| `BOTH_LIFE_POINTS_ZERO` | 17 | 0,0% |
+| `LIFE_POINTS_ZERO` | 13.332 | 33,3% |
+| `BOTH_DECKS_EMPTY` | 2.656 | 6,6% |
+| `NO_CREATURES_LEFT` | 23.993 | 60,0% |
+| `ROUND_LIMIT` | 2 | 0,0% |
 
 ### Rarità e tipi
 
@@ -140,26 +140,23 @@ Punteggio del lato che ha una carta del gruppo nel mazzo e del lato che l'ha gio
 
 | Gruppo | Carte | Partite giocata | Nel mazzo | Da giocata |
 |---|---|---|---|---|
-| Common | 28 | 363.243 | 49,8% | 48,9% |
-| Uncommon | 26 | 334.693 | 50,2% | 49,2% |
-| Rare | 16 | 164.689 | 50,0% | 48,7% |
-| Mythic | 12 | 126.603 | 50,2% | 48,5% |
-| Legendary | 8 | 98.758 | 50,6% | 48,9% |
-| Mutant | 2 | 49.209 | 50,1% | 48,4% |
-| Spell | 12 | 373.672 | 50,0% | 48,8% |
-| Hidden | 8 | 130.184 | 50,0% | 49,3% |
-| Terreno | 4 | 75.171 | 50,0% | 50,0% |
-| Oggetto | 4 | 74.139 | 50,0% | 48,3% |
+| Common | 28 | 360.485 | 49,9% | 49,0% |
+| Uncommon | 26 | 332.149 | 50,0% | 49,1% |
+| Rare | 16 | 163.188 | 50,1% | 48,9% |
+| Mythic | 12 | 125.084 | 50,2% | 48,7% |
+| Legendary | 8 | 97.675 | 50,6% | 49,2% |
+| Mutant | 2 | 48.569 | 50,4% | 49,0% |
+| Spell | 12 | 369.864 | 50,0% | 49,0% |
+| Hidden | 8 | 128.569 | 50,0% | 49,5% |
+| Terreno | 4 | 73.837 | 50,0% | 49,8% |
+| Oggetto | 4 | 73.283 | 50,0% | 48,5% |
 
 ### Avvisi
 
-- Scontro di vantaggio Wound contro Dream: 79,9% (atteso 55-65%).
-- Scontro di vantaggio Invitation contro Archive: 78,2% (atteso 55-65%).
-- Scontro di vantaggio Archive contro Wound: 90,2% (atteso 55-65%).
-- Scontro di vantaggio Dream contro Invitation: 89,8% (atteso 55-65%).
-- Fazione Invitation: 44,6% contro le altre (atteso 45-55%).
-- Fazione Archive: 55,5% contro le altre (atteso 45-55%).
-- Scala delle rarità (nel mazzo): Rare (50,0%) non supera Uncommon (50,2%).
+- Scontro di vantaggio Wound contro Dream: 86,2% (atteso 55-65%).
+- Scontro di vantaggio Invitation contro Archive: 89,0% (atteso 55-65%).
+- Scontro di vantaggio Archive contro Wound: 87,7% (atteso 55-65%).
+- Scontro di vantaggio Dream contro Invitation: 83,0% (atteso 55-65%).
 
 ### Carte fuori banda
 
@@ -181,10 +178,10 @@ Contro le altre fazioni, senza le partite speculari.
 
 | Fazione | Partite | Vittorie | Pareggi | Sconfitte | Punteggio |
 |---|---|---|---|---|---|
-| Wound | 15.000 | 7.897 | 24 | 7.079 | 52,7% |
-| Invitation | 15.000 | 7.073 | 23 | 7.904 | 47,2% |
-| Archive | 15.000 | 7.664 | 23 | 7.313 | 51,2% |
-| Dream | 15.000 | 7.320 | 22 | 7.658 | 48,9% |
+| Wound | 15.000 | 7.658 | 24 | 7.318 | 51,1% |
+| Invitation | 15.000 | 7.321 | 24 | 7.655 | 48,9% |
+| Archive | 15.000 | 7.718 | 21 | 7.261 | 51,5% |
+| Dream | 15.000 | 7.258 | 21 | 7.721 | 48,5% |
 
 ### Scontri diretti
 
@@ -192,24 +189,24 @@ Punteggio della fazione della riga contro quella della colonna, nei due posti. O
 
 | | Wound | Invitation | Archive | Dream |
 |---|---|---|---|---|
-| Wound (Dream) | — | 58,2% | 0,1% | 99,8% |
-| Invitation (Archive) | 41,8% | — | 99,9% | 0,0% |
-| Archive (Wound) | 99,9% | 0,1% | — | 53,5% |
-| Dream (Invitation) | 0,2% | 100,0% | 46,5% | — |
+| Wound (Dream) | — | 53,4% | 0,1% | 99,9% |
+| Invitation (Archive) | 46,6% | — | 100,0% | 0,0% |
+| Archive (Wound) | 99,9% | 0,0% | — | 54,7% |
+| Dream (Invitation) | 0,1% | 100,0% | 45,4% | — |
 
 ### Partite
 
-- Primo giocatore (sfidante): 49,8%.
-- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 72,9%. D-01 cercava circa metà.
-- Durata in round: media 33,1, minimo 6, mediana 33, 90° percentile 46, massimo 75.
+- Primo giocatore (sfidante): 49,7%.
+- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 73,8%. D-01 cercava circa metà.
+- Durata in round: media 28,4, minimo 3, mediana 29, 90° percentile 39, massimo 75.
 
 | Motivo di fine | Partite | Quota |
 |---|---|---|
-| `BOTH_LIFE_POINTS_ZERO` | 27 | 0,1% |
-| `LIFE_POINTS_ZERO` | 29.142 | 72,9% |
-| `BOTH_DECKS_EMPTY` | 1.041 | 2,6% |
-| `NO_CREATURES_LEFT` | 9.788 | 24,5% |
-| `ROUND_LIMIT` | 2 | 0,0% |
+| `BOTH_LIFE_POINTS_ZERO` | 22 | 0,1% |
+| `LIFE_POINTS_ZERO` | 29.507 | 73,8% |
+| `BOTH_DECKS_EMPTY` | 1.118 | 2,8% |
+| `NO_CREATURES_LEFT` | 9.352 | 23,4% |
+| `ROUND_LIMIT` | 1 | 0,0% |
 
 ### Rarità e tipi
 
@@ -217,25 +214,23 @@ Punteggio del lato che ha una carta del gruppo nel mazzo e del lato che l'ha gio
 
 | Gruppo | Carte | Partite giocata | Nel mazzo | Da giocata |
 |---|---|---|---|---|
-| Common | 28 | 314.067 | 50,0% | 46,7% |
-| Uncommon | 26 | 286.625 | 50,0% | 46,4% |
-| Rare | 16 | 137.503 | 50,0% | 46,1% |
-| Mythic | 12 | 101.997 | 50,1% | 45,6% |
-| Legendary | 8 | 79.633 | 50,3% | 45,9% |
-| Mutant | 2 | 39.712 | 50,6% | 46,3% |
-| Spell | 12 | 308.954 | 50,0% | 46,7% |
-| Hidden | 8 | 104.512 | 50,0% | 47,3% |
-| Terreno | 4 | 60.043 | 50,0% | 47,6% |
-| Oggetto | 4 | 59.784 | 50,0% | 46,0% |
+| Common | 28 | 311.587 | 49,9% | 47,1% |
+| Uncommon | 26 | 284.419 | 50,0% | 47,0% |
+| Rare | 16 | 136.011 | 50,1% | 46,6% |
+| Mythic | 12 | 100.785 | 50,2% | 46,2% |
+| Legendary | 8 | 78.536 | 50,2% | 46,4% |
+| Mutant | 2 | 39.220 | 50,4% | 46,7% |
+| Spell | 12 | 305.818 | 50,0% | 47,4% |
+| Hidden | 8 | 103.128 | 50,0% | 47,9% |
+| Terreno | 4 | 59.048 | 50,0% | 48,0% |
+| Oggetto | 4 | 59.258 | 50,0% | 46,6% |
 
 ### Avvisi
 
-- Scontro neutro Wound contro Invitation: 58,2% (atteso 45-55%).
-- Scontro di vantaggio Wound contro Dream: 99,8% (atteso 55-65%).
-- Scontro di vantaggio Invitation contro Archive: 99,9% (atteso 55-65%).
+- Scontro di vantaggio Wound contro Dream: 99,9% (atteso 55-65%).
+- Scontro di vantaggio Invitation contro Archive: 100,0% (atteso 55-65%).
 - Scontro di vantaggio Archive contro Wound: 99,9% (atteso 55-65%).
 - Scontro di vantaggio Dream contro Invitation: 100,0% (atteso 55-65%).
-- Scala delle rarità (nel mazzo): Uncommon (50,0%) non supera Common (50,0%).
 
 ### Carte fuori banda
 
@@ -257,10 +252,10 @@ Contro le altre fazioni, senza le partite speculari.
 
 | Fazione | Partite | Vittorie | Pareggi | Sconfitte | Punteggio |
 |---|---|---|---|---|---|
-| Wound | 15.000 | 7.517 | 47 | 7.436 | 50,3% |
-| Invitation | 15.000 | 6.358 | 34 | 8.608 | 42,5% |
-| Archive | 15.000 | 8.170 | 52 | 6.778 | 54,6% |
-| Dream | 15.000 | 7.863 | 51 | 7.086 | 52,6% |
+| Wound | 15.000 | 7.828 | 48 | 7.124 | 52,3% |
+| Invitation | 15.000 | 7.540 | 39 | 7.421 | 50,4% |
+| Archive | 15.000 | 7.538 | 50 | 7.412 | 50,4% |
+| Dream | 15.000 | 6.993 | 65 | 7.942 | 46,8% |
 
 ### Scontri diretti
 
@@ -268,23 +263,23 @@ Punteggio della fazione della riga contro quella della colonna, nei due posti. O
 
 | | Wound | Invitation | Archive | Dream |
 |---|---|---|---|---|
-| Wound (Dream) | — | 58,1% | 15,5% | 77,3% |
-| Invitation (Archive) | 41,9% | — | 74,3% | 11,3% |
-| Archive (Wound) | 84,6% | 25,7% | — | 53,7% |
-| Dream (Invitation) | 22,7% | 88,7% | 46,3% | — |
+| Wound (Dream) | — | 54,0% | 18,0% | 85,0% |
+| Invitation (Archive) | 46,0% | — | 85,1% | 20,1% |
+| Archive (Wound) | 82,0% | 14,9% | — | 54,4% |
+| Dream (Invitation) | 15,0% | 79,9% | 45,6% | — |
 
 ### Partite
 
-- Primo giocatore (sfidante): 49,6%.
-- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 54,0%. D-01 cercava circa metà.
-- Durata in round: media 41,3, minimo 10, mediana 42, 90° percentile 51, massimo 75.
+- Primo giocatore (sfidante): 49,4%.
+- Finite per punti vita (`LIFE_POINTS_ZERO` e `BOTH_LIFE_POINTS_ZERO`): 56,4%. D-01 cercava circa metà.
+- Durata in round: media 34,9, minimo 7, mediana 36, 90° percentile 43, massimo 75.
 
 | Motivo di fine | Partite | Quota |
 |---|---|---|
-| `BOTH_LIFE_POINTS_ZERO` | 42 | 0,1% |
-| `LIFE_POINTS_ZERO` | 21.540 | 53,8% |
-| `BOTH_DECKS_EMPTY` | 1.597 | 4,0% |
-| `NO_CREATURES_LEFT` | 16.819 | 42,0% |
+| `BOTH_LIFE_POINTS_ZERO` | 47 | 0,1% |
+| `LIFE_POINTS_ZERO` | 22.517 | 56,3% |
+| `BOTH_DECKS_EMPTY` | 1.773 | 4,4% |
+| `NO_CREATURES_LEFT` | 15.661 | 39,2% |
 | `ROUND_LIMIT` | 2 | 0,0% |
 
 ### Rarità e tipi
@@ -293,26 +288,24 @@ Punteggio del lato che ha una carta del gruppo nel mazzo e del lato che l'ha gio
 
 | Gruppo | Carte | Partite giocata | Nel mazzo | Da giocata |
 |---|---|---|---|---|
-| Common | 28 | 348.320 | 49,9% | 48,9% |
-| Uncommon | 26 | 320.144 | 50,2% | 49,0% |
-| Rare | 16 | 156.000 | 50,0% | 48,5% |
-| Mythic | 12 | 118.539 | 50,1% | 48,4% |
-| Legendary | 8 | 92.308 | 50,5% | 48,8% |
-| Mutant | 2 | 45.961 | 50,2% | 48,5% |
-| Spell | 12 | 353.352 | 50,0% | 49,2% |
-| Hidden | 8 | 121.911 | 50,0% | 49,9% |
-| Terreno | 4 | 70.556 | 50,0% | 51,0% |
-| Oggetto | 4 | 69.368 | 50,0% | 48,6% |
+| Common | 28 | 344.201 | 50,0% | 49,0% |
+| Uncommon | 26 | 316.100 | 49,9% | 48,9% |
+| Rare | 16 | 153.620 | 50,1% | 48,8% |
+| Mythic | 12 | 116.228 | 50,3% | 48,7% |
+| Legendary | 8 | 90.518 | 50,4% | 49,1% |
+| Mutant | 2 | 45.078 | 50,4% | 49,0% |
+| Spell | 12 | 347.296 | 50,0% | 49,5% |
+| Hidden | 8 | 119.476 | 50,0% | 50,1% |
+| Terreno | 4 | 68.650 | 50,0% | 50,6% |
+| Oggetto | 4 | 68.208 | 50,0% | 48,8% |
 
 ### Avvisi
 
-- Scontro neutro Wound contro Invitation: 58,1% (atteso 45-55%).
-- Scontro di vantaggio Wound contro Dream: 77,3% (atteso 55-65%).
-- Scontro di vantaggio Invitation contro Archive: 74,3% (atteso 55-65%).
-- Scontro di vantaggio Archive contro Wound: 84,6% (atteso 55-65%).
-- Scontro di vantaggio Dream contro Invitation: 88,7% (atteso 55-65%).
-- Fazione Invitation: 42,5% contro le altre (atteso 45-55%).
-- Scala delle rarità (nel mazzo): Rare (50,0%) non supera Uncommon (50,2%).
+- Scontro di vantaggio Wound contro Dream: 85,0% (atteso 55-65%).
+- Scontro di vantaggio Invitation contro Archive: 85,1% (atteso 55-65%).
+- Scontro di vantaggio Archive contro Wound: 82,0% (atteso 55-65%).
+- Scontro di vantaggio Dream contro Invitation: 79,9% (atteso 55-65%).
+- Scala delle rarità (nel mazzo): Uncommon (49,9%) non supera Common (50,0%).
 
 ### Carte fuori banda
 

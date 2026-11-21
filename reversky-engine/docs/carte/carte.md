@@ -115,8 +115,8 @@ Quando viene pescato viene messo **accanto al mazzo** e resta in gioco finché u
 |---|---|---|---|
 | Echo Rift (Crepa Eco) | Theory of the Wound | +1 ATK | la prima volta che ogni creatura viene ferita in uno scontro, +1 ATK per il resto dello scontro |
 | Hollow Clearing (Crepa Radura) | Theory of the Invitation | +2 DEF | ogni penalità DEF ricevuta è ridotta di 1 |
-| Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK e +1 DEF | la prima Spell `DAMAGE` subita in uno scontro fa 1 punto in meno (prima dalla DEF, poi dall'ATK) |
-| Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 ATK | all'inizio di ogni scontro 1 danno alla creatura avversaria (danno da effetto) |
+| Watching Rift (Crepa Occhi) | Theory of the Archive | +1 ATK (proposta `ENG-42` del 21 novembre; era +1 ATK e +1 DEF) | la prima Spell `DAMAGE` subita in uno scontro fa 1 punto in meno (prima dalla DEF, poi dall'ATK) |
+| Devouring Abyss (Crepa Cavità) | Theory of the Dream | +1 DEF (proposta `ENG-42` del 21 novembre; era +1 ATK) | all'inizio di ogni scontro 1 danno alla creatura avversaria (danno da effetto) |
 
 I quattro Terreni valgono circa 3,5 PS per creatura della loro fazione (revisione dell'11 novembre). Gli effetti secondari (D-18) sono implementati dal 18 novembre (`ENG-27`): come funzionano nel motore è in [effetti](../effetti/effetti.md#effetti-implementati).
 

@@ -196,7 +196,7 @@ class DrawServiceTest {
 	@Test
 	@DisplayName("D-17: un Terreno pescato entra in gioco e dà subito il bonus alla creatura avversaria della fazione")
 	void drawCreature_terrain_placedWithImmediateBonus() {
-		// Arrange: Kappa dell'avversario è Archive come Watching Rift (+1 ATK, +1 DEF)
+		// Arrange: Kappa dell'avversario è Archive come Watching Rift (+1 ATK, ENG-42)
 		CardDefinition rift = TestCards.terrain(115, "Watching Rift", TestFactions.ARCHIVE, "WATCHING_RIFT");
 		MatchState state = TestStates.withDecks(List.of(rift, CRAWLERS), List.of());
 		CreatureInPlay kappa = new CreatureInPlay(KAPPA, Side.OPPONENT);
@@ -211,7 +211,7 @@ class DrawServiceTest {
 			assertThat(terrain.owner()).isEqualTo(Side.CHALLENGER);
 		});
 		assertThat(kappa.attack()).isEqualTo(7);
-		assertThat(kappa.defense()).isEqualTo(5);
+		assertThat(kappa.defense()).isEqualTo(4);
 		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(4);
 		assertThat(state.log().events()).extracting(MatchEvent::type).containsExactly(EventType.CARD_DRAWN,
 				EventType.TERRAIN_PLACED, EventType.EFFECT_TRIGGERED, EventType.CREATURE_ENTERED);

@@ -113,7 +113,7 @@ class HealEffectsTest {
 	// ---- Wendigo ----
 
 	@Test
-	@DisplayName("Wendigo: a fine round 3 danni all'avversaria (40 − 1 − 3 = 36)")
+	@DisplayName("Wendigo: a fine round 4 danni all'avversaria (40 − 1 − 4 = 35; ENG-42, erano 3)")
 	void wendigo_roundEndDamage() {
 		// Arrange
 		MatchState state = inCombat(wendigo(1, 30), plain("B", 1, 40));
@@ -123,8 +123,8 @@ class HealEffectsTest {
 		resolver.resolve(state);
 
 		// Assert
-		assertThat(enemy(state).defense()).isEqualTo(36);
-		assertThat(messages(state)).contains("Wendigo: deals 3 damage to B (DEF 36)");
+		assertThat(enemy(state).defense()).isEqualTo(35);
+		assertThat(messages(state)).contains("Wendigo: deals 4 damage to B (DEF 35)");
 	}
 
 	@Test
@@ -140,17 +140,17 @@ class HealEffectsTest {
 		resolver.startCombat(state);
 		resolver.resolve(state);
 
-		// Assert: 30 − 2 = 28, +2 fino a 30; C 40 − 10 − 4 = 26
+		// Assert: 30 − 2 = 28, +2 fino a 30; C 40 − 10 − 5 = 25
 		assertThat(messages(state)).contains("Wendigo: recovers 2 DEF after defeating B (DEF 30)",
-				"Wendigo: deals 4 damage to C (DEF 26)");
-		assertThat(enemy(state).defense()).isEqualTo(26);
+				"Wendigo: deals 5 damage to C (DEF 25)");
+		assertThat(enemy(state).defense()).isEqualTo(25);
 	}
 
 	@Test
 	@DisplayName("Wendigo: conta anche l'eliminazione fatta dal suo danno di fine round")
 	void wendigo_killByOwnDrain_counts() {
-		// Arrange: B 1/4 scende a 3 con l'attacco, poi a 0 a fine round
-		MatchState state = inCombat(wendigo(1, 30), plain("B", 1, 4));
+		// Arrange: B 1/5 scende a 4 con l'attacco, poi a 0 a fine round
+		MatchState state = inCombat(wendigo(1, 30), plain("B", 1, 5));
 		resolver.startCombat(state);
 
 		// Act
@@ -158,13 +158,13 @@ class HealEffectsTest {
 
 		// Assert
 		assertThat(state.opponent().creature()).isEmpty();
-		assertThat(messages(state)).containsSubsequence("Wendigo: deals 3 damage to B (DEF 0)",
+		assertThat(messages(state)).containsSubsequence("Wendigo: deals 4 damage to B (DEF 0)",
 				"Wendigo: recovers 1 DEF after defeating B (DEF 30)");
 	}
 
 	@Test
-	@DisplayName("Wendigo: il danno di fine round arriva al massimo a 6, anche dopo 4 eliminazioni")
-	void wendigo_damageCappedAtSix() {
+	@DisplayName("Wendigo: il danno di fine round arriva al massimo a 7, anche dopo 4 eliminazioni")
+	void wendigo_damageCappedAtSeven() {
 		// Arrange: Wendigo 10/30 elimina quattro creature 0/1
 		MatchState state = inCombat(wendigo(10, 30), plain("V1", 0, 1));
 		resolver.startCombat(state);
@@ -180,9 +180,9 @@ class HealEffectsTest {
 		resolver.startCombat(state);
 		resolver.resolve(state);
 
-		// Assert: 40 − 10 − 6 = 24
-		assertThat(enemy(state).defense()).isEqualTo(24);
-		assertThat(messages(state)).contains("Wendigo: deals 6 damage to Last (DEF 24)");
+		// Assert: 40 − 10 − 7 = 23
+		assertThat(enemy(state).defense()).isEqualTo(23);
+		assertThat(messages(state)).contains("Wendigo: deals 7 damage to Last (DEF 23)");
 	}
 
 	// ---- SCP-109 ----

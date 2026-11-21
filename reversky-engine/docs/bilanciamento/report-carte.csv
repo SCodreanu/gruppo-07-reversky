@@ -1,481 +1,481 @@
 configurazione,id,nome,tipo,fazione,rarita,gruppo,partite_nel_mazzo,punteggio_nel_mazzo_pct,partite_giocata,punteggio_giocata_pct,media_gruppo_pct,scarto_pp,attivazioni_per_partita_giocata,controllo
-pv30-d04,1,Squonk,CREATURE,Invitation,Common,Common,13645,48.98,12050,46.00,46.87,-0.87,1.52,OK
-pv30-d04,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,48.70,12127,45.96,46.87,-0.91,1.44,OK
-pv30-d04,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,49.05,12108,46.59,46.87,-0.28,1.42,OK
-pv30-d04,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,49.24,12146,46.44,46.87,-0.42,1.48,OK
-pv30-d04,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,48.37,12219,45.65,46.87,-1.22,1.53,OK
-pv30-d04,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,48.49,12173,45.88,46.87,-0.99,1.48,OK
-pv30-d04,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,48.47,12191,45.66,46.87,-1.21,1.51,OK
-pv30-d04,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,48.96,12113,46.43,46.73,-0.30,2.68,OK
-pv30-d04,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,49.09,11990,46.55,46.73,-0.19,3.14,OK
-pv30-d04,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,48.84,12218,46.04,46.73,-0.70,2.65,OK
-pv30-d04,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,49.25,11839,46.22,46.73,-0.52,2.65,OK
-pv30-d04,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,48.88,12081,45.98,46.73,-0.75,2.52,OK
-pv30-d04,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,49.14,12010,46.10,46.73,-0.63,2.71,OK
-pv30-d04,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,49.26,9370,46.55,46.30,0.25,2.81,OK
-pv30-d04,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,48.35,9231,45.05,46.30,-1.25,3.27,OK
-pv30-d04,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,49.14,9370,46.00,46.30,-0.31,2.30,OK
-pv30-d04,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,48.87,9375,46.05,46.30,-0.26,3.48,OK
-pv30-d04,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,48.54,9322,44.48,45.63,-1.14,2.36,OK
-pv30-d04,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,49.35,9318,45.15,45.63,-0.47,2.87,OK
-pv30-d04,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,48.75,9433,44.90,45.63,-0.72,2.40,OK
-pv30-d04,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,49.21,11118,45.43,45.97,-0.54,2.79,OK
-pv30-d04,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,48.77,11023,44.64,45.97,-1.32,1.93,OK
-pv30-d04,23,SCP-131,CREATURE,Archive,Common,Common,13310,50.83,11808,47.39,46.87,0.52,1.11,OK
-pv30-d04,24,SCP-999,CREATURE,Archive,Common,Common,13230,51.18,11743,47.65,46.87,0.78,1.10,OK
-pv30-d04,25,SCP-1762,CREATURE,Archive,Common,Common,13284,50.24,11776,46.44,46.87,-0.43,1.10,OK
-pv30-d04,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,50.74,11651,47.23,46.87,0.36,1.10,OK
-pv30-d04,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,51.14,11698,47.84,46.87,0.97,1.09,OK
-pv30-d04,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,50.75,11636,47.23,46.87,0.36,1.10,OK
-pv30-d04,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.45,11809,47.11,46.87,0.25,1.10,OK
-pv30-d04,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.68,11674,47.25,46.73,0.51,2.30,OK
-pv30-d04,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.59,11625,47.20,46.73,0.47,2.34,OK
-pv30-d04,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,50.86,11615,47.15,46.73,0.42,2.27,OK
-pv30-d04,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,50.65,11577,46.93,46.73,0.20,2.30,OK
-pv30-d04,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,51.29,11633,47.65,46.73,0.92,2.31,OK
-pv30-d04,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,50.80,11573,47.25,46.73,0.52,1.53,OK
-pv30-d04,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,50.83,11497,47.23,46.73,0.49,2.27,OK
-pv30-d04,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.85,9334,47.08,46.30,0.78,2.37,OK
-pv30-d04,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,50.71,9257,46.89,46.30,0.59,2.73,OK
-pv30-d04,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,50.95,9201,47.16,46.30,0.86,2.20,OK
-pv30-d04,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,51.34,9194,47.53,46.30,1.23,2.01,OK
-pv30-d04,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,50.76,9197,46.35,45.63,0.72,1.67,OK
-pv30-d04,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,50.68,9297,46.28,45.63,0.66,2.36,OK
-pv30-d04,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,51.95,9281,47.38,45.63,1.75,1.80,OK
-pv30-d04,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,52.26,10850,47.88,45.97,1.91,3.45,OK
-pv30-d04,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,51.79,10796,47.54,45.97,1.57,2.27,OK
-pv30-d04,46,Dullers,CREATURE,Wound,Common,Common,13639,51.45,12181,48.62,46.87,1.75,1.50,OK
-pv30-d04,47,Crawlers,CREATURE,Wound,Common,Common,13778,51.06,12295,48.39,46.87,1.53,1.51,OK
-pv30-d04,48,Faceling,CREATURE,Wound,Common,Common,13803,50.93,12296,48.30,46.87,1.43,1.42,OK
-pv30-d04,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,50.68,12266,47.76,46.87,0.89,1.50,OK
-pv30-d04,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,51.35,12303,48.76,46.87,1.90,1.28,OK
-pv30-d04,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,51.05,12268,48.37,46.87,1.50,1.57,OK
-pv30-d04,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,51.01,12238,48.35,46.87,1.48,1.60,OK
-pv30-d04,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,51.32,12049,48.45,46.73,1.72,2.65,OK
-pv30-d04,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,51.05,12019,48.27,46.73,1.54,2.62,OK
-pv30-d04,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,51.05,12074,48.15,46.73,1.42,2.49,OK
-pv30-d04,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,51.15,12138,48.41,46.73,1.68,3.76,OK
-pv30-d04,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,51.15,11959,48.02,46.73,1.29,2.38,OK
-pv30-d04,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,51.42,12190,48.65,46.73,1.92,2.65,OK
-pv30-d04,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,51.27,9517,47.59,46.30,1.29,2.39,OK
-pv30-d04,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,51.07,9472,47.60,46.30,1.30,2.29,OK
-pv30-d04,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,50.94,9466,47.11,46.30,0.81,2.32,OK
-pv30-d04,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,51.86,9407,48.44,46.30,2.14,2.90,OK
-pv30-d04,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,51.63,9586,47.96,45.63,2.33,1.61,OK
-pv30-d04,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,51.57,9478,47.72,45.63,2.09,1.92,OK
-pv30-d04,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,50.81,9564,46.69,45.63,1.07,2.17,OK
-pv30-d04,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,51.19,11322,46.77,45.97,0.80,2.18,OK
-pv30-d04,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,51.14,11176,47.37,45.97,1.40,2.04,OK
-pv30-d04,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,49.01,11730,45.70,46.87,-1.17,1.85,OK
-pv30-d04,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,48.61,11646,45.41,46.87,-1.46,1.79,OK
-pv30-d04,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,49.17,11718,45.78,46.87,-1.08,1.89,OK
-pv30-d04,71,Kodama,CREATURE,Dream,Common,Common,13164,49.23,11671,45.75,46.87,-1.12,1.91,OK
-pv30-d04,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,49.26,11784,45.97,46.87,-0.89,1.83,OK
-pv30-d04,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,48.76,11651,45.61,46.87,-1.26,1.70,OK
-pv30-d04,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,49.53,11743,46.19,46.87,-0.67,1.89,OK
-pv30-d04,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,49.01,11511,45.43,46.73,-1.31,2.85,OK
-pv30-d04,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,49.03,11635,45.31,46.73,-1.43,3.70,OK
-pv30-d04,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,49.22,11621,45.51,46.73,-1.23,3.03,OK
-pv30-d04,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,48.68,11650,44.80,46.73,-1.93,2.79,OK
-pv30-d04,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,48.60,11507,44.88,46.73,-1.85,2.18,OK
-pv30-d04,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,49.27,11791,45.42,46.73,-1.32,3.20,OK
-pv30-d04,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,49.25,11526,45.53,46.73,-1.20,3.00,OK
-pv30-d04,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,49.25,9219,44.71,46.30,-1.59,2.70,OK
-pv30-d04,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,49.41,9095,44.63,46.30,-1.67,3.72,OK
-pv30-d04,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,48.58,9217,43.66,46.30,-2.64,1.94,OK
-pv30-d04,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,49.37,9266,44.61,46.30,-1.69,2.64,OK
-pv30-d04,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,49.40,9257,43.83,45.63,-1.79,2.26,OK
-pv30-d04,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,48.94,9262,42.93,45.63,-2.70,1.78,OK
-pv30-d04,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,49.27,9190,43.68,45.63,-1.95,2.30,OK
-pv30-d04,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,49.50,10783,44.10,45.97,-1.87,2.77,OK
-pv30-d04,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,49.48,10613,43.92,45.97,-2.04,3.59,OK
-pv30-d04,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,49.86,21690,45.48,46.38,-0.90,3.71,OK
-pv30-d04,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.56,22033,47.27,46.38,0.88,3.91,OK
-pv30-d04,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.19,28198,46.65,46.48,0.17,1.17,OK
-pv30-d04,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.30,27885,46.67,46.48,0.19,1.18,OK
-pv30-d04,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.87,27969,46.15,46.48,-0.32,1.17,OK
-pv30-d04,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.28,28256,46.84,46.48,0.37,1.17,OK
-pv30-d04,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,49.95,28011,46.64,46.48,0.16,1.17,OK
-pv30-d04,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,50.08,27969,46.43,46.48,-0.05,1.18,OK
-pv30-d04,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.44,27903,45.67,46.48,-0.81,1.18,OK
-pv30-d04,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.16,27693,46.74,46.48,0.26,1.17,OK
-pv30-d04,101,SCP-458,SPELL,,Uncommon,Spell,33329,49.59,28149,45.91,46.48,-0.57,1.17,OK
-pv30-d04,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.41,27931,47.14,46.48,0.66,1.18,OK
-pv30-d04,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,49.97,28159,46.38,46.48,-0.10,1.18,OK
-pv30-d04,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,49.97,27888,46.51,46.48,0.04,1.18,OK
-pv30-d04,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.57,18141,47.69,46.72,0.97,1.05,OK
-pv30-d04,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,49.67,18149,46.55,46.72,-0.18,1.05,OK
-pv30-d04,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,49.34,16268,46.11,46.72,-0.62,1.05,OK
-pv30-d04,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.18,17682,45.99,46.72,-0.74,1.05,OK
-pv30-d04,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.09,11251,46.96,46.72,0.23,1.01,OK
-pv30-d04,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.63,11348,46.31,46.72,-0.41,1.01,OK
-pv30-d04,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,50.66,11213,47.52,46.72,0.80,1.01,OK
-pv30-d04,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.12,11187,46.90,46.72,0.17,1.01,OK
-pv30-d04,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,51.13,16591,48.89,47.09,1.80,0.00,OK
-pv30-d04,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,48.83,16520,46.69,47.09,-0.39,0.00,OK
-pv30-d04,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,50.88,16610,46.75,47.09,-0.34,0.00,OK
-pv30-d04,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,49.17,16437,46.01,47.09,-1.08,0.00,OK
-pv30-d04,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,51.13,16714,47.19,45.71,1.48,0.95,OK
-pv30-d04,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,48.83,16289,45.51,45.71,-0.20,0.97,OK
-pv30-d04,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,50.88,16455,45.89,45.71,0.19,0.88,OK
-pv30-d04,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,49.17,16400,44.21,45.71,-1.50,0.59,OK
-pv30-prova,1,Squonk,CREATURE,Invitation,Common,Common,13645,45.79,13174,45.14,48.91,-3.77,2.23,OK
-pv30-prova,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,45.66,13260,45.12,48.91,-3.79,2.10,OK
-pv30-prova,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,46.25,13230,45.91,48.91,-3.00,2.07,OK
-pv30-prova,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,46.05,13249,45.31,48.91,-3.59,2.15,OK
-pv30-prova,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,45.72,13310,44.98,48.91,-3.93,2.23,OK
-pv30-prova,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,45.64,13214,44.99,48.91,-3.92,2.16,OK
-pv30-prova,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,45.37,13286,44.65,48.91,-4.26,2.22,OK
-pv30-prova,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,46.00,13232,45.25,49.20,-3.94,3.41,OK
-pv30-prova,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,46.39,13094,45.89,49.20,-3.30,3.83,OK
-pv30-prova,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,46.55,13390,45.91,49.20,-3.29,3.33,OK
-pv30-prova,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,46.24,13033,45.47,49.20,-3.73,3.35,OK
-pv30-prova,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,46.13,13267,45.51,49.20,-3.69,3.26,OK
-pv30-prova,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,46.29,13195,45.62,49.20,-3.58,3.41,OK
-pv30-prova,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,46.07,10410,45.50,48.68,-3.18,3.41,OK
-pv30-prova,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,45.37,10324,44.38,48.68,-4.31,3.91,OK
-pv30-prova,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,45.93,10405,44.95,48.68,-3.73,2.91,OK
-pv30-prova,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,46.32,10456,45.70,48.68,-2.99,4.26,OK
-pv30-prova,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,45.79,10629,44.48,48.52,-4.04,2.81,OK
-pv30-prova,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,46.15,10651,45.00,48.52,-3.53,3.35,OK
-pv30-prova,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,45.95,10666,44.82,48.52,-3.70,2.98,OK
-pv30-prova,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,46.69,12604,45.68,48.94,-3.26,3.40,OK
-pv30-prova,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,45.54,12521,44.23,48.94,-4.71,2.39,OK
-pv30-prova,23,SCP-131,CREATURE,Archive,Common,Common,13310,54.18,12745,53.11,48.91,4.20,1.73,OK
-pv30-prova,24,SCP-999,CREATURE,Archive,Common,Common,13230,53.95,12687,52.84,48.91,3.93,1.71,OK
-pv30-prova,25,SCP-1762,CREATURE,Archive,Common,Common,13284,53.57,12721,52.43,48.91,3.52,1.66,OK
-pv30-prova,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,53.71,12620,52.55,48.91,3.64,1.73,OK
-pv30-prova,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,54.01,12618,53.04,48.91,4.13,1.70,OK
-pv30-prova,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,53.84,12634,52.74,48.91,3.83,1.64,OK
-pv30-prova,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,54.08,12729,53.09,48.91,4.18,1.71,OK
-pv30-prova,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,53.47,12697,52.40,49.20,3.21,2.88,OK
-pv30-prova,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,54.05,12662,52.91,49.20,3.72,2.95,OK
-pv30-prova,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,54.07,12639,52.92,49.20,3.73,2.89,OK
-pv30-prova,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,54.29,12541,53.07,49.20,3.88,2.91,OK
-pv30-prova,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,54.72,12670,53.57,49.20,4.37,2.97,OK
-pv30-prova,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,54.00,12596,52.77,49.20,3.58,2.15,OK
-pv30-prova,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,53.95,12543,52.85,49.20,3.65,2.83,OK
-pv30-prova,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,54.49,10300,53.17,48.68,4.48,2.94,OK
-pv30-prova,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,54.05,10175,52.48,48.68,3.80,3.54,OK
-pv30-prova,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,53.64,10092,52.24,48.68,3.56,2.74,OK
-pv30-prova,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,54.62,10163,53.21,48.68,4.52,2.53,OK
-pv30-prova,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,54.25,10378,52.59,48.52,4.06,1.98,OK
-pv30-prova,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,53.77,10450,51.99,48.52,3.47,2.83,OK
-pv30-prova,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,55.83,10455,54.13,48.52,5.61,2.21,OK
-pv30-prova,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,56.27,12217,54.76,48.94,5.82,4.16,OK
-pv30-prova,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,55.11,12131,53.53,48.94,4.59,2.83,OK
-pv30-prova,46,Dullers,CREATURE,Wound,Common,Common,13639,48.60,13129,47.84,48.91,-1.07,2.18,OK
-pv30-prova,47,Crawlers,CREATURE,Wound,Common,Common,13778,48.52,13225,47.46,48.91,-1.44,2.16,OK
-pv30-prova,48,Faceling,CREATURE,Wound,Common,Common,13803,48.17,13288,47.18,48.91,-1.73,2.05,OK
-pv30-prova,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,48.41,13241,47.28,48.91,-1.63,2.17,OK
-pv30-prova,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,48.69,13268,47.76,48.91,-1.15,1.92,OK
-pv30-prova,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,48.44,13187,47.53,48.91,-1.38,2.26,OK
-pv30-prova,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,48.60,13245,47.57,48.91,-1.34,2.30,OK
-pv30-prova,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,48.81,13071,47.73,49.20,-1.47,3.30,OK
-pv30-prova,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,48.73,12981,47.64,49.20,-1.56,3.31,OK
-pv30-prova,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,48.35,13108,47.15,49.20,-2.05,3.11,OK
-pv30-prova,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,48.90,13128,47.79,49.20,-1.40,4.47,OK
-pv30-prova,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,48.32,12989,47.10,49.20,-2.09,3.01,OK
-pv30-prova,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,48.77,13133,47.58,49.20,-1.61,3.30,OK
-pv30-prova,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,48.52,10446,46.97,48.68,-1.71,2.92,OK
-pv30-prova,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,48.83,10418,47.34,48.68,-1.34,2.82,OK
-pv30-prova,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,48.19,10341,46.51,48.68,-2.17,2.88,OK
-pv30-prova,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,49.57,10328,48.00,48.68,-0.68,3.42,OK
-pv30-prova,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,49.20,10748,47.46,48.52,-1.06,2.06,OK
-pv30-prova,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,49.10,10621,47.40,48.52,-1.13,2.37,OK
-pv30-prova,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,48.25,10696,46.48,48.52,-2.05,2.68,OK
-pv30-prova,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,48.93,12640,47.06,48.94,-1.88,2.80,OK
-pv30-prova,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,49.12,12460,47.45,48.94,-1.49,2.43,OK
-pv30-prova,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,51.19,12721,50.33,48.91,1.42,2.53,OK
-pv30-prova,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,50.61,12706,49.74,48.91,0.83,2.43,OK
-pv30-prova,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,51.51,12757,50.60,48.91,1.70,2.59,OK
-pv30-prova,71,Kodama,CREATURE,Dream,Common,Common,13164,51.45,12690,50.55,48.91,1.64,2.63,OK
-pv30-prova,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,51.17,12806,50.28,48.91,1.37,2.51,OK
-pv30-prova,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,50.80,12712,50.09,48.91,1.19,2.36,OK
-pv30-prova,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,51.68,12791,50.86,48.91,1.95,2.60,OK
-pv30-prova,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,51.15,12591,50.10,49.20,0.91,3.49,OK
-pv30-prova,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,51.62,12657,50.53,49.20,1.34,4.42,OK
-pv30-prova,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,51.44,12703,50.24,49.20,1.05,3.70,OK
-pv30-prova,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,50.90,12756,49.84,49.20,0.64,3.38,OK
-pv30-prova,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,50.96,12625,49.86,49.20,0.66,2.77,OK
-pv30-prova,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,51.45,12824,50.26,49.20,1.06,3.91,OK
-pv30-prova,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,51.69,12568,50.43,49.20,1.23,3.69,OK
-pv30-prova,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,51.63,10226,50.10,48.68,1.41,3.25,OK
-pv30-prova,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,52.04,10067,50.32,48.68,1.64,4.35,OK
-pv30-prova,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,50.34,10279,48.74,48.68,0.06,2.49,OK
-pv30-prova,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,51.43,10259,49.73,48.68,1.05,3.19,OK
-pv30-prova,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,51.61,10429,49.57,48.52,1.05,2.63,OK
-pv30-prova,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,51.14,10532,49.00,48.52,0.48,2.31,OK
-pv30-prova,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,51.75,10348,49.71,48.52,1.19,2.67,OK
-pv30-prova,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,51.98,12172,49.74,48.94,0.80,3.25,OK
-pv30-prova,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,51.74,12013,49.42,48.94,0.48,4.02,OK
-pv30-prova,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,48.75,24572,47.15,48.41,-1.26,4.62,OK
-pv30-prova,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.45,24637,49.66,48.41,1.25,4.69,OK
-pv30-prova,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.08,31410,48.80,48.80,-0.00,1.18,OK
-pv30-prova,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.20,31039,49.05,48.80,0.25,1.19,OK
-pv30-prova,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,50.11,31111,48.85,48.80,0.05,1.19,OK
-pv30-prova,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.35,31353,49.10,48.80,0.30,1.19,OK
-pv30-prova,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,49.90,31215,48.84,48.80,0.03,1.19,OK
-pv30-prova,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,49.94,31149,48.78,48.80,-0.02,1.19,OK
-pv30-prova,99,SCP-500,SPELL,,Uncommon,Spell,33070,48.98,31034,47.62,48.80,-1.18,1.19,OK
-pv30-prova,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.17,30733,48.92,48.80,0.12,1.19,OK
-pv30-prova,101,SCP-458,SPELL,,Uncommon,Spell,33329,49.46,31244,48.17,48.80,-0.63,1.19,OK
-pv30-prova,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.31,31098,49.27,48.80,0.47,1.19,OK
-pv30-prova,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,50.30,31235,49.18,48.80,0.38,1.19,OK
-pv30-prova,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,50.19,31051,49.05,48.80,0.25,1.19,OK
-pv30-prova,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.56,20292,50.12,49.34,0.78,1.06,OK
-pv30-prova,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,49.61,20397,48.86,49.34,-0.48,1.06,OK
-pv30-prova,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,49.08,18630,48.09,49.34,-1.24,1.06,OK
-pv30-prova,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.61,20025,49.64,49.34,0.30,1.06,OK
-pv30-prova,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.03,12676,49.66,49.34,0.32,1.01,OK
-pv30-prova,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.63,12832,49.01,49.34,-0.32,1.01,OK
-pv30-prova,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,50.51,12670,49.91,49.34,0.57,1.01,OK
-pv30-prova,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.17,12662,49.64,49.34,0.31,1.01,OK
-pv30-prova,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,48.60,18731,48.47,49.99,-1.52,0.00,OK
-pv30-prova,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,45.93,18739,46.33,49.99,-3.66,0.00,OK
-pv30-prova,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,54.12,18764,53.42,49.99,3.43,0.00,OK
-pv30-prova,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,51.36,18937,51.71,49.99,1.72,0.00,OK
-pv30-prova,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,48.60,18699,46.84,48.31,-1.47,0.95,OK
-pv30-prova,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,45.93,18501,44.69,48.31,-3.62,0.97,OK
-pv30-prova,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,54.12,18370,52.06,48.31,3.75,0.90,OK
-pv30-prova,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,51.36,18569,49.68,48.31,1.37,0.63,OK
-pv25-d04,1,Squonk,CREATURE,Invitation,Common,Common,13645,47.87,11254,44.54,46.69,-2.15,1.44,OK
-pv25-d04,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,48.01,11362,45.38,46.69,-1.31,1.35,OK
-pv25-d04,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,48.56,11276,46.01,46.69,-0.68,1.35,OK
-pv25-d04,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,48.33,11399,45.57,46.69,-1.12,1.39,OK
-pv25-d04,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,47.58,11372,44.30,46.69,-2.39,1.44,OK
-pv25-d04,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,47.65,11377,44.78,46.69,-1.91,1.41,OK
-pv25-d04,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,47.58,11402,44.69,46.69,-2.00,1.41,OK
-pv25-d04,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,47.75,11223,44.97,46.45,-1.48,2.55,OK
-pv25-d04,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,48.51,11142,46.03,46.45,-0.42,2.98,OK
-pv25-d04,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,47.70,11378,44.45,46.45,-2.00,2.52,OK
-pv25-d04,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,48.30,11018,44.94,46.45,-1.50,2.52,OK
-pv25-d04,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,47.92,11185,44.60,46.45,-1.84,2.40,OK
-pv25-d04,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,47.90,11174,44.61,46.45,-1.84,2.59,OK
-pv25-d04,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,48.49,8531,46.18,46.11,0.07,2.73,OK
-pv25-d04,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,47.35,8479,43.63,46.11,-2.48,3.15,OK
-pv25-d04,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,47.99,8562,44.59,46.11,-1.52,2.21,OK
-pv25-d04,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,47.98,8618,45.38,46.11,-0.73,3.30,OK
-pv25-d04,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,47.41,8392,43.06,45.57,-2.51,2.31,OK
-pv25-d04,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,48.57,8400,44.85,45.57,-0.72,2.79,OK
-pv25-d04,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,47.65,8477,43.47,45.57,-2.10,2.35,OK
-pv25-d04,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,48.25,10033,44.36,45.88,-1.52,2.73,OK
-pv25-d04,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,47.96,9878,44.22,45.88,-1.66,1.90,OK
-pv25-d04,23,SCP-131,CREATURE,Archive,Common,Common,13310,50.82,11123,47.12,46.69,0.43,1.06,OK
-pv25-d04,24,SCP-999,CREATURE,Archive,Common,Common,13230,51.06,11015,47.19,46.69,0.50,1.04,OK
-pv25-d04,25,SCP-1762,CREATURE,Archive,Common,Common,13284,50.50,11058,46.26,46.69,-0.43,1.04,OK
-pv25-d04,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,51.04,10980,47.21,46.69,0.52,1.05,OK
-pv25-d04,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,51.21,10994,47.62,46.69,0.93,1.04,OK
-pv25-d04,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,50.96,10955,47.05,46.69,0.36,1.05,OK
-pv25-d04,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.02,11102,46.29,46.69,-0.40,1.05,OK
-pv25-d04,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.67,10920,47.05,46.45,0.60,2.21,OK
-pv25-d04,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.66,10943,47.18,46.45,0.73,2.24,OK
-pv25-d04,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,50.64,10850,46.53,46.45,0.08,2.18,OK
-pv25-d04,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,50.62,10872,46.62,46.45,0.17,2.21,OK
-pv25-d04,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,50.91,10892,46.80,46.45,0.35,2.22,OK
-pv25-d04,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,50.80,10787,46.89,46.45,0.45,1.47,OK
-pv25-d04,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,51.23,10739,47.75,46.45,1.30,2.19,OK
-pv25-d04,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.59,8648,46.47,46.11,0.36,2.31,OK
-pv25-d04,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,50.98,8547,47.16,46.11,1.05,2.65,OK
-pv25-d04,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,50.86,8531,46.87,46.11,0.76,2.14,OK
-pv25-d04,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,51.56,8497,47.61,46.11,1.50,1.94,OK
-pv25-d04,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,50.95,8330,46.71,45.57,1.14,1.64,OK
-pv25-d04,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,50.96,8468,46.94,45.57,1.36,2.33,OK
-pv25-d04,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,51.65,8502,47.01,45.57,1.44,1.77,OK
-pv25-d04,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,51.76,9909,47.60,45.88,1.71,3.42,OK
-pv25-d04,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,51.72,9850,47.45,45.88,1.57,2.25,OK
-pv25-d04,46,Dullers,CREATURE,Wound,Common,Common,13639,52.71,11424,49.63,46.69,2.93,1.41,OK
-pv25-d04,47,Crawlers,CREATURE,Wound,Common,Common,13778,51.93,11523,48.98,46.69,2.29,1.43,OK
-pv25-d04,48,Faceling,CREATURE,Wound,Common,Common,13803,52.31,11513,49.62,46.69,2.92,1.34,OK
-pv25-d04,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,51.47,11462,48.24,46.69,1.54,1.42,OK
-pv25-d04,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,52.16,11468,49.56,46.69,2.87,1.22,OK
-pv25-d04,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,51.91,11454,48.95,46.69,2.25,1.48,OK
-pv25-d04,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,52.15,11510,49.11,46.69,2.42,1.51,OK
-pv25-d04,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,52.17,11175,49.21,46.45,2.76,2.54,OK
-pv25-d04,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,52.07,11178,48.97,46.45,2.52,2.51,OK
-pv25-d04,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,51.57,11215,48.68,46.45,2.23,2.39,OK
-pv25-d04,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,51.90,11282,48.77,46.45,2.32,3.60,OK
-pv25-d04,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,52.37,11099,49.36,46.45,2.91,2.29,OK
-pv25-d04,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,52.33,11359,49.26,46.45,2.81,2.53,OK
-pv25-d04,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,52.43,8771,48.66,46.11,2.55,2.32,OK
-pv25-d04,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,52.14,8682,48.64,46.11,2.53,2.22,OK
-pv25-d04,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,51.39,8694,47.06,46.11,0.95,2.24,OK
-pv25-d04,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,52.57,8630,49.13,46.11,3.02,2.79,OK
-pv25-d04,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,52.80,8716,49.45,45.57,3.87,1.58,OK
-pv25-d04,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,52.17,8550,48.21,45.57,2.64,1.89,OK
-pv25-d04,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,51.82,8619,47.56,45.57,1.98,2.13,OK
-pv25-d04,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,52.29,10196,47.96,45.88,2.08,2.15,OK
-pv25-d04,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,51.97,10087,48.10,45.88,2.21,2.00,OK
-pv25-d04,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,49.02,11019,45.50,46.69,-1.19,1.77,OK
-pv25-d04,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,48.66,10919,45.16,46.69,-1.53,1.72,OK
-pv25-d04,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,49.13,11025,45.44,46.69,-1.26,1.82,OK
-pv25-d04,71,Kodama,CREATURE,Dream,Common,Common,13164,49.21,10980,45.81,46.69,-0.89,1.81,OK
-pv25-d04,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,49.24,11058,45.57,46.69,-1.12,1.75,OK
-pv25-d04,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,48.92,10975,45.54,46.69,-1.16,1.64,OK
-pv25-d04,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,49.46,11068,45.91,46.69,-0.79,1.82,OK
-pv25-d04,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,49.30,10796,45.53,46.45,-0.92,2.74,OK
-pv25-d04,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,49.18,10879,45.20,46.45,-1.25,3.54,OK
-pv25-d04,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,49.19,10917,45.09,46.45,-1.36,2.90,OK
-pv25-d04,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,48.72,10924,44.53,46.45,-1.91,2.71,OK
-pv25-d04,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,48.78,10733,44.74,46.45,-1.71,2.12,OK
-pv25-d04,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,49.11,11083,44.82,46.45,-1.63,3.09,OK
-pv25-d04,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,48.99,10862,44.92,46.45,-1.53,2.89,OK
-pv25-d04,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,49.02,8606,44.20,46.11,-1.91,2.63,OK
-pv25-d04,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,49.38,8473,44.32,46.11,-1.79,3.63,OK
-pv25-d04,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,48.88,8589,43.69,46.11,-2.42,1.90,OK
-pv25-d04,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,49.19,8645,44.03,46.11,-2.08,2.56,OK
-pv25-d04,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,49.42,8541,43.51,45.57,-2.07,2.22,OK
-pv25-d04,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,49.00,8532,43.00,45.57,-2.58,1.76,OK
-pv25-d04,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,48.89,8470,42.98,45.57,-2.59,2.27,OK
-pv25-d04,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,49.28,9918,43.68,45.88,-2.20,2.73,OK
-pv25-d04,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,49.27,9762,43.58,45.88,-2.30,3.54,OK
-pv25-d04,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,49.21,19777,45.17,46.34,-1.17,3.61,OK
-pv25-d04,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.91,19935,47.51,46.34,1.16,3.85,OK
-pv25-d04,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.31,25913,47.00,46.75,0.25,1.15,OK
-pv25-d04,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.06,25692,46.59,46.75,-0.15,1.16,OK
-pv25-d04,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.83,25682,46.35,46.75,-0.40,1.16,OK
-pv25-d04,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.00,25911,46.85,46.75,0.10,1.16,OK
-pv25-d04,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,49.89,25701,46.78,46.75,0.03,1.16,OK
-pv25-d04,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,50.29,25782,46.93,46.75,0.19,1.16,OK
-pv25-d04,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.53,25583,45.85,46.75,-0.90,1.16,OK
-pv25-d04,100,SCP-109,SPELL,,Uncommon,Spell,32785,49.98,25504,46.87,46.75,0.13,1.16,OK
-pv25-d04,101,SCP-458,SPELL,,Uncommon,Spell,33329,49.59,25878,46.04,46.75,-0.70,1.16,OK
-pv25-d04,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.58,25711,47.67,46.75,0.92,1.16,OK
-pv25-d04,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,50.15,25931,47.00,46.75,0.25,1.16,OK
-pv25-d04,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,50.00,25666,47.03,46.75,0.28,1.16,OK
-pv25-d04,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.68,16558,48.40,47.29,1.10,1.05,OK
-pv25-d04,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,50.04,16490,47.66,47.29,0.36,1.05,OK
-pv25-d04,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,49.04,14599,46.18,47.29,-1.11,1.05,OK
-pv25-d04,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.23,16008,46.45,47.29,-0.84,1.05,OK
-pv25-d04,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.50,10185,48.46,47.29,1.17,1.00,OK
-pv25-d04,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.62,10331,46.74,47.29,-0.56,1.01,OK
-pv25-d04,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,49.85,10189,46.90,47.29,-0.39,1.01,OK
-pv25-d04,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.20,10152,47.61,47.29,0.32,1.01,OK
-pv25-d04,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,52.04,15045,50.75,47.60,3.16,0.00,OK
-pv25-d04,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,47.92,14881,46.11,47.60,-1.49,0.00,OK
-pv25-d04,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,50.88,15160,47.12,47.60,-0.48,0.00,OK
-pv25-d04,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,49.16,14957,46.39,47.60,-1.21,0.00,OK
-pv25-d04,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,52.04,15215,48.13,45.98,2.15,0.94,OK
-pv25-d04,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,47.92,14648,45.40,45.98,-0.58,0.96,OK
-pv25-d04,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,50.88,14965,45.87,45.98,-0.11,0.87,OK
-pv25-d04,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,49.16,14956,44.47,45.98,-1.51,0.57,OK
-pv25-prova,1,Squonk,CREATURE,Invitation,Common,Common,13645,44.23,12622,43.56,48.87,-5.31,2.14,OK
-pv25-prova,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,44.55,12719,44.20,48.87,-4.66,2.01,OK
-pv25-prova,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,45.10,12668,44.98,48.87,-3.88,1.99,OK
-pv25-prova,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,44.56,12727,43.93,48.87,-4.94,2.06,OK
-pv25-prova,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,44.19,12749,43.39,48.87,-5.47,2.15,OK
-pv25-prova,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,44.09,12727,43.60,48.87,-5.27,2.08,OK
-pv25-prova,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,43.71,12755,42.91,48.87,-5.96,2.12,OK
-pv25-prova,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,44.21,12639,43.52,48.99,-5.46,3.29,OK
-pv25-prova,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,45.22,12529,44.94,48.99,-4.04,3.70,OK
-pv25-prova,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,44.66,12786,44.04,48.99,-4.95,3.21,OK
-pv25-prova,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,44.62,12460,43.97,48.99,-5.01,3.23,OK
-pv25-prova,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,44.17,12644,43.38,48.99,-5.61,3.14,OK
-pv25-prova,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,44.26,12609,43.58,48.99,-5.40,3.29,OK
-pv25-prova,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,44.83,9864,44.52,48.50,-3.98,3.32,OK
-pv25-prova,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,43.48,9758,42.27,48.50,-6.23,3.83,OK
-pv25-prova,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,44.15,9831,42.98,48.50,-5.53,2.84,OK
-pv25-prova,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,44.75,9866,44.58,48.50,-3.92,4.13,OK
-pv25-prova,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,43.88,9909,42.47,48.39,-5.92,2.76,OK
-pv25-prova,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,45.17,9936,44.32,48.39,-4.07,3.29,OK
-pv25-prova,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,43.63,10003,42.46,48.39,-5.93,2.94,OK
-pv25-prova,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,44.80,11787,44.07,48.82,-4.76,3.34,OK
-pv25-prova,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,44.05,11687,42.72,48.82,-6.10,2.36,OK
-pv25-prova,23,SCP-131,CREATURE,Archive,Common,Common,13310,53.26,12220,52.06,48.87,3.19,1.67,OK
-pv25-prova,24,SCP-999,CREATURE,Archive,Common,Common,13230,53.35,12118,52.00,48.87,3.13,1.64,OK
-pv25-prova,25,SCP-1762,CREATURE,Archive,Common,Common,13284,53.44,12242,52.32,48.87,3.45,1.60,OK
-pv25-prova,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,53.23,12166,52.06,48.87,3.19,1.66,OK
-pv25-prova,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,53.66,12105,52.66,48.87,3.79,1.63,OK
-pv25-prova,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,53.60,12157,52.55,48.87,3.68,1.57,OK
-pv25-prova,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,53.08,12240,51.90,48.87,3.03,1.64,OK
-pv25-prova,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,53.07,12111,52.07,48.99,3.09,2.80,OK
-pv25-prova,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,53.54,12161,52.41,48.99,3.42,2.84,OK
-pv25-prova,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,53.31,12089,51.96,48.99,2.97,2.81,OK
-pv25-prova,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,53.40,12029,51.95,48.99,2.96,2.82,OK
-pv25-prova,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,53.37,12125,51.64,48.99,2.65,2.88,OK
-pv25-prova,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,53.25,12074,51.73,48.99,2.74,2.07,OK
-pv25-prova,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,53.70,12012,52.84,48.99,3.85,2.75,OK
-pv25-prova,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,53.31,9748,51.61,48.50,3.10,2.89,OK
-pv25-prova,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,53.47,9605,52.02,48.50,3.52,3.48,OK
-pv25-prova,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,52.97,9606,51.64,48.50,3.14,2.69,OK
-pv25-prova,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,54.30,9643,52.91,48.50,4.41,2.46,OK
-pv25-prova,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,53.64,9670,52.27,48.39,3.88,1.96,OK
-pv25-prova,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,53.51,9790,51.88,48.39,3.49,2.80,OK
-pv25-prova,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,54.54,9791,52.81,48.39,4.42,2.18,OK
-pv25-prova,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,54.87,11435,53.45,48.82,4.63,4.13,OK
-pv25-prova,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,54.26,11343,52.84,48.82,4.02,2.81,OK
-pv25-prova,46,Dullers,CREATURE,Wound,Common,Common,13639,50.27,12535,49.03,48.87,0.16,2.08,OK
-pv25-prova,47,Crawlers,CREATURE,Wound,Common,Common,13778,50.24,12613,48.90,48.87,0.03,2.06,OK
-pv25-prova,48,Faceling,CREATURE,Wound,Common,Common,13803,49.88,12694,48.67,48.87,-0.19,1.95,OK
-pv25-prova,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,49.99,12672,48.53,48.87,-0.34,2.06,OK
-pv25-prova,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,50.42,12677,49.22,48.87,0.35,1.84,OK
-pv25-prova,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,49.82,12577,48.49,48.87,-0.38,2.15,OK
-pv25-prova,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,50.33,12665,48.97,48.87,0.11,2.20,OK
-pv25-prova,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,50.24,12442,48.96,48.99,-0.03,3.18,OK
-pv25-prova,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,50.10,12377,48.78,48.99,-0.21,3.19,OK
-pv25-prova,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,49.98,12502,48.60,48.99,-0.39,2.99,OK
-pv25-prova,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,50.10,12515,48.68,48.99,-0.31,4.30,OK
-pv25-prova,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,50.29,12325,48.74,48.99,-0.24,2.91,OK
-pv25-prova,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,50.31,12518,48.86,48.99,-0.13,3.18,OK
-pv25-prova,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,50.33,9835,48.40,48.50,-0.10,2.84,OK
-pv25-prova,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,50.72,9845,48.94,48.50,0.44,2.73,OK
-pv25-prova,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,49.51,9760,47.38,48.50,-1.13,2.81,OK
-pv25-prova,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,50.73,9700,48.77,48.50,0.26,3.32,OK
-pv25-prova,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,51.04,10016,49.41,48.39,1.02,2.03,OK
-pv25-prova,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,50.34,9931,48.35,48.39,-0.04,2.34,OK
-pv25-prova,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,50.17,9961,48.23,48.39,-0.16,2.64,OK
-pv25-prova,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,50.79,11741,48.81,48.82,-0.01,2.77,OK
-pv25-prova,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,50.56,11545,48.67,48.82,-0.15,2.38,OK
-pv25-prova,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,51.76,12251,50.87,48.87,2.00,2.43,OK
-pv25-prova,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,51.47,12221,50.47,48.87,1.61,2.34,OK
-pv25-prova,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,52.06,12227,51.01,48.87,2.14,2.51,OK
-pv25-prova,71,Kodama,CREATURE,Dream,Common,Common,13164,51.74,12178,50.75,48.87,1.89,2.54,OK
-pv25-prova,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,51.90,12318,50.70,48.87,1.83,2.41,OK
-pv25-prova,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,51.53,12217,50.81,48.87,1.94,2.28,OK
-pv25-prova,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,52.17,12260,51.23,48.87,2.37,2.50,OK
-pv25-prova,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,52.26,12109,51.25,48.99,2.26,3.37,OK
-pv25-prova,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,51.91,12168,50.65,48.99,1.66,4.28,OK
-pv25-prova,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,51.96,12204,50.56,48.99,1.57,3.58,OK
-pv25-prova,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,51.63,12230,50.48,48.99,1.50,3.29,OK
-pv25-prova,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,51.75,12106,50.43,48.99,1.45,2.69,OK
-pv25-prova,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,51.81,12310,50.24,48.99,1.25,3.80,OK
-pv25-prova,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,52.17,12070,50.70,48.99,1.71,3.57,OK
-pv25-prova,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,51.98,9738,50.10,48.50,1.60,3.17,OK
-pv25-prova,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,52.55,9603,50.52,48.50,2.01,4.25,OK
-pv25-prova,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,51.31,9818,49.57,48.50,1.06,2.43,OK
-pv25-prova,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,51.93,9780,50.16,48.50,1.65,3.12,OK
-pv25-prova,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,52.14,9833,49.99,48.39,1.61,2.58,OK
-pv25-prova,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,51.78,9915,49.16,48.39,0.77,2.28,OK
-pv25-prova,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,51.99,9784,49.58,48.39,1.19,2.64,OK
-pv25-prova,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,52.68,11447,50.43,48.82,1.61,3.20,OK
-pv25-prova,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,52.18,11323,49.90,48.82,1.08,3.97,OK
-pv25-prova,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,48.41,23065,47.00,48.46,-1.46,4.55,OK
-pv25-prova,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.95,22896,49.93,48.46,1.47,4.64,OK
-pv25-prova,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.23,29667,49.41,49.20,0.22,1.17,OK
-pv25-prova,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,49.83,29389,48.98,49.20,-0.22,1.18,OK
-pv25-prova,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.88,29396,48.95,49.20,-0.25,1.18,OK
-pv25-prova,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.06,29636,49.24,49.20,0.05,1.18,OK
-pv25-prova,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,50.17,29523,49.44,49.20,0.25,1.18,OK
-pv25-prova,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,50.29,29450,49.61,49.20,0.42,1.18,OK
-pv25-prova,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.01,29357,47.75,49.20,-1.45,1.18,OK
-pv25-prova,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.11,29058,49.16,49.20,-0.04,1.18,OK
-pv25-prova,101,SCP-458,SPELL,,Uncommon,Spell,33329,49.16,29542,48.17,49.20,-1.03,1.18,OK
-pv25-prova,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.68,29446,50.15,49.20,0.95,1.18,OK
-pv25-prova,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,50.52,29558,49.85,49.20,0.66,1.18,OK
-pv25-prova,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,50.27,29330,49.63,49.20,0.44,1.18,OK
-pv25-prova,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.48,19099,50.63,49.88,0.74,1.06,OK
-pv25-prova,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,50.15,19173,50.26,49.88,0.38,1.05,OK
-pv25-prova,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,48.85,17345,48.20,49.88,-1.68,1.05,OK
-pv25-prova,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.55,18663,50.18,49.88,0.30,1.06,OK
-pv25-prova,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.34,11861,50.41,49.88,0.53,1.01,OK
-pv25-prova,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.64,12041,49.70,49.88,-0.18,1.01,OK
-pv25-prova,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,49.82,11877,49.52,49.88,-0.37,1.01,OK
-pv25-prova,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.10,11852,50.08,49.88,0.20,1.01,OK
-pv25-prova,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,50.20,17482,51.29,51.02,0.27,0.00,OK
-pv25-prova,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,44.38,17507,45.53,51.02,-5.49,0.00,OK
-pv25-prova,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,53.48,17724,53.88,51.02,2.86,0.00,OK
-pv25-prova,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,51.94,17843,53.30,51.02,2.28,0.00,OK
-pv25-prova,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,50.20,17413,48.29,48.57,-0.28,0.94,OK
-pv25-prova,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,44.38,17305,43.72,48.57,-4.85,0.96,OK
-pv25-prova,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,53.48,17190,51.76,48.57,3.19,0.90,OK
-pv25-prova,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,51.94,17460,50.51,48.57,1.94,0.61,OK
+pv30-d04,1,Squonk,CREATURE,Invitation,Common,Common,13645,49.98,11799,46.97,47.34,-0.37,1.48,OK
+pv30-d04,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,49.93,11908,46.98,47.34,-0.35,1.41,OK
+pv30-d04,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,49.91,11878,47.02,47.34,-0.32,1.37,OK
+pv30-d04,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,50.06,11961,47.32,47.34,-0.01,1.41,OK
+pv30-d04,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,49.68,11977,46.94,47.34,-0.40,1.49,OK
+pv30-d04,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,49.71,11929,47.10,47.34,-0.24,1.44,OK
+pv30-d04,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,49.63,12004,46.87,47.34,-0.46,1.46,OK
+pv30-d04,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,49.62,11866,46.87,47.25,-0.37,2.61,OK
+pv30-d04,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,49.97,11765,47.44,47.25,0.19,2.94,OK
+pv30-d04,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,49.98,12030,46.96,47.25,-0.29,2.58,OK
+pv30-d04,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,50.23,11650,47.24,47.25,-0.01,2.60,OK
+pv30-d04,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,50.39,11858,47.15,47.25,-0.10,2.49,OK
+pv30-d04,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,49.99,11831,47.00,47.25,-0.25,2.64,OK
+pv30-d04,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,50.65,9154,47.61,46.90,0.72,2.68,OK
+pv30-d04,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,49.20,9043,45.63,46.90,-1.26,3.11,OK
+pv30-d04,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,49.84,9122,46.41,46.90,-0.49,2.25,OK
+pv30-d04,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,50.21,9125,47.23,46.90,0.33,2.78,OK
+pv30-d04,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,49.74,9008,45.42,46.25,-0.83,2.27,OK
+pv30-d04,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,50.12,9092,45.68,46.25,-0.57,2.70,OK
+pv30-d04,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,50.39,9263,46.71,46.25,0.46,2.29,OK
+pv30-d04,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,49.96,10794,46.16,46.49,-0.33,2.37,OK
+pv30-d04,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,49.51,10693,45.19,46.49,-1.29,1.89,OK
+pv30-d04,23,SCP-131,CREATURE,Archive,Common,Common,13310,50.95,11891,48.54,47.34,1.21,1.11,OK
+pv30-d04,24,SCP-999,CREATURE,Archive,Common,Common,13230,51.10,11754,48.72,47.34,1.39,1.10,OK
+pv30-d04,25,SCP-1762,CREATURE,Archive,Common,Common,13284,49.91,11773,47.46,47.34,0.12,1.10,OK
+pv30-d04,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,51.06,11765,48.42,47.34,1.08,1.11,OK
+pv30-d04,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,51.07,11736,48.81,47.34,1.47,1.11,OK
+pv30-d04,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,49.27,11711,46.51,47.34,-0.82,1.07,OK
+pv30-d04,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.73,11890,48.30,47.34,0.97,1.12,OK
+pv30-d04,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.50,11661,48.03,47.25,0.78,2.29,OK
+pv30-d04,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.54,11671,47.96,47.25,0.71,2.28,OK
+pv30-d04,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,51.10,11661,48.62,47.25,1.37,2.28,OK
+pv30-d04,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,51.20,11643,48.82,47.25,1.57,2.31,OK
+pv30-d04,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,50.69,11728,48.07,47.25,0.83,2.31,OK
+pv30-d04,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,50.91,11656,48.31,47.25,1.07,1.52,OK
+pv30-d04,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,50.21,11526,47.85,47.25,0.61,2.26,OK
+pv30-d04,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.39,9408,47.91,46.90,1.02,2.08,OK
+pv30-d04,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,50.99,9320,48.70,46.90,1.80,2.33,OK
+pv30-d04,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,51.27,9247,48.68,46.90,1.78,2.18,OK
+pv30-d04,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,50.90,9248,48.17,46.90,1.27,2.01,OK
+pv30-d04,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,50.21,9252,47.08,46.25,0.83,1.67,OK
+pv30-d04,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,50.68,9317,47.86,46.25,1.62,2.28,OK
+pv30-d04,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,52.24,9337,49.29,46.25,3.04,1.80,OK
+pv30-d04,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,51.97,10863,49.13,46.49,2.64,3.20,OK
+pv30-d04,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,52.00,10843,49.51,46.49,3.02,3.00,OK
+pv30-d04,46,Dullers,CREATURE,Wound,Common,Common,13639,50.47,12103,47.81,47.34,0.48,1.45,OK
+pv30-d04,47,Crawlers,CREATURE,Wound,Common,Common,13778,50.07,12241,47.30,47.34,-0.04,1.45,OK
+pv30-d04,48,Faceling,CREATURE,Wound,Common,Common,13803,50.21,12153,47.50,47.34,0.17,1.32,OK
+pv30-d04,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,49.92,12208,47.11,47.34,-0.22,1.44,OK
+pv30-d04,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,50.01,12189,47.47,47.34,0.14,1.21,OK
+pv30-d04,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,50.17,12143,47.43,47.34,0.10,1.54,OK
+pv30-d04,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,50.32,12218,47.62,47.34,0.29,1.55,OK
+pv30-d04,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,50.21,11973,47.17,47.25,-0.08,2.59,OK
+pv30-d04,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,50.03,11884,47.01,47.25,-0.24,2.52,OK
+pv30-d04,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,49.51,11976,46.53,47.25,-0.72,2.45,OK
+pv30-d04,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,50.30,12094,47.32,47.25,0.07,3.65,OK
+pv30-d04,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,50.20,11856,47.10,47.25,-0.15,2.31,OK
+pv30-d04,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,50.14,12062,47.31,47.25,0.06,2.61,OK
+pv30-d04,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,50.41,9383,46.79,46.90,-0.10,2.33,OK
+pv30-d04,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,50.47,9366,47.09,46.90,0.19,2.22,OK
+pv30-d04,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,49.95,9296,45.98,46.90,-0.91,2.27,OK
+pv30-d04,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,50.75,9341,47.03,46.90,0.13,2.83,OK
+pv30-d04,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,50.48,9477,46.07,46.25,-0.17,1.42,OK
+pv30-d04,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,50.71,9433,46.39,46.25,0.14,1.88,OK
+pv30-d04,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,49.82,9462,45.78,46.25,-0.47,1.99,OK
+pv30-d04,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,50.09,11160,46.04,46.49,-0.45,1.87,OK
+pv30-d04,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,49.91,11066,45.86,46.49,-0.63,2.05,OK
+pv30-d04,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,48.95,11729,46.63,47.34,-0.71,1.85,OK
+pv30-d04,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,48.83,11671,46.65,47.34,-0.69,1.81,OK
+pv30-d04,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,49.42,11776,46.82,47.34,-0.51,1.88,OK
+pv30-d04,71,Kodama,CREATURE,Dream,Common,Common,13164,49.32,11710,46.89,47.34,-0.44,1.91,OK
+pv30-d04,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,49.17,11798,46.99,47.34,-0.35,1.83,OK
+pv30-d04,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,48.26,11698,45.75,47.34,-1.58,1.66,OK
+pv30-d04,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,49.80,11832,47.41,47.34,0.07,1.88,OK
+pv30-d04,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,49.44,11551,47.06,47.25,-0.19,2.89,OK
+pv30-d04,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,49.59,11605,47.00,47.25,-0.25,3.69,OK
+pv30-d04,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,49.27,11667,46.67,47.25,-0.57,3.00,OK
+pv30-d04,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,48.12,11667,45.12,47.25,-2.13,2.77,OK
+pv30-d04,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,48.95,11500,46.00,47.25,-1.24,2.16,OK
+pv30-d04,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,49.55,11817,46.85,47.25,-0.40,3.13,OK
+pv30-d04,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,49.72,11628,47.00,47.25,-0.24,2.99,OK
+pv30-d04,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,50.11,9236,46.81,46.90,-0.09,2.70,OK
+pv30-d04,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,50.22,9122,46.63,46.90,-0.26,3.67,OK
+pv30-d04,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,48.03,9246,43.92,46.90,-2.97,1.89,OK
+pv30-d04,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,49.33,9300,45.69,46.90,-1.21,2.65,OK
+pv30-d04,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,49.79,9284,45.50,46.25,-0.75,2.20,OK
+pv30-d04,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,49.17,9337,44.36,46.25,-1.89,1.74,OK
+pv30-d04,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,49.08,9212,44.81,46.25,-1.44,2.29,OK
+pv30-d04,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,49.32,10828,45.00,46.49,-1.49,2.44,OK
+pv30-d04,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,49.42,10636,44.99,46.49,-1.50,3.47,OK
+pv30-d04,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,49.79,21326,45.81,46.70,-0.88,3.30,OK
+pv30-d04,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.03,21929,47.55,46.70,0.86,3.74,OK
+pv30-d04,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,49.98,28003,46.96,47.13,-0.17,1.17,OK
+pv30-d04,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.20,27676,47.17,47.13,0.04,1.17,OK
+pv30-d04,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.75,27716,46.62,47.13,-0.51,1.17,OK
+pv30-d04,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.45,28020,47.82,47.13,0.68,1.17,OK
+pv30-d04,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,50.18,27843,47.41,47.13,0.28,1.17,OK
+pv30-d04,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,49.88,27816,46.93,47.13,-0.21,1.18,OK
+pv30-d04,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.56,27667,46.43,47.13,-0.71,1.17,OK
+pv30-d04,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.24,27569,47.44,47.13,0.31,1.17,OK
+pv30-d04,101,SCP-458,SPELL,,Uncommon,Spell,33329,50.08,27954,47.28,47.13,0.15,1.17,OK
+pv30-d04,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.19,27856,47.41,47.13,0.27,1.18,OK
+pv30-d04,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,49.89,27904,47.03,47.13,-0.11,1.17,OK
+pv30-d04,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,49.94,27779,47.10,47.13,-0.03,1.17,OK
+pv30-d04,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.75,17931,48.42,47.39,1.04,1.05,OK
+pv30-d04,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,49.70,17983,47.05,47.39,-0.34,1.05,OK
+pv30-d04,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,49.18,16143,46.54,47.39,-0.84,1.05,OK
+pv30-d04,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.28,17478,47.06,47.39,-0.33,1.05,OK
+pv30-d04,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.30,11182,48.18,47.39,0.79,1.01,OK
+pv30-d04,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.22,11163,46.72,47.39,-0.67,1.01,OK
+pv30-d04,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,50.72,11159,47.81,47.39,0.42,1.01,OK
+pv30-d04,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,49.87,11101,47.46,47.39,0.07,1.01,OK
+pv30-d04,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,50.11,16380,47.70,47.57,0.13,0.00,OK
+pv30-d04,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,49.88,16099,47.84,47.57,0.27,0.00,OK
+pv30-d04,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,50.78,16445,47.68,47.57,0.11,0.00,OK
+pv30-d04,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,49.23,16464,47.07,47.57,-0.50,0.00,OK
+pv30-d04,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,50.11,16591,46.04,46.37,-0.33,0.94,OK
+pv30-d04,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,49.88,15853,46.44,46.37,0.07,0.96,OK
+pv30-d04,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,50.78,16496,47.13,46.37,0.76,0.88,OK
+pv30-d04,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,49.23,16435,45.87,46.37,-0.50,0.59,OK
+pv30-prova,1,Squonk,CREATURE,Invitation,Common,Common,13645,51.32,12843,50.36,49.01,1.35,2.17,OK
+pv30-prova,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,51.21,13002,50.25,49.01,1.24,2.00,OK
+pv30-prova,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,51.21,12934,50.40,49.01,1.39,1.97,OK
+pv30-prova,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,51.43,12995,50.67,49.01,1.66,2.06,OK
+pv30-prova,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,51.16,13038,50.31,49.01,1.29,2.15,OK
+pv30-prova,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,50.94,12966,50.13,49.01,1.11,2.07,OK
+pv30-prova,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,51.01,13011,50.17,49.01,1.15,2.15,OK
+pv30-prova,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,51.29,12931,50.50,49.12,1.38,3.32,OK
+pv30-prova,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,51.53,12850,51.00,49.12,1.88,3.60,OK
+pv30-prova,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,51.89,13120,51.11,49.12,1.99,3.23,OK
+pv30-prova,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,51.66,12718,50.90,49.12,1.78,3.24,OK
+pv30-prova,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,51.88,12971,50.99,49.12,1.87,3.17,OK
+pv30-prova,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,51.44,12917,50.50,49.12,1.38,3.32,OK
+pv30-prova,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,51.46,10113,50.44,48.92,1.52,3.23,OK
+pv30-prova,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,50.50,10014,49.44,48.92,0.52,3.75,OK
+pv30-prova,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,50.93,10102,49.68,48.92,0.75,2.85,OK
+pv30-prova,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,52.00,10157,51.15,48.92,2.22,3.61,OK
+pv30-prova,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,51.03,10239,49.57,48.71,0.86,2.69,OK
+pv30-prova,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,51.24,10331,49.94,48.71,1.23,3.13,OK
+pv30-prova,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,52.04,10369,50.79,48.71,2.08,2.85,OK
+pv30-prova,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,51.86,12243,50.85,49.19,1.66,3.00,OK
+pv30-prova,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,50.87,12122,49.27,49.19,0.08,2.34,OK
+pv30-prova,23,SCP-131,CREATURE,Archive,Common,Common,13310,50.84,12792,50.03,49.01,1.01,1.75,OK
+pv30-prova,24,SCP-999,CREATURE,Archive,Common,Common,13230,50.64,12703,49.69,49.01,0.68,1.71,OK
+pv30-prova,25,SCP-1762,CREATURE,Archive,Common,Common,13284,49.45,12737,48.54,49.01,-0.47,1.64,OK
+pv30-prova,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,50.27,12686,49.34,49.01,0.32,1.69,OK
+pv30-prova,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,50.61,12637,49.69,49.01,0.67,1.68,OK
+pv30-prova,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,48.22,12640,47.22,49.01,-1.79,1.55,OK
+pv30-prova,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.38,12749,49.36,49.01,0.35,1.73,OK
+pv30-prova,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.14,12693,49.13,49.12,0.01,2.85,OK
+pv30-prova,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.03,12648,49.12,49.12,0.00,2.88,OK
+pv30-prova,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,50.64,12676,49.85,49.12,0.73,2.88,OK
+pv30-prova,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,50.76,12612,49.92,49.12,0.80,2.91,OK
+pv30-prova,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,50.24,12671,49.18,49.12,0.06,2.92,OK
+pv30-prova,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,50.30,12652,49.36,49.12,0.24,2.11,OK
+pv30-prova,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,49.41,12567,48.53,49.12,-0.59,2.80,OK
+pv30-prova,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.55,10362,49.51,48.92,0.59,2.68,OK
+pv30-prova,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,50.37,10178,49.23,48.92,0.31,3.09,OK
+pv30-prova,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,50.36,10129,49.22,48.92,0.30,2.68,OK
+pv30-prova,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,50.38,10204,49.24,48.92,0.32,2.52,OK
+pv30-prova,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,49.57,10369,48.03,48.71,-0.69,1.96,OK
+pv30-prova,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,50.35,10508,48.98,48.71,0.26,2.71,OK
+pv30-prova,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,52.16,10430,50.93,48.71,2.21,2.22,OK
+pv30-prova,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,52.15,12216,50.93,49.19,1.74,3.88,OK
+pv30-prova,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,51.61,12194,50.42,49.19,1.23,3.50,OK
+pv30-prova,46,Dullers,CREATURE,Wound,Common,Common,13639,50.05,12999,49.10,49.01,0.09,2.08,OK
+pv30-prova,47,Crawlers,CREATURE,Wound,Common,Common,13778,49.66,13145,48.46,49.01,-0.55,2.07,OK
+pv30-prova,48,Faceling,CREATURE,Wound,Common,Common,13803,49.75,13121,48.55,49.01,-0.46,1.95,OK
+pv30-prova,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,49.64,13128,48.45,49.01,-0.57,2.08,OK
+pv30-prova,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,49.35,13148,48.24,49.01,-0.77,1.82,OK
+pv30-prova,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,49.89,13052,48.58,49.01,-0.43,2.19,OK
+pv30-prova,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,50.13,13122,49.07,49.01,0.06,2.23,OK
+pv30-prova,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,49.83,12931,48.61,49.12,-0.51,3.23,OK
+pv30-prova,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,49.52,12803,48.13,49.12,-0.99,3.18,OK
+pv30-prova,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,49.39,12989,48.08,49.12,-1.04,3.04,OK
+pv30-prova,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,50.31,13011,49.04,49.12,-0.08,4.35,OK
+pv30-prova,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,49.60,12842,48.31,49.12,-0.81,2.90,OK
+pv30-prova,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,50.08,12968,48.82,49.12,-0.30,3.21,OK
+pv30-prova,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,49.64,10305,48.03,48.92,-0.89,2.84,OK
+pv30-prova,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,50.34,10288,49.07,48.92,0.15,2.74,OK
+pv30-prova,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,49.74,10190,47.96,48.92,-0.96,2.81,OK
+pv30-prova,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,50.91,10217,49.19,48.92,0.26,3.35,OK
+pv30-prova,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,50.20,10570,48.32,48.71,-0.39,1.84,OK
+pv30-prova,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,50.30,10425,48.31,48.71,-0.41,2.30,OK
+pv30-prova,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,49.70,10543,47.76,48.71,-0.95,2.48,OK
+pv30-prova,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,50.30,12414,48.61,49.19,-0.58,2.49,OK
+pv30-prova,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,50.06,12303,48.28,49.19,-0.91,2.41,OK
+pv30-prova,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,48.39,12713,48.05,49.01,-0.97,2.54,OK
+pv30-prova,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,48.21,12669,47.84,49.01,-1.17,2.44,OK
+pv30-prova,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,48.81,12744,48.26,49.01,-0.75,2.55,OK
+pv30-prova,71,Kodama,CREATURE,Dream,Common,Common,13164,48.63,12666,48.16,49.01,-0.85,2.59,OK
+pv30-prova,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,48.50,12788,48.01,49.01,-1.00,2.51,OK
+pv30-prova,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,47.25,12657,46.89,49.01,-2.13,2.28,OK
+pv30-prova,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,48.96,12800,48.46,49.01,-0.55,2.57,OK
+pv30-prova,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,48.68,12533,48.14,49.12,-0.98,3.50,OK
+pv30-prova,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,49.17,12680,48.62,49.12,-0.50,4.35,OK
+pv30-prova,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,48.94,12645,48.50,49.12,-0.62,3.70,OK
+pv30-prova,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,46.99,12723,46.33,49.12,-2.79,3.30,OK
+pv30-prova,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,48.32,12607,47.60,49.12,-1.52,2.74,OK
+pv30-prova,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,48.76,12782,48.07,49.12,-1.05,3.83,OK
+pv30-prova,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,49.22,12609,48.65,49.12,-0.47,3.65,OK
+pv30-prova,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,49.49,10214,48.53,48.92,-0.40,3.25,OK
+pv30-prova,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,49.65,10108,48.45,48.92,-0.47,4.31,OK
+pv30-prova,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,47.00,10312,45.90,48.92,-3.03,2.41,OK
+pv30-prova,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,48.81,10295,47.82,48.92,-1.10,3.22,OK
+pv30-prova,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,49.32,10379,47.93,48.71,-0.79,2.57,OK
+pv30-prova,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,48.25,10559,46.70,48.71,-2.01,2.26,OK
+pv30-prova,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,48.68,10362,47.38,48.71,-1.33,2.68,OK
+pv30-prova,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,48.87,12163,47.62,49.19,-1.57,2.88,OK
+pv30-prova,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,48.89,12020,47.52,49.19,-1.67,3.85,OK
+pv30-prova,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,50.25,24120,48.98,48.98,0.00,4.26,OK
+pv30-prova,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,50.58,24449,48.98,48.98,-0.00,4.49,OK
+pv30-prova,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.10,31040,49.03,49.05,-0.02,1.18,OK
+pv30-prova,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.38,30718,49.47,49.05,0.42,1.19,OK
+pv30-prova,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.91,30753,48.83,49.05,-0.22,1.19,OK
+pv30-prova,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.57,31125,49.67,49.05,0.62,1.19,OK
+pv30-prova,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,50.22,30854,49.40,49.05,0.35,1.19,OK
+pv30-prova,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,49.52,30768,48.52,49.05,-0.53,1.19,OK
+pv30-prova,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.57,30795,48.51,49.05,-0.54,1.19,OK
+pv30-prova,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.13,30400,49.02,49.05,-0.03,1.19,OK
+pv30-prova,101,SCP-458,SPELL,,Uncommon,Spell,33329,50.02,30938,48.89,49.05,-0.16,1.19,OK
+pv30-prova,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.26,30814,49.44,49.05,0.39,1.19,OK
+pv30-prova,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,49.88,30904,48.92,49.05,-0.13,1.19,OK
+pv30-prova,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,49.78,30755,48.88,49.05,-0.17,1.19,OK
+pv30-prova,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.86,20075,50.53,49.54,0.99,1.06,OK
+pv30-prova,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,49.73,20140,49.12,49.54,-0.41,1.06,OK
+pv30-prova,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,48.51,18318,47.67,49.54,-1.87,1.05,OK
+pv30-prova,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.94,19796,50.32,49.54,0.78,1.06,OK
+pv30-prova,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.66,12535,50.41,49.54,0.88,1.01,OK
+pv30-prova,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,48.99,12621,48.46,49.54,-1.08,1.01,OK
+pv30-prova,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,50.33,12592,49.88,49.54,0.34,1.01,OK
+pv30-prova,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.36,12492,49.98,49.54,0.44,1.01,OK
+pv30-prova,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,49.81,18354,49.14,49.80,-0.66,0.00,OK
+pv30-prova,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,51.31,18238,51.68,49.80,1.88,0.00,OK
+pv30-prova,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,50.33,18511,49.37,49.80,-0.43,0.00,OK
+pv30-prova,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,48.55,18734,49.04,49.80,-0.76,0.00,OK
+pv30-prova,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,49.81,18420,47.94,48.48,-0.54,0.95,OK
+pv30-prova,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,51.31,17936,49.93,48.48,1.45,0.97,OK
+pv30-prova,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,50.33,18441,48.47,48.48,-0.01,0.90,OK
+pv30-prova,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,48.55,18486,47.63,48.48,-0.85,0.63,OK
+pv25-d04,1,Squonk,CREATURE,Invitation,Common,Common,13645,49.40,10969,45.80,47.15,-1.35,1.38,OK
+pv25-d04,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,49.51,11058,46.56,47.15,-0.59,1.32,OK
+pv25-d04,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,49.38,10943,46.38,47.15,-0.77,1.28,OK
+pv25-d04,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,49.29,11083,46.27,47.15,-0.88,1.32,OK
+pv25-d04,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,48.90,11129,45.75,47.15,-1.40,1.38,OK
+pv25-d04,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,49.05,11057,46.07,47.15,-1.08,1.35,OK
+pv25-d04,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,48.83,11090,45.66,47.15,-1.49,1.36,OK
+pv25-d04,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,48.77,10971,45.78,46.99,-1.21,2.48,OK
+pv25-d04,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,49.35,10807,46.34,46.99,-0.65,2.79,OK
+pv25-d04,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,49.02,11065,45.89,46.99,-1.10,2.45,OK
+pv25-d04,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,49.67,10710,46.25,46.99,-0.74,2.48,OK
+pv25-d04,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,49.52,10857,45.76,46.99,-1.23,2.34,OK
+pv25-d04,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,49.04,10886,45.47,46.99,-1.51,2.52,OK
+pv25-d04,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,49.90,8265,46.76,46.64,0.13,2.57,OK
+pv25-d04,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,48.44,8167,44.24,46.64,-2.40,2.99,OK
+pv25-d04,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,48.63,8270,44.80,46.64,-1.83,2.16,OK
+pv25-d04,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,49.95,8298,46.81,46.64,0.17,2.61,OK
+pv25-d04,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,48.90,8024,44.00,46.19,-2.19,2.22,OK
+pv25-d04,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,49.64,8056,44.99,46.19,-1.20,2.63,OK
+pv25-d04,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,49.43,8286,45.71,46.19,-0.48,2.22,OK
+pv25-d04,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,49.34,9600,45.27,46.38,-1.12,2.31,OK
+pv25-d04,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,48.89,9502,44.39,46.38,-2.00,1.84,OK
+pv25-d04,23,SCP-131,CREATURE,Archive,Common,Common,13310,51.19,11158,48.84,47.15,1.69,1.06,OK
+pv25-d04,24,SCP-999,CREATURE,Archive,Common,Common,13230,51.37,11065,48.89,47.15,1.74,1.05,OK
+pv25-d04,25,SCP-1762,CREATURE,Archive,Common,Common,13284,50.40,10992,47.84,47.15,0.69,1.05,OK
+pv25-d04,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,51.44,11037,48.64,47.15,1.49,1.06,OK
+pv25-d04,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,51.57,11057,48.99,47.15,1.84,1.05,OK
+pv25-d04,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,49.83,10977,46.79,47.15,-0.36,1.03,OK
+pv25-d04,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.90,11205,48.42,47.15,1.27,1.06,OK
+pv25-d04,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.92,10913,48.20,46.99,1.21,2.20,OK
+pv25-d04,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.86,10907,48.27,46.99,1.28,2.20,OK
+pv25-d04,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,51.43,10913,48.87,46.99,1.89,2.20,OK
+pv25-d04,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,51.61,10863,48.98,46.99,1.99,2.23,OK
+pv25-d04,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,51.08,10956,48.24,46.99,1.25,2.21,OK
+pv25-d04,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,51.34,10897,48.63,46.99,1.64,1.46,OK
+pv25-d04,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,50.82,10748,48.52,46.99,1.53,2.19,OK
+pv25-d04,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.71,8683,48.13,46.64,1.49,2.02,OK
+pv25-d04,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,51.51,8622,49.33,46.64,2.70,2.28,OK
+pv25-d04,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,51.46,8581,48.89,46.64,2.26,2.12,OK
+pv25-d04,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,51.23,8538,48.20,46.64,1.57,1.94,OK
+pv25-d04,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,50.67,8352,47.70,46.19,1.51,1.64,OK
+pv25-d04,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,51.15,8483,48.69,46.19,2.50,2.24,OK
+pv25-d04,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,52.36,8521,49.34,46.19,3.16,1.78,OK
+pv25-d04,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,51.82,9880,49.32,46.38,2.94,3.18,OK
+pv25-d04,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,52.16,9860,49.89,46.38,3.51,2.96,OK
+pv25-d04,46,Dullers,CREATURE,Wound,Common,Common,13639,50.97,11250,48.11,47.15,0.96,1.38,OK
+pv25-d04,47,Crawlers,CREATURE,Wound,Common,Common,13778,50.69,11462,47.88,47.15,0.73,1.38,OK
+pv25-d04,48,Faceling,CREATURE,Wound,Common,Common,13803,51.00,11334,48.11,47.15,0.96,1.25,OK
+pv25-d04,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,50.63,11344,47.38,47.15,0.23,1.35,OK
+pv25-d04,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,50.94,11361,48.10,47.15,0.95,1.15,OK
+pv25-d04,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,50.85,11377,47.80,47.15,0.65,1.44,OK
+pv25-d04,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,51.09,11403,48.15,47.15,1.00,1.46,OK
+pv25-d04,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,50.90,11092,47.74,46.99,0.76,2.48,OK
+pv25-d04,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,50.91,11030,47.57,46.99,0.59,2.41,OK
+pv25-d04,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,50.39,11143,46.89,46.99,-0.10,2.34,OK
+pv25-d04,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,51.02,11217,47.75,46.99,0.76,3.49,OK
+pv25-d04,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,50.95,10962,47.35,46.99,0.36,2.23,OK
+pv25-d04,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,51.06,11193,47.94,46.99,0.95,2.49,OK
+pv25-d04,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,51.36,8620,47.28,46.64,0.64,2.24,OK
+pv25-d04,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,51.07,8543,47.81,46.64,1.18,2.15,OK
+pv25-d04,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,50.41,8572,46.44,46.64,-0.20,2.20,OK
+pv25-d04,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,51.32,8531,47.31,46.64,0.67,2.73,OK
+pv25-d04,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,51.29,8557,47.10,46.19,0.91,1.39,OK
+pv25-d04,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,51.10,8495,47.02,46.19,0.83,1.86,OK
+pv25-d04,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,50.74,8465,46.50,46.19,0.31,1.97,OK
+pv25-d04,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,51.15,10089,46.97,46.38,0.58,1.85,OK
+pv25-d04,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,50.55,9978,46.45,46.38,0.06,2.01,OK
+pv25-d04,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,48.68,11032,46.33,47.15,-0.82,1.75,OK
+pv25-d04,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,48.74,10979,46.59,47.15,-0.56,1.73,OK
+pv25-d04,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,49.02,11077,46.24,47.15,-0.91,1.79,OK
+pv25-d04,71,Kodama,CREATURE,Dream,Common,Common,13164,48.75,11017,46.17,47.15,-0.98,1.82,OK
+pv25-d04,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,48.80,11047,46.31,47.15,-0.84,1.74,OK
+pv25-d04,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,48.10,10957,45.30,47.15,-1.85,1.58,OK
+pv25-d04,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,49.17,11127,46.62,47.15,-0.53,1.78,OK
+pv25-d04,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,49.24,10827,46.65,46.99,-0.34,2.77,OK
+pv25-d04,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,49.13,10889,46.34,46.99,-0.65,3.54,OK
+pv25-d04,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,48.69,10952,45.96,46.99,-1.03,2.89,OK
+pv25-d04,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,47.93,10900,44.61,46.99,-2.38,2.67,OK
+pv25-d04,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,48.70,10764,45.68,46.99,-1.31,2.06,OK
+pv25-d04,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,48.87,11092,45.81,46.99,-1.18,3.00,OK
+pv25-d04,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,49.06,10865,46.13,46.99,-0.86,2.88,OK
+pv25-d04,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,49.23,8606,45.74,46.64,-0.90,2.63,OK
+pv25-d04,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,49.69,8483,45.82,46.64,-0.81,3.58,OK
+pv25-d04,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,47.83,8588,43.27,46.64,-3.37,1.83,OK
+pv25-d04,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,48.91,8644,45.15,46.64,-1.48,2.59,OK
+pv25-d04,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,49.29,8541,45.19,46.19,-1.00,2.16,OK
+pv25-d04,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,48.84,8527,43.67,46.19,-2.52,1.71,OK
+pv25-d04,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,48.62,8478,44.18,46.19,-2.01,2.25,OK
+pv25-d04,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,48.72,9899,44.10,46.38,-2.29,2.40,OK
+pv25-d04,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,48.96,9728,44.56,46.38,-1.82,3.41,OK
+pv25-d04,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,49.26,19355,45.46,46.67,-1.20,3.23,OK
+pv25-d04,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.45,19865,47.84,46.67,1.17,3.69,OK
+pv25-d04,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.06,25624,47.29,47.37,-0.08,1.15,OK
+pv25-d04,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,50.01,25437,47.07,47.37,-0.30,1.16,OK
+pv25-d04,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.50,25373,46.50,47.37,-0.86,1.16,OK
+pv25-d04,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.29,25664,47.92,47.37,0.56,1.16,OK
+pv25-d04,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,50.19,25586,47.70,47.37,0.34,1.16,OK
+pv25-d04,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,49.89,25477,47.24,47.37,-0.13,1.16,OK
+pv25-d04,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.56,25353,46.64,47.37,-0.73,1.16,OK
+pv25-d04,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.17,25295,47.62,47.37,0.25,1.16,OK
+pv25-d04,101,SCP-458,SPELL,,Uncommon,Spell,33329,50.00,25568,47.35,47.37,-0.02,1.16,OK
+pv25-d04,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.26,25491,47.83,47.37,0.47,1.16,OK
+pv25-d04,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,50.00,25589,47.33,47.37,-0.03,1.16,OK
+pv25-d04,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,50.15,25361,47.89,47.37,0.52,1.16,OK
+pv25-d04,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.91,16280,49.43,47.92,1.51,1.05,OK
+pv25-d04,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,49.86,16315,48.01,47.92,0.10,1.05,OK
+pv25-d04,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,49.10,14424,47.14,47.92,-0.78,1.05,OK
+pv25-d04,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.20,15756,47.18,47.92,-0.74,1.05,OK
+pv25-d04,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.22,10066,48.43,47.92,0.51,1.01,OK
+pv25-d04,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.50,10111,47.35,47.92,-0.56,1.01,OK
+pv25-d04,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,49.70,10088,47.07,47.92,-0.84,1.01,OK
+pv25-d04,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.27,10088,48.48,47.92,0.57,1.00,OK
+pv25-d04,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,50.85,14679,48.98,48.03,0.95,0.00,OK
+pv25-d04,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,49.17,14431,47.58,48.03,-0.45,0.00,OK
+pv25-d04,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,51.14,14941,48.65,48.03,0.62,0.00,OK
+pv25-d04,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,48.84,14997,46.91,48.03,-1.12,0.00,OK
+pv25-d04,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,50.85,15017,47.12,46.61,0.51,0.93,OK
+pv25-d04,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,49.17,14167,45.85,46.61,-0.76,0.96,OK
+pv25-d04,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,51.14,15082,47.76,46.61,1.15,0.87,OK
+pv25-d04,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,48.84,14992,45.66,46.61,-0.95,0.56,OK
+pv25-prova,1,Squonk,CREATURE,Invitation,Common,Common,13645,50.40,12213,49.33,49.00,0.33,2.06,OK
+pv25-prova,2,Fuoco fatuo,CREATURE,Invitation,Common,Common,13775,50.55,12352,49.59,49.00,0.58,1.90,OK
+pv25-prova,3,Corvo di Cenere,CREATURE,Invitation,Common,Common,13752,50.84,12263,50.15,49.00,1.14,1.87,OK
+pv25-prova,4,Cane Senz'Ombra,CREATURE,Invitation,Common,Common,13738,50.20,12352,49.48,49.00,0.48,1.97,OK
+pv25-prova,5,Spaventapasseri Zoppo,CREATURE,Invitation,Common,Common,13802,50.05,12390,49.16,49.00,0.16,2.05,OK
+pv25-prova,6,The Coal Crawler,CREATURE,Invitation,Common,Common,13706,50.22,12262,49.39,49.00,0.39,1.98,OK
+pv25-prova,7,Le Falene della Miniera,CREATURE,Invitation,Common,Common,13799,49.83,12334,48.70,49.00,-0.30,2.04,OK
+pv25-prova,8,Wampus Cat,CREATURE,Invitation,Uncommon,Uncommon,13713,49.86,12271,49.25,48.91,0.34,3.19,OK
+pv25-prova,9,Hidebehind,CREATURE,Invitation,Uncommon,Uncommon,13674,50.69,12145,50.34,48.91,1.43,3.44,OK
+pv25-prova,10,Il Pastore Muto,CREATURE,Invitation,Uncommon,Uncommon,13913,50.27,12383,49.42,48.91,0.51,3.10,OK
+pv25-prova,11,Cervo Bianco,CREATURE,Invitation,Uncommon,Uncommon,13547,50.97,12026,50.00,48.91,1.09,3.12,OK
+pv25-prova,12,The Nameless Caller,CREATURE,Invitation,Uncommon,Uncommon,13776,50.75,12217,49.70,48.91,0.79,3.05,OK
+pv25-prova,13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,Uncommon,13717,50.15,12186,49.15,48.91,0.24,3.19,OK
+pv25-prova,14,Spearfinger,CREATURE,Invitation,Rare,Rare,10965,50.78,9457,49.84,48.78,1.06,3.11,OK
+pv25-prova,15,Bell Witch,CREATURE,Invitation,Rare,Rare,10881,49.43,9348,48.11,48.78,-0.67,3.64,OK
+pv25-prova,16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,Rare,10954,49.67,9435,48.11,48.78,-0.67,2.76,OK
+pv25-prova,17,The Bloodless Hound,CREATURE,Invitation,Rare,Rare,11020,51.12,9477,50.35,48.78,1.57,3.46,OK
+pv25-prova,18,Mothman,CREATURE,Invitation,Mythic,Mythic,11360,49.93,9401,48.19,48.69,-0.50,2.65,OK
+pv25-prova,19,Bigfoot,CREATURE,Invitation,Mythic,Mythic,11421,50.67,9492,49.55,48.69,0.86,3.06,OK
+pv25-prova,20,The Thorned Matriarch,CREATURE,Invitation,Mythic,Mythic,11403,50.81,9577,49.81,48.69,1.12,2.82,OK
+pv25-prova,21,Wendigo,CREATURE,Invitation,Legendary,Legendary,13526,50.58,11205,49.64,49.07,0.57,2.94,OK
+pv25-prova,22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,Legendary,13412,49.68,11107,47.90,49.07,-1.17,2.30,OK
+pv25-prova,23,SCP-131,CREATURE,Archive,Common,Common,13310,50.68,12277,49.71,49.00,0.71,1.68,OK
+pv25-prova,24,SCP-999,CREATURE,Archive,Common,Common,13230,50.36,12192,49.38,49.00,0.38,1.65,OK
+pv25-prova,25,SCP-1762,CREATURE,Archive,Common,Common,13284,49.73,12224,48.75,49.00,-0.25,1.57,OK
+pv25-prova,26,Pupazzo da Archivio,CREATURE,Archive,Common,Common,13188,50.33,12179,49.27,49.00,0.26,1.63,OK
+pv25-prova,27,Tazza Eterna,CREATURE,Archive,Common,Common,13157,50.80,12129,49.81,49.00,0.80,1.62,OK
+pv25-prova,28,Il Timbro di Nessuno,CREATURE,Archive,Common,Common,13196,48.69,12082,47.48,49.00,-1.52,1.50,OK
+pv25-prova,29,La Falena del Fascicolo Rosso,CREATURE,Archive,Common,Common,13276,50.48,12280,49.25,49.00,0.24,1.66,OK
+pv25-prova,30,SCP-173,CREATURE,Archive,Uncommon,Uncommon,13292,50.24,12116,49.04,48.91,0.13,2.77,OK
+pv25-prova,31,SCP-096,CREATURE,Archive,Uncommon,Uncommon,13224,50.05,12132,49.11,48.91,0.20,2.79,OK
+pv25-prova,32,SCP-049,CREATURE,Archive,Uncommon,Uncommon,13206,50.48,12128,49.58,48.91,0.67,2.80,OK
+pv25-prova,33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,Uncommon,13136,50.69,12043,49.49,48.91,0.58,2.82,OK
+pv25-prova,34,SCP-053,CREATURE,Archive,Uncommon,Uncommon,13266,49.95,12121,48.58,48.91,-0.33,2.83,OK
+pv25-prova,35,SCP-2006,CREATURE,Archive,Uncommon,Uncommon,13204,50.30,12149,49.21,48.91,0.30,2.03,OK
+pv25-prova,36,The Index Maw,CREATURE,Archive,Uncommon,Uncommon,13132,49.96,11978,48.98,48.91,0.07,2.72,OK
+pv25-prova,37,SCP-106,CREATURE,Archive,Rare,Rare,10907,50.24,9787,49.00,48.78,0.22,2.61,OK
+pv25-prova,38,SCP-682,CREATURE,Archive,Rare,Rare,10796,50.75,9635,49.82,48.78,1.04,3.03,OK
+pv25-prova,39,SCP-2521,CREATURE,Archive,Rare,Rare,10690,50.19,9630,49.05,48.78,0.27,2.62,OK
+pv25-prova,40,The Drowned Memory,CREATURE,Archive,Rare,Rare,10747,50.39,9653,48.89,48.78,0.10,2.46,OK
+pv25-prova,41,SCP-2317,CREATURE,Archive,Mythic,Mythic,11180,49.93,9659,48.25,48.69,-0.44,1.94,OK
+pv25-prova,42,SCP-3000,CREATURE,Archive,Mythic,Mythic,11254,50.50,9794,49.46,48.69,0.77,2.69,OK
+pv25-prova,43,The Null Witness,CREATURE,Archive,Mythic,Mythic,11190,51.83,9788,50.53,48.69,1.84,2.19,OK
+pv25-prova,44,SCP-001,CREATURE,Archive,Legendary,Legendary,13040,51.53,11443,50.47,49.07,1.40,3.84,OK
+pv25-prova,45,SCP-3999,CREATURE,Archive,Legendary,Legendary,13017,51.54,11370,50.75,49.07,1.68,3.46,OK
+pv25-prova,46,Dullers,CREATURE,Wound,Common,Common,13639,51.83,12332,50.51,49.00,1.50,1.99,OK
+pv25-prova,47,Crawlers,CREATURE,Wound,Common,Common,13778,51.64,12470,50.29,49.00,1.29,1.98,OK
+pv25-prova,48,Faceling,CREATURE,Wound,Common,Common,13803,51.89,12474,50.42,49.00,1.42,1.87,OK
+pv25-prova,49,Cercatore di Moquette,CREATURE,Wound,Common,Common,13782,51.61,12519,50.26,49.00,1.26,1.97,OK
+pv25-prova,50,Ronzio Giallo,CREATURE,Wound,Common,Common,13804,51.56,12495,50.38,49.00,1.38,1.74,OK
+pv25-prova,51,L'Ascensore Senza Pulsanti,CREATURE,Wound,Common,Common,13718,51.78,12422,50.10,49.00,1.09,2.09,OK
+pv25-prova,52,L'Inquilino del Soffitto,CREATURE,Wound,Common,Common,13778,52.14,12513,50.72,49.00,1.72,2.13,OK
+pv25-prova,53,Howlers,CREATURE,Wound,Uncommon,Uncommon,13647,51.78,12250,50.11,48.91,1.20,3.11,OK
+pv25-prova,54,Wretches,CREATURE,Wound,Uncommon,Uncommon,13534,51.66,12122,49.94,48.91,1.03,3.07,OK
+pv25-prova,55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,Uncommon,13703,51.23,12299,49.59,48.91,0.68,2.92,OK
+pv25-prova,56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,Uncommon,13713,51.81,12289,50.21,48.91,1.30,4.18,OK
+pv25-prova,57,The Gnawing Witness,CREATURE,Wound,Uncommon,Uncommon,13603,51.53,12125,49.84,48.91,0.93,2.81,OK
+pv25-prova,58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,Uncommon,13693,51.94,12273,50.51,48.91,1.60,3.10,OK
+pv25-prova,59,Skin-Stealers,CREATURE,Wound,Rare,Rare,11022,51.88,9629,49.71,48.78,0.93,2.77,OK
+pv25-prova,60,Il Doppio di Servizio,CREATURE,Wound,Rare,Rare,11029,52.81,9610,51.23,48.78,2.44,2.67,OK
+pv25-prova,61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,Rare,10943,51.20,9585,49.10,48.78,0.32,2.74,OK
+pv25-prova,62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,Rare,10964,52.27,9550,50.14,48.78,1.35,3.25,OK
+pv25-prova,63,Hounds,CREATURE,Wound,Mythic,Mythic,11487,52.52,9794,50.56,48.69,1.87,1.79,OK
+pv25-prova,64,Deathmoths,CREATURE,Wound,Mythic,Mythic,11390,52.09,9670,49.86,48.69,1.17,2.27,OK
+pv25-prova,65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,Mythic,11486,51.48,9704,48.93,48.69,0.25,2.45,OK
+pv25-prova,66,Smiler,CREATURE,Wound,Legendary,Legendary,13544,52.44,11514,50.68,49.07,1.61,2.46,OK
+pv25-prova,67,The Hollow Wyrm,CREATURE,Wound,Legendary,Legendary,13421,51.66,11287,49.63,49.07,0.56,2.38,OK
+pv25-prova,68,Kasa-obake,CREATURE,Dream,Common,Common,13167,47.71,12229,47.36,49.00,-1.64,2.42,OK
+pv25-prova,69,Chochin-obake,CREATURE,Dream,Common,Common,13168,47.55,12158,47.22,49.00,-1.78,2.34,OK
+pv25-prova,70,Zashiki-warashi,CREATURE,Dream,Common,Common,13222,47.80,12242,47.28,49.00,-1.73,2.44,OK
+pv25-prova,71,Kodama,CREATURE,Dream,Common,Common,13164,47.33,12192,46.86,49.00,-2.14,2.48,OK
+pv25-prova,72,Tanuki del Tempio,CREATURE,Dream,Common,Common,13256,47.69,12246,47.44,49.00,-1.57,2.41,OK
+pv25-prova,73,The Bone Lantern,CREATURE,Dream,Common,Common,13167,46.86,12118,46.37,49.00,-2.63,2.19,OK
+pv25-prova,74,La Sposa delle Campane,CREATURE,Dream,Common,Common,13266,47.75,12262,47.17,49.00,-1.84,2.46,OK
+pv25-prova,75,Kappa,CREATURE,Dream,Uncommon,Uncommon,13148,48.16,12009,47.77,48.91,-1.14,3.37,OK
+pv25-prova,76,Nurikabe,CREATURE,Dream,Uncommon,Uncommon,13188,47.91,12156,47.47,48.91,-1.44,4.20,OK
+pv25-prova,77,Noppera-bō,CREATURE,Dream,Uncommon,Uncommon,13195,47.81,12163,47.32,48.91,-1.59,3.56,OK
+pv25-prova,78,Rokurokubi,CREATURE,Dream,Uncommon,Uncommon,13326,46.53,12143,45.80,48.91,-3.11,3.20,OK
+pv25-prova,79,The Threadbound Doll,CREATURE,Dream,Uncommon,Uncommon,13208,47.71,12025,47.31,48.91,-1.59,2.64,OK
+pv25-prova,80,L'Ombra del Torii,CREATURE,Dream,Uncommon,Uncommon,13367,47.07,12261,46.27,48.91,-2.64,3.70,OK
+pv25-prova,81,The Masked Bloom,CREATURE,Dream,Uncommon,Uncommon,13127,48.24,12090,47.61,48.91,-1.30,3.52,OK
+pv25-prova,82,Yuki-onna,CREATURE,Dream,Rare,Rare,10776,48.26,9688,47.09,48.78,-1.69,3.16,OK
+pv25-prova,83,Jorōgumo,CREATURE,Dream,Rare,Rare,10691,48.70,9595,47.73,48.78,-1.06,4.20,OK
+pv25-prova,84,Nure-onna,CREATURE,Dream,Rare,Rare,10916,46.30,9762,45.25,48.78,-3.54,2.33,OK
+pv25-prova,85,The Face Collector,CREATURE,Dream,Rare,Rare,10884,47.91,9779,47.21,48.78,-1.57,3.13,OK
+pv25-prova,86,Baku,CREATURE,Dream,Mythic,Mythic,11189,48.42,9745,47.29,48.69,-1.40,2.53,OK
+pv25-prova,87,The Unseen Matriarch,CREATURE,Dream,Mythic,Mythic,11319,47.07,9856,45.29,48.69,-3.40,2.23,OK
+pv25-prova,88,The Undying Blossom,CREATURE,Dream,Mythic,Mythic,11140,47.77,9748,46.58,48.69,-2.10,2.64,OK
+pv25-prova,89,Shuten-dōji,CREATURE,Dream,Legendary,Legendary,13139,47.95,11371,46.89,49.07,-2.18,2.83,OK
+pv25-prova,90,Kitsune,CREATURE,Dream,Legendary,Legendary,12993,47.78,11221,46.51,49.07,-2.56,3.80,OK
+pv25-prova,91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,Mutant,26454,49.36,22357,48.28,48.98,-0.70,4.20,OK
+pv25-prova,92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,Mutant,26503,51.44,22721,49.67,48.98,0.69,4.43,OK
+pv25-prova,93,Morso del Rovescio,SPELL,,Uncommon,Spell,33454,50.21,29150,49.64,49.46,0.18,1.17,OK
+pv25-prova,94,Frattura della Pelle,SPELL,,Uncommon,Spell,33102,49.97,28869,49.36,49.46,-0.10,1.18,OK
+pv25-prova,95,Dissoluzione,SPELL,,Uncommon,Spell,33141,49.16,28843,48.32,49.46,-1.14,1.18,OK
+pv25-prova,96,Velo degli Ancorati,SPELL,,Uncommon,Spell,33430,50.48,29179,50.04,49.46,0.59,1.18,OK
+pv25-prova,97,Patto del Registro,SPELL,,Uncommon,Spell,33204,50.25,29023,49.89,49.46,0.43,1.18,OK
+pv25-prova,98,Armatura della Pioggia,SPELL,,Uncommon,Spell,33150,49.98,28878,49.43,49.46,-0.03,1.18,OK
+pv25-prova,99,SCP-500,SPELL,,Uncommon,Spell,33070,49.50,28874,48.80,49.46,-0.66,1.18,OK
+pv25-prova,100,SCP-109,SPELL,,Uncommon,Spell,32785,50.11,28563,49.48,49.46,0.02,1.18,OK
+pv25-prova,101,SCP-458,SPELL,,Uncommon,Spell,33329,49.70,29030,49.03,49.46,-0.43,1.17,OK
+pv25-prova,102,Richiamo della Crepa,SPELL,,Uncommon,Spell,33110,50.39,29013,50.07,49.46,0.62,1.18,OK
+pv25-prova,103,Fusione del Rovescio,SPELL,,Uncommon,Spell,33248,50.08,29026,49.47,49.46,0.01,1.18,OK
+pv25-prova,104,Eco dei Dimenticati,SPELL,,Uncommon,Spell,33093,50.35,28848,49.97,49.46,0.51,1.18,OK
+pv25-prova,105,Last Sanctuary,HIDDEN,,Uncommon,Hidden,23657,50.79,18747,51.21,50.14,1.08,1.06,OK
+pv25-prova,106,Survival Instinct,HIDDEN,,Uncommon,Hidden,23748,50.07,18790,50.35,50.14,0.21,1.05,OK
+pv25-prova,107,Remnants of Reality,HIDDEN,,Uncommon,Hidden,23793,48.70,16921,48.32,50.14,-1.81,1.05,OK
+pv25-prova,108,Unseen Exit,HIDDEN,,Uncommon,Hidden,23965,50.69,18335,50.72,50.14,0.59,1.06,OK
+pv25-prova,109,Hostile Presence,HIDDEN,,Uncommon,Hidden,14924,50.70,11650,51.27,50.14,1.13,1.01,OK
+pv25-prova,110,Echo Strike,HIDDEN,,Uncommon,Hidden,15043,49.61,11720,49.49,50.14,-0.64,1.01,OK
+pv25-prova,111,Breaking Point,HIDDEN,,Uncommon,Hidden,14977,49.16,11658,48.95,50.14,-1.19,1.01,OK
+pv25-prova,112,Static Interference,HIDDEN,,Uncommon,Hidden,14920,50.36,11655,50.47,50.14,0.33,1.01,OK
+pv25-prova,113,Echo Rift,TERRAIN,Wound,Rare,Terreno,20000,51.76,16958,52.00,50.60,1.39,0.00,OK
+pv25-prova,114,Hollow Clearing,TERRAIN,Invitation,Rare,Terreno,20000,50.30,16832,51.54,50.60,0.94,0.00,OK
+pv25-prova,115,Watching Rift,TERRAIN,Archive,Rare,Terreno,20000,50.32,17361,50.14,50.60,-0.46,0.00,OK
+pv25-prova,116,Devouring Abyss,TERRAIN,Dream,Rare,Terreno,20000,47.63,17499,48.81,50.60,-1.79,0.00,OK
+pv25-prova,117,Badge di Uscita Negata,ITEM,Wound,Rare,Oggetto,20000,51.76,17096,49.70,48.76,0.94,0.94,OK
+pv25-prova,118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,Oggetto,20000,50.30,16513,49.42,48.76,0.65,0.97,OK
+pv25-prova,119,Fascicolo Sigillato 0,ITEM,Archive,Rare,Oggetto,20000,50.32,17332,48.87,48.76,0.10,0.89,OK
+pv25-prova,120,Campanello del Torii,ITEM,Dream,Rare,Oggetto,20000,47.63,17267,47.10,48.76,-1.66,0.61,OK

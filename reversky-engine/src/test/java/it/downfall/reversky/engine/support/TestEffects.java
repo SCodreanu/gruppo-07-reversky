@@ -52,8 +52,19 @@ public final class TestEffects {
 	 * @return un nuovo registro
 	 */
 	public static EffectRegistry gameWithStubsFor(SimulationInput input) {
-		return addStubs(EffectRegistry.withAllEffects(),
+		return gameWithStubsFor(
 				Stream.concat(input.challenger().deck().stream(), input.opponent().deck().stream()).toList());
+	}
+
+	/**
+	 * Registro del gioco ({@link EffectRegistry#withAllEffects()}) più un effetto finto, che non fa niente, per ogni
+	 * codice delle carte date che il gioco non ha.
+	 *
+	 * @param cards carte, anche ripetute
+	 * @return un nuovo registro
+	 */
+	public static EffectRegistry gameWithStubsFor(List<CardDefinition> cards) {
+		return addStubs(EffectRegistry.withAllEffects(), cards);
 	}
 
 	private static EffectRegistry addStubs(EffectRegistry registry, List<CardDefinition> cards) {

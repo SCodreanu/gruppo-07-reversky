@@ -23,6 +23,7 @@ import it.downfall.reversky.engine.core.model.Side;
 import it.downfall.reversky.engine.core.simulation.DeathResolver;
 import it.downfall.reversky.engine.core.simulation.ItemService;
 import it.downfall.reversky.engine.core.simulation.RoundResolver;
+import it.downfall.reversky.engine.core.simulation.TerrainService;
 import it.downfall.reversky.engine.support.TestCards;
 import it.downfall.reversky.engine.support.TestFactions;
 import it.downfall.reversky.engine.support.TestStates;
@@ -166,9 +167,9 @@ class TerrainSecondaryEffectsTest {
 		// Act
 		resolver.resolve(state);
 
-		// Assert: B 10 − 4 − 3 = 3, la Theory of the Wound non è protetta
+		// Assert: B 10 − 6 − 3 = 1, la Theory of the Wound non è protetta
 		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(18);
-		assertThat(state.opponent().creature().orElseThrow().defense()).isEqualTo(3);
+		assertThat(state.opponent().creature().orElseThrow().defense()).isEqualTo(1);
 	}
 
 	@Test
@@ -198,9 +199,9 @@ class TerrainSecondaryEffectsTest {
 	@CsvSource({ "SKIN_FRACTURE, 4, 7", "DISSOLUTION, 2, 10", "BITE_OF_REVERSE, 2, 11" })
 	@DisplayName("Watching Rift: la prima Spell DAMAGE fa 1 punto in meno, prima dalla DEF, poi dall'ATK (da 4/11)")
 	void watchingRift_firstDamageSpellOnePointLess(String code, int attack, int defense) {
-		// Arrange: SCP-131 3/10 con +1 ATK e +1 DEF dal Terreno
+		// Arrange: SCP-131 3/11 con +1 ATK dal Terreno (ENG-42: il Terreno non dà più +1 DEF)
 		MatchState state = TestStates.inCombat(TestCards.creature("C", TestFactions.WOUND, 2, 30),
-				TestCards.creature("SCP-131", TestFactions.ARCHIVE, 3, 10));
+				TestCards.creature("SCP-131", TestFactions.ARCHIVE, 3, 11));
 		TestStates.placeTerrain(state, WATCHING_RIFT, Side.OPPONENT);
 		resolver.startCombat(state);
 
@@ -216,9 +217,9 @@ class TerrainSecondaryEffectsTest {
 	@Test
 	@DisplayName("Watching Rift (deciso il 18 novembre): una volta per scontro; fra due scontri conta per il prossimo")
 	void watchingRift_oncePerCombatWindow() {
-		// Arrange: SCP-131 3/20 + 1 = 21
+		// Arrange: SCP-131 3/21, il Terreno dà solo +1 ATK (ENG-42)
 		MatchState state = TestStates.inCombat(TestCards.creature("C", TestFactions.WOUND, 2, 30),
-				TestCards.creature("SCP-131", TestFactions.ARCHIVE, 3, 20));
+				TestCards.creature("SCP-131", TestFactions.ARCHIVE, 3, 21));
 		TestStates.placeTerrain(state, WATCHING_RIFT, Side.OPPONENT);
 		CreatureInPlay scp = state.opponent().creature().orElseThrow();
 		resolver.startCombat(state);
@@ -247,8 +248,8 @@ class TerrainSecondaryEffectsTest {
 	@Test
 	@DisplayName("Devouring Abyss: a ogni inizio scontro la creatura Dream fa 1 danno all'avversaria (B 4, poi C 9)")
 	void devouringAbyss_oneDamageEachCombat() {
-		// Arrange: B 2/5 muore al round 1
-		MatchState state = TestStates.inCombat(TestCards.creature("Kodama", TestFactions.DREAM, 3, 10),
+		// Arrange: B 2/5 muore al round 1; Kodama 4/10, il Terreno le dà uno scudo di 1 DEF (ENG-42), non ATK
+		MatchState state = TestStates.inCombat(TestCards.creature("Kodama", TestFactions.DREAM, 4, 10),
 				TestCards.creature("B", TestFactions.WOUND, 2, 5));
 		TestStates.placeTerrain(state, DEVOURING_ABYSS, Side.OPPONENT);
 
@@ -267,17 +268,20 @@ class TerrainSecondaryEffectsTest {
 	@Test
 	@DisplayName("Devouring Abyss (18 novembre): due creature Dream, prima lo sfidante; se uccide, l'altra no")
 	void devouringAbyss_challengerFirstThenDeathCheck() {
-		// Arrange: la creatura dell'avversario ha 1 DEF
+		// Arrange: la creatura dell'avversario ha 1 DEF: 1 + lo scudo di 1 del Terreno (ENG-42), già consumato
 		MatchState state = TestStates.inCombat(TestCards.creature("Kodama", TestFactions.DREAM, 3, 10),
 				TestCards.creature("Kasa-obake", TestFactions.DREAM, 3, 1));
 		TestStates.placeTerrain(state, DEVOURING_ABYSS, Side.CHALLENGER);
+		CreatureInPlay kasa = state.opponent().creature().orElseThrow();
+		new TerrainService(registry).applyBonus(state, kasa);
+		kasa.takeDamage(1);
 
 		// Act
 		resolver.startCombat(state);
 
 		// Assert
 		assertThat(state.opponent().creature()).isEmpty();
-		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(10);
+		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(11);
 	}
 
 	@Test

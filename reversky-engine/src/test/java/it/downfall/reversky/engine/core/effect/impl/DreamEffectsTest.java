@@ -90,7 +90,7 @@ class DreamEffectsTest {
 	@Test
 	@DisplayName("L'Ombra del Torii con il Terreno della sua fazione, anche se l'ha pescato l'avversario: +3 DEF")
 	void toriiShadow_ownFactionTerrain() {
-		// Arrange: Devouring Abyss (Theory of the Dream) dell'avversario, bonus base +1 ATK
+		// Arrange: Devouring Abyss (Theory of the Dream) dell'avversario, bonus base +1 DEF (ENG-42)
 		MatchState state = inCombat(creature("Torii Shadow", "Uncommon", 2, 5, "TORII_SHADOW"), plain("B", 3, 10));
 		TestStates.placeTerrain(state, TestCards.terrain(116, "Devouring Abyss", TestFactions.DREAM, "DEVOURING_ABYSS"),
 				Side.OPPONENT);
@@ -98,8 +98,8 @@ class DreamEffectsTest {
 		// Act
 		resolver.startCombat(state);
 
-		// Assert
-		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(8);
+		// Assert: 5 + 1 del Terreno + 3
+		assertThat(state.challenger().creature().orElseThrow().defense()).isEqualTo(9);
 	}
 
 	@Test
@@ -295,7 +295,7 @@ class DreamEffectsTest {
 	// ---- Mythic e Legendary ----
 
 	@Test
-	@DisplayName("The Unseen Matriarch: a metà DEF (4 ≤ 5) B subisce la DEF persa (6) e −1 ATK, una volta")
+	@DisplayName("The Unseen Matriarch: a metà DEF (4 ≤ 5) B subisce la DEF persa (6) e −2 ATK (ENG-42), una volta")
 	void unseenMatriarch_veilBreaks() {
 		// Arrange
 		MatchState state = inCombat(creature("The Unseen Matriarch", "Mythic", 2, 10, "UNSEEN_MATRIARCH"),
@@ -309,13 +309,13 @@ class DreamEffectsTest {
 		assertThat(b.defense()).isEqualTo(38);
 		resolver.resolve(state);
 		assertThat(b.defense()).isEqualTo(30);
-		assertThat(b.attack()).isEqualTo(2);
-		assertThat(messages(state)).contains("The Unseen Matriarch: deals 6 damage to B (DEF 30), B −1 ATK while in "
-				+ "play (ATK 2)");
+		assertThat(b.attack()).isEqualTo(1);
+		assertThat(messages(state)).contains("The Unseen Matriarch: deals 6 damage to B (DEF 30), B −2 ATK while in "
+				+ "play (ATK 1)");
 
-		// Act + Assert: round 3, nessun secondo colpo
+		// Act + Assert: round 3, nessun secondo colpo; B attacca con 1
 		resolver.resolve(state);
-		assertThat(matriarch.defense()).isEqualTo(2);
+		assertThat(matriarch.defense()).isEqualTo(3);
 		assertThat(b.defense()).isEqualTo(28);
 	}
 
@@ -375,8 +375,8 @@ class DreamEffectsTest {
 	}
 
 	@Test
-	@DisplayName("Shuten-dōji: +4 ATK dopo ogni danno DEF subito, massimo +12 (6, 10, 14, 14)")
-	void shutenDoji_stacksUpToTwelve() {
+	@DisplayName("Shuten-dōji: +6 ATK dopo ogni danno DEF subito, massimo +18 (8, 14, 20, 20; ENG-42, era +4, max +12)")
+	void shutenDoji_stacksUpToEighteen() {
 		// Arrange
 		MatchState state = inCombat(creature("Shuten-dōji", "Legendary", 2, 40, "SHUTEN_DOJI"), plain("B", 3, 60));
 		CreatureInPlay shuten = state.challenger().creature().orElseThrow();
@@ -384,18 +384,18 @@ class DreamEffectsTest {
 
 		// Act + Assert
 		resolver.resolve(state);
-		assertThat(shuten.attack()).isEqualTo(6);
-		resolver.resolve(state);
-		assertThat(shuten.attack()).isEqualTo(10);
+		assertThat(shuten.attack()).isEqualTo(8);
 		resolver.resolve(state);
 		assertThat(shuten.attack()).isEqualTo(14);
 		resolver.resolve(state);
-		assertThat(shuten.attack()).isEqualTo(14);
-		assertThat(enemy(state).defense()).isEqualTo(60 - 2 - 6 - 10 - 14);
+		assertThat(shuten.attack()).isEqualTo(20);
+		resolver.resolve(state);
+		assertThat(shuten.attack()).isEqualTo(20);
+		assertThat(enemy(state).defense()).isEqualTo(60 - 2 - 8 - 14 - 20);
 	}
 
 	@Test
-	@DisplayName("Shuten-dōji: conta anche il danno di un effetto all'entrata, già nel primo round (6)")
+	@DisplayName("Shuten-dōji: conta anche il danno di un effetto all'entrata, già nel primo round (8)")
 	void shutenDoji_effectDamageCounts() {
 		// Arrange: The Gnawing Witness le toglie 2 DEF all'entrata
 		MatchState state = inCombat(creature("Shuten-dōji", "Legendary", 2, 40, "SHUTEN_DOJI"),
@@ -406,7 +406,7 @@ class DreamEffectsTest {
 		resolver.startCombat(state);
 
 		// Assert
-		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(6);
+		assertThat(state.challenger().creature().orElseThrow().attack()).isEqualTo(8);
 	}
 
 	private MatchState inCombat(CardDefinition challenger, CardDefinition opponent) {

@@ -13,6 +13,7 @@ Il brief chiede esplicitamente che il motore sia **coperto da test automatici JU
 | **Partita completa** | `MatchSimulator` dall'inizio alla fine | JUnit 5 | `MatchSimulatorTest` |
 | **Web** | JSON, validazione, status HTTP | `@WebMvcTest` | `SimulationControllerTest` |
 | **Bilanciamento** (`ENG-28`) | migliaia di partite simulate, report per i DSG | JUnit 5, `@Tag("balance")`, `gradlew balanceTest` | `BalanceSimulationTest` |
+| **Valore degli effetti** (`ENG-42`) | ogni effetto tolto e rigiocato a partite appaiate | JUnit 5, `@Tag("effects")`, `gradlew effectTest` | `EffectAblationSimulationTest` |
 
 I test del `core` sono **JUnit puro**: niente `@SpringBootTest`, niente contesto Spring. Partono in millisecondi.
 
@@ -179,7 +180,7 @@ Le forme usano solo righe intere di `faction_bonuses`, senza modifiche all'engin
 - **+1 ATK contro +1 DEF:** chi batte l'avversaria ha +1 ATK in ogni round dello scontro; chi è battuto ha +1 DEF una volta per scontro contro chi lo batte.
 - **Per coppia:** come sopra, ma +2 DEF invece di +1 a Wound contro Archive e a Invitation contro Dream, le due coppie che restavano alte.
 
-Risultati del 20 novembre. Scontri di vantaggio (la prima fazione contro quella che batte) e partite finite per punti vita, con 30 PV / 25 PV; in grassetto quelli dentro 55–65%:
+Risultati del 20 novembre, con le statistiche del catalogo **prima** di `ENG-42` (i report di oggi usano quelle nuove, vedi sotto). Scontri di vantaggio (la prima fazione contro quella che batte) e partite finite per punti vita, con 30 PV / 25 PV; in grassetto quelli dentro 55–65%:
 
 | Forma | Wound–Dream | Invitation–Archive | Archive–Wound | Dream–Invitation | Fazioni fuori da 45–55% | Finite per PV |
 |---|---|---|---|---|---|---|
@@ -196,3 +197,105 @@ Cosa dicono:
 - D-01: con +1 ATK contro +1 DEF finisce per punti vita il 57,5% delle partite con 25 PV e il 32,3% con 30 PV; come il bonus di prova, questa forma va con 25 PV.
 
 D-04 e D-01 restano aperti: le forme sono proposte per i DSG, non decisioni.
+
+### Ribilanciamento delle statistiche (`ENG-42`)
+
+`ENG-42` porta gli scontri nelle bande con il bonus +1 ATK contro +1 DEF, cambiando il catalogo. La fase 1 (20 novembre) tocca solo ATK e DEF delle creature; la fase 2 rivede i numeri degli effetti carta per carta, prima del code freeze. Il risultato della fase 1 è una **proposta** per i DSG, non una decisione: la fase 2 può spostarlo di nuovo.
+
+La griglia `pv30` (`BalanceGrid.PV30`) gioca, con gli stessi mazzi e seed della griglia base, le tre forme del bonus a 30 PV (D-04 +2/−1 ATK, bonus di prova +1 DEF, +1 ATK contro +1 DEF) e scrive [`report-30pv.md`](../bilanciamento/report-30pv.md) con [`report-30pv-carte.csv`](../bilanciamento/report-30pv-carte.csv):
+
+```bash
+./gradlew balanceTest -PbalanceGrid=pv30   # Windows: gradlew.bat balanceTest -PbalanceGrid=pv30
+```
+
+Metodo, scelto il 20 novembre:
+
+- **Prima le carte:** si cerca ogni creatura a più di 5 punti (punteggio da giocata) dalla media della sua fazione e rarità. Non ce n'era nessuna (al massimo 1,6 punti, con un errore statistico di circa 0,45), quindi il passo è stato saltato.
+- **Poi le fazioni:** un giro di taratura con ±1 DEF su tutte le creature di una fazione ha spostato gli scontri di vantaggio di 35–65 punti (Archive–Wound da 71,6% a 19,4%): troppo. I giri seguenti hanno cambiato 1 DEF su poche creature, scelte per valore V dentro la fazione (si alza la V più bassa, si abbassa la più alta), tra le Common e le Uncommon.
+- **Infine la diluizione:** gli spostamenti per fazione pareggiano i quattro scontri di vantaggio ma non ne abbassano la media (64,9%). +1 ATK a tutte le creature rende il bonus meno pesante e porta la media al 58,3%; +1 DEF a tutte la allarga (fino al 72,6%).
+- Le Mutant non si spostano con le fazioni (ognuna ha una fazione che sale e una che scende); hanno avuto il +1 ATK di tutte.
+
+Il 20 novembre la fase 1 si è chiusa con 14 cambi di DEF (Archive e Dream giù, Wound e Invitation su). Il 21 novembre la fase 2 ha mostrato che compensavano soprattutto i Terreni di Archive e Dream (6–7 V più degli altri): corretti i Terreni, quei cambi si sono tolti tutti e la fase 1 si è ritarata con lo stesso metodo, in tre giri. Cambi finali al [catalogo finale](../bilanciamento/catalogo-finale.csv), con `valore_v` ricalcolato (V = 2,5 × ATK + DEF + PS):
+
+| Cambio | Carte |
+|---|---|
+| +1 ATK | tutte le 92 creature, Mutant comprese |
+| −1 DEF | Archive: Il Timbro di Nessuno; Dream: The Bone Lantern, Rokurokubi, L'Ombra del Torii |
+| −2 DEF | Archive: SCP-053 |
+| Effetti | i due Terreni e sette creature della fase 2 (sotto); `ps_effetto` del Badge di Uscita Negata da 4,5 a 5,3 |
+
+Spell, Hidden e gli altri Oggetti non cambiano. `TestDecks` copia le nuove statistiche.
+
+Risultati con +1 ATK contro +1 DEF (30 PV / 25 PV); bande: vantaggio 55–65%, neutri e fazioni 45–55%:
+
+| | Prima di `ENG-42` | Dopo le fasi 1 e 2 |
+|---|---|---|
+| Archive–Wound | 71,6 / 67,9 | 58,5 / 57,1 |
+| Dream–Invitation | 75,5 / 76,0 | 57,1 / 59,8 |
+| Wound–Dream | 57,2 / 61,2 | 57,9 / 61,4 |
+| Invitation–Archive | 58,2 / 58,0 | 61,8 / 62,1 |
+| Neutri: Wound–Invitation, Archive–Dream | 55,3 e 54,7 / 58,0 e 54,3 | 51,0 e 53,2 / 53,5 e 54,8 |
+| Fazioni | 42,5–56,1 / 41,3–54,7 | 48,7–51,2 / 47,9–52,6 |
+| Carta più lontana dal suo gruppo (punti) | 6,8 / 7,6 | 3,1 / 3,4 |
+| Finite per punti vita | 32,3% / 57,5% | 34,6% / 57,6% |
+| Durata media in round | 42,5 / 39,3 | 36,7 / 33,8 |
+| Avvisi | 6 / 5 | 0 / 0 |
+
+Cosa dicono:
+
+- Con +1 ATK contro +1 DEF tutti gli scontri e tutte le fazioni stanno nelle bande, con 30 e con 25 PV, senza avvisi.
+- Con le stesse statistiche gli altri due bonus restano fuori: +2/−1 ATK al 99,9–100% negli scontri di vantaggio, il bonus di prova al 79,9–89,0%.
+- D-01: a 30 PV finisce per punti vita il 34,6% delle partite, a 25 PV il 57,6%; D-01 cercava circa metà.
+- La scala delle rarità resta quasi piatta (nel mazzo, a 30 PV: Common 49,8%, Uncommon e Rare 50,1%, Mythic 50,2%, Legendary 50,8%, Mutant 50,5%), ma ora cresce.
+
+### Valore degli effetti (`ENG-42`, fase 2)
+
+La fase 2 misura quanto vale l'effetto di ogni carta, perché il punteggio "da giocata" del report di bilanciamento non lo vede: una carta è circa il 5% delle creature di un mazzo, e dopo la fase 1 nessuna carta sta a più di 2,7 punti dal suo gruppo. Il test è `EffectAblationSimulationTest`, con il tag `effects`; si lancia a parte e scrive [`report-effetti.md`](../bilanciamento/report-effetti.md) con [`report-effetti-carte.csv`](../bilanciamento/report-effetti-carte.csv):
+
+```bash
+./gradlew effectTest   # Windows: gradlew.bat effectTest; circa 15-20 minuti
+```
+
+Scelte del 21 novembre:
+
+| Cosa | Scelta |
+|---|---|
+| Partite | 30 PV con +1 ATK contro +1 DEF (la proposta della fase 1), 16 accoppiamenti × 1.250 = 20.000 partite di base, mazzi casuali e seed come nella griglia base (`EffectAblation`) |
+| Partite appaiate | per ogni carta si rigiocano, con gli stessi seed e mazzi, solo le partite in cui i due mazzi ne hanno un numero diverso di copie, con la variante della carta al posto della carta (nelle altre la variante tocca i due lati allo stesso modo) |
+| Valore per copia | regressione senza intercetta del guadagno dello sfidante (punteggio con la variante meno punteggio di base) sulla differenza di copie, sfidante meno avversario; con il suo errore standard |
+| Senza effetto | una creatura perde il codice e tiene le statistiche; Spell, Hidden, Terreni e Oggetti hanno un effetto registrato che non fa niente, quindi il valore è quello di tutta la carta (un Terreno perde anche il bonus base) |
+| Taratura | +1 DEF su ognuna delle 28 creature senza effetto (1 DEF = 1 punto di V); la media dei guadagni per copia dà i punti per V, e il valore di un effetto in V è il suo valore per copia diviso per questa media |
+| Giudizio | le creature contro il prezzo del loro effetto (`ps_effetto`), Spell, Hidden, Terreni e Oggetti contro la media in V del loro tipo; "troppo forte" o "troppo debole" se lo scarto supera 2 punti di V e anche il 50% del riferimento (`EffectAblationReport`) |
+| Invarianti | come `balanceTest`: nessun errore dell'engine, ogni partita finisce, le prime 200 partite di base danno lo stesso risultato due volte |
+
+Prima misura del 21 novembre (catalogo dopo la fase 1, 20.000 partite di base, 10 minuti; nessun errore dell'engine):
+
+- Taratura: 1 punto di V vale 1,39 punti di partita per copia. Errore standard di una carta: 0,1–0,4 V.
+- Creature: in media l'effetto vale 1,2 V meno del suo prezzo; per rarità Uncommon −0,6, Rare −0,7, Mythic −1,5, Mutant −2,0, Legendary −3,1. Le carte rare valgono meno del prezzo, come mostra anche la scala delle rarità quasi piatta.
+- Troppo deboli: Smiler (3,2 V contro 10,1), Shuten-dōji (4,9 contro 10,1), SCP-3999 (3,6 contro 8,6), The Thorned Matriarch (1,6 contro 6,5), The Unseen Matriarch (2,2 contro 4,5). Vicine alla soglia: Wendigo (−3,7, sotto il 50%), The Rootbound Doppelganger (−3,0). La Regina dei Sentieri Perduti vale −1,2 V: il suo effetto fa perdere.
+- Troppo forte: Badge di Uscita Negata (5,5 V contro 3,1 della media degli Oggetti).
+- Terreni (tutta la carta, bonus base compreso): Devouring Abyss 20,4 V e Watching Rift 19,6 contro Echo Rift e Hollow Clearing 13,6. Nessun avviso, perché lo scarto dalla media (16,8) è sotto il 50%, ma tra le fazioni la differenza è di circa 6 V in ogni mazzo: è una delle ragioni per cui Archive e Dream erano più forti.
+- Per fazione, lo scarto totale degli effetti delle creature dal prezzo: Wound −12,0 V, Dream −13,9, Archive −19,6, Invitation −27,8.
+- Spell e Hidden: tutte nella soglia (Spell 3,7–5,3 V, Hidden 2,2–4,5).
+
+Correzioni decise il 21 novembre, una alla volta e rimisurate (proposte per i DSG; ogni numero ha il suo test):
+
+| Carta | Prima | Ora | Valore in V, prima → dopo |
+|---|---|---|---|
+| Watching Rift (Terreno, Archive) | bonus base +1 ATK, +1 DEF | +1 ATK (il secondario vale 0,2 V) | 19,6 → 13,4 |
+| Devouring Abyss (Terreno, Dream) | bonus base +1 ATK | +1 DEF (il secondario vale 7,9 V) | 20,4 → 16,5 |
+| Smiler | +2 ATK a round (max +6), avv. −2 (max −4) | +3 (max +9), avv. −3 (max −6) | 3,2 → 5,4 |
+| Shuten-dōji | +4 ATK a ferita, max +12 | +6, max +18 | 4,9 → 5,9 |
+| SCP-3999 | all'entrata e ogni due round (3°, 5°, …) | all'entrata e in ogni round dal 2° | 3,6 → 5,6 |
+| The Thorned Matriarch | 4 danni | 6 danni | 1,6 → 5,3 |
+| Wendigo | −3 DEF a fine round, max 6 | −4, max 7 | 3,7 → 5,0 |
+| The Unseen Matriarch | avv. −1 ATK | −2 ATK | 2,2 → 2,3 |
+| SCP-682 | −2 a ogni attacco dopo il primo | −3 | 1,7 → 2,8 |
+| Badge di Uscita Negata | `ps_effetto` 4,5 | 5,3 (effetto invariato) | 5,5 → 4,9 |
+
+- I Terreni si misurano anche senza effetto secondario (sonda del 21 novembre, cancellata): bonus base da solo circa 12 V con +1 ATK, 7 con +1 DEF, 13 con +2 DEF, 18 con +1/+1.
+- Il Badge solo contro gli attacchi è stato provato e tolto: valeva 5,1 V invece di 5,3, quasi tutti i suoi salvataggi sono da attacchi; si è alzato il prezzo.
+- Smiler con il solo +3 ATK restava a 3,6 V: con 4/8 sopravvive di rado a un round; il malus più grande all'avversaria lo protegge.
+- Dopo i Terreni Archive scendeva al 42,5% (Invitation–Archive 71,0%): i 14 cambi di DEF della fase 1 compensavano soprattutto i Terreni, quindi si sono tolti tutti e la fase 1 si è ritarata (vedi sopra).
+
+Misura finale (stesso catalogo dei report di oggi): 1 punto di V vale 1,45 punti per copia; **nessuna carta fuori soglia**. Restano sotto il prezzo, ma dentro la soglia, Smiler (−4,7 V), Shuten-dōji (−4,2), SCP-3999 (−3,1), Wendigo (−2,4) e The Unseen Matriarch (−2,2). In media l'effetto delle creature vale 0,9 V meno del prezzo (Legendary −2,1, Mythic −1,2, Rare −0,7, Uncommon −0,5). Terreni 12,4–16,5 V, Oggetti 2,4–4,9.

@@ -138,23 +138,23 @@ class CombatEffectsTest {
 	}
 
 	@Test
-	@DisplayName("The Thorned Matriarch: con DEF più alta sacrifica 2 e fa 4 danni; una morte a inizio round lo ferma")
+	@DisplayName("The Thorned Matriarch: con DEF più alta sacrifica 2 e fa 6 danni; una morte a inizio round lo ferma")
 	void thornedMatriarch_sacrificesWhileHigher() {
 		// Arrange
 		MatchState state = inCombat(creature("Matriarch", "Mythic", 3, 20, "THORNED_MATRIARCH"), plain("B", 2, 10));
 		CreatureInPlay matriarch = state.challenger().creature().orElseThrow();
 		resolver.startCombat(state);
 
-		// Act + Assert: round 1, 20 > 10: Matriarch 18, B 6, poi gli attacchi: B 3, Matriarch 16
+		// Act + Assert: round 1, 20 > 10: Matriarch 18, B 4, poi gli attacchi: B 1, Matriarch 16
 		resolver.resolve(state);
 		assertThat(matriarch.defense()).isEqualTo(16);
-		assertThat(enemy(state).defense()).isEqualTo(3);
+		assertThat(enemy(state).defense()).isEqualTo(1);
 
-		// Act + Assert: round 2, 16 > 3: B −1 muore a inizio round, nessuno attacca
+		// Act + Assert: round 2, 16 > 1: B −5 muore a inizio round, nessuno attacca
 		resolver.resolve(state);
 		assertThat(state.opponent().creature()).isEmpty();
 		assertThat(matriarch.defense()).isEqualTo(14);
-		assertThat(state.opponent().lifePoints()).isEqualTo(TestRules.STARTING_LIFE_POINTS - 1);
+		assertThat(state.opponent().lifePoints()).isEqualTo(TestRules.STARTING_LIFE_POINTS - 5);
 	}
 
 	@Test
@@ -257,7 +257,7 @@ class CombatEffectsTest {
 	}
 
 	@Test
-	@DisplayName("SCP-682: il primo attacco arriva intero, ogni attacco dopo fa 2 danni in meno (30 → 25, 22, 19)")
+	@DisplayName("SCP-682: il primo attacco arriva intero, ogni attacco dopo fa 3 danni in meno (30 → 25, 23, 21)")
 	void scp682_adapts() {
 		// Arrange
 		MatchState state = inCombat(creature("SCP-682", "Rare", 1, 30, "SCP_682"), plain("B", 5, 30));
@@ -268,9 +268,9 @@ class CombatEffectsTest {
 		resolver.resolve(state);
 		assertThat(scp.defense()).isEqualTo(25);
 		resolver.resolve(state);
-		assertThat(scp.defense()).isEqualTo(22);
+		assertThat(scp.defense()).isEqualTo(23);
 		resolver.resolve(state);
-		assertThat(scp.defense()).isEqualTo(19);
+		assertThat(scp.defense()).isEqualTo(21);
 	}
 
 	@Test

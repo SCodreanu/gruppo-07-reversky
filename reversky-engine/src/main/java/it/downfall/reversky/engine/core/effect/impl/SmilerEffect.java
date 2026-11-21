@@ -12,8 +12,9 @@ import it.downfall.reversky.engine.core.model.ModifierSource;
 import it.downfall.reversky.engine.core.model.StatModifier;
 
 /**
- * Smiler, Legendary (Theory of the Wound), <i>Sorriso nel buio</i>: "per ogni round in cui sopravvive, +2 ATK
- * (massimo +6) e l'avv. −2 ATK (massimo −4)".
+ * Smiler, Legendary (Theory of the Wound), <i>Sorriso nel buio</i>: "per ogni round in cui sopravvive, +3 ATK
+ * (massimo +9) e l'avv. −3 ATK (massimo −6)". Erano +2, massimo +6, e −2, massimo −4; cambiati con ENG-42
+ * (proposta del 21 novembre).
  * <p>
  * Un round conta anche se l'avversaria muore in quel round (deciso il 18 novembre); il malus allora non serve. Il bonus
  * resta contro le nuove avversarie; il malus resta sulla creatura che l'ha ricevuto e riparte da 0 contro una nuova
@@ -24,9 +25,10 @@ public final class SmilerEffect implements CreatureEffect {
 	/** Codice dell'effetto ({@code catalog_cards.effect_code}). */
 	public static final String CODE = "SMILER";
 
-	private static final int ATTACK_STEP = 2;
-	private static final int MAX_BONUS = 6;
-	private static final int MAX_PENALTY = 4;
+	private static final int ATTACK_STEP = 3;
+	private static final int MAX_BONUS = 9;
+	private static final int PENALTY_STEP = 3;
+	private static final int MAX_PENALTY = 6;
 
 	private int bonusGained;
 	private CreatureInPlay penalized;
@@ -54,10 +56,10 @@ public final class SmilerEffect implements CreatureEffect {
 		}
 		if (penaltyGiven < MAX_PENALTY) {
 			ctx.targetEnemy().ifPresent(target -> {
-				penaltyGiven += ATTACK_STEP;
-				target.addModifier(StatModifier.attack(ModifierSource.EFFECT, self.side(), -ATTACK_STEP,
+				penaltyGiven += PENALTY_STEP;
+				target.addModifier(StatModifier.attack(ModifierSource.EFFECT, self.side(), -PENALTY_STEP,
 						ModifierDuration.whileInPlay()));
-				parts.add(target.name() + " " + MatchLog.signed(-ATTACK_STEP) + " ATK (ATK "
+				parts.add(target.name() + " " + MatchLog.signed(-PENALTY_STEP) + " ATK (ATK "
 						+ MatchLog.number(target.attack()) + ")");
 			});
 		}

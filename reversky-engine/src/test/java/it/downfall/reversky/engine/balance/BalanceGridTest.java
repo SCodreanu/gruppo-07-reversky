@@ -56,10 +56,25 @@ class BalanceGridTest {
 	}
 
 	@Test
+	@DisplayName("Griglia a 30 PV (ENG-42): i tre bonus, D-04, di prova e +1 ATK contro +1 DEF, con il suo report")
+	void pv30_threeBonusesAtThirtyLifePoints() {
+		List<BalanceConfig> grid = BalanceGrid.PV30.configs();
+
+		assertThat(grid).extracting(BalanceConfig::id).containsExactly("pv30-d04", "pv30-prova", "pv30-atk1-def1");
+		assertThat(grid).allSatisfy(config -> assertThat(config.rules().startingLifePoints()).isEqualTo(30));
+		assertThat(grid.get(0)).isEqualTo(BalanceGrid.BASE.configs().get(0));
+		assertThat(grid.get(1)).isEqualTo(BalanceGrid.BASE.configs().get(1));
+		assertThat(grid.get(2)).isEqualTo(BalanceGrid.FORME.configs().getFirst());
+		assertThat(BalanceGrid.PV30.reportFile()).isEqualTo("report-30pv.md");
+		assertThat(BalanceGrid.PV30.csvFile()).isEqualTo("report-30pv-carte.csv");
+	}
+
+	@Test
 	@DisplayName("La griglia si sceglie per nome; un nome sconosciuto è un errore")
 	void byName_knownAndUnknown() {
 		assertThat(BalanceGrid.byName("base")).isEqualTo(BalanceGrid.BASE);
 		assertThat(BalanceGrid.byName("forme")).isEqualTo(BalanceGrid.FORME);
+		assertThat(BalanceGrid.byName("pv30")).isEqualTo(BalanceGrid.PV30);
 		assertThatThrownBy(() -> BalanceGrid.byName("altro")).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("altro");
 	}

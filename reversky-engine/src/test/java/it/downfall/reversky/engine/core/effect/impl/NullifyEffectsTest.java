@@ -244,9 +244,9 @@ class NullifyEffectsTest {
 		resolver.startCombat(state);
 		resolver.resolve(state);
 
-		// Assert: Smiler cresce di nuovo (3 + 2) e toglie 2 ATK a C
+		// Assert: Smiler cresce di nuovo (3 + 3, ENG-42) e toglie 3 ATK a C
 		assertThat(enemy(state).isEffectCancelled()).isFalse();
-		assertThat(enemy(state).attack()).isEqualTo(5);
+		assertThat(enemy(state).attack()).isEqualTo(6);
 		assertThat(messages(state)).filteredOn(message -> message.startsWith("Baku: devours")).hasSize(1);
 	}
 
