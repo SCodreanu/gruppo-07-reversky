@@ -1,6 +1,7 @@
 package it.downfall.reversky.api.deck.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +94,35 @@ public class DeckService {
 		Map<CatalogCard, Integer> content = deck.getContent();
 		Map<Integer, Integer> available = collectionService.getAvailableCopies(userId, idsOf(content));
 		return DeckResponse.from(deck, deckValidator.validate(activeRules(), content, available));
+	}
+
+	/**
+	 * Nomi di più mazzi in una sola query (inviti di sfida). Gli id che non esistono mancano dalla mappa.
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, String> getDeckNames(Collection<Integer> deckIds) {
+		return deckRepository.findAllById(deckIds).stream()
+			.collect(Collectors.toMap(Deck::getId, Deck::getName));
+	}
+
+	/**
+	 * Un mio mazzo che deve essere valido adesso, per giocare (inviti e accettazione delle sfide, docs/sfide). Le carte,
+	 * con rarità e fazioni, sono già caricate per la fotografia della partita.
+	 *
+	 * @throws DeckNotFoundException    se il mazzo non esiste o è di un altro utente
+	 * @throws InvalidDeckException     se il mazzo oggi non rispetta le regole (anche il possesso delle carte)
+	 * @throws NoActiveRuleSetException se nessun rule set è attivo
+	 */
+	@Transactional(readOnly = true)
+	public Deck getPlayableDeck(Integer userId, Integer deckId) {
+		Deck deck = getOwnDeck(userId, deckId);
+		Map<CatalogCard, Integer> content = deck.getContent();
+		Map<Integer, Integer> available = collectionService.getAvailableCopies(userId, idsOf(content));
+		List<DeckViolation> violations = deckValidator.validate(activeRules(), content, available);
+		if (!violations.isEmpty()) {
+			throw new InvalidDeckException(violations);
+		}
+		return deck;
 	}
 
 	/**

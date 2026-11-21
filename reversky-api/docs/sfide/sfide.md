@@ -342,3 +342,10 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
 - `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
 - Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. `GET /api/v1/effects` non è ancora usato (API-36).
+
+### Inviti amichevoli (API-37 #107, API-38 #108, API-39 #109)
+
+- `battle/controller/BattleInviteController`, `battle/service/BattleInviteService`: `POST /battle-invites` con `{ opponentId, deckId }`, `GET /battle-invites?box=incoming|outgoing` (in attesa, dal più recente), `POST /battle-invites/{id}/reject` e `DELETE /battle-invites/{id}` (eliminano la riga, `204`).
+- Controlli in quest'ordine: non a se stessi (`422 BATTLE_SELF_CHALLENGE`), avversario esistente e attivo (`404 USER_NOT_FOUND`), amici (`403 NOT_FRIENDS`, `FriendshipService.areFriends`), mazzo mio (`404 DECK_NOT_FOUND`) e valido adesso, possesso compreso (`422 DECK_INVALID` con `violations`, `DeckService.getPlayableDeck`), nessun altro invito in attesa verso lo stesso avversario (`409 INVITE_ALREADY_PENDING`, anche con due richieste contemporanee). Un invito nella direzione opposta è un'altra sfida.
+- Risposta: `id` (UUID), `challenger` e `opponent` `{ id, username }`, `createdAt` e `deck { id, name }` **solo per lo sfidante**: l'avversario scopre il mazzo nella partita (deciso il 21 novembre).
+- Rifiuto e ritiro di un invito che non è mio o non è più in attesa: `404 BATTLE_INVITE_NOT_FOUND`. Un `box` diverso: `400 INVALID_BOX`.
