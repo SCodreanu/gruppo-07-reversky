@@ -61,20 +61,6 @@ class OpenApiDocumentationTest {
 				.andExpect(jsonPath(SIMULATIONS + ".responses['500'].content['*/*']").doesNotExist());
 	}
 
-	@Test
-	@DisplayName("Il documento OpenAPI descrive GET /api/v1/effects: 200 con un array di EffectResponse in JSON")
-	void apiDocs_describeEffectsEndpoint() throws Exception {
-		String effects = "$.paths['/api/v1/effects'].get";
-		mockMvc.perform(get("/v3/api-docs"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(effects + ".summary").isNotEmpty())
-				.andExpect(jsonPath(effects + ".responses['200'].content['application/json'].schema.type")
-						.value("array"))
-				.andExpect(jsonPath(effects + ".responses['200'].content['application/json'].schema.items['$ref']")
-						.value("#/components/schemas/EffectResponse"))
-				.andExpect(jsonPath(effects + ".responses['200'].content['*/*']").doesNotExist());
-	}
-
 	@ParameterizedTest(name = "{0}")
 	@CsvSource({
 			"basic, examples/01-base-esempio-regolamento.json, CHALLENGER_WIN, 1",

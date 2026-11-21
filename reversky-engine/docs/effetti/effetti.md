@@ -295,7 +295,7 @@ Il registro si crea una volta all'avvio (`EngineConfiguration`) e poi si legge s
 
 Una creatura può non avere codice (le Common): allora gioca senza effetto. Se ha un codice, deve essere registrato come effetto di creatura, come per le altre carte (`UNKNOWN_EFFECT`, deciso il 18 novembre): gli effetti delle creature non ancora implementati (i `P2`) danno `400` finché non arrivano, e intanto l'API lascia vuoto `effect_code`.
 
-L'elenco dei codici è esposto da `GET /api/v1/effects`: il backoffice dell'API lo usa per sapere quali effetti si possono assegnare a una carta.
+L'engine non espone l'elenco dei codici (`ENG-43`): i codici che il backoffice può assegnare a una carta stanno nella tabella `effects` dell'API (migrazione `V13__create_effects.sql`, `API-36`), da tenere allineata a mano con `withAllEffects()` ([api-engine](../api-engine/api-engine.md#elenco-degli-effetti-niente-get-apiv1effects)).
 
 ## Ricetta: aggiungere un nuovo effetto
 

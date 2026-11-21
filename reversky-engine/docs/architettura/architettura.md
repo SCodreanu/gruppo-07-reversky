@@ -65,7 +65,7 @@ core/
 ### `web` — l'adattatore HTTP
 
 Spring Boot. Contiene solo:
-- `SimulationController` (`POST /api/v1/simulations`) ed `EffectController` (`GET /api/v1/effects`, letto dall'`EffectRegistry`);
+- `SimulationController` (`POST /api/v1/simulations`), l'unico endpoint dell'engine (`ENG-43`);
 - DTO di richiesta/risposta in `web/dto` (record con le annotazioni di validazione e i messaggi in inglese, come nell'API):
   `SimulationRequest`, `RulesRequest`, `FactionRequest`, `FactionBonusRequest`, `PlayerRequest`, `CardRequest`,
   `SimulationResponse`, `PlayerResultResponse`, `MatchEventResponse`;

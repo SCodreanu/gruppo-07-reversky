@@ -50,9 +50,6 @@ ognuna con il risultato atteso.
 ```bat
 :: Simulare una partita (cmd)
 curl -s -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\08-partita-completa-seed-42.json
-
-:: Effetti implementati (le regole non stanno nell'engine: arrivano nella richiesta)
-curl -s http://localhost:8081/api/v1/effects
 ```
 
 ```powershell
