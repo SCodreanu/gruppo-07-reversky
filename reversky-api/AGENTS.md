@@ -153,6 +153,13 @@ Collezione (`collection/`):
 
 - `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
 
+Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
+
+- backoffice `GET/POST/PUT /api/v1/admin/packs`, `/activate`, `/deactivate` con slot e bonus nella stessa richiesta; un pacchetto si attiva solo se ogni slot trova carte (anche con il ripiego);
+- `GET /api/v1/packs` pubblico (con il token anche `remainingPurchases`), `POST /api/v1/packs/{id}/purchase`, `POST /api/v1/inventory/packs/{packId}/open`; `GET /inventory` elenca i pacchetti da aprire;
+- estrazione in `PackDrawer`/`CardPool` senza database, casualità dal bean `RandomGenerator`; `pack_tags` ignorati finché non c'è API-21;
+- `V12__insert_base_pack.sql` mette in vendita il *Base Pack*. Dettagli in [docs/pacchetti](docs/pacchetti/pacchetti.md#comportamento-già-implementato) e [docs/backoffice](docs/backoffice/backoffice.md#pacchetti-comportamento-già-implementato-api-18-88-api-19-89-api-20-90).
+
 Catalogo iniziale e dati di prova (API-55, API-25):
 
 - `V11__insert_initial_catalog.sql` carica le 120 carte di `catalogo-finale.csv` (ENG-42); Spell e Hidden sono Rare e non contano nel `max_per_deck`. Immagini segnaposto e testi in italiano finché i DSG non danno quelli definitivi.

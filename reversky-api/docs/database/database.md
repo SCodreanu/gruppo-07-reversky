@@ -54,7 +54,7 @@ Dati inseriti con le migrazioni:
 | inventario e riga `SIGNUP` per gli utenti registrati prima di API-17 (su un database vuoto non inserisce niente) | `V10__create_missing_inventories.sql`, task API-17 (#87) |
 | tag delle fazioni | migrazione del task API-13 (#83) |
 | catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
-| pacchetto base | migrazione dedicata del task API-63 (#133) |
+| pacchetto base attivo: *Base Pack*, 100 crediti **[DA CONFERMARE]**, 3 Common, 2 Uncommon, 2 Rare, bonus Mythic 10%, Legendary 5%, Mutant 2,5% | `V12__insert_base_pack.sql`, task API-63 (#133) |
 | utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
 
 ### Catalogo iniziale (`V11`)
