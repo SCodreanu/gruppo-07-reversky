@@ -130,7 +130,7 @@ Fazioni in `TestCards`: Creature, Terreni e Oggetti ricevono `faction()`, una fa
 
 Rarità in `TestCards` (task #80):
 
-- `common()`, `uncommon()` e `rare()` cercano la rarità con `sorting_order` 1, 2 e 3 e, se manca, la creano; con il seed di #85 troveranno quella del seed. `create(name, type)` usa Rare per Terreni e Oggetti e Common per gli altri tipi.
+- `common()`, `uncommon()` e `rare()` cercano la rarità con `sorting_order` 1, 2 e 3 e, se manca, la creano; con il seed di `V9` (#85) trovano quella del seed. `create(name, type)` usa Rare per Terreni e Oggetti e Common per gli altri tipi.
 - I test **non** devono contare sui valori di queste tre rarità (`deck_limit`, `max_per_deck`), perché il seed li può cambiare: per una rarità diversa si usa `createRarity()`, con `sorting_order` casuale ≥ 1000 (quindi la ammettono solo le creature).
 - Per lo stesso motivo i test sulle rarità (`RarityServiceIT`, `AdminRarityControllerIT`, `RarityControllerIT`) usano `sorting_order` casuali ≥ 1000 e lasciano liberi 1, 2 e 3. Così `@Import` resta `{TestcontainersConfiguration.class, TestUsers.class}` come negli altri IT e Spring riusa lo stesso contesto (e lo stesso container); con un `@Import` diverso ne avvierebbe un secondo. Esempi in `CatalogCardServiceIT`.
 
@@ -144,4 +144,6 @@ Le carte non si cancellano mai, quindi restano nel database tra un test e l'altr
 
 `TestCollections` aiuta i test della collezione: `give(user, card, quantity)` passa per `CollectionService.addCards` dentro una transazione, come farebbe il chiamante; `quantity(user, card)` legge le copie con SQL; `createDeck(user, cards)` e `createTradeOffer(requester, recipient, status, offerer, card, quantity)` scrivono mazzi e scambi con SQL finché non esistono le entità. Si crea con `new TestCollections(collectionService, transactionTemplate, jdbcTemplate)`. Il riepilogo si controlla su una rarità creata dal test, perché il catalogo cresce con gli altri test.
 
-Il rule set attivo è uno solo per tutto il database e altre funzionalità lo leggono (crediti di benvenuto, mazzi, sfide). Un test che attiva o disattiva rule set chiama `rememberActive()` in `@BeforeEach` e `restoreActive()` in `@AfterEach`, così il rule set attivo prima del test (il seed di #85) torna attivo per gli altri test. Esempi in `RuleSetServiceIT`.
+Il rule set attivo è uno solo per tutto il database e altre funzionalità lo leggono (crediti di benvenuto, mazzi, sfide). Un test che attiva o disattiva rule set chiama `rememberActive()` in `@BeforeEach` e `restoreActive()` in `@AfterEach`, così il rule set attivo prima del test (il `1.0` del seed di `V9`, #85) torna attivo per gli altri test. Esempi in `RuleSetServiceIT`.
+
+`ReferenceDataMigrationIT` controlla i dati di `V9`: rarità, fazioni (id 1–4), rule set `1.0` e `GET /rules` senza bonus di fazione. Cerca le righe del seed per ordine, id o versione, perché gli altri test aggiungono rarità e fazioni.
