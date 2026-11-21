@@ -51,6 +51,16 @@ public class FriendshipService {
 			.toList();
 	}
 
+	/**
+	 * I due utenti sono amici (amicizia {@code ACCEPTED}, in qualunque direzione)? Serve alle sfide amichevoli.
+	 */
+	@Transactional(readOnly = true)
+	public boolean areFriends(Integer userId, Integer otherUserId) {
+		return friendshipRepository.findBetween(userId, otherUserId)
+			.map(friendship -> friendship.getStatus() == FriendshipStatus.ACCEPTED)
+			.orElse(false);
+	}
+
 	/** GET /friends/requests?box=incoming: PENDING dove sono il recipient. */
 	@Transactional(readOnly = true)
 	public List<FriendRequestResponse> findIncomingRequests(Integer currentUserId) {

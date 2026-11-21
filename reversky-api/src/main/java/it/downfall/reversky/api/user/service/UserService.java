@@ -1,8 +1,11 @@
 package it.downfall.reversky.api.user.service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +72,15 @@ public class UserService {
 	public User getById(Integer id) {
 		return userRepository.findById(id)
 			.orElseThrow(() -> new UserNotFoundException());
+	}
+
+	/**
+	 * Username di più utenti in una sola query (liste delle sfide). Gli id che non esistono mancano dalla mappa.
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, String> getUsernames(Collection<Integer> ids) {
+		return userRepository.findAllById(ids).stream()
+			.collect(Collectors.toMap(User::getId, User::getUsername));
 	}
 
 	/**

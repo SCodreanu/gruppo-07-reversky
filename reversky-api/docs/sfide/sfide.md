@@ -334,3 +334,50 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Rifiuto o ritiro di un invito → riga eliminata.
 - Eliminazione del mazzo di un invito già accettato → ok, `challenger_deck_id` diventa `NULL`, la partita resta leggibile.
 - Due utenti appena affrontati in classificata → non vengono abbinati di nuovo per 10 minuti, anche se sono gli unici in coda.
+
+## Comportamento già implementato
+
+### EngineClient (API-35, #105)
+
+- `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
+- `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
+- Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. `GET /api/v1/effects` non è ancora usato (API-36).
+
+### Inviti amichevoli (API-37 #107, API-38 #108, API-39 #109)
+
+- `battle/controller/BattleInviteController`, `battle/service/BattleInviteService`: `POST /battle-invites` con `{ opponentId, deckId }`, `GET /battle-invites?box=incoming|outgoing` (in attesa, dal più recente), `POST /battle-invites/{id}/reject` e `DELETE /battle-invites/{id}` (eliminano la riga, `204`).
+- Controlli in quest'ordine: non a se stessi (`422 BATTLE_SELF_CHALLENGE`), avversario esistente e attivo (`404 USER_NOT_FOUND`), amici (`403 NOT_FRIENDS`, `FriendshipService.areFriends`), mazzo mio (`404 DECK_NOT_FOUND`) e valido adesso, possesso compreso (`422 DECK_INVALID` con `violations`, `DeckService.getPlayableDeck`), nessun altro invito in attesa verso lo stesso avversario (`409 INVITE_ALREADY_PENDING`, anche con due richieste contemporanee). Un invito nella direzione opposta è un'altra sfida.
+- Risposta: `id` (UUID), `challenger` e `opponent` `{ id, username }`, `createdAt` e `deck { id, name }` **solo per lo sfidante**: l'avversario scopre il mazzo nella partita (deciso il 21 novembre).
+- Rifiuto e ritiro di un invito che non è mio o non è più in attesa: `404 BATTLE_INVITE_NOT_FOUND`. Un `box` diverso: `400 INVALID_BOX`.
+
+### Accettazione, simulazione e storico (API-40 #110, API-41 #111, API-42 #112, API-43 #113)
+
+- `POST /battle-invites/{id}/accept` con `{ deckId }` (`BattleService.accept`), nei tre passi descritti sopra con `TransactionTemplate`: preparazione (blocca l'invito, amici, entrambi i mazzi validi adesso, seed dal bean `RandomGenerator`, rule set attivo, fazioni e bonus di fazione, fotografia dei mazzi, invito `ACCEPTED`), chiamata a `EngineClient` fuori transazione, salvataggio (blocca la partita e non scrive niente se è già completata). Nessun credito né rating per le amichevoli.
+- La richiesta all'engine si costruisce **solo** da ciò che è salvato nella partita (`BattleService.toRequest`): seed, regole, fazioni e bonus in `battle_stats`, mazzi dalle fotografie, una voce per copia. Così il retry manda la stessa identica partita.
+- Risposta (anche di `GET /battles/{id}`) dal punto di vista di chi guarda (deciso il 21 novembre): `id`, `mode`, `createdAt`, `completed`, `result`, `outcome` (`WIN`, `LOSS`, `DRAW`), `mySide` (`CHALLENGER` o `OPPONENT`, come il campo `side` del log), `endReason`, `totalRounds`, `rulesVersion`, `seed`, `me` e `opponent` (`id`, `username`, `finalLifePoints`, `creaturesDefeated`, `deck` come era alla preparazione) e `log`.
+- Engine non disponibile: `503 ENGINE_UNAVAILABLE` con `battleId`; la partita resta salvata con `completed: false` e si completa con il retry.
+- `GET /battles?mode=FRIENDLY|RANKED&page&size`: dalla più recente, con `battleId`, `createdAt`, `mode`, `opponent`, `completed`, `outcome`, `endReason`, punti vita finali, `rounds`, `ratingDelta` (null per le amichevoli). La query legge solo i campi che servono (`BattleHistoryRow`), senza log né mazzi.
+
+| Caso | Status | `code` |
+|---|---|---|
+| invito inesistente o non per me | `404` | `BATTLE_INVITE_NOT_FOUND` |
+| invito già accettato | `409` | `BATTLE_INVITE_ALREADY_ACCEPTED` |
+| non più amici | `403` | `NOT_FRIENDS` |
+| uno dei due mazzi non valido: l'invito resta in attesa, nessuna partita | `422` | `DECK_INVALID` |
+| partita inesistente o non mia | `404` | `BATTLE_NOT_FOUND` |
+
+### Retry (API-44 #114)
+
+- `POST /battles/{id}/retry` (`BattleService.retry`): solo i due giocatori (`404 BATTLE_NOT_FOUND` per gli altri). Rimanda all'engine la richiesta costruita dalla partita salvata (stesso seed, stesse fotografie dei mazzi, stesse regole e bonus), anche se nel frattempo il catalogo o il rule set sono cambiati; il salvataggio blocca la riga e non riscrive una partita già completata.
+- Una partita già completata si restituisce così com'è con `200`, senza chiamare l'engine (deciso il 21 novembre: il retry è idempotente). Engine ancora spento: `503 ENGINE_UNAVAILABLE` con `battleId`.
+
+### Integrazione reale con l'engine (API-54 #124)
+
+Provata a mano il 21 novembre con l'engine di `backend_engine` (commit `1719c94`, ENG-42, 92 effetti) sulla porta 8081 e l'API con il profilo `dev` sulla 8080:
+
+1. login di `alice` e `bob` (dati di prova, vedi [database](../database/database.md#dati-di-prova-solo-sviluppo)); `alice` sfida `bob` con *Alice Invitation*, `bob` accetta con *Bob Wound*;
+2. risposta `200`: partita completata in 40 round (`NO_CREATURES_LEFT`), 378 eventi nel log da `MATCH_STARTED` a `MATCH_ENDED`, `outcome` `LOSS` per bob e `WIN` nello storico di alice;
+3. con l'engine spento, l'accettazione di un secondo invito risponde `503 ENGINE_UNAVAILABLE` con `battleId` e la partita resta `completed: false`; riacceso l'engine, `POST /battles/{id}/retry` la completa (43 round), e un secondo retry restituisce la stessa partita senza richiamare l'engine;
+4. nello stesso giro: acquisto e apertura del *Base Pack* (7 carte, 100 crediti).
+
+Il catalogo di `V11` usa i codici effetto di ENG-42: l'API va usata con l'engine di `backend_engine`, non con la copia più vecchia che c'è in `backend_api`. Il test di contratto automatico resta ENG-24.

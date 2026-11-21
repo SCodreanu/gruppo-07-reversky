@@ -153,6 +153,11 @@ Collezione (`collection/`):
 
 - `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
 
+Sfide amichevoli (`battle/`, API-35, 37–44):
+
+- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`;
+- inviti tra amici con un mazzo valido (`/api/v1/battle-invites`, `box=incoming|outgoing`, `reject`, ritiro con `DELETE`); `accept` prepara la partita (seed dal server, fotografia dei mazzi, regole in `battle_stats`), fa simulare l'engine fuori transazione e salva l'esito; `GET /api/v1/battles` (storico senza log), `GET /api/v1/battles/{id}` (dettaglio dal punto di vista di chi guarda, con log) e `POST /api/v1/battles/{id}/retry` con la stessa identica partita. Classificate, Elo e crediti delle partite non ci sono ancora. Dettagli in [docs/sfide](docs/sfide/sfide.md#comportamento-già-implementato).
+
 Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
 
 - backoffice `GET/POST/PUT /api/v1/admin/packs`, `/activate`, `/deactivate` con slot e bonus nella stessa richiesta; un pacchetto si attiva solo se ogni slot trova carte (anche con il ripiego);
