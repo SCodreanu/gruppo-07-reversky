@@ -334,3 +334,11 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Rifiuto o ritiro di un invito → riga eliminata.
 - Eliminazione del mazzo di un invito già accettato → ok, `challenger_deck_id` diventa `NULL`, la partita resta leggibile.
 - Due utenti appena affrontati in classificata → non vengono abbinati di nuovo per 10 minuti, anche se sono gli unici in coda.
+
+## Comportamento già implementato
+
+### EngineClient (API-35, #105)
+
+- `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
+- `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
+- Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. `GET /api/v1/effects` non è ancora usato (API-36).
