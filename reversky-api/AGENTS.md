@@ -123,7 +123,12 @@ L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni 
 - errori in formato ProblemDetail, Swagger con il pulsante Authorize;
 - test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
 
-Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`.
+Inventario e crediti (`inventory/`, API-16 e API-17):
+
+- la registrazione crea l'inventario con i crediti di benvenuto del rule set attivo e la riga `SIGNUP`; `GET /api/v1/users/me` restituisce anche `credits`;
+- `InventoryService` è l'unico che modifica il saldo (`addCredits`, `spendCredits`, `lockInventories` in ordine di `user_id`), sempre con la riga di `credit_transactions`; `GET /api/v1/inventory` con il saldo;
+- `POST /api/v1/admin/users/{id}/credits` per la correzione dal backoffice, con motivo obbligatorio (per ora solo nel log, l'audit arriva con API-52);
+- `V10__create_missing_inventories.sql` crea l'inventario per gli utenti registrati prima. Dettagli in [docs/crediti](docs/crediti/crediti.md#comportamento-già-implementato-api-16-86-api-17-87).
 
 Catalogo (`catalog/`):
 

@@ -5,6 +5,7 @@ import static it.downfall.reversky.api.support.TestUsers.uniqueSuffix;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -25,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
@@ -51,6 +53,12 @@ import it.downfall.reversky.api.auth.repository.PasswordResetTokenRepository;
 import it.downfall.reversky.api.auth.repository.RefreshTokenRepository;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.TokenHasher;
+import it.downfall.reversky.api.inventory.entity.CreditReason;
+import it.downfall.reversky.api.inventory.entity.CreditTransaction;
+import it.downfall.reversky.api.inventory.repository.CreditTransactionRepository;
+import it.downfall.reversky.api.inventory.service.InventoryService;
+import it.downfall.reversky.api.ruleset.exception.NoActiveRuleSetException;
+import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.exception.UserNotFoundException;
@@ -90,6 +98,18 @@ class AuthServiceIT {
 
 	@Autowired
 	private TestUsers testUsers;
+
+	@Autowired
+	private InventoryService inventoryService;
+
+	@Autowired
+	private CreditTransactionRepository creditTransactionRepository;
+
+	@Autowired
+	private RuleSetService ruleSetService;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
 	@MockitoBean
 	private EmailSender emailSender;
@@ -471,6 +491,45 @@ class AuthServiceIT {
 		// Assert
 		verify(emailSender).sendEmailVerification(eq(email), any());
 		assertThat(userService.findByEmail(email).orElseThrow().isEmailVerified()).isFalse();
+	}
+
+	@Test
+	@DisplayName("Registration creates the inventory with the signup bonus and its SIGNUP row")
+	void register_newUser_createsInventoryWithSignupBonus() {
+		// Arrange
+		String suffix = uniqueSuffix();
+		String email = suffix + "@example.com";
+		int signupBonus = ruleSetService.getActiveRuleSet().getSignupBonus();
+
+		// Act
+		authService.register(new RegisterRequest("user_" + suffix, email, PASSWORD, true, true));
+
+		// Assert
+		Integer userId = userService.findByEmail(email).orElseThrow().getId();
+		assertThat(inventoryService.getCredits(userId)).isEqualTo(signupBonus);
+		assertThat(creditTransactionRepository.findAllByUserIdOrderByIdAsc(userId))
+			.extracting(CreditTransaction::getAmount, CreditTransaction::getReason)
+			.containsExactly(tuple(signupBonus, CreditReason.SIGNUP));
+	}
+
+	@Test
+	@DisplayName("Without an active rule set registration fails and the user is not created")
+	void register_noActiveRuleSet_throwsAndCreatesNoUser() {
+		// Arrange: SQL diretto, il service non ha un'operazione "nessun rule set attivo"
+		Integer activeId = ruleSetService.getActiveRuleSet().getId();
+		String suffix = uniqueSuffix();
+		String email = suffix + "@example.com";
+		RegisterRequest request = new RegisterRequest("user_" + suffix, email, PASSWORD, true, true);
+		jdbcTemplate.update("UPDATE rule_sets SET is_active = false WHERE id = ?", activeId);
+
+		// Act + Assert
+		try {
+			assertThatThrownBy(() -> authService.register(request))
+				.isInstanceOf(NoActiveRuleSetException.class);
+			assertThat(userService.findByEmail(email)).isEmpty();
+		} finally {
+			jdbcTemplate.update("UPDATE rule_sets SET is_active = true WHERE id = ?", activeId);
+		}
 	}
 
 	@Test

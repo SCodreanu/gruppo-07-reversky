@@ -51,6 +51,7 @@ Dati inseriti con le migrazioni:
 |---|---|
 | ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
 | rule set `1.0` attivo, rarità e fazioni (nessun bonus di fazione finché non si decide D-04) | `V9__insert_reference_data.sql`, task API-15 (#85); valori in [decisioni](../decisioni/decisioni.md) |
+| inventario e riga `SIGNUP` per gli utenti registrati prima di API-17 (su un database vuoto non inserisce niente) | `V10__create_missing_inventories.sql`, task API-17 (#87) |
 | tag delle fazioni | migrazione del task API-13 (#83) |
 | catalogo iniziale (120 carte, dal *Catalogo completo 120 carte*, vedi [decisioni](../decisioni/decisioni.md)) | migrazione dedicata del task API-55 (#125) |
 | pacchetto base | migrazione dedicata del task API-63 (#133) |
