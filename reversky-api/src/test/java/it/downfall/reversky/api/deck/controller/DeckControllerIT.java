@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +27,21 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.jayway.jsonpath.JsonPath;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
+import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
+import it.downfall.reversky.api.catalog.repository.RarityRepository;
+import it.downfall.reversky.api.collection.service.CollectionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
+import it.downfall.reversky.api.ruleset.service.RuleSetService;
+import it.downfall.reversky.api.support.TestCards;
+import it.downfall.reversky.api.support.TestCollections;
+import it.downfall.reversky.api.support.TestDecks;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 
@@ -58,9 +68,35 @@ class DeckControllerIT {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
+	@Autowired
+	private CatalogCardRepository catalogCardRepository;
+
+	@Autowired
+	private RarityRepository rarityRepository;
+
+	@Autowired
+	private FactionRepository factionRepository;
+
+	@Autowired
+	private CollectionService collectionService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private RuleSetService ruleSetService;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa il contesto già avviato
 	@MockitoBean
 	private EmailSender emailSender;
+
+	private TestDecks testDecks;
+
+	@BeforeEach
+	void setUp() {
+		TestCards testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
+		testDecks = new TestDecks(testCards, new TestCollections(collectionService, transactionTemplate, jdbcTemplate), ruleSetService);
+	}
 
 	@Test
 	@DisplayName("Without a token the decks return 401")
@@ -220,12 +256,13 @@ class DeckControllerIT {
 			.andExpect(jsonPath("$.paths['/api/v1/decks'].get.security[0]").value(hasKey("bearerAuth")));
 	}
 
+	// Ogni richiesta porta un contenuto valido nuovo, con le carte già nella collezione dell'utente
 	private ResultActions create(User user, String name) throws Exception {
-		return mockMvc.perform(as(user, post(BASE_PATH)).contentType(MediaType.APPLICATION_JSON).content(body(name)));
+		return mockMvc.perform(as(user, post(BASE_PATH)).contentType(MediaType.APPLICATION_JSON).content(body(user, name)));
 	}
 
 	private ResultActions update(User user, Integer deckId, String name) throws Exception {
-		return mockMvc.perform(as(user, put(BASE_PATH + "/" + deckId)).contentType(MediaType.APPLICATION_JSON).content(body(name)));
+		return mockMvc.perform(as(user, put(BASE_PATH + "/" + deckId)).contentType(MediaType.APPLICATION_JSON).content(body(user, name)));
 	}
 
 	private Integer createdId(User user, String name) throws Exception {
@@ -233,8 +270,8 @@ class DeckControllerIT {
 		return JsonPath.read(response, "$.id");
 	}
 
-	private static String body(String name) {
-		return "{\"name\": \"" + name + "\", \"cards\": []}";
+	private String body(User user, String name) {
+		return TestDecks.requestJson(name, testDecks.validContent(user));
 	}
 
 	private Integer queueTickets(User user) {

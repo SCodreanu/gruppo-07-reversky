@@ -83,13 +83,14 @@ Codici di errore (usati dal frontend):
 
 | Codice | Esempio di messaggio |
 |---|---|
+| `DECK_CARD_NOT_FOUND` | The card 999 does not exist |
 | `DECK_SIZE` | The deck has 28 cards, 30 are required |
-| `DECK_CREATURE_COUNT` | 20 creatures are required, there are 19 |
-| `DECK_SPELL_COUNT` | 6 Spells are required, there are 7 |
-| `DECK_HIDDEN_COUNT` | 2 Hidden cards are required, there is 1 |
+| `DECK_CREATURE_COUNT` | The deck needs exactly 20 creatures, it has 19 |
+| `DECK_SPELL_COUNT` | The deck needs exactly 6 Spells, it has 7 |
+| `DECK_HIDDEN_COUNT` | The deck needs exactly 2 Hidden cards, it has 1 |
 | `DECK_HIDDEN_SUBTYPE_LIMIT` | Too many SURVIVAL Hidden cards (3/2) |
-| `DECK_ITEM_COUNT` | Exactly 1 Item is required |
-| `DECK_TERRAIN_COUNT` | Exactly 1 Terrain is required |
+| `DECK_ITEM_COUNT` | The deck needs exactly 1 Item, it has 0 |
+| `DECK_TERRAIN_COUNT` | The deck needs exactly 1 Terrain, it has 2 |
 | `DECK_COPY_LIMIT` | Too many copies of 'Hounds' (2/1) |
 | `DECK_BALANCE_LIMIT` | Too many Legendary cards (3/2) |
 | `DECK_NOT_OWNED` | You have 1 available copy of 'Kappa', the deck contains 2 |
@@ -166,3 +167,12 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - `PUT` sostituisce tutto il contenuto con `Deck.replaceCards`, che aggiorna le righe esistenti, elimina quelle tolte (`orphanRemoval`) e aggiunge le nuove.
 - Una carta che non esiste rende il mazzo non valido: `422 DECK_INVALID` con `violations` (codice `DECK_CARD_NOT_FOUND`, `cardId`), e niente viene salvato. `violations` è un campo in più del ProblemDetail, scritto da `GlobalExceptionHandler` tramite `BusinessException.getExtraProperties()`.
 - `GET /decks` restituisce `id`, `name`, `cardCount` (somma delle copie); `GET /decks/{id}` e le risposte di `POST` e `PUT` anche `cards`, in ordine di id della carta, ognuna con tutti i dati del catalogo (`card`) e `quantity`.
+
+### Validazione (API-28, #98)
+
+- `deck/service/DeckValidator` (bean senza stato, nessun accesso al database) riceve `DeckRules` (composizione del rule set attivo) e le carte con rarità e originale già caricate, e restituisce **tutte** le violazioni in quest'ordine: carte totali, composizione per tipo, Hidden per sottotipo, copie (varianti sommate all'originale, limite `min(deck_limit, copy_limit)` dell'originale), bilanciamento per rarità (`max_per_deck`, Terreno e Oggetto contano tra le Rare), carte disattivate. Dentro ogni controllo, carte in ordine di id e rarità di `sorting_order`.
+- Al salvataggio (`POST`, `PUT`) un mazzo con violazioni è `422 DECK_INVALID` con `violations` e non si salva; le carte inesistenti (`DECK_CARD_NOT_FOUND`) sono in testa alla lista.
+- `valid` si ricalcola a ogni lettura: in `GET /decks` per ogni mazzo, in `GET /decks/{id}` insieme a `violations` (lista vuota se valido). Un mazzo salvato diventa non valido, ad esempio, se una sua carta viene disattivata o se il rule set attivo cambia.
+- `POST /decks/validate` con `{ "cards": [...] }` risponde sempre `200 { valid, violations }` (stesse regole del salvataggio, niente salvato); una carta ripetuta è `400`.
+- `GET /decks/rules`: composizione del rule set attivo (`deckSize`, `deckCreatures`, `deckSpells`, `deckHidden`, `deckItems`, `deckTerrains`, `maxHiddenSurvival`, `maxHiddenDamage`) e `rarities` con `deckLimit` e `maxPerDeck`, dalla più comune. Senza rule set attivo, `404 NO_ACTIVE_RULE_SET`.
+- I test (`DeckValidatorTest`) coprono ogni regola nel caso valido e al limite; `support/TestDecks` crea contenuti validi per il rule set attivo con le carte già nella collezione.

@@ -7,6 +7,7 @@ import it.downfall.reversky.api.deck.entity.Deck;
  * Un mazzo nella lista dei miei mazzi (GET /api/v1/decks), senza le carte.
  *
  * @param cardCount numero totale di carte, sommando le copie
+ * @param valid     ricalcolato a ogni lettura: un mazzo salvato può diventare non valido (regole o carte cambiate)
  */
 public record DeckSummaryResponse(
 
@@ -17,10 +18,13 @@ public record DeckSummaryResponse(
 	String name,
 
 	@Schema(example = "30")
-	int cardCount
+	int cardCount,
+
+	@Schema(example = "true")
+	boolean valid
 ) {
 
-	public static DeckSummaryResponse from(Deck deck) {
-		return new DeckSummaryResponse(deck.getId(), deck.getName(), deck.getCardCount());
+	public static DeckSummaryResponse from(Deck deck, boolean valid) {
+		return new DeckSummaryResponse(deck.getId(), deck.getName(), deck.getCardCount(), valid);
 	}
 }

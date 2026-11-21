@@ -1,7 +1,6 @@
 package it.downfall.reversky.api.deck.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -10,9 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,22 +28,29 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.jayway.jsonpath.JsonPath;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
+import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
+import it.downfall.reversky.api.collection.service.CollectionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
+import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import it.downfall.reversky.api.support.TestCards;
+import it.downfall.reversky.api.support.TestCollections;
+import it.downfall.reversky.api.support.TestDecks;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 
 /**
  * Contenuto dei mazzi via HTTP (API-27): carte e copie, sostituzione in modifica, carte inesistenti o ripetute.
+ * Le regole del mazzo sono in DeckValidatorTest e DeckValidationControllerIT.
  */
 @Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
@@ -73,15 +80,28 @@ class DeckContentControllerIT {
 	@Autowired
 	private FactionRepository factionRepository;
 
+	@Autowired
+	private CollectionService collectionService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private RuleSetService ruleSetService;
+
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa il contesto già avviato
 	@MockitoBean
 	private EmailSender emailSender;
 
 	private TestCards testCards;
+	private TestCollections testCollections;
+	private TestDecks testDecks;
 
 	@BeforeEach
 	void setUp() {
 		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
+		testCollections = new TestCollections(collectionService, transactionTemplate, jdbcTemplate);
+		testDecks = new TestDecks(testCards, testCollections, ruleSetService);
 	}
 
 	@Test
@@ -89,55 +109,68 @@ class DeckContentControllerIT {
 	void create_withCards_savesContent() throws Exception {
 		// Arrange
 		User user = testUsers.create();
-		CatalogCard first = testCards.createCreature();
-		CatalogCard second = testCards.createCreature();
+		Map<CatalogCard, Integer> content = testDecks.validContent(user);
+		CatalogCard lowest = content.keySet().stream().min(Comparator.comparing(CatalogCard::getId)).orElseThrow();
+		int total = content.values().stream().mapToInt(Integer::intValue).sum();
 
 		// Act
-		Integer deckId = createdId(user, "Content", Map.of(second, 1, first, 2));
+		Integer deckId = createdId(user, "Content", content);
 
 		// Assert
 		mockMvc.perform(as(user, get(BASE_PATH + "/" + deckId)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.cardCount").value(3))
-			.andExpect(jsonPath("$.cards[*].card.id").value(contains(first.getId(), second.getId())))
-			.andExpect(jsonPath("$.cards[0].quantity").value(2))
-			.andExpect(jsonPath("$.cards[0].card.name").value(first.getName()))
+			.andExpect(jsonPath("$.cardCount").value(total))
+			.andExpect(jsonPath("$.cards.length()").value(content.size()))
+			.andExpect(jsonPath("$.cards[0].card.id").value(lowest.getId()))
+			.andExpect(jsonPath("$.cards[0].quantity").value(content.get(lowest)))
+			.andExpect(jsonPath("$.cards[0].card.name").value(lowest.getName()))
 			.andExpect(jsonPath("$.cards[0].card.rarity.name").isNotEmpty());
 		mockMvc.perform(as(user, get(BASE_PATH)))
-			.andExpect(jsonPath("$[0].cardCount").value(3))
+			.andExpect(jsonPath("$[0].cardCount").value(total))
 			.andExpect(jsonPath("$[0].cards").doesNotExist());
 	}
 
 	@Test
 	@DisplayName("Updating replaces the content in place: kept cards change quantity, removed ones go, new ones arrive")
 	void update_keepingSomeCards_replacesContent() throws Exception {
-		// Arrange
+		// Arrange: con 20 creature TestDecks crea sei creature da 3 copie e una da 2. Una da 3 esce, una nuova da 3
+		// entra, una da 3 scende a 2 e quella da 2 sale a 3: il totale resta lo stesso e il mazzo resta valido
 		User user = testUsers.create();
-		CatalogCard kept = testCards.createCreature();
-		CatalogCard removed = testCards.createCreature();
+		Map<CatalogCard, Integer> content = testDecks.validContent(user);
+		Integer deckId = createdId(user, "Evolving", content);
+		List<CatalogCard> fullCreatures = creaturesWith(content, 3);
+		CatalogCard removed = fullCreatures.get(0);
+		CatalogCard reduced = fullCreatures.get(1);
+		CatalogCard raised = creaturesWith(content, 2).get(0);
 		CatalogCard added = testCards.createCreature();
-		Integer deckId = createdId(user, "Evolving", Map.of(kept, 1, removed, 2));
+		testCollections.give(user, added, 3);
+		testCollections.give(user, raised, 1);
+
+		Map<CatalogCard, Integer> changed = new LinkedHashMap<>(content);
+		changed.remove(removed);
+		changed.put(reduced, 2);
+		changed.put(raised, 3);
+		changed.put(added, 3);
 
 		// Act
-		save(user, put(BASE_PATH + "/" + deckId), "Evolving", Map.of(kept, 3, added, 1))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.cardCount").value(4));
+		save(user, put(BASE_PATH + "/" + deckId), "Evolving", changed).andExpect(status().isOk());
 
 		// Assert
-		assertThat(rows(deckId)).containsExactlyInAnyOrderEntriesOf(Map.of(kept.getId(), 3, added.getId(), 1));
+		Map<Integer, Integer> expected = new LinkedHashMap<>();
+		changed.forEach((card, quantity) -> expected.put(card.getId(), quantity));
+		assertThat(rows(deckId)).containsExactlyInAnyOrderEntriesOf(expected);
 	}
 
 	@Test
-	@DisplayName("A card that does not exist returns 422 DECK_INVALID with DECK_CARD_NOT_FOUND, and nothing is saved")
+	@DisplayName("A card that does not exist returns 422 DECK_INVALID with DECK_CARD_NOT_FOUND first, and nothing is saved")
 	void create_unknownCard_returns422AndSavesNothing() throws Exception {
 		// Arrange
 		User user = testUsers.create();
-		CatalogCard real = testCards.createCreature();
-		String json = "{\"name\": \"Ghost\", \"cards\": [{\"cardId\": " + real.getId() + ", \"quantity\": 1}, "
-			+ "{\"cardId\": " + Integer.MAX_VALUE + ", \"quantity\": 1}]}";
+		String cards = TestDecks.toJson(testDecks.validContent(user));
+		String json = "{\"name\": \"Ghost\", \"cards\": " + cards.replace("]", ", {\"cardId\": " + Integer.MAX_VALUE + ", \"quantity\": 1}]") + "}";
 
 		// Act + Assert
-		mockMvc.perform(as(user, post(BASE_PATH)).contentType(MediaType.APPLICATION_JSON).content(json))
+		postJson(user, json)
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("DECK_INVALID"))
 			.andExpect(jsonPath("$.violations[0].code").value("DECK_CARD_NOT_FOUND"))
@@ -150,8 +183,8 @@ class DeckContentControllerIT {
 	void update_unknownCard_leavesDeckUnchanged() throws Exception {
 		// Arrange
 		User user = testUsers.create();
-		CatalogCard card = testCards.createCreature();
-		Integer deckId = createdId(user, "Stable", Map.of(card, 2));
+		Map<CatalogCard, Integer> content = testDecks.validContent(user);
+		Integer deckId = createdId(user, "Stable", content);
 		String json = "{\"name\": \"Renamed\", \"cards\": [{\"cardId\": " + Integer.MAX_VALUE + ", \"quantity\": 1}]}";
 
 		// Act
@@ -161,7 +194,7 @@ class DeckContentControllerIT {
 		// Assert
 		mockMvc.perform(as(user, get(BASE_PATH + "/" + deckId)))
 			.andExpect(jsonPath("$.name").value("Stable"))
-			.andExpect(jsonPath("$.cardCount").value(2));
+			.andExpect(jsonPath("$.cards.length()").value(content.size()));
 	}
 
 	@Test
@@ -191,13 +224,19 @@ class DeckContentControllerIT {
 	void delete_deckWithCards_deletesRows() throws Exception {
 		// Arrange
 		User user = testUsers.create();
-		Integer deckId = createdId(user, "Doomed", Map.of(testCards.createCreature(), 2));
+		Integer deckId = createdId(user, "Doomed", testDecks.validContent(user));
 
 		// Act
 		mockMvc.perform(as(user, delete(BASE_PATH + "/" + deckId))).andExpect(status().isNoContent());
 
 		// Assert
 		assertThat(rows(deckId)).isEmpty();
+	}
+
+	private static List<CatalogCard> creaturesWith(Map<CatalogCard, Integer> content, int copies) {
+		return content.keySet().stream()
+			.filter(card -> card.getCardType() == CardType.CREATURE && content.get(card) == copies)
+			.toList();
 	}
 
 	private Integer createdId(User user, String name, Map<CatalogCard, Integer> cards) throws Exception {
@@ -209,11 +248,7 @@ class DeckContentControllerIT {
 
 	private ResultActions save(User user, MockHttpServletRequestBuilder request, String name, Map<CatalogCard, Integer> cards)
 			throws Exception {
-		String cardsJson = cards.entrySet().stream()
-			.map(entry -> "{\"cardId\": %d, \"quantity\": %d}".formatted(entry.getKey().getId(), entry.getValue()))
-			.collect(Collectors.joining(", "));
-		String json = "{\"name\": \"" + name + "\", \"cards\": [" + cardsJson + "]}";
-		return mockMvc.perform(as(user, request).contentType(MediaType.APPLICATION_JSON).content(json));
+		return mockMvc.perform(as(user, request).contentType(MediaType.APPLICATION_JSON).content(TestDecks.requestJson(name, cards)));
 	}
 
 	private ResultActions postJson(User user, String json) throws Exception {

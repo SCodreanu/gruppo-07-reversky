@@ -58,6 +58,13 @@ public class Deck {
 		return Collections.unmodifiableList(cards);
 	}
 
+	/** Copie per carta, per la validazione. */
+	public Map<CatalogCard, Integer> getContent() {
+		Map<CatalogCard, Integer> content = new LinkedHashMap<>();
+		cards.forEach(row -> content.put(row.getCard(), row.getQuantity()));
+		return content;
+	}
+
 	/** Numero totale di carte, sommando le copie. */
 	public int getCardCount() {
 		return cards.stream().mapToInt(DeckCard::getQuantity).sum();
