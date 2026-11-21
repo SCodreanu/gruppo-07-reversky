@@ -370,3 +370,14 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 
 - `POST /battles/{id}/retry` (`BattleService.retry`): solo i due giocatori (`404 BATTLE_NOT_FOUND` per gli altri). Rimanda all'engine la richiesta costruita dalla partita salvata (stesso seed, stesse fotografie dei mazzi, stesse regole e bonus), anche se nel frattempo il catalogo o il rule set sono cambiati; il salvataggio blocca la riga e non riscrive una partita già completata.
 - Una partita già completata si restituisce così com'è con `200`, senza chiamare l'engine (deciso il 21 novembre: il retry è idempotente). Engine ancora spento: `503 ENGINE_UNAVAILABLE` con `battleId`.
+
+### Integrazione reale con l'engine (API-54 #124)
+
+Provata a mano il 21 novembre con l'engine di `backend_engine` (commit `1719c94`, ENG-42, 92 effetti) sulla porta 8081 e l'API con il profilo `dev` sulla 8080:
+
+1. login di `alice` e `bob` (dati di prova, vedi [database](../database/database.md#dati-di-prova-solo-sviluppo)); `alice` sfida `bob` con *Alice Invitation*, `bob` accetta con *Bob Wound*;
+2. risposta `200`: partita completata in 40 round (`NO_CREATURES_LEFT`), 378 eventi nel log da `MATCH_STARTED` a `MATCH_ENDED`, `outcome` `LOSS` per bob e `WIN` nello storico di alice;
+3. con l'engine spento, l'accettazione di un secondo invito risponde `503 ENGINE_UNAVAILABLE` con `battleId` e la partita resta `completed: false`; riacceso l'engine, `POST /battles/{id}/retry` la completa (43 round), e un secondo retry restituisce la stessa partita senza richiamare l'engine;
+4. nello stesso giro: acquisto e apertura del *Base Pack* (7 carte, 100 crediti).
+
+Il catalogo di `V11` usa i codici effetto di ENG-42: l'API va usata con l'engine di `backend_engine`, non con la copia più vecchia che c'è in `backend_api`. Il test di contratto automatico resta ENG-24.
