@@ -304,7 +304,11 @@ public final class EffectRegistry {
 	}
 
 	/**
-	 * Tutti i codici registrati, con il tipo di carta, nell'ordine di registrazione (per {@code GET /api/v1/effects}).
+	 * Tutti i codici registrati, con il tipo di carta, nell'ordine di registrazione.
+	 * <p>
+	 * L'engine non espone più questo elenco (ENG-43): i codici validi stanno nella tabella {@code effects}
+	 * dell'API (migrazione {@code V13__create_effects.sql}), da tenere allineata a mano con
+	 * {@link #withAllEffects()}.
 	 *
 	 * @return mappa non modificabile codice → tipo di carta
 	 */
