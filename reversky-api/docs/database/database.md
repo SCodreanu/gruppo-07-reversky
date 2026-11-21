@@ -55,6 +55,7 @@ Dati inseriti con le migrazioni:
 | tag delle fazioni | migrazione del task API-13 (#83) |
 | catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
 | pacchetto base attivo: *Base Pack*, 100 crediti **[DA CONFERMARE]**, 3 Common, 2 Uncommon, 2 Rare, bonus Mythic 10%, Legendary 5%, Mutant 2,5% | `V12__insert_base_pack.sql`, task API-63 (#133) |
+| tabella `effects` con i 92 effetti del registro dell'engine e chiave esterna `fk_catalog_cards_effect`: prima struttura nuova dopo la baseline, decisa il 21 novembre | `V13__create_effects.sql`, task API-36 (#106): vedi [Effetti](#effetti-sottotipi-e-tag) |
 | utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
 
 ### Catalogo iniziale (`V11`)
@@ -128,6 +129,7 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 | `factions` | fazioni: nome, `emblem_path` (emblema) e `description` (testo mostrato ai giocatori, facoltativo) |
 | `faction_bonuses` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
 | `catalog_cards` | carte: tipo (Creatura, Spell, Hidden, Terreno, Oggetto), `subtype` (solo Spell e Hidden), `effect_code`, rarità, fazione (obbligatoria per Creature, Terreni e Oggetti, nulla per Spell e Hidden, che sono condivise) e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit` (nullo = solo il limite della rarità), `variant_of_id` (versione evento di un'altra carta), `is_active`, immagine, `effect_description`, `flavor_text`. Il nome è univoco tra le carte originali |
+| `effects` | effetti implementati dall'engine (`code`, `applies_to`): gli unici `effect_code` ammessi, ognuno per un solo tipo di carta. Sola lettura, si aggiorna con una migrazione (V13) |
 | `tags` / `card_tags` / `faction_tags` | etichette libere per carte e fazioni, usate dai filtri dei pacchetti |
 
 ### Collezione e mazzi → [collezione](../collezione/collezione.md), [mazzi](../mazzi/mazzi.md)
@@ -185,12 +187,19 @@ Effetto e sottotipo di una carta sono **colonne** di `catalog_cards`, così il d
 
 | Dato | Dove | Regola |
 |---|---|---|
-| Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta |
+| Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta. Deve essere nella tabella `effects` con lo stesso tipo della carta (`fk_catalog_cards_effect`, V13) |
 | Sottotipo di una Spell | `subtype` | `DAMAGE`, `SHIELD` o `BURN` (obbligatorio) |
 | Sottotipo di una Hidden | `subtype` | `SURVIVAL` o `DAMAGE` (obbligatorio) |
 | Sottotipo di Creature, Terreni e Oggetti | `subtype` | sempre nullo |
 | Fazione | `faction_id` | obbligatoria per Creature, Terreni e Oggetti; sempre nulla per Spell e Hidden (`chk_catalog_cards_faction_matches_type`) |
 | Etichette | `tags` | libere, in maiuscolo (`^[A-Z0-9_]+$`), usate dai filtri dei pacchetti (`pack_tags`) |
+
+### Tabella `effects` (V13, API-36)
+
+L'elenco degli effetti validi vive **nell'API**: l'engine si chiama solo per simulare (`POST /api/v1/simulations`), mai per sapere quali effetti esistono (deciso il 21 novembre). `V13` copia i 92 codici di `EffectRegistry.withAllEffects()` dell'engine (commit `1719c94` di `backend_engine`, ENG-42), ognuno con il suo tipo di carta (`applies_to`).
+
+- Chiave esterna composta `fk_catalog_cards_effect`: `catalog_cards (effect_code, type)` → `effects (code, applies_to)`, con l'unicità `uq_effects_code_applies_to` come destinazione. Il database rifiuta un codice inesistente o di un altro tipo; con `effect_code` nullo (creature senza effetto) non si controlla niente.
+- Un effetto nuovo è codice Java nell'engine: arriva con una migrazione nuova nello stesso momento, mai dal backoffice. Tabella e registro dell'engine vanno tenuti uguali a mano.
 
 ## Mappatura JPA
 

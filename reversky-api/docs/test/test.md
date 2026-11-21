@@ -124,7 +124,7 @@ class DeckServiceIT {
 }
 ```
 
-`TestCards` esiste già: crea carte valide (`create(name, type)`, `create(name, type, rarity)`, `createCreature()`, `createVariantOf(original)`, `deactivate(card)`) e nomi univoci con `TestCards.uniqueName(...)`. Finché non c'è `POST /admin/cards` (API-14) è l'unico modo di creare carte nei test. **Non** è un `@TestComponent`: si crea nel test con `new TestCards(catalogCardRepository, rarityRepository, factionRepository)`.
+`TestCards` esiste già: crea carte valide (`create(name, type)`, `create(name, type, rarity)`, `createCreature()`, `createVariantOf(original)`, `deactivate(card)`) e nomi univoci con `TestCards.uniqueName(...)`. Finché non c'è `POST /admin/cards` (API-14) è l'unico modo di creare carte nei test. L'effetto è un codice vero della tabella `effects` per il tipo della carta (`TestCards.effectCodeFor(type)`, o le costanti `CREATURE_EFFECT`, `SPELL_EFFECT`, `HIDDEN_EFFECT`, `TERRAIN_EFFECT`, `ITEM_EFFECT`): la chiave esterna `fk_catalog_cards_effect` (V13) rifiuta un codice inventato. **Non** è un `@TestComponent`: si crea nel test con `new TestCards(catalogCardRepository, rarityRepository, factionRepository)`.
 
 Fazioni in `TestCards`: Creature, Terreni e Oggetti ricevono `faction()`, una fazione con nome univoco creata alla prima chiamata e poi riusata dalla stessa istanza; Spell e Hidden nessuna, come chiede `chk_catalog_cards_faction_matches_type`. Per una seconda fazione si usa `createFaction()`.
 

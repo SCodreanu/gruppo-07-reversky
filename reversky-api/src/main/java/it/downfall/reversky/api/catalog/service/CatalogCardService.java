@@ -21,6 +21,7 @@ import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardEffectException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardFactionException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
@@ -48,6 +49,7 @@ public class CatalogCardService {
 	private final CatalogCardRepository catalogCardRepository;
 	private final RarityRepository rarityRepository;
 	private final FactionRepository factionRepository;
+	private final EffectService effectService;
 
 	/**
 	 * Carte attive, con filtri facoltativi (GET /cards, pubblico).
@@ -133,7 +135,8 @@ public class CatalogCardService {
 	 * Tutti i controlli avvengono prima di modificare la carta.
 	 *
 	 * Per un'originale prima si controllano i riferimenti (rarità e fazioni esistono), poi le regole del tipo
-	 * (statistiche, sottotipo, effetto, fazioni), poi la rarità ammessa e infine il nome (deciso il 20 novembre, #81).
+	 * (statistiche, sottotipo, effetto, fazioni), poi la rarità ammessa e il nome (deciso il 20 novembre, #81).
+	 * Per ultimo l'effetto, che deve essere nella tabella {@code effects} per quel tipo di carta (API-36).
 	 *
 	 * @throws CatalogCardNotFoundException         se la carta non esiste
 	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale valida
@@ -141,6 +144,7 @@ public class CatalogCardService {
 	 * @throws InvalidCardFactionException          se la prima o la seconda fazione non esiste
 	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazioni non vanno con il tipo
 	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
+	 * @throws InvalidCardEffectException           se l'effetto non esiste o è di un altro tipo di carta
 	 */
 	@Transactional
 	public CatalogCardResponse update(Integer id, CatalogCardUpdateRequest request) {
@@ -163,6 +167,12 @@ public class CatalogCardService {
 
 		Integer excludedId = (original != null) ? original.getId() : card.getId();
 		checkNameAvailable(request.name(), excludedId);
+
+		// Ultimo controllo (API-36): l'effetto è tra quelli della tabella effects e del tipo della carta. Una creatura
+		// senza effetto non ha niente da controllare; una variante copia l'effetto dall'originale.
+		if (original == null && request.effectCode() != null) {
+			effectService.validateForType(request.type(), request.effectCode());
+		}
 
 		card.changeVariantOf(original);
 		if (original != null) {

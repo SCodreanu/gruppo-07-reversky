@@ -84,7 +84,7 @@ class CardControllerIT {
 			.andExpect(jsonPath("$.content[0].name").value(card.getName()))
 			.andExpect(jsonPath("$.content[0].type").value("SPELL"))
 			.andExpect(jsonPath("$.content[0].subtype").value("BURN"))
-			.andExpect(jsonPath("$.content[0].effectCode").value(TestCards.EFFECT_CODE))
+			.andExpect(jsonPath("$.content[0].effectCode").value(TestCards.SPELL_EFFECT))
 			.andExpect(jsonPath("$.content[0].rarity.id").value(testCards.rare().getId()))
 			.andExpect(jsonPath("$.content[0].rarity.name").value(testCards.rare().getName()))
 			.andExpect(jsonPath("$.content[0].active").value(true))

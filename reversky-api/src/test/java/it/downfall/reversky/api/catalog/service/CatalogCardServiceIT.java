@@ -25,6 +25,7 @@ import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardEffectException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardFactionException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
@@ -226,7 +227,7 @@ class CatalogCardServiceIT {
 		Rarity rare = testCards.rare();
 		String newName = uniqueName("Renamed");
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.SPELL, rare.getId(), null, null, CardSubtype.SHIELD,
-				"SHIELD_TWO", null, null, null, 2, "Shields for 2", "New flavor");
+				"VEIL_OF_ANCHORED", null, null, null, 2, "Shields for 2", "New flavor");
 
 		// Act
 		CatalogCardResponse response = catalogCardService.update(card.getId(), request);
@@ -240,7 +241,7 @@ class CatalogCardServiceIT {
 		assertThat(reloaded.getName()).isEqualTo(newName);
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.SPELL);
 		assertThat(reloaded.getCardSubtype()).isEqualTo(CardSubtype.SHIELD);
-		assertThat(reloaded.getEffectCode()).isEqualTo("SHIELD_TWO");
+		assertThat(reloaded.getEffectCode()).isEqualTo("VEIL_OF_ANCHORED");
 		assertThat(reloaded.getEffectDescription()).isEqualTo("Shields for 2");
 		assertThat(reloaded.getAtk()).isNull();
 		assertThat(reloaded.getDef()).isNull();
@@ -258,7 +259,7 @@ class CatalogCardServiceIT {
 		CatalogCard secondVariant = testCards.createVariantOf(original);
 		Rarity newRarity = testCards.createRarity();
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(original.getName(), CardType.CREATURE, newRarity.getId(), testCards.faction().getId(), null, null,
-				"NEW_EFFECT", null, 11, 12, 1, "New effect text", "Original flavor");
+				TestCards.CREATURE_EFFECT, null, 11, 12, 1, "New effect text", "Original flavor");
 
 		// Act
 		catalogCardService.update(original.getId(), request);
@@ -269,7 +270,7 @@ class CatalogCardServiceIT {
 			assertThat(reloaded.getRarity().getId()).isEqualTo(newRarity.getId());
 			assertThat(reloaded.getAtk()).isEqualTo(11);
 			assertThat(reloaded.getDef()).isEqualTo(12);
-			assertThat(reloaded.getEffectCode()).isEqualTo("NEW_EFFECT");
+			assertThat(reloaded.getEffectCode()).isEqualTo(TestCards.CREATURE_EFFECT);
 			assertThat(reloaded.getEffectDescription()).isEqualTo("New effect text");
 			assertThat(reloaded.getCopyLimit()).isEqualTo(1);
 		}
@@ -350,7 +351,7 @@ class CatalogCardServiceIT {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rarityIdFor(CardType.SPELL), null, null, CardSubtype.BURN,
-				TestCards.EFFECT_CODE, null, 1, 1, null, null, null);
+				TestCards.effectCodeFor(CardType.SPELL), null, 1, 1, null, null, null);
 
 		// Act + Assert
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
@@ -364,7 +365,7 @@ class CatalogCardServiceIT {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rarityIdFor(CardType.SPELL), null, null, null,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.SPELL), null, null, null, null, null, null);
 
 		// Act + Assert
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
@@ -378,7 +379,7 @@ class CatalogCardServiceIT {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, rarityIdFor(CardType.HIDDEN), null, null, CardSubtype.BURN,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.HIDDEN), null, null, null, null, null, null);
 
 		// Act + Assert
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
@@ -622,9 +623,9 @@ class CatalogCardServiceIT {
 		CatalogCard card = testCards.createCreature();
 		Integer commonId = testCards.common().getId();
 		CatalogCardUpdateRequest spell = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, commonId, null, null, CardSubtype.BURN,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.SPELL), null, null, null, null, null, null);
 		CatalogCardUpdateRequest hidden = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.uncommon().getId(), null, null, CardSubtype.SURVIVAL,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.HIDDEN), null, null, null, null, null, null);
 
 		// Act + Assert
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), spell))
@@ -645,9 +646,9 @@ class CatalogCardServiceIT {
 
 		// Act
 		CatalogCardResponse spellResponse = catalogCardService.update(spell.getId(), new CatalogCardUpdateRequest(spell.getName(),
-				CardType.SPELL, testCards.rare().getId(), null, null, CardSubtype.BURN, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+				CardType.SPELL, testCards.rare().getId(), null, null, CardSubtype.BURN, TestCards.effectCodeFor(CardType.SPELL), null, null, null, null, null, null));
 		CatalogCardResponse hiddenResponse = catalogCardService.update(hidden.getId(), new CatalogCardUpdateRequest(hidden.getName(),
-				CardType.HIDDEN, testCards.rare().getId(), null, null, CardSubtype.SURVIVAL, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+				CardType.HIDDEN, testCards.rare().getId(), null, null, CardSubtype.SURVIVAL, TestCards.effectCodeFor(CardType.HIDDEN), null, null, null, null, null, null));
 
 		// Assert
 		assertThat(spellResponse.rarity().id()).isEqualTo(testCards.rare().getId());
@@ -660,9 +661,9 @@ class CatalogCardServiceIT {
 		// Arrange
 		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
 		CatalogCardUpdateRequest common = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, testCards.common().getId(), testCards.faction().getId(), null, null,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.TERRAIN), null, null, null, null, null, null);
 		CatalogCardUpdateRequest rare = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN, testCards.rare().getId(), testCards.faction().getId(), null, null,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.TERRAIN), null, null, null, null, null, null);
 
 		// Act + Assert
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), common))
@@ -753,7 +754,7 @@ class CatalogCardServiceIT {
 			.isInstanceOf(CatalogCardRulesViolatedException.class)
 			.hasMessageContaining("A CREATURE card must have a faction");
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), new CatalogCardUpdateRequest(card.getName(),
-				CardType.ITEM, testCards.rare().getId(), null, null, null, TestCards.EFFECT_CODE, null, null, null, null,
+				CardType.ITEM, testCards.rare().getId(), null, null, null, TestCards.effectCodeFor(CardType.ITEM), null, null, null, null,
 				null, null)))
 			.isInstanceOf(CatalogCardRulesViolatedException.class)
 			.hasMessageContaining("A ITEM card must have a faction");
@@ -767,10 +768,10 @@ class CatalogCardServiceIT {
 		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
 		Integer factionId = testCards.faction().getId();
 		CatalogCardUpdateRequest spellWithFaction = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL,
-				testCards.common().getId(), factionId, null, CardSubtype.BURN, TestCards.EFFECT_CODE, null, null, null,
+				testCards.common().getId(), factionId, null, CardSubtype.BURN, TestCards.effectCodeFor(CardType.SPELL), null, null, null,
 				null, null, null);
 		CatalogCardUpdateRequest hiddenWithSecond = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN,
-				testCards.common().getId(), null, factionId, CardSubtype.SURVIVAL, TestCards.EFFECT_CODE, null, null,
+				testCards.common().getId(), null, factionId, CardSubtype.SURVIVAL, TestCards.effectCodeFor(CardType.HIDDEN), null, null,
 				null, null, null, null);
 
 		// Act + Assert
@@ -855,7 +856,7 @@ class CatalogCardServiceIT {
 		CatalogCard card = testCards.createCreature();
 		CatalogCard variant = testCards.createVariantOf(card, uniqueName("Event"));
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.rare().getId(), null, null, CardSubtype.SURVIVAL,
-				TestCards.EFFECT_CODE, null, null, null, null, null, null);
+				TestCards.effectCodeFor(CardType.HIDDEN), null, null, null, null, null, null);
 
 		// Act
 		catalogCardService.update(card.getId(), request);
@@ -875,6 +876,95 @@ class CatalogCardServiceIT {
 		// Act + Assert: creatura senza DEF e rarità inesistente
 		assertThatThrownBy(() -> catalogCardService.update(card.getId(), creatureRequest(card.getName(), null, MISSING_ID, 7, null)))
 			.isInstanceOf(InvalidCardRarityException.class);
+	}
+
+	// --- effetto (API-36, docs/backoffice regola 2) ---
+
+	@Test
+	@DisplayName("An effect code that is not in the effects table is rejected with CARD_EFFECT_INVALID and nothing changes")
+	void update_unknownEffect_throwsAndKeepsCard() {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), spellRequest(card.getName(), "NOT_IN_ENGINE")))
+			.isInstanceOf(InvalidCardEffectException.class)
+			.hasMessage("The effect NOT_IN_ENGINE is not implemented by the game engine")
+			.extracting("code").isEqualTo("CARD_EFFECT_INVALID");
+		assertThat(reload(card).getEffectCode()).isEqualTo(TestCards.SPELL_EFFECT);
+	}
+
+	@Test
+	@DisplayName("An effect code of another card type is rejected")
+	void update_effectOfAnotherType_throws() {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), spellRequest(card.getName(), TestCards.CREATURE_EFFECT)))
+			.isInstanceOf(InvalidCardEffectException.class)
+			.hasMessage("The effect " + TestCards.CREATURE_EFFECT + " is for CREATURE cards, not SPELL");
+	}
+
+	@Test
+	@DisplayName("Changing only the type keeps the old effect code, which must also fit the new type")
+	void update_typeChangedSameEffect_throws() {
+		// Arrange: Terreno che diventa Oggetto con il codice del Terreno
+		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.ITEM,
+				testCards.rare().getId(), testCards.faction().getId(), null, null, TestCards.TERRAIN_EFFECT, null, null,
+				null, null, null, null);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), request))
+			.isInstanceOf(InvalidCardEffectException.class)
+			.hasMessage("The effect " + TestCards.TERRAIN_EFFECT + " is for TERRAIN cards, not ITEM");
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.TERRAIN);
+	}
+
+	@Test
+	@DisplayName("A creature may get a creature effect")
+	void update_creatureWithCreatureEffect_isAccepted() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.CREATURE,
+				rarityIdFor(CardType.CREATURE), testCards.faction().getId(), null, null, TestCards.CREATURE_EFFECT, null, 7,
+				8, null, null, "Flavor");
+
+		// Act
+		catalogCardService.update(card.getId(), request);
+
+		// Assert
+		assertThat(reload(card).getEffectCode()).isEqualTo(TestCards.CREATURE_EFFECT);
+	}
+
+	@Test
+	@DisplayName("A variant ignores the effect code of the request, even an unknown one, and copies the original's")
+	void update_variantWithUnknownEffect_copiesOriginal() {
+		// Arrange
+		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		CatalogCard card = testCards.createCreature();
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(original.getName(), CardType.SPELL,
+				testCards.rare().getId(), null, null, CardSubtype.BURN, "NOT_IN_ENGINE", original.getId(), null, null,
+				null, null, null);
+
+		// Act
+		catalogCardService.update(card.getId(), request);
+
+		// Assert
+		assertThat(reload(card).getEffectCode()).isEqualTo(TestCards.SPELL_EFFECT);
+	}
+
+	@Test
+	@DisplayName("The effect is checked last: a name already used gives CARD_NAME_TAKEN first")
+	void update_nameTakenAndUnknownEffect_nameWins() {
+		// Arrange
+		CatalogCard other = testCards.createCreature();
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), spellRequest(other.getName(), "NOT_IN_ENGINE")))
+			.isInstanceOf(CatalogCardNameAlreadyUsedException.class);
 	}
 
 	// --- findById e filtro per rarità ---
@@ -1010,6 +1100,12 @@ class CatalogCardServiceIT {
 	private CatalogCardUpdateRequest creatureRequest(String name, Integer factionId, Integer secondaryFactionId) {
 		return new CatalogCardUpdateRequest(name, CardType.CREATURE, rarityIdFor(CardType.CREATURE), factionId,
 				secondaryFactionId, null, null, null, 7, 8, null, null, "Flavor");
+	}
+
+	// Spell Rare valida, originale, con l'effetto indicato
+	private CatalogCardUpdateRequest spellRequest(String name, String effectCode) {
+		return new CatalogCardUpdateRequest(name, CardType.SPELL, testCards.rare().getId(), null, null, CardSubtype.BURN,
+				effectCode, null, null, null, null, null, null);
 	}
 
 	// Una rarità ammessa dal tipo: Rare per i Terreni, Common per gli altri (ATK 7 e DEF 8 stanno

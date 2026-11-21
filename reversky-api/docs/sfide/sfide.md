@@ -341,7 +341,7 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 
 - `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
 - `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
-- Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. `GET /api/v1/effects` non è ancora usato (API-36).
+- Engine spento, timeout o risposta di errore (anche `400`) → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita. L'API chiama **solo** `POST /api/v1/simulations`: gli effetti validi stanno nella tabella `effects` dell'API (API-36, vedi [backoffice](../backoffice/backoffice.md#effetti-comportamento-già-implementato-task-api-36-106)), e `GET /api/v1/effects` dell'engine non si usa.
 
 ### Inviti amichevoli (API-37 #107, API-38 #108, API-39 #109)
 

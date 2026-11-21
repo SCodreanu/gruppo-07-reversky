@@ -56,14 +56,14 @@ public class AdminCardController {
 		return ResponseEntity.ok(catalogCardService.findAll(type, name, rarityId, factionId, active, pageable));
 	}
 
-	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants, rarity included. " + "SPELL, HIDDEN, TERRAIN and ITEM cards must be Rare, and a creature's ATK and DEF must not exceed the maximums of its rarity (no check when the rarity has no maximum). " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original.")
+	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants, rarity included. " + "SPELL, HIDDEN, TERRAIN and ITEM cards must be Rare, and a creature's ATK and DEF must not exceed the maximums of its rarity (no check when the rarity has no maximum). " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original. " + "The effect code must be one of GET /admin/effects for the card type.")
 	@ApiResponse(responseCode = "200", description = "Card updated")
 	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@ApiResponse(responseCode = "404", description = "Card not found")
 	@ApiResponse(responseCode = "409", description = "Name already used by another original card")
-	@ApiResponse(responseCode = "422", description = "Stats, subtype or effect do not match the card type, ATK or DEF exceed the rarity maximums, the rarity does not exist or is not allowed for the type, or variantOfId does not point to an original card")
+	@ApiResponse(responseCode = "422", description = "Stats, subtype or effect do not match the card type, ATK or DEF exceed the rarity maximums, the rarity does not exist or is not allowed for the type, variantOfId does not point to an original card, or the effect code is unknown or belongs to another card type (CARD_EFFECT_INVALID)")
 	@PutMapping("/{id}")
 	public ResponseEntity<CatalogCardResponse> update(@PathVariable Integer id, @Valid @RequestBody CatalogCardUpdateRequest request) {
 		return ResponseEntity.ok(catalogCardService.update(id, request));

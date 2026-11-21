@@ -176,7 +176,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("An item is saved and read back: ITEM exists in the card_type enum")
 	void save_item_readsBack() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, testCards.rare(), faction, null, uniqueName("Item"), CardType.ITEM, null, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, testCards.rare(), faction, null, uniqueName("Item"), CardType.ITEM, null, TestCards.effectCodeFor(CardType.ITEM),
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act
@@ -203,7 +203,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a spell with a faction")
 	void save_spellWithFaction_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.effectCodeFor(CardType.SPELL),
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -225,7 +225,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects an item with a subtype")
 	void save_itemWithSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.ITEM, CardSubtype.DAMAGE, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, faction, null, uniqueName("Bad"), CardType.ITEM, CardSubtype.DAMAGE, TestCards.effectCodeFor(CardType.ITEM),
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -258,7 +258,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a spell with stats")
 	void save_spellWithStats_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, CardSubtype.BURN, TestCards.effectCodeFor(CardType.SPELL),
 				TestCards.IMAGE_PATH, null, null, 1, 1, null);
 
 		// Act + Assert
@@ -269,7 +269,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a spell without a subtype")
 	void save_spellWithoutSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, null, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.SPELL, null, TestCards.effectCodeFor(CardType.SPELL),
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
@@ -280,7 +280,7 @@ class CatalogCardRepositoryIT {
 	@DisplayName("The database rejects a hidden card with a spell subtype")
 	void save_hiddenWithSpellSubtype_isRejected() {
 		// Arrange
-		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.HIDDEN, CardSubtype.BURN, TestCards.EFFECT_CODE,
+		CatalogCard card = new CatalogCard(null, common, null, null, uniqueName("Bad"), CardType.HIDDEN, CardSubtype.BURN, TestCards.effectCodeFor(CardType.HIDDEN),
 				TestCards.IMAGE_PATH, null, null, null, null, null);
 
 		// Act + Assert
