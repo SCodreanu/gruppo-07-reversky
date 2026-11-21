@@ -1,7 +1,9 @@
 package it.downfall.reversky.api.deck.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,7 @@ class DeckValidatorTest {
 	@Test
 	@DisplayName("A deck with exactly the required composition is valid")
 	void validate_validDeck_returnsNoViolations() {
-		assertThat(validator.validate(RULES, validDeck())).isEmpty();
+		assertThat(validate(validDeck())).isEmpty();
 	}
 
 	// --- carte totali e composizione ---
@@ -54,24 +56,24 @@ class DeckValidatorTest {
 		deck.put(creature, deck.get(creature) - 1);
 
 		// Act + Assert
-		assertThat(codes(validator.validate(RULES, deck))).containsExactly(DeckValidator.SIZE, DeckValidator.CREATURE_COUNT);
-		assertThat(validator.validate(RULES, deck).get(0).message()).isEqualTo("The deck has 29 cards, 30 are required");
-		assertThat(validator.validate(RULES, deck).get(1).message()).isEqualTo("The deck needs exactly 20 creatures, it has 19");
+		assertThat(codes(validate(deck))).containsExactly(DeckValidator.SIZE, DeckValidator.CREATURE_COUNT);
+		assertThat(validate(deck).get(0).message()).isEqualTo("The deck has 29 cards, 30 are required");
+		assertThat(validate(deck).get(1).message()).isEqualTo("The deck needs exactly 20 creatures, it has 19");
 	}
 
 	@Test
 	@DisplayName("One card more of each category is reported with its own code")
 	void validate_oneMoreOfEachCategory_reportsEachCode() {
-		assertThat(codes(validator.validate(RULES, withExtra(CardType.CREATURE, common, null))))
+		assertThat(codes(validate(withExtra(CardType.CREATURE, common, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.CREATURE_COUNT);
-		assertThat(codes(validator.validate(RULES, withExtra(CardType.SPELL, common, CardSubtype.BURN))))
+		assertThat(codes(validate(withExtra(CardType.SPELL, common, CardSubtype.BURN))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.SPELL_COUNT);
-		assertThat(codes(validator.validate(RULES, withExtra(CardType.ITEM, rare, null))))
+		assertThat(codes(validate(withExtra(CardType.ITEM, rare, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.ITEM_COUNT);
-		assertThat(codes(validator.validate(RULES, withExtra(CardType.TERRAIN, rare, null))))
+		assertThat(codes(validate(withExtra(CardType.TERRAIN, rare, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.TERRAIN_COUNT);
 		// Una terza Hidden SURVIVAL supera anche il massimo del sottotipo
-		assertThat(codes(validator.validate(RULES, withExtra(CardType.HIDDEN, common, CardSubtype.SURVIVAL))))
+		assertThat(codes(validate(withExtra(CardType.HIDDEN, common, CardSubtype.SURVIVAL))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.HIDDEN_COUNT, DeckValidator.HIDDEN_SUBTYPE_LIMIT);
 	}
 
@@ -89,7 +91,7 @@ class DeckValidatorTest {
 			}
 
 			// Act + Assert
-			assertThat(codes(validator.validate(RULES, deck)))
+			assertThat(codes(validate(deck)))
 				.as(type.name())
 				.containsExactly(DeckValidator.SIZE, countCode(type));
 		}
@@ -105,7 +107,7 @@ class DeckValidatorTest {
 		deck.put(card(CardType.SPELL, common, CardSubtype.DAMAGE), 1);
 
 		// Act + Assert
-		assertThat(codes(validator.validate(RULES, deck)))
+		assertThat(codes(validate(deck)))
 			.containsExactly(DeckValidator.CREATURE_COUNT, DeckValidator.SPELL_COUNT);
 	}
 
@@ -119,8 +121,8 @@ class DeckValidatorTest {
 		Map<CatalogCard, Integer> twoDamage = withHidden(CardSubtype.DAMAGE, CardSubtype.DAMAGE);
 
 		// Act + Assert
-		assertThat(validator.validate(RULES, oneDamage)).isEmpty();
-		List<DeckViolation> violations = validator.validate(RULES, twoDamage);
+		assertThat(validate(oneDamage)).isEmpty();
+		List<DeckViolation> violations = validate(twoDamage);
 		assertThat(codes(violations)).containsExactly(DeckValidator.HIDDEN_SUBTYPE_LIMIT);
 		assertThat(violations.get(0).message()).isEqualTo("Too many DAMAGE Hidden cards (2/1)");
 	}
@@ -137,7 +139,7 @@ class DeckValidatorTest {
 		deck.put(creatures.get(1), 2);
 
 		// Act
-		List<DeckViolation> violations = validator.validate(RULES, deck);
+		List<DeckViolation> violations = validate(deck);
 
 		// Assert
 		assertThat(codes(violations)).containsExactly(DeckValidator.COPY_LIMIT);
@@ -157,10 +159,10 @@ class DeckValidatorTest {
 		deck.put(burn, 2);
 
 		// Act + Assert
-		assertThat(codes(validator.validate(RULES, deck))).containsExactly(DeckValidator.COPY_LIMIT);
+		assertThat(codes(validate(deck))).containsExactly(DeckValidator.COPY_LIMIT);
 		deck.put(burn, 1);
 		deck.put(spell, deck.get(spell) + 1);
-		assertThat(validator.validate(RULES, deck)).isEmpty();
+		assertThat(validate(deck)).isEmpty();
 	}
 
 	@Test
@@ -176,7 +178,7 @@ class DeckValidatorTest {
 		deck.put(creatures.get(1), 2);
 
 		// Act
-		List<DeckViolation> violations = validator.validate(RULES, deck);
+		List<DeckViolation> violations = validate(deck);
 
 		// Assert: la violazione indica l'originale
 		assertThat(codes(violations)).containsExactly(DeckValidator.COPY_LIMIT);
@@ -194,8 +196,8 @@ class DeckValidatorTest {
 		Map<CatalogCard, Integer> threeLegendary = withCreaturesOf(legendary, 3);
 
 		// Act + Assert
-		assertThat(validator.validate(RULES, twoLegendary)).isEmpty();
-		List<DeckViolation> violations = validator.validate(RULES, threeLegendary);
+		assertThat(validate(twoLegendary)).isEmpty();
+		List<DeckViolation> violations = validate(threeLegendary);
 		assertThat(codes(violations)).containsExactly(DeckValidator.BALANCE_LIMIT);
 		assertThat(violations.get(0).message()).isEqualTo("Too many Legendary cards (3/2)");
 		assertThat(violations.get(0).cardId()).isNull();
@@ -209,8 +211,8 @@ class DeckValidatorTest {
 		Map<CatalogCard, Integer> sixRares = withCreaturesOf(rare, 4);
 
 		// Act + Assert
-		assertThat(validator.validate(RULES, fiveRares)).isEmpty();
-		assertThat(validator.validate(RULES, sixRares).get(0).message()).isEqualTo("Too many Rare cards (6/5)");
+		assertThat(validate(fiveRares)).isEmpty();
+		assertThat(validate(sixRares).get(0).message()).isEqualTo("Too many Rare cards (6/5)");
 	}
 
 	// --- carte disattivate ---
@@ -224,11 +226,66 @@ class DeckValidatorTest {
 		creature.deactivate();
 
 		// Act + Assert
-		List<DeckViolation> violations = validator.validate(RULES, deck);
+		List<DeckViolation> violations = validate(deck);
 		assertThat(codes(violations)).containsExactly(DeckValidator.INACTIVE_CARD);
 		assertThat(violations.get(0).cardId()).isEqualTo(creature.getId());
 		creature.activate();
-		assertThat(validator.validate(RULES, deck)).isEmpty();
+		assertThat(validate(deck)).isEmpty();
+	}
+
+	// --- possesso ---
+
+	@Test
+	@DisplayName("A card that is not owned at all is reported")
+	void validate_cardNotOwned_reportsNotOwned() {
+		// Arrange
+		Map<CatalogCard, Integer> deck = validDeck();
+		CatalogCard creature = first(deck, CardType.CREATURE);
+		Map<Integer, Integer> available = ownedAll(deck);
+		available.remove(creature.getId());
+
+		// Act
+		List<DeckViolation> violations = validator.validate(RULES, deck, available);
+
+		// Assert
+		assertThat(codes(violations)).containsExactly(DeckValidator.NOT_OWNED);
+		assertThat(violations.get(0).cardId()).isEqualTo(creature.getId());
+		assertThat(violations.get(0).message())
+			.isEqualTo("You have 0 available copies of '" + creature.getName() + "', the deck contains 3");
+	}
+
+	@Test
+	@DisplayName("Available copies equal to the deck quantity are enough, one less is not")
+	void validate_availableCopies_atAndBelowQuantity() {
+		// Arrange: 3 copie nel mazzo, prima 3 disponibili, poi 2 (es. una riservata da uno scambio)
+		Map<CatalogCard, Integer> deck = validDeck();
+		CatalogCard creature = first(deck, CardType.CREATURE);
+		Map<Integer, Integer> available = ownedAll(deck);
+
+		// Act + Assert
+		assertThat(validator.validate(RULES, deck, available)).isEmpty();
+		available.put(creature.getId(), 1);
+		assertThat(validator.validate(RULES, deck, available).get(0).message())
+			.isEqualTo("You have 1 available copy of '" + creature.getName() + "', the deck contains 3");
+	}
+
+	@Test
+	@DisplayName("A variant needs its own copies: owning the original is not enough")
+	void validate_variantNotOwned_reportsVariant() {
+		// Arrange
+		Map<CatalogCard, Integer> deck = validDeck();
+		List<CatalogCard> creatures = all(deck, CardType.CREATURE);
+		CatalogCard variant = variantOf(creatures.get(0));
+		deck.put(creatures.get(0), 2);
+		deck.put(variant, 1);
+		Map<Integer, Integer> available = ownedAll(deck);
+		available.remove(variant.getId());
+		available.put(creatures.get(0).getId(), 3);
+
+		// Act + Assert
+		assertThat(validator.validate(RULES, deck, available))
+			.extracting(DeckViolation::code, DeckViolation::cardId)
+			.containsExactly(tuple(DeckValidator.NOT_OWNED, variant.getId()));
 	}
 
 	// --- più errori ---
@@ -245,19 +302,30 @@ class DeckValidatorTest {
 		deck.remove(first(deck, CardType.TERRAIN));
 
 		// Act + Assert
-		assertThat(codes(validator.validate(RULES, deck))).containsExactly(
+		assertThat(codes(validate(deck))).containsExactly(
 			DeckValidator.SIZE, DeckValidator.TERRAIN_COUNT, DeckValidator.COPY_LIMIT, DeckValidator.INACTIVE_CARD);
 	}
 
 	@Test
 	@DisplayName("An empty deck reports the size and every category")
 	void validate_emptyDeck_reportsEverything() {
-		assertThat(codes(validator.validate(RULES, Map.of()))).containsExactly(DeckValidator.SIZE,
+		assertThat(codes(validate(Map.of()))).containsExactly(DeckValidator.SIZE,
 			DeckValidator.CREATURE_COUNT, DeckValidator.SPELL_COUNT, DeckValidator.HIDDEN_COUNT,
 			DeckValidator.ITEM_COUNT, DeckValidator.TERRAIN_COUNT);
 	}
 
 	// --- costruzione dei mazzi di prova ---
+
+	// Le regole senza il possesso: l'utente ha tutte le copie che servono
+	private List<DeckViolation> validate(Map<CatalogCard, Integer> deck) {
+		return validator.validate(RULES, deck, ownedAll(deck));
+	}
+
+	private static Map<Integer, Integer> ownedAll(Map<CatalogCard, Integer> deck) {
+		Map<Integer, Integer> available = new HashMap<>();
+		deck.forEach((card, quantity) -> available.put(card.getId(), quantity));
+		return available;
+	}
 
 	// 20 creature (6 da 3 copie e 1 da 2), 2 Spell da 3, 2 Hidden SURVIVAL da 1, 1 Oggetto e 1 Terreno Rare
 	private Map<CatalogCard, Integer> validDeck() {

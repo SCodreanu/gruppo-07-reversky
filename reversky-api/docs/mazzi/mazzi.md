@@ -176,3 +176,9 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - `POST /decks/validate` con `{ "cards": [...] }` risponde sempre `200 { valid, violations }` (stesse regole del salvataggio, niente salvato); una carta ripetuta è `400`.
 - `GET /decks/rules`: composizione del rule set attivo (`deckSize`, `deckCreatures`, `deckSpells`, `deckHidden`, `deckItems`, `deckTerrains`, `maxHiddenSurvival`, `maxHiddenDamage`) e `rarities` con `deckLimit` e `maxPerDeck`, dalla più comune. Senza rule set attivo, `404 NO_ACTIVE_RULE_SET`.
 - I test (`DeckValidatorTest`) coprono ogni regola nel caso valido e al limite; `support/TestDecks` crea contenuti validi per il rule set attivo con le carte già nella collezione.
+
+### Possesso delle carte (API-29, #99)
+
+- `CollectionService.getAvailableCopies(userId, cardIds)`: copie possedute meno quelle riservate dalle offerte di scambio aperte dell'utente (stessa query di `GET /collection`), mai sotto zero. Una variante è una carta a sé: servono copie della variante, non bastano quelle dell'originale.
+- `DeckValidator` aggiunge `DECK_NOT_OWNED` (dopo il bilanciamento, prima delle carte disattivate) per ogni carta con più copie nel mazzo che disponibili, con `cardId`. Vale al salvataggio, in `POST /decks/validate` e a ogni lettura: dopo aver ceduto o offerto una carta il mazzo risulta `valid: false` e non viene modificato. `GET /decks` legge le copie disponibili una volta sola per tutti i mazzi.
+- `usedInDecks` di `GET /collection` c'era già da API-23 (SQL nativo in `CollectionCardRepository`).

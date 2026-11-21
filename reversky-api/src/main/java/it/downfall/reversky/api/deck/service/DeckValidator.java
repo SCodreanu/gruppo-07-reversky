@@ -22,7 +22,7 @@ import it.downfall.reversky.api.deck.dto.DeckViolation;
  * insieme.
  * <p>
  * Ordine delle violazioni: carte totali, composizione per tipo, Hidden per sottotipo, copie, bilanciamento per
- * rarità, carte disattivate. Dentro ogni controllo le carte sono in ordine di id e le rarità di {@code sorting_order}.
+ * rarità, possesso, carte disattivate. Dentro ogni controllo le carte sono in ordine di id e le rarità di {@code sorting_order}.
  */
 @Component
 public class DeckValidator {
@@ -36,16 +36,21 @@ public class DeckValidator {
 	public static final String TERRAIN_COUNT = "DECK_TERRAIN_COUNT";
 	public static final String COPY_LIMIT = "DECK_COPY_LIMIT";
 	public static final String BALANCE_LIMIT = "DECK_BALANCE_LIMIT";
+	public static final String NOT_OWNED = "DECK_NOT_OWNED";
 	public static final String INACTIVE_CARD = "DECK_INACTIVE_CARD";
 
 	/**
 	 * Controlla il mazzo con le regole indicate.
 	 *
-	 * @param rules composizione dal rule set attivo
-	 * @param cards copie per carta; ogni carta ha rarità e, se è una variante, la carta originale con la sua rarità
+	 * @param rules             composizione dal rule set attivo
+	 * @param cards             copie per carta; ogni carta ha rarità e, se è una variante, la carta originale con la sua
+	 *                          rarità
+	 * @param availableByCardId copie disponibili dell'utente per id di carta (possedute meno riservate); una carta che
+	 *                          manca vale 0
 	 * @return le violazioni trovate, lista vuota se il mazzo è valido
 	 */
-	public List<DeckViolation> validate(DeckRules rules, Map<CatalogCard, Integer> cards) {
+	public List<DeckViolation> validate(DeckRules rules, Map<CatalogCard, Integer> cards,
+			Map<Integer, Integer> availableByCardId) {
 		Map<CatalogCard, Integer> sorted = sortById(cards);
 		List<DeckViolation> violations = new ArrayList<>();
 
@@ -54,6 +59,7 @@ public class DeckValidator {
 		checkHiddenSubtypes(rules, sorted, violations);
 		checkCopyLimits(sorted, violations);
 		checkBalanceLimits(sorted, violations);
+		checkOwnership(sorted, availableByCardId, violations);
 		checkActiveCards(sorted, violations);
 
 		return violations;
@@ -137,6 +143,19 @@ public class DeckValidator {
 			if (max != null && copies > max) {
 				violations.add(new DeckViolation(BALANCE_LIMIT,
 					"Too many " + rarity.getName() + " cards (" + copies + "/" + max + ")", null));
+			}
+		});
+	}
+
+	// Per ogni carta servono abbastanza copie disponibili: le varianti sono carte a sé nella collezione
+	private static void checkOwnership(Map<CatalogCard, Integer> cards, Map<Integer, Integer> availableByCardId,
+			List<DeckViolation> violations) {
+		cards.forEach((card, quantity) -> {
+			int available = availableByCardId.getOrDefault(card.getId(), 0);
+			if (quantity > available) {
+				String copies = available == 1 ? "copy" : "copies";
+				violations.add(new DeckViolation(NOT_OWNED, "You have " + available + " available " + copies + " of '"
+					+ card.getName() + "', the deck contains " + quantity, card.getId()));
 			}
 		});
 	}

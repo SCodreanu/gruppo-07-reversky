@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.service.CatalogCardService;
 import it.downfall.reversky.api.catalog.service.RarityService;
+import it.downfall.reversky.api.collection.service.CollectionService;
 import it.downfall.reversky.api.deck.dto.DeckCardRequest;
 import it.downfall.reversky.api.deck.dto.DeckRequest;
 import it.downfall.reversky.api.deck.dto.DeckResponse;
@@ -23,6 +25,7 @@ import it.downfall.reversky.api.deck.dto.DeckValidationRequest;
 import it.downfall.reversky.api.deck.dto.DeckValidationResponse;
 import it.downfall.reversky.api.deck.dto.DeckViolation;
 import it.downfall.reversky.api.deck.entity.Deck;
+import it.downfall.reversky.api.deck.entity.DeckCard;
 import it.downfall.reversky.api.deck.exception.DeckInUseException;
 import it.downfall.reversky.api.deck.exception.DeckNameAlreadyUsedException;
 import it.downfall.reversky.api.deck.exception.DeckNotFoundException;
@@ -51,6 +54,7 @@ public class DeckService {
 	private final RarityService rarityService;
 	private final RuleSetService ruleSetService;
 	private final DeckValidator deckValidator;
+	private final CollectionService collectionService;
 
 	/**
 	 * I miei mazzi, in ordine di nome, con {@code valid} ricalcolato (GET /api/v1/decks).
@@ -64,9 +68,16 @@ public class DeckService {
 			return List.of();
 		}
 
+		// Regole e copie disponibili si leggono una volta sola per tutti i mazzi
 		DeckRules rules = activeRules();
+		Set<Integer> cardIds = decks.stream()
+			.flatMap(deck -> deck.getCards().stream())
+			.map(DeckCard::getCardId)
+			.collect(Collectors.toSet());
+		Map<Integer, Integer> available = collectionService.getAvailableCopies(userId, cardIds);
+
 		return decks.stream()
-			.map(deck -> DeckSummaryResponse.from(deck, violationsOf(rules, deck).isEmpty()))
+			.map(deck -> DeckSummaryResponse.from(deck, deckValidator.validate(rules, deck.getContent(), available).isEmpty()))
 			.toList();
 	}
 
@@ -79,7 +90,9 @@ public class DeckService {
 	@Transactional(readOnly = true)
 	public DeckResponse findMine(Integer userId, Integer deckId) {
 		Deck deck = getOwnDeck(userId, deckId);
-		return DeckResponse.from(deck, violationsOf(activeRules(), deck));
+		Map<CatalogCard, Integer> content = deck.getContent();
+		Map<Integer, Integer> available = collectionService.getAvailableCopies(userId, idsOf(content));
+		return DeckResponse.from(deck, deckValidator.validate(activeRules(), content, available));
 	}
 
 	/**
@@ -93,7 +106,7 @@ public class DeckService {
 	public DeckResponse create(Integer userId, DeckRequest request) {
 		String name = request.name().trim();
 		requireFreeName(userId, name, null);
-		Map<CatalogCard, Integer> content = loadValidContent(request.cards());
+		Map<CatalogCard, Integer> content = loadValidContent(userId, request.cards());
 
 		Deck deck = new Deck(userId, name);
 		deck.replaceCards(content);
@@ -117,7 +130,7 @@ public class DeckService {
 		Deck deck = getOwnDeck(userId, deckId);
 		String name = request.name().trim();
 		requireFreeName(userId, name, deckId);
-		Map<CatalogCard, Integer> content = loadValidContent(request.cards());
+		Map<CatalogCard, Integer> content = loadValidContent(userId, request.cards());
 
 		deck.rename(name);
 		deck.replaceCards(content);
@@ -149,7 +162,7 @@ public class DeckService {
 	 */
 	@Transactional(readOnly = true)
 	public DeckValidationResponse validate(Integer userId, DeckValidationRequest request) {
-		return DeckValidationResponse.of(check(request.cards()).violations());
+		return DeckValidationResponse.of(check(userId, request.cards()).violations());
 	}
 
 	/**
@@ -171,12 +184,12 @@ public class DeckService {
 		return DeckRules.from(ruleSetService.getActiveRuleSet());
 	}
 
-	private List<DeckViolation> violationsOf(DeckRules rules, Deck deck) {
-		return deckValidator.validate(rules, deck.getContent());
+	private static Set<Integer> idsOf(Map<CatalogCard, Integer> content) {
+		return content.keySet().stream().map(CatalogCard::getId).collect(Collectors.toSet());
 	}
 
-	private Map<CatalogCard, Integer> loadValidContent(List<DeckCardRequest> cards) {
-		CheckedContent checked = check(cards);
+	private Map<CatalogCard, Integer> loadValidContent(Integer userId, List<DeckCardRequest> cards) {
+		CheckedContent checked = check(userId, cards);
 		if (!checked.violations().isEmpty()) {
 			throw new InvalidDeckException(checked.violations());
 		}
@@ -185,9 +198,9 @@ public class DeckService {
 
 	/**
 	 * Carica le carte della richiesta e le controlla. Le carte che non esistono diventano violazioni
-	 * {@code DECK_CARD_NOT_FOUND}, in testa alla lista; le regole si controllano sulle carte trovate.
+	 * {@code DECK_CARD_NOT_FOUND}, in testa alla lista; le regole, possesso compreso, si controllano sulle carte trovate.
 	 */
-	private CheckedContent check(List<DeckCardRequest> cards) {
+	private CheckedContent check(Integer userId, List<DeckCardRequest> cards) {
 		Map<Integer, CatalogCard> byId = catalogCardService.getCardsByIds(cards.stream().map(DeckCardRequest::cardId).toList())
 			.stream()
 			.collect(Collectors.toMap(CatalogCard::getId, Function.identity()));
@@ -203,7 +216,8 @@ public class DeckService {
 			}
 		}
 
-		violations.addAll(deckValidator.validate(activeRules(), content));
+		Map<Integer, Integer> available = collectionService.getAvailableCopies(userId, idsOf(content));
+		violations.addAll(deckValidator.validate(activeRules(), content, available));
 		return new CheckedContent(content, violations);
 	}
 
