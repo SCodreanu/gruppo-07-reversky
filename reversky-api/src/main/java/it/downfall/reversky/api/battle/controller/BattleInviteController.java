@@ -21,9 +21,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.downfall.reversky.api.battle.dto.BattleAcceptRequest;
+import it.downfall.reversky.api.battle.dto.BattleDetailResponse;
 import it.downfall.reversky.api.battle.dto.BattleInviteRequest;
 import it.downfall.reversky.api.battle.dto.BattleInviteResponse;
 import it.downfall.reversky.api.battle.service.BattleInviteService;
+import it.downfall.reversky.api.battle.service.BattleService;
 import it.downfall.reversky.api.common.config.OpenApiConfig;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class BattleInviteController {
 
 	private final BattleInviteService battleInviteService;
+	private final BattleService battleService;
 
 	@Operation(summary = "Challenge a friend", description = "Invites a friend to a friendly battle with one of my "
 		+ "decks, which must be valid now.")
@@ -64,6 +68,24 @@ public class BattleInviteController {
 	public ResponseEntity<List<BattleInviteResponse>> findBox(@AuthenticationPrincipal Jwt jwt,
 			@Parameter(description = "incoming or outgoing", example = "incoming") @RequestParam String box) {
 		return ResponseEntity.ok(battleInviteService.findBox(userId(jwt), box));
+	}
+
+	@Operation(summary = "Accept a challenge", description = "Accepts a challenge I received with one of my decks. Both "
+		+ "decks are validated again, the server generates the seed and the engine simulates the battle right away. "
+		+ "If the engine is unavailable the answer is 503 with battleId: the battle is saved and POST /battles/{id}/retry "
+		+ "completes it.")
+	@ApiResponse(responseCode = "200", description = "Battle simulated, returned from my point of view")
+	@ApiResponse(responseCode = "400", description = "Missing deck id")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "403", description = "We are no longer friends")
+	@ApiResponse(responseCode = "404", description = "Challenge not found or not for me, or deck not found")
+	@ApiResponse(responseCode = "409", description = "Challenge already accepted")
+	@ApiResponse(responseCode = "422", description = "One of the two decks is no longer valid: the challenge stays pending")
+	@ApiResponse(responseCode = "503", description = "Engine unavailable: the battle waits for a retry (battleId)")
+	@PostMapping("/{id}/accept")
+	public ResponseEntity<BattleDetailResponse> accept(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
+			@Valid @RequestBody BattleAcceptRequest request) {
+		return ResponseEntity.ok(battleService.accept(userId(jwt), id, request.deckId()));
 	}
 
 	@Operation(summary = "Reject a challenge", description = "Deletes a pending challenge I received.")

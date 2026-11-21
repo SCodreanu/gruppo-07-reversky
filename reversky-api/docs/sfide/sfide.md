@@ -349,3 +349,19 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Controlli in quest'ordine: non a se stessi (`422 BATTLE_SELF_CHALLENGE`), avversario esistente e attivo (`404 USER_NOT_FOUND`), amici (`403 NOT_FRIENDS`, `FriendshipService.areFriends`), mazzo mio (`404 DECK_NOT_FOUND`) e valido adesso, possesso compreso (`422 DECK_INVALID` con `violations`, `DeckService.getPlayableDeck`), nessun altro invito in attesa verso lo stesso avversario (`409 INVITE_ALREADY_PENDING`, anche con due richieste contemporanee). Un invito nella direzione opposta è un'altra sfida.
 - Risposta: `id` (UUID), `challenger` e `opponent` `{ id, username }`, `createdAt` e `deck { id, name }` **solo per lo sfidante**: l'avversario scopre il mazzo nella partita (deciso il 21 novembre).
 - Rifiuto e ritiro di un invito che non è mio o non è più in attesa: `404 BATTLE_INVITE_NOT_FOUND`. Un `box` diverso: `400 INVALID_BOX`.
+
+### Accettazione, simulazione e storico (API-40 #110, API-41 #111, API-42 #112, API-43 #113)
+
+- `POST /battle-invites/{id}/accept` con `{ deckId }` (`BattleService.accept`), nei tre passi descritti sopra con `TransactionTemplate`: preparazione (blocca l'invito, amici, entrambi i mazzi validi adesso, seed dal bean `RandomGenerator`, rule set attivo, fazioni e bonus di fazione, fotografia dei mazzi, invito `ACCEPTED`), chiamata a `EngineClient` fuori transazione, salvataggio (blocca la partita e non scrive niente se è già completata). Nessun credito né rating per le amichevoli.
+- La richiesta all'engine si costruisce **solo** da ciò che è salvato nella partita (`BattleService.toRequest`): seed, regole, fazioni e bonus in `battle_stats`, mazzi dalle fotografie, una voce per copia. Così il retry manda la stessa identica partita.
+- Risposta (anche di `GET /battles/{id}`) dal punto di vista di chi guarda (deciso il 21 novembre): `id`, `mode`, `createdAt`, `completed`, `result`, `outcome` (`WIN`, `LOSS`, `DRAW`), `mySide` (`CHALLENGER` o `OPPONENT`, come il campo `side` del log), `endReason`, `totalRounds`, `rulesVersion`, `seed`, `me` e `opponent` (`id`, `username`, `finalLifePoints`, `creaturesDefeated`, `deck` come era alla preparazione) e `log`.
+- Engine non disponibile: `503 ENGINE_UNAVAILABLE` con `battleId`; la partita resta salvata con `completed: false` e si completa con il retry.
+- `GET /battles?mode=FRIENDLY|RANKED&page&size`: dalla più recente, con `battleId`, `createdAt`, `mode`, `opponent`, `completed`, `outcome`, `endReason`, punti vita finali, `rounds`, `ratingDelta` (null per le amichevoli). La query legge solo i campi che servono (`BattleHistoryRow`), senza log né mazzi.
+
+| Caso | Status | `code` |
+|---|---|---|
+| invito inesistente o non per me | `404` | `BATTLE_INVITE_NOT_FOUND` |
+| invito già accettato | `409` | `BATTLE_INVITE_ALREADY_ACCEPTED` |
+| non più amici | `403` | `NOT_FRIENDS` |
+| uno dei due mazzi non valido: l'invito resta in attesa, nessuna partita | `422` | `DECK_INVALID` |
+| partita inesistente o non mia | `404` | `BATTLE_NOT_FOUND` |
