@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -195,6 +196,19 @@ public class CollectionService {
 		return collectionCardRepository.findByIdUserIdAndIdCardIdIn(userId, ids).stream()
 			.collect(Collectors.toMap(CollectionCard::getCardId,
 				row -> Math.max(0, row.getQuantity() - reserved.getOrDefault(row.getCardId(), 0))));
+	}
+
+	/**
+	 * Quali di quelle carte l'utente possiede già (per {@code isNew} dell'apertura dei pacchetti).
+	 */
+	@Transactional(readOnly = true)
+	public Set<Integer> getOwnedCardIds(Integer userId, Collection<Integer> cardIds) {
+		if (cardIds.isEmpty()) {
+			return Set.of();
+		}
+		return collectionCardRepository.findByIdUserIdAndIdCardIdIn(userId, cardIds).stream()
+			.map(CollectionCard::getCardId)
+			.collect(Collectors.toSet());
 	}
 
 	private Page<CollectionCard> loadPage(Integer userId, CollectionFilter filter, Pageable pageable) {

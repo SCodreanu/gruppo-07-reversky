@@ -1,29 +1,46 @@
 package it.downfall.reversky.api.pack.service;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.random.RandomGenerator;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.catalog.dto.CatalogCardResponse;
+import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.service.CatalogCardService;
+import it.downfall.reversky.api.collection.service.CollectionService;
 import it.downfall.reversky.api.inventory.dto.InventoryResponse;
 import it.downfall.reversky.api.inventory.entity.CreditReason;
 import it.downfall.reversky.api.inventory.exception.InsufficientCreditsException;
+import it.downfall.reversky.api.inventory.exception.NoPackToOpenException;
 import it.downfall.reversky.api.inventory.service.InventoryService;
+import it.downfall.reversky.api.pack.dto.OpenPackResponse;
+import it.downfall.reversky.api.pack.dto.OpenPackResponse.OpenedCardResponse;
 import it.downfall.reversky.api.pack.dto.PackBonusResponse;
 import it.downfall.reversky.api.pack.dto.PackResponse;
 import it.downfall.reversky.api.pack.dto.PackSlotResponse;
 import it.downfall.reversky.api.pack.entity.Pack;
+import it.downfall.reversky.api.pack.entity.PackOpening;
 import it.downfall.reversky.api.pack.exception.PackNotAvailableException;
 import it.downfall.reversky.api.pack.exception.PackNotFoundException;
 import it.downfall.reversky.api.pack.exception.PackPurchaseLimitException;
+import it.downfall.reversky.api.pack.exception.PackSlotEmptyException;
 import it.downfall.reversky.api.pack.repository.PackOpeningRepository;
 import it.downfall.reversky.api.pack.repository.PackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Negozio dei pacchetti (docs/pacchetti): elenco dei pacchetti in vendita e acquisto.
+ * Negozio dei pacchetti (docs/pacchetti): elenco dei pacchetti in vendita, acquisto e apertura. La casualità viene
+ * dal bean {@link RandomGenerator} del server.
  */
 @Slf4j
 @Service
@@ -34,6 +51,9 @@ public class PackService {
 	private final PackOpeningRepository packOpeningRepository;
 	private final CatalogCardService catalogCardService;
 	private final InventoryService inventoryService;
+	private final CollectionService collectionService;
+	private final RandomGenerator random;
+	private final Clock clock;
 
 	/**
 	 * I pacchetti in vendita, in ordine di id (GET /api/v1/packs, pubblico). I bonus di una rarità senza carte non
@@ -80,6 +100,39 @@ public class PackService {
 
 		log.info("User {} bought {} pack(s) {}", userId, quantity, packId);
 		return inventoryService.getInventory(userId);
+	}
+
+	/**
+	 * Apre un pacchetto dell'inventario, in una sola transazione (POST /api/v1/inventory/packs/{packId}/open): toglie il
+	 * pacchetto, estrae le carte con slot e bonus, le aggiunge alla collezione e salva l'apertura in
+	 * {@code pack_openings}. Funziona anche per un pacchetto disattivato dopo l'acquisto.
+	 *
+	 * @return le carte nell'ordine degli slot, con {@code isNew}
+	 * @throws NoPackToOpenException  se l'utente non ha pacchetti di quel tipo: niente cambia
+	 * @throws PackSlotEmptyException se uno slot non trova carte: la transazione si annulla e il pacchetto resta
+	 */
+	@Transactional
+	public OpenPackResponse open(Integer userId, Integer packId) {
+		int remaining = inventoryService.takePack(userId, packId);
+		Pack pack = packRepository.findById(packId).orElseThrow(() -> new PackNotFoundException(packId));
+
+		List<CatalogCard> cards = new PackDrawer(random).draw(pack, new CardPool(catalogCardService.getActiveOriginals()));
+		List<Integer> cardIds = cards.stream().map(CatalogCard::getId).toList();
+		Set<Integer> owned = new HashSet<>(collectionService.getOwnedCardIds(userId, cardIds));
+
+		List<OpenedCardResponse> opened = new ArrayList<>(cards.size());
+		for (CatalogCard card : cards) {
+			// add restituisce true solo la prima volta: una carta nuova uscita due volte è nuova solo la prima
+			opened.add(new OpenedCardResponse(CatalogCardResponse.from(card), owned.add(card.getId())));
+		}
+
+		Map<Integer, Integer> copies = new LinkedHashMap<>();
+		cardIds.forEach(id -> copies.merge(id, 1, Integer::sum));
+		collectionService.addCards(userId, copies);
+		packOpeningRepository.save(new PackOpening(userId, packId, cardIds, Instant.now(clock)));
+
+		log.info("User {} opened pack {}", userId, packId);
+		return new OpenPackResponse(packId, remaining, opened);
 	}
 
 	private void requireWithinLimit(Integer userId, Pack pack, int quantity) {

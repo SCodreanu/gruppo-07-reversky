@@ -184,3 +184,15 @@ Risposta dell'apertura:
 | pacchetto disattivato | `422` | `PACK_NOT_AVAILABLE` |
 | oltre `purchase_limit`, contando gli aperti | `422` | `PACK_PURCHASE_LIMIT` |
 | crediti insufficienti | `422` | `INSUFFICIENT_CREDITS` |
+
+### Apertura (API-24 #94)
+
+- `POST /api/v1/inventory/packs/{packId}/open` (`pack/controller/PackOpeningController`, `PackService.open`), in una transazione: `InventoryService.takePack` blocca l'inventario e toglie il pacchetto (a 0 elimina la riga), `PackDrawer` estrae le carte da `CardPool`, `CollectionService.addCards` le aggiunge e `pack_openings` salva gli id nell'ordine degli slot. Un pacchetto disattivato dopo l'acquisto si apre lo stesso.
+- Casualità: bean `RandomGenerator` (`common/config/RandomConfig`, `SecureRandom`); `PackDrawer` e `CardPool` non usano il database e i test li provano con un seed fisso, comprese 100.000 aperture per le frequenze dei bonus.
+- Risposta: `{ packId, remainingPacks, cards: [{ card: <carta completa del catalogo>, isNew }] }` (deciso il 21 novembre, al posto della carta ridotta dell'esempio sopra). `isNew` è vero solo se l'utente non possedeva la carta, e solo per la prima copia uscita nel pacchetto.
+- Finché non c'è API-21 i `pack_tags` non si leggono: ogni pacchetto pesca tra tutte le carte attive e originali.
+
+| Caso | Status | `code` |
+|---|---|---|
+| nessun pacchetto di quel tipo da aprire | `422` | `NO_PACK_TO_OPEN` |
+| uno slot senza carte nemmeno con il ripiego (carte disattivate dopo l'attivazione): niente cambia, il pacchetto resta | `422` | `PACK_SLOT_EMPTY` |
