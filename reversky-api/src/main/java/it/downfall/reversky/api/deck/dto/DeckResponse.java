@@ -1,10 +1,16 @@
 package it.downfall.reversky.api.deck.dto;
 
+import java.util.Comparator;
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.downfall.reversky.api.deck.entity.Deck;
 
 /**
- * Un mazzo dell'utente (docs/mazzi).
+ * Un mio mazzo con le sue carte (GET /api/v1/decks/{id}, risposta di POST e PUT, docs/mazzi).
+ *
+ * @param cardCount numero totale di carte, sommando le copie
+ * @param cards     le carte in ordine di id
  */
 public record DeckResponse(
 
@@ -12,10 +18,22 @@ public record DeckResponse(
 	Integer id,
 
 	@Schema(example = "Pioggia di Archivio")
-	String name
+	String name,
+
+	@Schema(example = "30")
+	int cardCount,
+
+	List<DeckCardResponse> cards
 ) {
 
+	/**
+	 * Converte l'entità nel DTO. Carte, rarità e fazioni sono LAZY: va chiamato dentro la transazione del service.
+	 */
 	public static DeckResponse from(Deck deck) {
-		return new DeckResponse(deck.getId(), deck.getName());
+		List<DeckCardResponse> cards = deck.getCards().stream()
+			.sorted(Comparator.comparing(row -> row.getCardId()))
+			.map(DeckCardResponse::from)
+			.toList();
+		return new DeckResponse(deck.getId(), deck.getName(), deck.getCardCount(), cards);
 	}
 }

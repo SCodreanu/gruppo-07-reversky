@@ -50,6 +50,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		HttpStatus status = toStatus(ex.getCategory());
 
 		ProblemDetail problem = createProblem(status, ex.getTitle(), ex.getMessage(), ex.getCode(), request.getRequestURI());
+		ex.getExtraProperties().forEach(problem::setProperty);
 
 		return ResponseEntity.status(status).body(problem);
 	}

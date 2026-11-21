@@ -234,7 +234,7 @@ class DeckControllerIT {
 	}
 
 	private static String body(String name) {
-		return "{\"name\": \"" + name + "\"}";
+		return "{\"name\": \"" + name + "\", \"cards\": []}";
 	}
 
 	private Integer queueTickets(User user) {

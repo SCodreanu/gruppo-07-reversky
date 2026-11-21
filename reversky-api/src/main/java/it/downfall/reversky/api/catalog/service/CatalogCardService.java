@@ -1,5 +1,8 @@
 package it.downfall.reversky.api.catalog.service;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -99,6 +102,18 @@ public class CatalogCardService {
 	@Transactional(readOnly = true)
 	public CatalogCardResponse findById(Integer id) {
 		return CatalogCardResponse.from(loadCard(id));
+	}
+
+	/**
+	 * Le carte con quegli id, anche disattivate, per gli altri service (mazzi): rarità, fazioni e carta originale sono
+	 * già caricate. Gli id che non esistono mancano dalla lista, senza errore: decide chi chiama.
+	 */
+	@Transactional(readOnly = true)
+	public List<CatalogCard> getCardsByIds(Collection<Integer> ids) {
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		return catalogCardRepository.findAllByIdIn(ids);
 	}
 
 	/**

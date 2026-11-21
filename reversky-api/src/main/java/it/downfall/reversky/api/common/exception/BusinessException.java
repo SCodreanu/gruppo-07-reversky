@@ -1,5 +1,7 @@
 package it.downfall.reversky.api.common.exception;
 
+import java.util.Map;
+
 import lombok.Getter;
 
 /**
@@ -39,5 +41,13 @@ public abstract class BusinessException extends RuntimeException {
 		this.category = category;
 		this.code = code;
 		this.title = title;
+	}
+
+	/**
+	 * Campi in più della risposta, oltre a {@code code} (es. {@code violations} di un mazzo non valido).
+	 * Le sottoclassi che ne hanno bisogno lo sovrascrivono; di base non ce ne sono.
+	 */
+	public Map<String, Object> getExtraProperties() {
+		return Map.of();
 	}
 }

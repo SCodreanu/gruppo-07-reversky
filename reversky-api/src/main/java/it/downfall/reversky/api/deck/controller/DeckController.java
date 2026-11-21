@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.downfall.reversky.api.common.config.OpenApiConfig;
 import it.downfall.reversky.api.deck.dto.DeckRequest;
 import it.downfall.reversky.api.deck.dto.DeckResponse;
+import it.downfall.reversky.api.deck.dto.DeckSummaryResponse;
 import it.downfall.reversky.api.deck.service.DeckService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,15 +39,15 @@ public class DeckController {
 
 	private final DeckService deckService;
 
-	@Operation(summary = "List my decks", description = "Returns my decks sorted by name.")
+	@Operation(summary = "List my decks", description = "Returns my decks sorted by name, with the number of cards and without the cards.")
 	@ApiResponse(responseCode = "200", description = "Decks returned")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@GetMapping
-	public ResponseEntity<List<DeckResponse>> findMine(@AuthenticationPrincipal Jwt jwt) {
+	public ResponseEntity<List<DeckSummaryResponse>> findMine(@AuthenticationPrincipal Jwt jwt) {
 		return ResponseEntity.ok(deckService.findMine(userId(jwt)));
 	}
 
-	@Operation(summary = "Get one of my decks")
+	@Operation(summary = "Get one of my decks", description = "Returns the deck with its cards, sorted by card id.")
 	@ApiResponse(responseCode = "200", description = "Deck returned")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "404", description = "Deck not found, or owned by another user")
@@ -55,22 +56,26 @@ public class DeckController {
 		return ResponseEntity.ok(deckService.findMine(userId(jwt), id));
 	}
 
-	@Operation(summary = "Create a deck", description = "The name must be unique among my decks.")
+	@Operation(summary = "Create a deck", description = "The name must be unique among my decks. Each card appears once, "
+		+ "with its quantity.")
 	@ApiResponse(responseCode = "201", description = "Deck created")
-	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid fields, or the same card listed twice")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "409", description = "I already have a deck with this name")
+	@ApiResponse(responseCode = "422", description = "Invalid deck (DECK_INVALID): every broken rule is listed in violations")
 	@PostMapping
 	public ResponseEntity<DeckResponse> create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody DeckRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(deckService.create(userId(jwt), request));
 	}
 
-	@Operation(summary = "Replace a deck", description = "Replaces the name of the deck. If the deck is in the ranked queue, the ticket is removed.")
+	@Operation(summary = "Replace a deck", description = "Replaces the name and all the cards of the deck. "
+		+ "If the deck is in the ranked queue, the ticket is removed.")
 	@ApiResponse(responseCode = "200", description = "Deck updated")
-	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid fields, or the same card listed twice")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "404", description = "Deck not found, or owned by another user")
 	@ApiResponse(responseCode = "409", description = "Another of my decks already has this name")
+	@ApiResponse(responseCode = "422", description = "Invalid deck (DECK_INVALID): every broken rule is listed in violations")
 	@PutMapping("/{id}")
 	public ResponseEntity<DeckResponse> update(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id,
 			@Valid @RequestBody DeckRequest request) {

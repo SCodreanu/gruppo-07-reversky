@@ -159,3 +159,10 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - Package `deck/`: entità `Deck`, `DeckService`, `DeckController`. Ogni metodo riceve l'utente dal token e cerca il mazzo per id **e** utente, quindi il mazzo di un altro è `404 DECK_NOT_FOUND`.
 - `GET /decks` in ordine di nome, poi di id. Il nome si salva senza spazi all'inizio e alla fine; un nome già usato da un altro mazzo dello stesso utente è `409 DECK_NAME_ALREADY_USED`, anche con due richieste contemporanee (il vincolo `uq_decks_user_id_name` viene tradotto nello stesso errore).
 - `PUT /decks/{id}` toglie il ticket in coda classificata; `DELETE /decks/{id}` risponde `204`, e il ticket si cancella da solo (`ON DELETE CASCADE`). Un mazzo usato da un invito `PENDING` è `409 DECK_IN_USE`. Inviti e coda si leggono con SQL nativo in `DeckRepository` finché non esiste `battle/`.
+
+### Contenuto del mazzo (API-27, #97)
+
+- `POST` e `PUT` ricevono `cards` (obbligatoria, anche vuota a livello di formato): ogni carta compare una volta sola con `quantity` ≥ 1, altrimenti `400 VALIDATION_FAILED` (campo `cardIdsUnique` per una carta ripetuta, `cards[i].quantity` per una quantità sotto 1).
+- `PUT` sostituisce tutto il contenuto con `Deck.replaceCards`, che aggiorna le righe esistenti, elimina quelle tolte (`orphanRemoval`) e aggiunge le nuove.
+- Una carta che non esiste rende il mazzo non valido: `422 DECK_INVALID` con `violations` (codice `DECK_CARD_NOT_FOUND`, `cardId`), e niente viene salvato. `violations` è un campo in più del ProblemDetail, scritto da `GlobalExceptionHandler` tramite `BusinessException.getExtraProperties()`.
+- `GET /decks` restituisce `id`, `name`, `cardCount` (somma delle copie); `GET /decks/{id}` e le risposte di `POST` e `PUT` anche `cards`, in ordine di id della carta, ognuna con tutti i dati del catalogo (`card`) e `quantity`.
