@@ -7,7 +7,8 @@ import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlacedTerrain;
 
 /**
- * Devouring Abyss (Crepa Cavità), Terreno della Theory of the Dream: bonus base +1 ATK. Effetto secondario (ENG-27):
+ * Devouring Abyss (Crepa Cavità), Terreno della Theory of the Dream: bonus base +1 DEF (era +1 ATK, cambiato il
+ * 21 novembre con ENG-42, proposta per i DSG). Effetto secondario (ENG-27):
  * all'inizio di ogni scontro ogni creatura della fazione infligge 1 danno alla creatura avversaria.
  * <p>
  * Alla fine del passo 0, prima lo sfidante, con il controllo delle morti dopo ogni colpo (deciso il 18 novembre). È
@@ -23,7 +24,8 @@ public final class DevouringAbyssEffect extends BaseTerrainEffect {
 
 	/** Crea l'effetto. */
 	public DevouringAbyssEffect() {
-		super(1, 0);
+		// ENG-42 fase 2, proposta per i DSG: +1 DEF al posto di +1 ATK (il Terreno valeva 7 V più degli altri)
+		super(0, 1);
 	}
 
 	@Override

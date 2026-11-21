@@ -41,12 +41,24 @@ class CatalogCsvTest {
 	}
 
 	@Test
+	@DisplayName("Prezzo dell'effetto (ps_effetto) per id, solo per le carte che ne hanno uno")
+	void effectPrices_byCardId() throws IOException {
+		Map<Integer, Double> prices = CatalogCsv.effectPrices(CatalogCsv.DEFAULT_PATH);
+		Map<String, Integer> ids = catalog.stream()
+				.collect(Collectors.toMap(CardDefinition::name, CardDefinition::cardId));
+
+		assertThat(prices).containsEntry(ids.get("SCP-053"), 3.0).containsEntry(ids.get("SCP-500"), 3.5)
+				.containsEntry(ids.get("The Stitched Corridor"), 7.4).doesNotContainKey(ids.get("Squonk"));
+		assertThat(prices).hasSize((int) catalog.stream().filter(card -> card.effectCode() != null).count());
+	}
+
+	@Test
 	@DisplayName("L'id di ogni carta è il numero di riga del CSV, come in TestDecks")
 	void load_cardIdIsTheRowNumber() {
 		assertThat(catalog).extracting(CardDefinition::cardId)
 				.containsExactlyElementsOf(IntStream.rangeClosed(1, 120).boxed().toList());
 		assertThat(catalog.getFirst()).isEqualTo(new CardDefinition(1, "Squonk", CardType.CREATURE, "Common", 1,
-				TestFactions.INVITATION, null, 4, 12, null, null));
+				TestFactions.INVITATION, null, 5, 12, null, null));
 	}
 
 	@Test

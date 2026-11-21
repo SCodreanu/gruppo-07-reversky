@@ -136,28 +136,27 @@ class BonusSealEffectsTest {
 	}
 
 	@Test
-	@DisplayName("SCP-3999: di nuovo nel 3° e nel 5° round in campo, +1 ATK ogni volta fino a +3")
-	void scp3999_everyTwoRounds_capped() {
+	@DisplayName("SCP-3999 (ENG-42): di nuovo in ogni round dal 2° in campo, +1 ATK ogni volta fino a +3")
+	void scp3999_everyRoundFromTheSecond_capped() {
 		// Arrange
 		MatchState state = inCombat(scp3999(1, 60), plain("B", 1, 80));
 		resolver.startCombat(state);
 
-		// Act + Assert: round 1 e 2 niente
-		resolver.resolve(state);
+		// Act + Assert: round 1 niente
 		resolver.resolve(state);
 		assertThat(self(state).attack()).isEqualTo(2);
 
-		// Act + Assert: round 3, il bonus ricevuto prima sparisce
+		// Act + Assert: round 2, il bonus ricevuto prima sparisce
 		bonus(enemy(state), 3);
 		resolver.resolve(state);
 		assertThat(enemy(state).attack()).isEqualTo(1);
 		assertThat(self(state).attack()).isEqualTo(3);
 
-		// Act + Assert: round 5 +1, round 7 niente di più
+		// Act + Assert: round 3 di nuovo, +1; round 4 niente di più
+		bonus(enemy(state), 2);
 		resolver.resolve(state);
-		resolver.resolve(state);
+		assertThat(enemy(state).attack()).isEqualTo(1);
 		assertThat(self(state).attack()).isEqualTo(4);
-		resolver.resolve(state);
 		resolver.resolve(state);
 		assertThat(self(state).attack()).isEqualTo(4);
 	}

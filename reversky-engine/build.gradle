@@ -33,9 +33,9 @@ dependencies {
 }
 
 tasks.named('test') {
-	// I test di bilanciamento sono lenti: si lanciano a mano con balanceTest (ENG-28, docs/test)
+	// I test di bilanciamento sono lenti: si lanciano a mano con balanceTest (ENG-28) ed effectTest (ENG-42, docs/test)
 	useJUnitPlatform {
-		excludeTags 'balance'
+		excludeTags 'balance', 'effects'
 	}
 }
 
@@ -48,8 +48,24 @@ tasks.register('balanceTest', Test) {
 		includeTags 'balance'
 	}
 	systemProperty 'balance.outputDir', file('docs/bilanciamento').absolutePath
-	// Griglia da simulare: base (default) o forme, con -PbalanceGrid=forme (BalanceGrid)
+	// Griglia da simulare: base (default), forme o pv30, con -PbalanceGrid=<nome> (BalanceGrid)
 	systemProperty 'balance.grid', findProperty('balanceGrid') ?: 'base'
+	// Il report dipende dal codice dell'engine e dal catalogo: si rigenera a ogni lancio
+	outputs.upToDateWhen { false }
+	testLogging {
+		showStandardStreams = true
+	}
+}
+
+tasks.register('effectTest', Test) {
+	description = 'Valore di ogni effetto a partite appaiate (ENG-42): scrive report-effetti.md in docs/bilanciamento.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'effects'
+	}
+	systemProperty 'balance.outputDir', file('docs/bilanciamento').absolutePath
 	// Il report dipende dal codice dell'engine e dal catalogo: si rigenera a ogni lancio
 	outputs.upToDateWhen { false }
 	testLogging {

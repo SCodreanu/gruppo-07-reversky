@@ -31,7 +31,17 @@ public enum BalanceGrid {
 					+ "ha +1 ATK in ogni round dello scontro, chi è battuto ha +1 DEF una volta per scontro contro "
 					+ "chi lo batte. La variante per coppia dà +2 DEF invece di +1 a Wound contro Archive e a "
 					+ "Invitation contro Dream.",
-			BalanceGrid::shapes);
+			BalanceGrid::shapes),
+
+	/**
+	 * La griglia di {@code ENG-42}: a 30 PV (D-01) il bonus D-04, quello di prova e +1 ATK contro +1 DEF, per
+	 * ribilanciare ATK e DEF delle creature mentre si sceglie il bonus (deciso il 20 novembre).
+	 */
+	PV30("pv30", "Report di bilanciamento a 30 PV", "report-30pv.md", "report-30pv-carte.csv",
+			"Griglia di lavoro di ENG-42, con gli stessi mazzi e seed di `report-bilanciamento.md`: 30 PV con il "
+					+ "bonus D-04 (+2/-1 ATK), quello di prova (+1 DEF) e +1 ATK contro +1 DEF, per ribilanciare "
+					+ "ATK e DEF delle creature mentre si sceglie il bonus di fazione.",
+			BalanceGrid::thirtyLifePoints);
 
 	private final String gridName;
 	private final String title;
@@ -53,7 +63,7 @@ public enum BalanceGrid {
 	/**
 	 * Griglia con questo nome.
 	 *
-	 * @param name {@code base} o {@code forme}
+	 * @param name {@code base}, {@code forme} o {@code pv30}
 	 * @return la griglia
 	 * @throws IllegalArgumentException se il nome non è di una griglia
 	 */
@@ -120,6 +130,11 @@ public enum BalanceGrid {
 				shape("pv25-atk1-def1", "25 PV, +1 ATK contro +1 DEF", 25, atkOneDefOne),
 				shape("pv30-atk1-def12", "30 PV, " + perPairLabel, 30, perPair),
 				shape("pv25-atk1-def12", "25 PV, " + perPairLabel, 25, perPair));
+	}
+
+	private static List<BalanceConfig> thirtyLifePoints() {
+		List<BalanceConfig> base = BalanceConfig.grid();
+		return List.of(base.get(0), base.get(1), shapes().getFirst());
 	}
 
 	/**

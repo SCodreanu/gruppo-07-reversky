@@ -10,7 +10,8 @@ import it.downfall.reversky.engine.core.model.ModifierDuration;
 
 /**
  * The Unseen Matriarch, Mythic (Theory of the Dream), <i>Velo spezzato</i>: "la prima volta che la sua DEF scende a
- * metà o meno, l'avv. subisce danni pari alla DEF che ha perso (massimo 8) e −1 ATK finché resta in campo".
+ * metà o meno, l'avv. subisce danni pari alla DEF che ha perso (massimo 8) e −2 ATK finché resta in campo" (era
+ * −1; ENG-42, proposta del 21 novembre).
  * <p>
  * Soglia M-06 sulla propria DEF (≤ 50% della DEF all'entrata, bonus compresi), controllata dopo ogni fase
  * ({@code onDefenseCheck}) e solo se è ancora viva. La DEF persa conta solo le ferite vere dall'entrata, non la parte
@@ -23,7 +24,7 @@ public final class UnseenMatriarchEffect implements CreatureEffect {
 	public static final String CODE = "UNSEEN_MATRIARCH";
 
 	private static final int MAX_DAMAGE = 8;
-	private static final int ENEMY_ATTACK = -1;
+	private static final int ENEMY_ATTACK = -2;
 
 	private boolean used;
 

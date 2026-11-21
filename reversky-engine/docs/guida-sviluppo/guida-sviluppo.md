@@ -79,7 +79,7 @@ In *Try it out* scegli l'esempio `basic` (esempio 01) o `full` (esempio 08, seed
 | Rilanciare anche se nulla è cambiato | `gradlew.bat cleanTest test` |
 | Rilanciare a ogni salvataggio | `gradlew.bat test --continuous` |
 | Compilazione + test (prima della PR) | `gradlew.bat build` |
-| Test di bilanciamento (lenti) | `gradlew.bat balanceTest`, vedi sotto |
+| Test di bilanciamento (lenti) | `gradlew.bat balanceTest` e `gradlew.bat effectTest`, vedi sotto |
 
 Dall'IDE: clic sulla freccia verde accanto alla classe o al metodo di test. Per il debug: *Debug* invece di *Run*.
 
@@ -158,9 +158,18 @@ Dal 20 novembre (`ENG-28`) i test con `@Tag("balance")` non partono con `test` n
 ```bash
 gradlew.bat balanceTest    # alcuni minuti; scrive docs/bilanciamento/report-bilanciamento.md e report-carte.csv
 gradlew.bat balanceTest -PbalanceGrid=forme   # forme del bonus di D-04: report-forme-bonus.md e il suo CSV
+gradlew.bat balanceTest -PbalanceGrid=pv30    # tre bonus a 30 PV (ENG-42): report-30pv.md e il suo CSV
 ```
 
 Il task si rilancia sempre (non è mai "up to date") e mostra l'avanzamento per configurazione. Come sono fatti mazzi, seed, configurazioni e avvisi: [test](../test/test.md#test-di-bilanciamento-eng-28).
+
+Dal 21 novembre (`ENG-42`) anche i test con `@Tag("effects")` sono separati, con il task `effectTest`:
+
+```bash
+gradlew.bat effectTest     # valore di ogni effetto a partite appaiate: report-effetti.md e report-effetti-carte.csv
+```
+
+Come si misura e come si giudica un effetto: [test](../test/test.md#valore-degli-effetti-eng-42-fase-2).
 
 ## 7. Problemi comuni
 

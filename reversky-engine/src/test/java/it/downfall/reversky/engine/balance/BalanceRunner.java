@@ -33,19 +33,33 @@ public final class BalanceRunner {
 	private final BalanceDeckBuilder decks;
 	private final int matchesPerPairing;
 	private final long baseSeed;
-	private final MatchSimulator simulator = new MatchSimulator(EffectRegistry.withAllEffects());
+	private final MatchSimulator simulator;
 
 	/**
-	 * Crea il runner.
+	 * Crea il runner con gli effetti del gioco.
 	 *
 	 * @param catalog           carte del catalogo, nell'ordine del CSV
 	 * @param matchesPerPairing partite per ogni accoppiamento di fazioni
 	 * @param baseSeed          seed della prima partita
 	 */
 	public BalanceRunner(List<CardDefinition> catalog, int matchesPerPairing, long baseSeed) {
+		this(catalog, matchesPerPairing, baseSeed, EffectRegistry.withAllEffects());
+	}
+
+	/**
+	 * Crea il runner con un registro degli effetti dato, per esempio con gli effetti finti di {@link EffectAblation}.
+	 *
+	 * @param catalog           carte del catalogo, nell'ordine del CSV
+	 * @param matchesPerPairing partite per ogni accoppiamento di fazioni
+	 * @param baseSeed          seed della prima partita
+	 * @param registry          effetti che l'engine usa
+	 */
+	public BalanceRunner(List<CardDefinition> catalog, int matchesPerPairing, long baseSeed,
+			EffectRegistry registry) {
 		this.decks = new BalanceDeckBuilder(catalog);
 		this.matchesPerPairing = matchesPerPairing;
 		this.baseSeed = baseSeed;
+		this.simulator = new MatchSimulator(registry);
 	}
 
 	/**

@@ -95,10 +95,11 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 | `ENG-26` | Effetti Theory of the Wound e Theory of the Dream: i `P1` entro il 30 | B | L | `ENG-22`, `ENG-23` |
 | `ENG-41` | Una sola Hidden attiva per giocatore, le altre in fila (regola dei DSG del 20 novembre, D-15); prima di `ENG-28`, così il report misura la regola definitiva | A + B | S | `ENG-20` |
 | `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26`, `ENG-41` |
+| `ENG-42` | Bilanciamento delle fazioni: fase 1 ATK e DEF delle creature (griglia `pv30`, proposta del 20 novembre), fase 2 numeri degli effetti carta per carta prima del code freeze | A + B | L | `ENG-28` |
 
 **Versione completa (30 novembre):** effetti `P1` nel registro, report di bilanciamento consegnato ai DSG.
 
-Primo report di bilanciamento con l'engine vero (20 novembre, `ENG-28`): [report-bilanciamento](../bilanciamento/report-bilanciamento.md), si rigenera con `gradlew balanceTest`. Le forme del bonus di fazione da proporre per D-04: [report-forme-bonus](../bilanciamento/report-forme-bonus.md), con `gradlew balanceTest -PbalanceGrid=forme`.
+Primo report di bilanciamento con l'engine vero (20 novembre, `ENG-28`): [report-bilanciamento](../bilanciamento/report-bilanciamento.md), si rigenera con `gradlew balanceTest`. Le forme del bonus di fazione da proporre per D-04: [report-forme-bonus](../bilanciamento/report-forme-bonus.md), con `gradlew balanceTest -PbalanceGrid=forme`. Il ribilanciamento delle statistiche di `ENG-42` (fase 1, proposta): [report-30pv](../bilanciamento/report-30pv.md), con `gradlew balanceTest -PbalanceGrid=pv30`.
 
 ## Sprint 7 — 30 novembre – 6 dicembre: test e rifinitura
 

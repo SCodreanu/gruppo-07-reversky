@@ -5,7 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import it.downfall.reversky.engine.core.model.CardDefinition;
 import it.downfall.reversky.engine.core.model.CardSubtype;
@@ -38,8 +41,30 @@ public final class CatalogCsv {
 	private static final int ATTACK = 6;
 	private static final int DEFENSE = 7;
 	private static final int EFFECT_CODE = 8;
+	private static final int EFFECT_PRICE = 10;
 
 	private CatalogCsv() {
+	}
+
+	/**
+	 * Legge il prezzo degli effetti (colonna {@code ps_effetto}, in punti di V) dallo stesso file di {@link #load}.
+	 *
+	 * @param path percorso del file
+	 * @return prezzo per id della carta (numero di riga), solo per le carte che ne hanno uno; mappa immutabile
+	 * @throws IOException se il file non si legge
+	 */
+	public static Map<Integer, Double> effectPrices(Path path) throws IOException {
+		List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+		Map<Integer, Double> prices = new LinkedHashMap<>();
+		for (int row = 1; row < lines.size(); row++) {
+			if (!lines.get(row).isBlank()) {
+				String price = splitLine(lines.get(row)).get(EFFECT_PRICE);
+				if (!price.isBlank()) {
+					prices.put(row, Double.valueOf(price));
+				}
+			}
+		}
+		return Collections.unmodifiableMap(prices);
 	}
 
 	/**

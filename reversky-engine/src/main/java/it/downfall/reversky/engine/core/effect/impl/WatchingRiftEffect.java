@@ -8,7 +8,8 @@ import it.downfall.reversky.engine.core.model.MatchState;
 import it.downfall.reversky.engine.core.model.PlacedTerrain;
 
 /**
- * Watching Rift (Crepa Occhi), Terreno della Theory of the Archive: bonus base +1 ATK e +1 DEF. Effetto secondario
+ * Watching Rift (Crepa Occhi), Terreno della Theory of the Archive: bonus base +1 ATK (era +1 ATK e +1 DEF, cambiato
+ * il 21 novembre con ENG-42, proposta per i DSG). Effetto secondario
  * (ENG-27): la prima Spell {@code DAMAGE} subita da ogni creatura della fazione in uno scontro fa 1 punto in meno in
  * totale, prima dalla DEF, poi dall'ATK.
  * <p>
@@ -28,7 +29,8 @@ public final class WatchingRiftEffect extends BaseTerrainEffect {
 
 	/** Crea l'effetto. */
 	public WatchingRiftEffect() {
-		super(1, 1);
+		// ENG-42 fase 2, proposta per i DSG: +1 DEF tolto (il Terreno valeva 6 V più degli altri)
+		super(1, 0);
 	}
 
 	@Override
