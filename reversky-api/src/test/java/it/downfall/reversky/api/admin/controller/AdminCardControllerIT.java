@@ -186,17 +186,17 @@ class AdminCardControllerIT {
 	void update_validRequest_returns200WithCard() throws Exception {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		Rarity uncommon = testCards.uncommon();
+		Rarity rare = testCards.rare();
 		String newName = uniqueName("Renamed");
 
 		// Act + Assert
-		putCard(card.getId(), body(newName, CardType.HIDDEN, uncommon.getId(), CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
+		putCard(card.getId(), body(newName, CardType.HIDDEN, rare.getId(), CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(card.getId()))
 			.andExpect(jsonPath("$.name").value(newName))
 			.andExpect(jsonPath("$.type").value("HIDDEN"))
-			.andExpect(jsonPath("$.rarity.id").value(uncommon.getId()))
-			.andExpect(jsonPath("$.rarity.name").value(uncommon.getName()))
+			.andExpect(jsonPath("$.rarity.id").value(rare.getId()))
+			.andExpect(jsonPath("$.rarity.name").value(rare.getName()))
 			.andExpect(jsonPath("$.subtype").value("DAMAGE"))
 			.andExpect(jsonPath("$.effectCode").value("HIDE_BEHIND"))
 			.andExpect(jsonPath("$.atk").isEmpty())
@@ -204,7 +204,7 @@ class AdminCardControllerIT {
 		CatalogCard saved = reload(card);
 		assertThat(saved.getName()).isEqualTo(newName);
 		assertThat(saved.getCardType()).isEqualTo(CardType.HIDDEN);
-		assertThat(saved.getRarity().getId()).isEqualTo(uncommon.getId());
+		assertThat(saved.getRarity().getId()).isEqualTo(rare.getId());
 	}
 
 	@Test

@@ -56,7 +56,7 @@ public class AdminCardController {
 		return ResponseEntity.ok(catalogCardService.findAll(type, name, rarityId, factionId, active, pageable));
 	}
 
-	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants, rarity included. " + "SPELL and HIDDEN cards must be Common or Uncommon, TERRAIN cards must be Rare, and a creature's ATK and DEF must not exceed the maximums of its rarity (no check when the rarity has no maximum). " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original.")
+	@Operation(summary = "Update a card", description = "Replaces the fields of a card. The image is not part of the request. " + "For a variant, the game fields of the request (type, subtype, effect, stats, copy limit) are ignored and copied from the original. " + "Updating an original also updates the game fields of all its variants, rarity included. " + "SPELL, HIDDEN, TERRAIN and ITEM cards must be Rare, and a creature's ATK and DEF must not exceed the maximums of its rarity (no check when the rarity has no maximum). " + "Set variantOfId to make the card a variant of an original card, or leave it empty to make it an original.")
 	@ApiResponse(responseCode = "200", description = "Card updated")
 	@ApiResponse(responseCode = "400", description = "Missing or invalid fields")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")

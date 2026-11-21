@@ -10,16 +10,16 @@ import java.util.Set;
  * invece di un errore del database.
  * <p>
  * Ogni tipo conosce anche le rarità che ammette, come {@code sorting_order} (docs/backoffice,
- * regola 4): Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, le creature qualsiasi.
- * Questa regola non ha un vincolo nel database e la controlla solo il service.
+ * regola 4): Spell, Hidden, Terreni e Oggetti solo Rare (Spell e Hidden Rare dal 21 novembre, con il catalogo di
+ * 120 carte), le creature qualsiasi. Questa regola non ha un vincolo nel database e la controlla solo il service.
  */
 public enum CardType {
 
 	// Primo argomento: sottotipi ammessi. Secondo: sorting_order delle rarità ammesse (vuoto = qualsiasi).
 	CREATURE(Set.of(), Set.of()),
 	TERRAIN(Set.of(), Set.of(Rarity.RARE_ORDER)),
-	SPELL(Set.of(CardSubtype.DAMAGE, CardSubtype.SHIELD, CardSubtype.BURN), Set.of(Rarity.COMMON_ORDER, Rarity.UNCOMMON_ORDER)),
-	HIDDEN(Set.of(CardSubtype.SURVIVAL, CardSubtype.DAMAGE), Set.of(Rarity.COMMON_ORDER, Rarity.UNCOMMON_ORDER)),
+	SPELL(Set.of(CardSubtype.DAMAGE, CardSubtype.SHIELD, CardSubtype.BURN), Set.of(Rarity.RARE_ORDER)),
+	HIDDEN(Set.of(CardSubtype.SURVIVAL, CardSubtype.DAMAGE), Set.of(Rarity.RARE_ORDER)),
 	ITEM(Set.of(), Set.of(Rarity.RARE_ORDER));
 
 	private final Set<CardSubtype> allowedSubtypes;
@@ -73,6 +73,15 @@ public enum CardType {
 	 * (chk_catalog_cards_faction_matches_type).
 	 */
 	public boolean hasFaction() {
+		return this != SPELL && this != HIDDEN;
+	}
+
+	/**
+	 * La carta conta nel massimo per mazzo della sua rarità ({@code rarities.max_per_deck}, docs/mazzi)? Spell e
+	 * Hidden sono Rare ma non contano (deciso il 21 novembre): hanno già i loro numeri esatti nel rule set.
+	 * Terreni e Oggetti invece occupano un posto tra le Rare.
+	 */
+	public boolean countsTowardRarityMaximum() {
 		return this != SPELL && this != HIDDEN;
 	}
 

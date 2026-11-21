@@ -17,13 +17,15 @@ import it.downfall.reversky.api.user.entity.User;
  * Come {@link TestCards} non è un {@code @TestComponent}, per non cambiare la configurazione del test: si crea con
  * {@code new TestDecks(testCards, testCollections, ruleSetService)}.
  * <p>
- * Ogni chiamata crea carte nuove: Creature, Spell e Hidden Common con al massimo 3 copie (il {@code deck_limit} della
- * Common del seed), Terreni e Oggetti Rare con una copia. Le Hidden sono {@code SURVIVAL}: basta finché
+ * Ogni chiamata crea carte nuove: creature Common con al massimo 3 copie (il {@code deck_limit} della Common del
+ * seed), Spell e Hidden Rare con al massimo 2 copie (il {@code deck_limit} della Rare; non contano nel
+ * {@code max_per_deck}), Terreni e Oggetti Rare con una copia. Le Hidden sono {@code SURVIVAL}: basta finché
  * {@code deck_hidden} non supera {@code max_hidden_survival}, come nel rule set {@code 1.0}.
  */
 public class TestDecks {
 
 	private static final int COMMON_COPIES = 3;
+	private static final int RARE_COPIES = 2;
 
 	private final TestCards testCards;
 	private final TestCollections testCollections;
@@ -45,8 +47,8 @@ public class TestDecks {
 		Map<CatalogCard, Integer> content = new LinkedHashMap<>();
 
 		fill(content, CardType.CREATURE, rules.getDeckCreatures(), COMMON_COPIES);
-		fill(content, CardType.SPELL, rules.getDeckSpells(), COMMON_COPIES);
-		fill(content, CardType.HIDDEN, rules.getDeckHidden(), COMMON_COPIES);
+		fill(content, CardType.SPELL, rules.getDeckSpells(), RARE_COPIES);
+		fill(content, CardType.HIDDEN, rules.getDeckHidden(), RARE_COPIES);
 		fill(content, CardType.ITEM, rules.getDeckItems(), 1);
 		fill(content, CardType.TERRAIN, rules.getDeckTerrains(), 1);
 

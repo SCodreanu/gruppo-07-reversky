@@ -51,6 +51,8 @@ Serve un vincolo che impedisca di riempire il mazzo solo con le carte più forti
 
 Il Terreno e l'Oggetto sono carte Rare e occupano ciascuno uno dei posti del massimo delle Rare.
 
+Anche Spell e Hidden sono Rare (deciso il 21 novembre, con il catalogo di 120 carte), ma **non** contano nel massimo delle Rare: hanno già il loro numero esatto nel rule set. Il limite di copie della Rare (`deck_limit` 2) vale anche per loro (`CardType.countsTowardRarityMaximum`).
+
 Non c'è nessun vincolo tra la fazione del Terreno o dell'Oggetto e le fazioni delle creature del mazzo.
 
 La distribuzione "circa 10 Common, 7 Uncommon…" del regolamento è solo indicativa: **non** si valida.
