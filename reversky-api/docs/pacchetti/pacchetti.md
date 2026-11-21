@@ -169,3 +169,18 @@ Risposta dell'apertura:
 - Con più bonus riusciti che slot vincono i più rari, e il numero di carte non cambia.
 - Uno slot base senza carte della sua rarità scende alla rarità inferiore; se sotto non c'è niente, sale. Il numero di carte non cambia e il ripiego non sceglie mai un Terreno né un Oggetto.
 - Uno slot che non trova nessuna carta → `422`: pacchetto ancora nell'inventario, collezione invariata, nessuna riga in `pack_openings`.
+
+## Comportamento già implementato
+
+### Negozio e acquisto (API-18 #88, API-22 #92)
+
+- `GET /api/v1/packs` è pubblico: pacchetti attivi in ordine di id, con `cost`, `purchaseLimit`, `cardCount`, slot e solo i bonus di rarità che hanno carte (con `probabilityUnits` e `percentage`). Con il token, `remainingPurchases` dice quanti pacchetti con limite l'utente può ancora comprare; senza token o senza limite è `null`.
+- `POST /api/v1/packs/{id}/purchase` con `{ "quantity": 1..10 }` (`PackService.purchase`): blocca l'inventario **prima** di contare i pacchetti già comprati (aperti + da aprire), così due acquisti contemporanei non superano il limite; poi `spendCredits` (riga `PACK_PURCHASE`, anche da 0) e `addPacks`. Risponde con l'inventario aggiornato, come `GET /inventory`.
+
+| Caso | Status | `code` |
+|---|---|---|
+| `quantity` mancante o fuori da 1–10 | `400` | `VALIDATION_FAILED` |
+| pacchetto inesistente | `404` | `PACK_NOT_FOUND` |
+| pacchetto disattivato | `422` | `PACK_NOT_AVAILABLE` |
+| oltre `purchase_limit`, contando gli aperti | `422` | `PACK_PURCHASE_LIMIT` |
+| crediti insufficienti | `422` | `INSUFFICIENT_CREDITS` |
