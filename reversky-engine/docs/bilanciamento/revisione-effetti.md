@@ -712,7 +712,7 @@ Carte già segnalate da riprendere quando si arriva a loro: The Hollow Wyrm (con
 
 ### SCP-500 · Pillola di Emergenza — Spell `SHIELD` — **confermata** (11 novembre)
 
-- **Effetto:** la prossima creatura del proprietario **subisce 4 danni in meno dal primo danno**.
+- **Effetto:** la prossima creatura del proprietario **subisce 5 danni in meno dal primo danno** (il catalogo finale ha portato il valore da 4 a 5; confermato il 20 novembre, `ENG-40`).
 - **Motore:** modificatore in attesa (D-34); `modifyIncomingDamage`, una volta per entrata, sul primo danno maggiore di 0 (D-33). Le riduzioni si sottraggono prima di un eventuale dimezzamento (regola di SCP-3000).
 - **Lettura decisa:** vale per il **primo danno di qualunque tipo** (attacco o effetto), come dice il testo della carta ("primo danno subito"); la riga del catalogo degli effetti, che dice "primo attacco", va corretta. Così ferma anche un danno all'entrata (Mothman, SCP-001, The Stitched Corridor).
 - **Valore:** circa 4 PS (fino a 4 punti, meno se il primo colpo è sotto 4), in fondo al budget.

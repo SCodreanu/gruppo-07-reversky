@@ -1,0 +1,93 @@
+id,nome,tipo,fazione,rarita,partite,punti_per_copia,errore_punti,valore_v,errore_v,ps_effetto,riferimento_v,scarto_v,giudizio
+43,The Null Witness,CREATURE,Archive,Mythic,4740,0.0922,0.0059,6.37,0.41,5.20,5.20,1.17,ok
+78,Rokurokubi,CREATURE,Dream,Uncommon,5730,0.0311,0.0026,2.15,0.18,1.20,1.20,0.95,ok
+84,Nure-onna,CREATURE,Dream,Rare,4856,0.0189,0.0027,1.31,0.19,0.60,0.60,0.71,ok
+75,Kappa,CREATURE,Dream,Uncommon,5766,0.0405,0.0027,2.80,0.18,2.10,2.10,0.70,ok
+9,Hidebehind,CREATURE,Invitation,Uncommon,5882,0.0465,0.0030,3.21,0.21,2.60,2.60,0.61,ok
+36,The Index Maw,CREATURE,Archive,Uncommon,5763,0.0355,0.0027,2.46,0.19,1.90,1.90,0.56,ok
+67,The Hollow Wyrm,CREATURE,Wound,Legendary,5529,0.0979,0.0061,6.77,0.42,6.30,6.30,0.47,ok
+37,SCP-106,CREATURE,Archive,Rare,4805,0.0497,0.0039,3.44,0.27,3.10,3.10,0.34,ok
+57,The Gnawing Witness,CREATURE,Wound,Uncommon,5982,0.0221,0.0027,1.53,0.18,1.30,1.30,0.23,ok
+55,Cartellino Sbiadito,CREATURE,Wound,Uncommon,6004,0.0248,0.0028,1.71,0.19,1.50,1.50,0.21,ok
+59,Skin-Stealers,CREATURE,Wound,Rare,4934,0.0486,0.0040,3.36,0.28,3.30,3.30,0.06,ok
+30,SCP-173,CREATURE,Archive,Uncommon,5769,0.0240,0.0028,1.66,0.19,1.60,1.60,0.06,ok
+79,The Threadbound Doll,CREATURE,Dream,Uncommon,5799,0.0266,0.0026,1.84,0.18,1.80,1.80,0.04,ok
+82,Yuki-onna,CREATURE,Dream,Rare,4776,0.0654,0.0044,4.52,0.31,4.50,4.50,0.02,ok
+53,Howlers,CREATURE,Wound,Uncommon,5950,0.0320,0.0028,2.21,0.19,2.20,2.20,0.01,ok
+58,L'Addetto alle Uscite,CREATURE,Wound,Uncommon,5928,0.0181,0.0023,1.25,0.16,1.50,1.50,-0.25,ok
+85,The Face Collector,CREATURE,Dream,Rare,4730,0.0668,0.0041,4.62,0.28,4.90,4.90,-0.28,ok
+17,The Bloodless Hound,CREATURE,Invitation,Rare,4932,0.0442,0.0032,3.05,0.22,3.40,3.40,-0.35,ok
+13,Il Raccoglitore di Orme,CREATURE,Invitation,Uncommon,5994,0.0223,0.0026,1.54,0.18,1.90,1.90,-0.36,ok
+63,Hounds,CREATURE,Wound,Mythic,4882,0.0235,0.0028,1.62,0.19,2.00,2.00,-0.38,ok
+33,Il Collezionista di Nomi,CREATURE,Archive,Uncommon,5744,0.0305,0.0028,2.11,0.20,2.60,2.60,-0.49,ok
+81,The Masked Bloom,CREATURE,Dream,Uncommon,5821,0.0279,0.0029,1.93,0.20,2.50,2.50,-0.57,ok
+80,L'Ombra del Torii,CREATURE,Dream,Uncommon,5797,0.0207,0.0028,1.43,0.19,2.00,2.00,-0.57,ok
+61,Il Direttore dell'Edificio,CREATURE,Wound,Rare,4831,0.0373,0.0038,2.58,0.26,3.20,3.20,-0.62,ok
+86,Baku,CREATURE,Dream,Mythic,4812,0.0531,0.0044,3.67,0.30,4.30,4.30,-0.63,ok
+10,Il Pastore Muto,CREATURE,Invitation,Uncommon,5976,0.0266,0.0026,1.84,0.18,2.50,2.50,-0.66,ok
+35,SCP-2006,CREATURE,Archive,Uncommon,5847,0.0164,0.0020,1.13,0.14,1.80,1.80,-0.67,ok
+38,SCP-682,CREATURE,Archive,Rare,4691,0.0410,0.0033,2.83,0.22,3.50,3.50,-0.67,ok
+32,SCP-049,CREATURE,Archive,Uncommon,5704,0.0277,0.0029,1.91,0.20,2.60,2.60,-0.69,ok
+77,Noppera-bō,CREATURE,Dream,Uncommon,5843,0.0272,0.0028,1.88,0.20,2.60,2.60,-0.72,ok
+11,Cervo Bianco,CREATURE,Invitation,Uncommon,6000,0.0237,0.0027,1.64,0.18,2.40,2.40,-0.76,ok
+40,The Drowned Memory,CREATURE,Archive,Rare,4817,0.0670,0.0041,4.63,0.28,5.40,5.40,-0.77,ok
+76,Nurikabe,CREATURE,Dream,Uncommon,5770,0.0310,0.0028,2.14,0.20,3.00,3.00,-0.86,ok
+44,SCP-001,CREATURE,Archive,Legendary,5415,0.1524,0.0061,10.54,0.42,11.40,11.40,-0.86,ok
+22,La Regina dei Sentieri Perduti,CREATURE,Invitation,Legendary,5540,-0.0134,0.0063,-0.92,0.43,0.00,0.00,-0.92,ok
+14,Spearfinger,CREATURE,Invitation,Rare,4929,0.0314,0.0032,2.17,0.22,3.10,3.10,-0.93,ok
+16,Il Predicatore sotto la Pioggia,CREATURE,Invitation,Rare,4886,0.0370,0.0035,2.56,0.24,3.50,3.50,-0.94,ok
+60,Il Doppio di Servizio,CREATURE,Wound,Rare,4898,0.0583,0.0040,4.03,0.28,5.00,5.00,-0.97,ok
+62,L'Operatore della Stanza 0,CREATURE,Wound,Rare,4859,0.0617,0.0039,4.27,0.27,5.30,5.30,-1.03,ok
+8,Wampus Cat,CREATURE,Invitation,Uncommon,5983,0.0183,0.0026,1.27,0.18,2.30,2.30,-1.03,ok
+41,SCP-2317,CREATURE,Archive,Mythic,4837,0.0515,0.0046,3.56,0.32,4.60,4.60,-1.04,ok
+92,The Stitched Corridor,CREATURE,Wound/Archive,Mutant,8818,0.0920,0.0042,6.36,0.29,7.40,7.40,-1.04,ok
+65,Il Custode delle Porte Incrociate,CREATURE,Wound,Mythic,4943,0.0454,0.0042,3.14,0.29,4.30,4.30,-1.16,ok
+83,Jorōgumo,CREATURE,Dream,Rare,4735,0.0598,0.0042,4.13,0.29,5.30,5.30,-1.17,ok
+20,The Thorned Matriarch,CREATURE,Invitation,Mythic,4893,0.0769,0.0056,5.32,0.39,6.50,6.50,-1.18,ok
+90,Kitsune,CREATURE,Dream,Legendary,5507,0.0859,0.0047,5.94,0.33,7.20,7.20,-1.26,ok
+42,SCP-3000,CREATURE,Archive,Mythic,4913,0.0757,0.0048,5.23,0.33,6.50,6.50,-1.27,ok
+56,Sala d'Attesa Vivente,CREATURE,Wound,Uncommon,5912,0.0302,0.0031,2.09,0.21,3.60,3.60,-1.51,ok
+34,SCP-053,CREATURE,Archive,Uncommon,5845,0.0206,0.0032,1.42,0.22,3.00,3.00,-1.58,ok
+12,The Nameless Caller,CREATURE,Invitation,Uncommon,5959,0.0291,0.0030,2.01,0.21,3.60,3.60,-1.59,ok
+31,SCP-096,CREATURE,Archive,Uncommon,5821,0.0125,0.0021,0.87,0.15,2.50,2.50,-1.63,ok
+64,Deathmoths,CREATURE,Wound,Mythic,4876,0.0481,0.0049,3.32,0.34,5.00,5.00,-1.68,ok
+18,Mothman,CREATURE,Invitation,Mythic,4946,0.0570,0.0049,3.94,0.34,5.80,5.80,-1.86,ok
+88,The Undying Blossom,CREATURE,Dream,Mythic,4748,0.0885,0.0059,6.12,0.41,8.00,8.00,-1.88,ok
+54,Wretches,CREATURE,Wound,Uncommon,5942,0.0246,0.0026,1.70,0.18,3.60,3.60,-1.90,ok
+15,Bell Witch,CREATURE,Invitation,Rare,4857,0.0356,0.0040,2.46,0.28,4.50,4.50,-2.04,ok
+87,The Unseen Matriarch,CREATURE,Dream,Mythic,4819,0.0336,0.0042,2.32,0.29,4.50,4.50,-2.18,ok
+39,SCP-2521,CREATURE,Archive,Rare,4857,0.0336,0.0031,2.32,0.21,4.50,4.50,-2.18,ok
+19,Bigfoot,CREATURE,Invitation,Mythic,4888,0.0633,0.0048,4.38,0.33,6.60,6.60,-2.22,ok
+21,Wendigo,CREATURE,Invitation,Legendary,5579,0.0719,0.0043,4.97,0.30,7.40,7.40,-2.43,ok
+91,The Rootbound Doppelganger,CREATURE,Invitation/Dream,Mutant,8892,0.0715,0.0038,4.94,0.26,7.90,7.90,-2.96,ok
+45,SCP-3999,CREATURE,Archive,Legendary,5377,0.0802,0.0049,5.55,0.34,8.60,8.60,-3.05,ok
+89,Shuten-dōji,CREATURE,Dream,Legendary,5506,0.0855,0.0047,5.91,0.33,10.10,10.10,-4.19,ok
+66,Smiler,CREATURE,Wound,Legendary,5633,0.0775,0.0044,5.36,0.31,10.10,10.10,-4.74,ok
+102,Richiamo della Crepa,SPELL,,Uncommon,10833,0.0713,0.0027,4.93,0.19,4.90,4.53,0.40,ok
+97,Patto del Registro,SPELL,,Uncommon,10852,0.0702,0.0028,4.85,0.20,4.70,4.53,0.32,ok
+96,Velo degli Ancorati,SPELL,,Uncommon,10818,0.0702,0.0030,4.85,0.21,5.10,4.53,0.32,ok
+94,Frattura della Pelle,SPELL,,Uncommon,10932,0.0693,0.0030,4.79,0.21,4.90,4.53,0.26,ok
+93,Morso del Rovescio,SPELL,,Uncommon,10840,0.0676,0.0029,4.67,0.20,4.90,4.53,0.14,ok
+100,SCP-109,SPELL,,Uncommon,10821,0.0669,0.0030,4.63,0.21,4.80,4.53,0.10,ok
+103,Fusione del Rovescio,SPELL,,Uncommon,10838,0.0646,0.0027,4.47,0.19,4.50,4.53,-0.07,ok
+98,Armatura della Pioggia,SPELL,,Uncommon,10850,0.0638,0.0027,4.41,0.18,4.20,4.53,-0.12,ok
+95,Dissoluzione,SPELL,,Uncommon,10793,0.0635,0.0030,4.39,0.21,4.70,4.53,-0.14,ok
+101,SCP-458,SPELL,,Uncommon,10921,0.0619,0.0029,4.28,0.20,4.00,4.53,-0.25,ok
+104,Eco dei Dimenticati,SPELL,,Uncommon,10847,0.0593,0.0027,4.10,0.19,4.50,4.53,-0.43,ok
+99,SCP-500,SPELL,,Uncommon,10721,0.0581,0.0029,4.02,0.20,3.50,4.53,-0.51,ok
+108,Unseen Exit,HIDDEN,,Uncommon,8594,0.0662,0.0037,4.58,0.26,3.90,3.34,1.23,ok
+105,Last Sanctuary,HIDDEN,,Uncommon,8387,0.0596,0.0036,4.12,0.25,3.70,3.34,0.78,ok
+109,Hostile Presence,HIDDEN,,Uncommon,6042,0.0561,0.0044,3.88,0.30,3.20,3.34,0.54,ok
+112,Static Interference,HIDDEN,,Uncommon,6139,0.0482,0.0042,3.33,0.29,3.50,3.34,-0.01,ok
+106,Survival Instinct,HIDDEN,,Uncommon,8527,0.0441,0.0029,3.05,0.20,3.20,3.34,-0.29,ok
+110,Echo Strike,HIDDEN,,Uncommon,6087,0.0390,0.0042,2.70,0.29,3.10,3.34,-0.65,ok
+111,Breaking Point,HIDDEN,,Uncommon,6132,0.0370,0.0045,2.56,0.31,3.80,3.34,-0.78,ok
+107,Remnants of Reality,HIDDEN,,Uncommon,8554,0.0365,0.0029,2.52,0.20,2.50,3.34,-0.82,ok
+116,Devouring Abyss,TERRAIN,Dream,Rare,7500,0.2385,0.0055,16.49,0.38,5.30,14.02,2.47,ok
+114,Hollow Clearing,TERRAIN,Invitation,Rare,7500,0.1997,0.0054,13.80,0.37,3.80,14.02,-0.22,ok
+115,Watching Rift,TERRAIN,Archive,Rare,7500,0.1934,0.0051,13.37,0.35,4.90,14.02,-0.65,ok
+113,Echo Rift,TERRAIN,Wound,Rare,7500,0.1797,0.0051,12.42,0.36,4.20,14.02,-1.60,ok
+117,Badge di Uscita Negata,ITEM,Wound,Rare,7500,0.0714,0.0046,4.94,0.32,5.30,3.25,1.68,ok
+118,Bussola dei Sentieri Falsi,ITEM,Invitation,Rare,7500,0.0432,0.0034,2.99,0.24,3.30,3.25,-0.27,ok
+119,Fascicolo Sigillato 0,ITEM,Archive,Rare,7500,0.0395,0.0032,2.73,0.22,2.90,3.25,-0.52,ok
+120,Campanello del Torii,ITEM,Dream,Rare,7500,0.0341,0.0030,2.36,0.21,2.70,3.25,-0.90,ok

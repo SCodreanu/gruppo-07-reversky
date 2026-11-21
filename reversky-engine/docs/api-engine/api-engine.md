@@ -74,13 +74,17 @@ Simula una partita completa.
 | `factions` | sì | dalla tabella `factions` |
 | `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonuses` |
 | `challenger`, `opponent` | sì | sfidante e avversario |
+| `userId` | sì | id dell'utente nell'API, restituito uguale nel risultato |
 | `deck` | sì | una voce **per ogni copia**, almeno una creatura |
-| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`) |
+| `cardId` | sì | id della carta nel catalogo |
+| `name` | sì | nome della carta, in inglese: è quello che compare nel log |
+| `rarity` | sì | nome della rarità (`rarities.name`) |
+| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`); un valore che non esiste rende il JSON non valido |
 | `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
-| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
+| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità; l'engine si aspetta Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6 (Bigfoot e SCP-3000 usano Rare = 3) |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
-| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
+| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL`; un valore che non esiste rende il JSON non valido |
 | `effectCode` | Spell, Hidden, Terreni e Oggetti | `catalog_cards.effect_code`; facoltativo per le creature |
 
 ### Risposta `200 OK`
@@ -121,32 +125,55 @@ L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
 
 Formato: `ProblemDetail`, come nell'API.
 
-I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore:
+I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore.
+Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'avversario, nell'ordine del mazzo ricevuto:
 
 | Ordine | `code` | Quando | Esempio |
 |---|---|---|---|
-| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`) | `95` |
+| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante, con `rulesVersion` vuota o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`); stesso `id` ripetuto in `factions` | `95` |
 | 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
-| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa o `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) | `93` |
-| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Spell o Hidden con una fazione | `94` |
+| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa, `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) o due righe per la stessa coppia (`originFactionId`, `targetFactionId`) | `93` |
+| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Terreno od Oggetto con `secondaryFactionId` (solo le creature hanno due fazioni); Spell o Hidden con una fazione | `94` |
 | 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
-| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
-| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype` | — |
-| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` | — |
-| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
+| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 (`atk` e `def` sulle altre carte si ignorano) | — |
+| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype`, o con un `subtype` che non esiste per il tipo (Spell: `DAMAGE`, `SHIELD`, `BURN`; Hidden: `SURVIVAL`, `DAMAGE`) | — |
+| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
+| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry`, o che è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Una creatura può non avere `effectCode` (le Common); se ce l'ha, vale la stessa regola (da `ENG-23`) | `90` |
+
+Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `detail`, `code` e `instance`. I testi sono **in inglese**, come negli errori dell'API; non arrivano mai ai giocatori.
 
 ```json
 {
-  "title": "Input di simulazione non valido",
+  "title": "Invalid simulation input",
   "status": 400,
-  "detail": "Effetto sconosciuto: 'HIDEBEHND' sulla carta 23",
-  "code": "UNKNOWN_EFFECT"
+  "detail": "Unknown effect VEIL_OF_ANCHORD on card 96",
+  "code": "UNKNOWN_EFFECT",
+  "instance": "/api/v1/simulations"
 }
 ```
+
+Gli errori della Bean Validation (controllo 1) hanno anche l'elenco `errors` dei campi non validi, con il percorso del campo e il messaggio del vincolo:
+
+```json
+{
+  "title": "Invalid simulation input",
+  "status": 400,
+  "detail": "One or more fields are invalid",
+  "code": "VALIDATION_FAILED",
+  "instance": "/api/v1/simulations",
+  "errors": [ { "field": "challenger.deck[0].name", "message": "Card name is required" } ]
+}
+```
+
+Un JSON malformato, o con un `type`/`subtype` che non esiste, ha `detail` "Malformed JSON or a value of the wrong type" e nessun `errors`.
+
+Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERNAL_ERROR` e un `detail` generico: la causa e il **seed** della partita vanno solo nel log tecnico dell'engine (`Simulazione fallita: seed ...`), da cui la partita si riproduce.
 
 ## `GET /api/v1/effects`
 
 Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare `effect_code` delle carte.
+Ogni codice ha il tipo di carta che può portarlo (`appliesTo`): una carta con un codice che non è nell'elenco, o che è elencato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
+L'ordine è stabile: per tipo di carta (`CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM`) e poi per codice in ordine alfabetico. Gli effetti delle creature compaiono man mano che sono implementati: con `ENG-26` ci sono tutti gli effetti `P1` delle creature; con `ENG-34`…`ENG-37` (18 novembre) anche The Bloodless Hound, Wendigo, SCP-109, L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference, The Null Witness, The Hollow Wyrm, The Undying Blossom, Remnants of Reality e Unseen Exit; con `ENG-38` (19 novembre) Il Predicatore sotto la Pioggia, SCP-2521, Baku, Kitsune e Il Custode delle Porte Incrociate; con `ENG-39` La Regina dei Sentieri Perduti e L'Operatore della Stanza 0; con `ENG-40` (20 novembre) la Spell SCP-500. Ci sono tutti i 92 effetti del catalogo, 64 di creature.
 
 ```json
 [
@@ -162,5 +189,7 @@ arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /a
 
 ## Note
 
+- Il log della partita è in [log-partita](../log-partita/log-partita.md). **18 novembre (`ENG-26`):** `ATTACK_COMPUTED` ha un campo `data` in più, `frozen` (booleano, sempre presente), vero quando l'attacco è congelato (Yuki-onna) e `total` è 0; con `ENG-25` era arrivato `effectBonus`. L'`EngineClient` dell'API salva il log così com'è, ma chi lo legge deve conoscere i campi nuovi.
+
 - Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. Se l'engine viene esposto fuori dalla rete privata si aggiunge una chiave condivisa nell'header `X-Engine-Key`, letta da una variabile d'ambiente (D-40).
-- Ogni endpoint va documentato anche in Swagger (springdoc), come nell'API.
+- Ogni endpoint è documentato anche in Swagger (springdoc 3.2.0, come nell'API, D-41): `http://localhost:8081/swagger-ui.html`. Un nuovo endpoint ha `@Operation` e un `@ApiResponse` per ogni status, con il media type e lo schema (`ProblemDetail` e `application/problem+json` per gli errori), e `OpenApiDocumentationTest` controlla che compaia. Gli esempi di richiesta di Swagger (`OpenApiExamples`) sono gli esempi 01 e 08 di `examples/`: il test controlla che restino uguali ai file e che diano la partita attesa.

@@ -30,7 +30,8 @@ public record RuleConfig(String rulesVersion, int startingLifePoints, int maxRou
 
 	public RuleConfig {
 		if (startingLifePoints < 1 || maxRounds < 1) {
-			throw new InvalidSimulationInputException("Regole non valide");
+			// Stesso codice della Bean Validation nello strato web (docs/api-engine, controllo 1)
+			throw new InvalidSimulationInputException(ErrorCode.VALIDATION_FAILED, "Regole non valide: ...");
 		}
 	}
 }
@@ -100,6 +101,7 @@ La regola vale qualunque sia la causa della morte (attacco, effetti di fine roun
 - Quando una creatura muore, il suo proprietario pesca la carta successiva del mazzo.
 - La creatura sopravvissuta **resta in campo** con la DEF che le è rimasta.
 - Se si pesca una Spell, una Hidden, un Terreno o un Oggetto, la carta viene risolta (vedi [carte](../carte/carte.md)) e si continua a pescare finché esce una creatura.
+- Prima pesca lo sfidante, poi l'avversario. Una Spell `DAMAGE` può uccidere la creatura avversaria in campo, anche quella appena pescata: le morti si controllano subito (D-08) e chi ha il campo vuoto pesca di nuovo prima del round.
 - Se nel mazzo restano solo carte non creatura, si risolvono tutte in ordine e poi si controlla la fine della partita (condizione 3 o 4, D-06).
 
 ### Esempio completo (senza bonus di fazione)
