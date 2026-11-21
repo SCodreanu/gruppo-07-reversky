@@ -190,7 +190,7 @@ class AdminCardControllerIT {
 		String newName = uniqueName("Renamed");
 
 		// Act + Assert
-		putCard(card.getId(), body(newName, CardType.HIDDEN, rare.getId(), CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
+		putCard(card.getId(), body(newName, CardType.HIDDEN, rare.getId(), CardSubtype.DAMAGE, TestCards.HIDDEN_EFFECT, null, null, null, 1))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(card.getId()))
 			.andExpect(jsonPath("$.name").value(newName))
@@ -198,7 +198,7 @@ class AdminCardControllerIT {
 			.andExpect(jsonPath("$.rarity.id").value(rare.getId()))
 			.andExpect(jsonPath("$.rarity.name").value(rare.getName()))
 			.andExpect(jsonPath("$.subtype").value("DAMAGE"))
-			.andExpect(jsonPath("$.effectCode").value("HIDE_BEHIND"))
+			.andExpect(jsonPath("$.effectCode").value(TestCards.HIDDEN_EFFECT))
 			.andExpect(jsonPath("$.atk").isEmpty())
 			.andExpect(jsonPath("$.copyLimit").value(1));
 		CatalogCard saved = reload(card);
@@ -309,7 +309,7 @@ class AdminCardControllerIT {
 		CatalogCard card = testCards.createCreature();
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.SPELL, null, TestCards.EFFECT_CODE, null, null, null, null))
+		putCard(card.getId(), body(card.getName(), CardType.SPELL, null, TestCards.effectCodeFor(CardType.SPELL), null, null, null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"));
 	}
@@ -321,7 +321,7 @@ class AdminCardControllerIT {
 		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.TERRAIN, testCards.common().getId(), null, TestCards.EFFECT_CODE, null, null, null, null))
+		putCard(card.getId(), body(card.getName(), CardType.TERRAIN, testCards.common().getId(), null, TestCards.effectCodeFor(CardType.TERRAIN), null, null, null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RARITY_INVALID"));
 		assertThat(reload(card).getRarity().getId()).isEqualTo(testCards.rare().getId());
@@ -522,6 +522,22 @@ class AdminCardControllerIT {
 			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.faction").exists())
 			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.secondaryFaction").exists())
 			.andExpect(jsonPath("$.components.schemas.FactionSummaryResponse.properties.name").exists());
+	}
+
+	// --- effetto (API-36) ---
+
+	@Test
+	@DisplayName("An effect code that is not in the effects table returns 422 CARD_EFFECT_INVALID")
+	void update_unknownEffect_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		putCard(card.getId(), body(card.getName(), CardType.SPELL, testCards.rare().getId(), CardSubtype.BURN,
+				"NOT_IN_ENGINE", null, null, null, null))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_EFFECT_INVALID"));
+		assertThat(reload(card).getEffectCode()).isEqualTo(TestCards.SPELL_EFFECT);
 	}
 
 	// --- supporto ---

@@ -251,7 +251,7 @@ Table catalog_cards {
   name varchar(255) [not null]
   type CardType [not null]
   subtype CardSubtype              // solo Spell e Hidden
-  effect_code varchar(100)         // codice di un effetto implementato nell'engine, inviato come effectCode
+  effect_code varchar(100)         // codice di un effetto implementato nell'engine, inviato come effectCode; con type deve essere in effects (fk_catalog_cards_effect)
 
   image_path text [not null]
 
@@ -290,6 +290,20 @@ Table catalog_cards {
 
   Note: 'I tag si assegnano tramite card_tags e servono ai filtri dei pacchetti. Effetto e sottotipo stanno nelle colonne effect_code e subtype.'
 }
+
+// V13 (API-36): gli effetti che l'engine implementa. Sola lettura, si aggiorna con una migrazione insieme al codice
+// dell'engine; l'API non chiede mai l'elenco all'engine.
+Table effects {
+  code varchar(100) [pk]
+  applies_to CardType [not null]   // l'unico tipo di carta che può portarlo
+
+  Indexes {
+    (code, applies_to) [unique, name: 'uq_effects_code_applies_to', note: 'destinazione di fk_catalog_cards_effect']
+  }
+}
+
+// Chiave composta: effect_code nullo (creature senza effetto) non si controlla
+Ref fk_catalog_cards_effect: catalog_cards.(effect_code, type) > effects.(code, applies_to)
 
 Table collection_cards {
   user_id int [not null, ref: > users.id]

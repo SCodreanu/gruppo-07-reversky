@@ -49,7 +49,7 @@ Campi:
 ### Regole
 
 1. **Le carte non si cancellano mai.** Gli utenti le possiedono e lo storico le usa: si **disattivano**. Una carta disattivata non esce più dai pacchetti e non si può usare nei mazzi (Q-07), ma resta nelle collezioni.
-2. **Effetti.** L'effetto di una carta è `catalog_cards.effect_code` (al massimo uno). Il codice **deve esistere nell'engine**: gli effetti sono codice Java, il backoffice può solo assegnare un effetto già implementato. L'elenco dei codici validi si ottiene dall'engine (`GET /api/v1/effects`).
+2. **Effetti.** L'effetto di una carta è `catalog_cards.effect_code` (al massimo uno). Il codice **deve esistere nell'engine**: gli effetti sono codice Java, il backoffice può solo assegnare un effetto già implementato. L'elenco dei codici validi sta **nell'API**, nella tabella `effects` (V13, API-36, deciso il 21 novembre), e il backoffice lo legge con `GET /admin/effects`: l'engine si chiama solo per simulare, mai per sapere quali effetti esistono. Ogni codice vale per un solo tipo di carta (`appliesTo`): un codice di Terreno su una Spell è rifiutato come un codice inesistente. Un effetto nuovo arriva con una migrazione, insieme al suo codice nell'engine.
 3. **Sottotipi.** Una Spell deve avere uno tra `DAMAGE`, `SHIELD`, `BURN`; una Hidden uno tra `SURVIVAL`, `DAMAGE`; le altre carte nessuno. Lo garantisce il vincolo `chk_catalog_cards_subtype_matches_type`.
 4. **Rarità coerenti con i pacchetti.** Spell, Hidden, Terreni e Oggetti devono essere Rare (Spell e Hidden Rare dal 21 novembre, con il catalogo di 120 carte; prima erano Common o Uncommon), vedi [pacchetti](../pacchetti/pacchetti.md); le creature accettano qualsiasi rarità. Spell e Hidden non contano nel `max_per_deck` della Rare (vedi [mazzi](../mazzi/mazzi.md#bilanciamento-richiesto-dal-brief)). Le rarità si riconoscono dal `sorting_order` e **mai dal nome** (il nome si modifica dal backoffice, l'ordine no; anche l'engine le confronta solo con `rarityOrder`): Common = 1, Uncommon = 2, Rare = 3 (`Rarity.COMMON_ORDER`, `UNCOMMON_ORDER`, `RARE_ORDER`). Il seed delle rarità (`V9`, #85) usa questi valori. La regola non ha un vincolo nel database: la controlla solo il service.
 5. **Nessun massimo di ATK e DEF per rarità.** Le carte personalizzate possono superare qualsiasi soglia: la rarità non limita le statistiche, valgono solo ATK ≥ 0 e DEF ≥ 1 per le creature (decisione del 9 novembre, che sostituisce `max_atk` e `max_def`).
@@ -88,6 +88,7 @@ Endpoint pubblici, senza token (`CardController`):
 | fazioni non coerenti con il tipo (righe `factionId` e `secondaryFactionId` dei campi): Creatura, Terreno o Oggetto senza fazione, Spell o Hidden con una fazione, seconda fazione uguale alla prima | `422` | `CARD_RULES_VIOLATED` |
 | rarità non ammessa per il tipo (regola 4) | `422` | `CARD_RARITY_INVALID` |
 | nome già usato da un'altra carta originale (regola 7) | `409` | `CARD_NAME_TAKEN` |
+| solo per un'originale con `effectCode`: il codice non è in `effects`, o c'è per un altro tipo di carta (regola 2) | `422` | `CARD_EFFECT_INVALID` |
 
 Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card must not have a faction", "The second faction must be different from the first", "The faction 7 does not exist". Una carta che diventa Spell o Hidden perde le fazioni (la richiesta non può averne), e con lei le sue varianti.
 
@@ -95,7 +96,11 @@ Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card mus
 
 `POST /admin/cards/{id}/deactivate` e `/activate` rispondono `200` con la carta e sono idempotenti (disattivare una carta già disattivata non cambia niente). Non toccano le varianti: una versione evento si attiva e disattiva per conto suo.
 
-Non ancora implementato: il controllo che `effectCode` esista nell'engine (regola 2), che richiede il client verso l'engine; per ora si controlla solo che non sia vuoto e che non superi 100 caratteri.
+### Effetti (comportamento già implementato, task API-36, #106)
+
+- `GET /admin/effects` (`AdminEffectController`, `EffectService`), solo ADMIN e in sola lettura: `[{ code, appliesTo }]` per tipo di carta (ordine dell'enum `card_type`: CREATURE, TERRAIN, SPELL, HIDDEN, ITEM) e poi per codice. Nessuna paginazione: sono 92 righe.
+- `PUT /admin/cards/{id}` controlla l'effetto di un'originale con `effectCode` con `EffectService.validateForType`: è l'ultimo controllo, dopo il nome. Una creatura senza effetto non ha niente da controllare; una variante copia l'effetto dall'originale e quello della richiesta si ignora, anche se non esiste. Messaggi: "The effect X is not implemented by the game engine", "The effect X is for CREATURE cards, not SPELL".
+- Lo stesso controllo lo fa il database con `fk_catalog_cards_effect` (vedi [database](../database/database.md#tabella-effects-v13-api-36)), quindi anche una carta inserita da migrazione non può avere un effetto sbagliato. `POST /admin/cards` (API-14) dovrà usare `validateForType`.
 
 ## Dati di riferimento
 

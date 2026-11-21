@@ -32,7 +32,12 @@ import it.downfall.reversky.api.catalog.repository.RarityRepository;
  */
 public class TestCards {
 
-	public static final String EFFECT_CODE = "TEST_EFFECT";
+	// Codici veri della tabella effects (V13), uno per tipo: fk_catalog_cards_effect rifiuta qualsiasi altro codice
+	public static final String CREATURE_EFFECT = "SPEARFINGER";
+	public static final String SPELL_EFFECT = "BITE_OF_REVERSE";
+	public static final String HIDDEN_EFFECT = "LAST_SANCTUARY";
+	public static final String TERRAIN_EFFECT = "ECHO_RIFT";
+	public static final String ITEM_EFFECT = "TORII_BELL";
 	public static final String IMAGE_PATH = "/images/cards/test.webp";
 	public static final int CREATURE_ATK = 5;
 	public static final int CREATURE_DEF = 6;
@@ -66,7 +71,7 @@ public class TestCards {
 	public CatalogCard create(String name, CardType type, Rarity rarity) {
 		Integer atk = type.hasStats() ? CREATURE_ATK : null;
 		Integer def = type.hasStats() ? CREATURE_DEF : null;
-		String effectCode = type.requiresEffect() ? EFFECT_CODE : null;
+		String effectCode = type.requiresEffect() ? effectCodeFor(type) : null;
 		Faction cardFaction = type.hasFaction() ? faction() : null;
 
 		return catalogCardRepository.save(new CatalogCard(null, rarity, cardFaction, null, name, type, defaultSubtype(type), effectCode,
@@ -157,6 +162,19 @@ public class TestCards {
 	 */
 	public static String uniqueName(String prefix) {
 		return prefix + " " + TestUsers.uniqueSuffix();
+	}
+
+	/**
+	 * Un codice della tabella {@code effects} (V13) valido per il tipo, l'unico che la chiave esterna accetta.
+	 */
+	public static String effectCodeFor(CardType type) {
+		return switch (type) {
+			case CREATURE -> CREATURE_EFFECT;
+			case SPELL -> SPELL_EFFECT;
+			case HIDDEN -> HIDDEN_EFFECT;
+			case TERRAIN -> TERRAIN_EFFECT;
+			case ITEM -> ITEM_EFFECT;
+		};
 	}
 
 	// Cerca per sorting_order e mai per nome, come fa CardType
