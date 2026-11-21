@@ -63,7 +63,7 @@ public class TestUsers {
 		return admin;
 	}
 
-	// SQL diretto: User non ha ancora un metodo per disabilitare, arriverà con il backoffice (#73)
+	// SQL diretto: disattiva senza passare da UserAdminService, che serve un admin e cancella anche le sessioni
 	public void disable(User user) {
 		jdbcTemplate.update("UPDATE users SET is_enabled = false WHERE id = ?", user.getId());
 	}

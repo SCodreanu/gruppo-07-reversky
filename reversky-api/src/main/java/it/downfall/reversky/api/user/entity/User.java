@@ -85,4 +85,19 @@ public class User {
 	public boolean isEmailVerified() {
         return this.emailVerifiedAt != null;
     }
+
+	/** Disattiva l'account dal backoffice: il login risponde 403 finché non viene riattivato. */
+	public void disable() {
+		this.enabled = false;
+	}
+
+	/** Riattiva l'account dal backoffice. */
+	public void enable() {
+		this.enabled = true;
+	}
+
+	/** Cambia il ruolo dal backoffice; vale dal prossimo access token. */
+	public void changeRole(Role role) {
+		this.role = role;
+	}
 }

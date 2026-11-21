@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,19 @@ public class InventoryService {
 	@Transactional(readOnly = true)
 	public int getCredits(Integer userId) {
 		return findInventory(userId).getCredits();
+	}
+
+	/**
+	 * Saldo di più utenti in una sola query (per le liste del backoffice). Un utente senza inventario non compare
+	 * nella mappa.
+	 *
+	 * @return saldo per id dell'utente
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, Integer> getCreditsByUserIds(Collection<Integer> userIds) {
+		return inventoryRepository.findAllById(userIds)
+			.stream()
+			.collect(Collectors.toMap(Inventory::getUserId, Inventory::getCredits));
 	}
 
 	/**
