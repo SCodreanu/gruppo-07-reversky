@@ -3,6 +3,7 @@ package it.downfall.reversky.api.battle.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -244,6 +245,56 @@ class BattleControllerIT {
 		mockMvc.perform(as(challenger, get("/api/v1/battles")))
 			.andExpect(jsonPath("$.content[0].completed").value(false))
 			.andExpect(jsonPath("$.content[0].outcome").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Retry sends exactly the same battle, even after the catalog and the rules changed, and completes it")
+	void retry_afterEngineDown_sendsSameBattle() throws Exception {
+		// Arrange: la prima simulazione fallisce
+		doThrow(new EngineUnavailableException("The game engine is not available")).when(engineClient).simulate(any());
+		String battleId = JsonPath.read(accept(opponent, invite(), opponentDeck)
+			.andExpect(status().isServiceUnavailable()).andReturn().getResponse().getContentAsString(), "$.battleId");
+		// Nel frattempo il backoffice cambia una creatura del mazzo: la fotografia non deve cambiare
+		Integer changedCard = jdbcTemplate.queryForObject("SELECT dc.card_id FROM deck_cards dc JOIN catalog_cards c "
+			+ "ON c.id = dc.card_id WHERE dc.deck_id = ? AND c.type = 'CREATURE' ORDER BY dc.card_id LIMIT 1", Integer.class,
+			challengerDeck);
+		Integer originalAtk = jdbcTemplate.queryForObject("SELECT atk FROM catalog_cards WHERE id = ?", Integer.class, changedCard);
+		jdbcTemplate.update("UPDATE catalog_cards SET atk = atk + 1 WHERE id = ?", changedCard);
+		reset(engineClient);
+		when(engineClient.simulate(any())).thenAnswer(call -> engineWin(call.getArgument(0)));
+
+		// Act
+		mockMvc.perform(as(challenger, post("/api/v1/battles/" + battleId + "/retry")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.completed").value(true))
+			.andExpect(jsonPath("$.outcome").value("WIN"));
+
+		// Assert: la richiesta del retry è identica a quella salvata alla preparazione
+		ArgumentCaptor<SimulationRequest> captor = ArgumentCaptor.forClass(SimulationRequest.class);
+		verify(engineClient).simulate(captor.capture());
+		Long seed = jdbcTemplate.queryForObject("SELECT (battle_stats ->> 'seed')::bigint FROM battles WHERE id = ?::uuid",
+			Long.class, battleId);
+		assertThat(captor.getValue().seed()).isEqualTo(seed);
+		assertThat(captor.getValue().challenger().deck())
+			.filteredOn(card -> card.cardId().equals(changedCard))
+			.isNotEmpty()
+			.allSatisfy(card -> assertThat(card.atk()).isEqualTo(originalAtk));
+	}
+
+	@Test
+	@DisplayName("Retrying a completed battle returns it without calling the engine; strangers get 404")
+	void retry_completedOrStranger() throws Exception {
+		// Arrange
+		String battleId = battleIdOf(accept(opponent, invite(), opponentDeck));
+		reset(engineClient);
+
+		// Act + Assert
+		mockMvc.perform(as(opponent, post("/api/v1/battles/" + battleId + "/retry")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.completed").value(true));
+		verify(engineClient, never()).simulate(any());
+		mockMvc.perform(as(testUsers.create(), post("/api/v1/battles/" + battleId + "/retry")))
+			.andExpect(status().isNotFound());
 	}
 
 	@Test

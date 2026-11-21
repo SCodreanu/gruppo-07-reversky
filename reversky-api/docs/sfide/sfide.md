@@ -365,3 +365,8 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 | non più amici | `403` | `NOT_FRIENDS` |
 | uno dei due mazzi non valido: l'invito resta in attesa, nessuna partita | `422` | `DECK_INVALID` |
 | partita inesistente o non mia | `404` | `BATTLE_NOT_FOUND` |
+
+### Retry (API-44 #114)
+
+- `POST /battles/{id}/retry` (`BattleService.retry`): solo i due giocatori (`404 BATTLE_NOT_FOUND` per gli altri). Rimanda all'engine la richiesta costruita dalla partita salvata (stesso seed, stesse fotografie dei mazzi, stesse regole e bonus), anche se nel frattempo il catalogo o il rule set sono cambiati; il salvataggio blocca la riga e non riscrive una partita già completata.
+- Una partita già completata si restituisce così com'è con `200`, senza chiamare l'engine (deciso il 21 novembre: il retry è idempotente). Engine ancora spento: `503 ENGINE_UNAVAILABLE` con `battleId`.

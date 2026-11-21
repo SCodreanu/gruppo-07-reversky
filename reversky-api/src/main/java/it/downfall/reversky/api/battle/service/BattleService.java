@@ -102,6 +102,24 @@ public class BattleService {
 	}
 
 	/**
+	 * Rilancia la simulazione di una partita rimasta senza risultato (POST /api/v1/battles/{id}/retry), con lo stesso
+	 * seed, le stesse fotografie dei mazzi e le stesse regole salvate alla preparazione, anche se nel frattempo il
+	 * backoffice le ha cambiate. Una partita già completata si restituisce così com'è, senza chiamare l'engine.
+	 *
+	 * @throws BattleNotFoundException     se la partita non esiste o non l'ho giocata
+	 * @throws EngineUnavailableException  se l'engine non simula ancora, con {@code battleId}
+	 */
+	public BattleDetailResponse retry(Integer userId, UUID battleId) {
+		Battle battle = transactionTemplate.execute(status -> getOwnBattle(userId, battleId));
+		if (battle.isCompleted()) {
+			return transactionTemplate.execute(status -> toDetail(getOwnBattle(userId, battleId), userId));
+		}
+
+		log.info("Retrying battle {} for user {}", battleId, userId);
+		return simulateAndSave(battle, userId);
+	}
+
+	/**
 	 * Una partita che ho giocato, con mazzi e log (GET /api/v1/battles/{id}).
 	 *
 	 * @throws BattleNotFoundException se la partita non esiste o non l'ho giocata
