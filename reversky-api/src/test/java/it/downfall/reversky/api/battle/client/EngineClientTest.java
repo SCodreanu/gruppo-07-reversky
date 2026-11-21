@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import com.sun.net.httpserver.HttpServer;
 
+import it.downfall.reversky.api.battle.exception.EngineInputRejectedException;
 import it.downfall.reversky.api.battle.exception.EngineUnavailableException;
 
 /**
@@ -61,9 +62,30 @@ class EngineClientTest {
 	}
 
 	@Test
-	@DisplayName("An error status from the engine becomes ENGINE_UNAVAILABLE")
-	void simulate_errorStatus_throwsUnavailable() throws IOException {
-		EngineClient client = clientFor(400, "{\"code\": \"UNKNOWN_EFFECT\"}", new AtomicReference<>());
+	@DisplayName("A 400 from the engine becomes ENGINE_INPUT_REJECTED: a retry would send the same data (API-71)")
+	void simulate_badRequest_throwsInputRejected() throws IOException {
+		EngineClient client = clientFor(400, """
+			{ "title": "Invalid simulation input", "status": 400, "detail": "Unknown effect X on card 1",
+			  "code": "UNKNOWN_EFFECT", "instance": "/api/v1/simulations" }
+			""", new AtomicReference<>());
+
+		assertThatThrownBy(() -> client.simulate(request()))
+			.isInstanceOf(EngineInputRejectedException.class)
+			.extracting("code").isEqualTo("ENGINE_INPUT_REJECTED");
+	}
+
+	@Test
+	@DisplayName("A 400 whose body is not a ProblemDetail is still ENGINE_INPUT_REJECTED")
+	void simulate_badRequestUnreadableBody_throwsInputRejected() throws IOException {
+		EngineClient client = clientFor(400, "not json", new AtomicReference<>());
+
+		assertThatThrownBy(() -> client.simulate(request())).isInstanceOf(EngineInputRejectedException.class);
+	}
+
+	@Test
+	@DisplayName("A 500 from the engine stays ENGINE_UNAVAILABLE")
+	void simulate_serverError_throwsUnavailable() throws IOException {
+		EngineClient client = clientFor(500, "{\"code\": \"INTERNAL_ERROR\"}", new AtomicReference<>());
 
 		assertThatThrownBy(() -> client.simulate(request())).isInstanceOf(EngineUnavailableException.class);
 	}

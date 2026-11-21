@@ -69,6 +69,7 @@ public class BattleController {
 	@ApiResponse(responseCode = "200", description = "Battle completed, returned from my point of view")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "404", description = "Battle not found, or not played by me")
+	@ApiResponse(responseCode = "500", description = "ENGINE_INPUT_REJECTED: the engine rejected the saved battle data; a retry gives the same error (battleId in the body)")
 	@ApiResponse(responseCode = "503", description = "Engine still unavailable (battleId in the body)")
 	@PostMapping("/{id}/retry")
 	public ResponseEntity<BattleDetailResponse> retry(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {

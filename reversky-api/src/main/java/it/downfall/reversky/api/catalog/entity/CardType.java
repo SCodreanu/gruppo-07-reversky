@@ -77,6 +77,14 @@ public enum CardType {
 	}
 
 	/**
+	 * Solo le creature possono avere una seconda fazione (D-22, chk_catalog_cards_secondary_faction_creature_only di
+	 * V14): l'engine rifiuta un Terreno o un Oggetto con due fazioni ({@code INVALID_CARD_FACTIONS}).
+	 */
+	public boolean acceptsSecondaryFaction() {
+		return this == CREATURE;
+	}
+
+	/**
 	 * La carta conta nel massimo per mazzo della sua rarità ({@code rarities.max_per_deck}, docs/mazzi)? Spell e
 	 * Hidden sono Rare ma non contano (deciso il 21 novembre): hanno già i loro numeri esatti nel rule set.
 	 * Terreni e Oggetti invece occupano un posto tra le Rare.

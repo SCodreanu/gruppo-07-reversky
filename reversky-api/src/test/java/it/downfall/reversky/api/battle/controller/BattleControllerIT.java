@@ -39,6 +39,7 @@ import it.downfall.reversky.api.battle.client.EngineClient;
 import it.downfall.reversky.api.battle.client.SimulationRequest;
 import it.downfall.reversky.api.battle.client.SimulationResponse;
 import it.downfall.reversky.api.battle.client.SimulationResponse.PlayerResult;
+import it.downfall.reversky.api.battle.exception.EngineInputRejectedException;
 import it.downfall.reversky.api.battle.exception.EngineUnavailableException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
@@ -245,6 +246,30 @@ class BattleControllerIT {
 		mockMvc.perform(as(challenger, get("/api/v1/battles")))
 			.andExpect(jsonPath("$.content[0].completed").value(false))
 			.andExpect(jsonPath("$.content[0].outcome").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Data rejected by the engine gives 500 ENGINE_INPUT_REJECTED with battleId, and the retry gives the same")
+	void accept_engineRejectsInput_returns500WithBattleId() throws Exception {
+		// Arrange
+		doThrow(new EngineInputRejectedException()).when(engineClient).simulate(any());
+		String inviteId = invite();
+
+		// Act
+		String body = accept(opponent, inviteId, opponentDeck)
+			.andExpect(status().isInternalServerError())
+			.andExpect(jsonPath("$.code").value("ENGINE_INPUT_REJECTED"))
+			.andReturn().getResponse().getContentAsString();
+
+		// Assert: la partita resta senza risultato, e il retry manda gli stessi dati
+		String battleId = JsonPath.read(body, "$.battleId");
+		mockMvc.perform(as(opponent, get("/api/v1/battles/" + battleId)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.completed").value(false));
+		mockMvc.perform(as(challenger, post("/api/v1/battles/" + battleId + "/retry")))
+			.andExpect(status().isInternalServerError())
+			.andExpect(jsonPath("$.code").value("ENGINE_INPUT_REJECTED"))
+			.andExpect(jsonPath("$.battleId").value(battleId));
 	}
 
 	@Test

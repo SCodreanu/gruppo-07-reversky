@@ -139,7 +139,7 @@ Catalogo (`catalog/`):
 - carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
 - effetti delle carte (API-36): la tabella `effects` di `V13__create_effects.sql` (92 codici del registro dell'engine, uno per tipo di carta, con la chiave esterna `fk_catalog_cards_effect`) e `GET /api/v1/admin/effects` (`admin/controller/AdminEffectController`); `PUT /admin/cards` rifiuta un effetto inesistente o di un altro tipo con `422 CARD_EFFECT_INVALID`. L'engine si chiama solo per simulare.
 - rarità delle carte (task #80): `rarity_id` obbligatorio; Spell, Hidden, Terreni e Oggetti solo Rare (Spell e Hidden dal 21 novembre), riconosciute da `sorting_order` e mai dal nome.
-- fazioni delle carte (task #81): `PUT /admin/cards` riceve `factionId` (obbligatoria per Creature, Terreni e Oggetti, vietata per Spell e Hidden) e `secondaryFactionId` (facoltativa, diversa dalla prima); una fazione inesistente è `422 CARD_FACTION_INVALID`. Le carte restituiscono `faction` e `secondaryFaction` come `{ id, name }`, e `GET /cards` e `GET /admin/cards` hanno il filtro `factionId` (prima o seconda fazione).
+- fazioni delle carte (task #81): `PUT /admin/cards` riceve `factionId` (obbligatoria per Creature, Terreni e Oggetti, vietata per Spell e Hidden) e `secondaryFactionId` (facoltativa, diversa dalla prima, solo per le creature: `V14` e API-71); una fazione inesistente è `422 CARD_FACTION_INVALID`. Le carte restituiscono `faction` e `secondaryFaction` come `{ id, name }`, e `GET /cards` e `GET /admin/cards` hanno il filtro `factionId` (prima o seconda fazione).
 - bonus di fazione: `GET/PUT /api/v1/admin/faction-bonuses` (`admin/controller/AdminFactionBonusController`, `catalog/service/FactionBonusService`): il `PUT` sostituisce tutta la matrice in una transazione, con due `PUT` contemporanei messi in fila. Senza audit. La matrice corrente compare anche in `GET /rules`. Dettagli ed errori in [docs/backoffice](docs/backoffice/backoffice.md#bonus-di-fazione-comportamento-già-implementato).
 
 Regole di gioco (`ruleset/`):
@@ -156,7 +156,7 @@ Collezione (`collection/`):
 
 Sfide amichevoli (`battle/`, API-35, 37–44):
 
-- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`;
+- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`, dati rifiutati dall'engine (`4xx`) = `500 ENGINE_INPUT_REJECTED` (API-71);
 - inviti tra amici con un mazzo valido (`/api/v1/battle-invites`, `box=incoming|outgoing`, `reject`, ritiro con `DELETE`); `accept` prepara la partita (seed dal server, fotografia dei mazzi, regole in `battle_stats`), fa simulare l'engine fuori transazione e salva l'esito; `GET /api/v1/battles` (storico senza log), `GET /api/v1/battles/{id}` (dettaglio dal punto di vista di chi guarda, con log) e `POST /api/v1/battles/{id}/retry` con la stessa identica partita. Classificate, Elo e crediti delle partite non ci sono ancora. Dettagli in [docs/sfide](docs/sfide/sfide.md#comportamento-già-implementato).
 
 Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):

@@ -800,6 +800,30 @@ class CatalogCardServiceIT {
 	}
 
 	@Test
+	@DisplayName("A terrain or an item with a second faction is rejected: only creatures have two (API-71)")
+	void update_terrainOrItemWithSecondFaction_isRejected() {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+		Integer factionId = testCards.faction().getId();
+		Integer secondId = testCards.createFaction().getId();
+		CatalogCardUpdateRequest terrain = new CatalogCardUpdateRequest(card.getName(), CardType.TERRAIN,
+				testCards.rare().getId(), factionId, secondId, null, TestCards.TERRAIN_EFFECT, null, null, null, null,
+				null, null);
+		CatalogCardUpdateRequest item = new CatalogCardUpdateRequest(card.getName(), CardType.ITEM,
+				testCards.rare().getId(), factionId, secondId, null, TestCards.ITEM_EFFECT, null, null, null, null, null,
+				null);
+
+		// Act + Assert
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), terrain))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessage("A TERRAIN card must not have a second faction");
+		assertThatThrownBy(() -> catalogCardService.update(card.getId(), item))
+			.isInstanceOf(CatalogCardRulesViolatedException.class)
+			.hasMessage("A ITEM card must not have a second faction");
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.CREATURE);
+	}
+
+	@Test
 	@DisplayName("A faction id that does not exist, first or second, is CARD_FACTION_INVALID")
 	void update_missingFaction_throwsInvalidCardFaction() {
 		// Arrange

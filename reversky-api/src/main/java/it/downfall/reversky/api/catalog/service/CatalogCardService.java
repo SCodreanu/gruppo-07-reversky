@@ -295,7 +295,8 @@ public class CatalogCardService {
 			.orElseThrow(() -> InvalidCardFactionException.notFound(factionId));
 	}
 
-	// chk_catalog_cards_faction_matches_type e chk_catalog_cards_distinct_factions di V3. Una seconda fazione
+	// chk_catalog_cards_faction_matches_type e chk_catalog_cards_distinct_factions di V3, e
+	// chk_catalog_cards_secondary_faction_creature_only di V14. Una seconda fazione
 	// senza la prima cade sempre in uno dei primi due casi: o il tipo vuole la fazione, o non ne ammette.
 	private void validateFactions(CardType type, Integer factionId, Integer secondaryFactionId) {
 		if (type.hasFaction() && factionId == null) {
@@ -304,6 +305,11 @@ public class CatalogCardService {
 
 		if (!type.hasFaction() && (factionId != null || secondaryFactionId != null)) {
 			throw CatalogCardRulesViolatedException.unexpectedFaction(type);
+		}
+
+		// V14 (API-71): Terreni e Oggetti hanno una fazione sola
+		if (secondaryFactionId != null && !type.acceptsSecondaryFaction()) {
+			throw CatalogCardRulesViolatedException.unexpectedSecondaryFaction(type);
 		}
 
 		if (secondaryFactionId != null && secondaryFactionId.equals(factionId)) {

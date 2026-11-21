@@ -39,8 +39,8 @@ public record CatalogCardUpdateRequest(
 			+ "GET /factions). Ignored for a variant: copied from the original")
 	Integer factionId,
 
-	@Schema(example = "4", description = "Optional second faction (e.g. a Mutant), different from factionId; always "
-			+ "empty for SPELL and HIDDEN. Ignored for a variant: copied from the original")
+	@Schema(example = "4", description = "Optional second faction of a CREATURE (e.g. a Mutant), different from "
+			+ "factionId; always empty for SPELL, HIDDEN, TERRAIN and ITEM. Ignored for a variant: copied from the original")
 	Integer secondaryFactionId,
 
 	@Schema(example = "BURN", description = "Required for SPELL (DAMAGE, SHIELD, BURN) and HIDDEN (SURVIVAL, DAMAGE), empty otherwise. Ignored for a variant")

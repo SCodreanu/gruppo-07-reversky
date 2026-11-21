@@ -81,6 +81,7 @@ public class BattleInviteController {
 	@ApiResponse(responseCode = "404", description = "Challenge not found or not for me, or deck not found")
 	@ApiResponse(responseCode = "409", description = "Challenge already accepted")
 	@ApiResponse(responseCode = "422", description = "One of the two decks is no longer valid: the challenge stays pending")
+	@ApiResponse(responseCode = "500", description = "ENGINE_INPUT_REJECTED: the engine rejected the battle data; the battle stays without a result (battleId)")
 	@ApiResponse(responseCode = "503", description = "Engine unavailable: the battle waits for a retry (battleId)")
 	@PostMapping("/{id}/accept")
 	public ResponseEntity<BattleDetailResponse> accept(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,

@@ -56,6 +56,14 @@ public class CatalogCardRulesViolatedException extends BusinessException {
 	}
 
 	/**
+	 * Seconda fazione su un Terreno o un Oggetto: solo le creature ne hanno due
+	 * (chk_catalog_cards_secondary_faction_creature_only).
+	 */
+	public static CatalogCardRulesViolatedException unexpectedSecondaryFaction(CardType type) {
+		return new CatalogCardRulesViolatedException("A " + type + " card must not have a second faction");
+	}
+
+	/**
 	 * Seconda fazione uguale alla prima (chk_catalog_cards_distinct_factions).
 	 */
 	public static CatalogCardRulesViolatedException sameFactions() {

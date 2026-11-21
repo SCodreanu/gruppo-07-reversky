@@ -30,6 +30,7 @@ POST   /api/v1/trades/{id}/accept azione su uno scambio
 | Risorsa inesistente **o non visibile all'utente** | `404 Not Found` |
 | Stato non compatibile (scambio già chiuso o fuori turno, invito già accettato) | `409 Conflict` |
 | Regola di gioco violata (mazzo non valido, crediti insufficienti) | `422 Unprocessable Content` |
+| Errore nostro previsto che il client non può risolvere (l'engine rifiuta i dati di una partita, `ENGINE_INPUT_REJECTED`, API-71); gli errori inattesi sono `INTERNAL_ERROR` | `500 Internal Server Error` |
 | Engine non raggiungibile | `503 Service Unavailable` |
 
 ## Formato degli errori

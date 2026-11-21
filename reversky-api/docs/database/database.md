@@ -56,6 +56,7 @@ Dati inseriti con le migrazioni:
 | catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
 | pacchetto base attivo: *Base Pack*, 100 crediti **[DA CONFERMARE]**, 3 Common, 2 Uncommon, 2 Rare, bonus Mythic 10%, Legendary 5%, Mutant 2,5% | `V12__insert_base_pack.sql`, task API-63 (#133) |
 | tabella `effects` con i 92 effetti del registro dell'engine e chiave esterna `fk_catalog_cards_effect`: prima struttura nuova dopo la baseline, decisa il 21 novembre | `V13__create_effects.sql`, task API-36 (#106): vedi [Effetti](#effetti-sottotipi-e-tag) |
+| vincolo `chk_catalog_cards_secondary_faction_creature_only`: solo le creature hanno una seconda fazione, come chiede l'engine (deciso il 22 novembre) | `V14__add_secondary_faction_check.sql`, task API-71 (#146) |
 | utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
 
 ### Catalogo iniziale (`V11`)

@@ -222,6 +222,21 @@ class CatalogCardRepositoryIT {
 	}
 
 	@Test
+	@DisplayName("The database rejects a terrain or an item with a second faction (V14)")
+	void save_terrainOrItemWithSecondFaction_isRejected() {
+		// Arrange
+		Faction second = testCards.createFaction();
+		CatalogCard terrain = new CatalogCard(null, testCards.rare(), faction, second, uniqueName("Bad"), CardType.TERRAIN, null,
+				TestCards.effectCodeFor(CardType.TERRAIN), TestCards.IMAGE_PATH, null, null, null, null, null);
+		CatalogCard item = new CatalogCard(null, testCards.rare(), faction, second, uniqueName("Bad"), CardType.ITEM, null,
+				TestCards.effectCodeFor(CardType.ITEM), TestCards.IMAGE_PATH, null, null, null, null, null);
+
+		// Act + Assert
+		assertRejectedBy(terrain, "chk_catalog_cards_secondary_faction_creature_only");
+		assertRejectedBy(item, "chk_catalog_cards_secondary_faction_creature_only");
+	}
+
+	@Test
 	@DisplayName("The database rejects an item with a subtype")
 	void save_itemWithSubtype_isRejected() {
 		// Arrange
