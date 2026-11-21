@@ -53,9 +53,34 @@ Dati inseriti con le migrazioni:
 | rule set `1.0` attivo, rarità e fazioni (nessun bonus di fazione finché non si decide D-04) | `V9__insert_reference_data.sql`, task API-15 (#85); valori in [decisioni](../decisioni/decisioni.md) |
 | inventario e riga `SIGNUP` per gli utenti registrati prima di API-17 (su un database vuoto non inserisce niente) | `V10__create_missing_inventories.sql`, task API-17 (#87) |
 | tag delle fazioni | migrazione del task API-13 (#83) |
-| catalogo iniziale (120 carte, dal *Catalogo completo 120 carte*, vedi [decisioni](../decisioni/decisioni.md)) | migrazione dedicata del task API-55 (#125) |
+| catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
 | pacchetto base | migrazione dedicata del task API-63 (#133) |
-| primo `ADMIN`, utenti, carte e collezioni di prova | task API-25 (#95), che decide anche come caricarli solo in sviluppo e test |
+| utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
+
+### Catalogo iniziale (`V11`)
+
+Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engine`) con uno script usa e getta, non nel repository: le correzioni si fanno dal backoffice o con una migrazione nuova.
+
+- Rarità per `sorting_order` e fazioni per nome, come le inserisce `V9`. Spell e Hidden non hanno rarità nel CSV: sono **Rare** (deciso il 21 novembre) e non contano nel `max_per_deck` (vedi [mazzi](../mazzi/mazzi.md#bilanciamento-richiesto-dal-brief)).
+- Nomi ed `effect_description` come nel CSV, in italiano: la traduzione arriva nell'ultima settimana. Ogni `effect_code` esiste nell'engine, anche quelli delle creature.
+- **[DA CONFERMARE]** `image_path` segnaposto `cards/<nome-della-carta>.webp` finché non ci sono le illustrazioni. `copy_limit` e `flavor_text` vuoti, nessun tag proprio (API-12).
+- I due Mutant (Invitation/Dream e Wound/Archive) hanno la seconda fazione.
+
+### Dati di prova (solo sviluppo)
+
+`db/dev/R__dev_seed.sql` è una migrazione **ripetibile**: Flyway la esegue dopo quelle versionate e di nuovo solo quando il file cambia, e ogni istruzione inserisce soltanto ciò che manca (nessun duplicato, niente sovrascritto). La cartella `db/dev` è nelle `spring.flyway.locations` solo con il profilo `dev` (`application-dev.properties`).
+
+- **Attivazione:** `./gradlew bootRun` usa il profilo `dev` da solo (`build.gradle`); con `SPRING_PROFILES_ACTIVE` impostato vale quello. L'immagine Docker, `java -jar` e i test (tranne `DevSeedIT`, che ha il suo database) non caricano i dati di prova.
+- **Utenti**, tutti con email verificata e password di sviluppo `Reversky2026` (mai usarla altrove):
+
+| Username | Email | Ruolo | Dati |
+|---|---|---|---|
+| `admin` | `admin@reversky.dev` | `ADMIN` | solo l'inventario |
+| `alice` | `alice@reversky.dev` | `USER` | crediti di benvenuto, tutte le carte originali attive fino al limite di copie, mazzo valido *Alice Invitation* |
+| `bob` | `bob@reversky.dev` | `USER` | come alice, con il mazzo *Bob Wound* |
+
+- `alice` e `bob` sono amici (`ACCEPTED`), così possono sfidarsi in amichevole.
+- Per ripartire da zero basta cancellare il volume del database locale.
 
 ### Regole
 

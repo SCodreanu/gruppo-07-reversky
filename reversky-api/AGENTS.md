@@ -153,6 +153,11 @@ Collezione (`collection/`):
 
 - `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
 
+Catalogo iniziale e dati di prova (API-55, API-25):
+
+- `V11__insert_initial_catalog.sql` carica le 120 carte di `catalogo-finale.csv` (ENG-42); Spell e Hidden sono Rare e non contano nel `max_per_deck`. Immagini segnaposto e testi in italiano finché i DSG non danno quelli definitivi.
+- Con il profilo `dev` (attivo da solo con `./gradlew bootRun`) `db/dev/R__dev_seed.sql` aggiunge `admin`, `alice` e `bob` (password di sviluppo `Reversky2026`) con collezioni complete, un mazzo valido ciascuno e l'amicizia tra alice e bob. Dettagli in [docs/database](docs/database/database.md#dati-di-prova-solo-sviluppo).
+
 Mazzi (`deck/`, API-26–29):
 
 - `GET/POST /api/v1/decks`, `GET/PUT/DELETE /api/v1/decks/{id}`, `POST /api/v1/decks/validate`, `GET /api/v1/decks/rules` (`DeckController`); il mazzo di un altro è `404`, nome univoco per utente (`409`), un mazzo in un invito `PENDING` non si elimina (`409`), la modifica toglie il ticket in coda classificata.
