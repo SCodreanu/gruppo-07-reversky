@@ -1,6 +1,7 @@
 package it.downfall.reversky.api.collection.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -175,6 +176,25 @@ public class CollectionService {
 		int owned = rarities.stream().mapToInt(RarityProgressResponse::owned).sum();
 		int total = rarities.stream().mapToInt(RarityProgressResponse::total).sum();
 		return new CollectionSummaryResponse(owned, total, rarities);
+	}
+
+	/**
+	 * Copie disponibili di quelle carte per l'utente: possedute meno quelle riservate dalle sue offerte di scambio
+	 * aperte (docs/scambi, "Copie riservate"), mai sotto zero. Le usano i mazzi per il controllo {@code DECK_NOT_OWNED}.
+	 *
+	 * @return copie disponibili per id di carta; una carta non posseduta manca dalla mappa (cioè 0)
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, Integer> getAvailableCopies(Integer userId, Collection<Integer> cardIds) {
+		if (cardIds.isEmpty()) {
+			return Map.of();
+		}
+
+		List<Integer> ids = List.copyOf(cardIds);
+		Map<Integer, Integer> reserved = countReserved(userId, ids);
+		return collectionCardRepository.findByIdUserIdAndIdCardIdIn(userId, ids).stream()
+			.collect(Collectors.toMap(CollectionCard::getCardId,
+				row -> Math.max(0, row.getQuantity() - reserved.getOrDefault(row.getCardId(), 0))));
 	}
 
 	private Page<CollectionCard> loadPage(Integer userId, CollectionFilter filter, Pageable pageable) {
