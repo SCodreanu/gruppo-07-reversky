@@ -123,6 +123,8 @@ L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni 
 - errori in formato ProblemDetail, Swagger con il pulsante Authorize;
 - test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
 
+Gestione degli utenti dal backoffice (API-03): `GET /api/v1/admin/users` con ricerca, filtri `role` ed `enabled`, ruolo e crediti; `POST /api/v1/admin/users/{id}/disable` (cancella i refresh token) e `/enable`, `PUT /api/v1/admin/users/{id}/role`; un admin non può disattivarsi né togliersi il ruolo (`422 ADMIN_SELF_ACTION`). Dettagli in [docs/backoffice](docs/backoffice/backoffice.md#utenti-comportamento-già-implementato-api-03-73).
+
 Inventario e crediti (`inventory/`, API-16 e API-17):
 
 - la registrazione crea l'inventario con i crediti di benvenuto del rule set attivo e la riga `SIGNUP`; `GET /api/v1/users/me` restituisce anche `credits`;

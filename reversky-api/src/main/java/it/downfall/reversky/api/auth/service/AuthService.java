@@ -107,6 +107,16 @@ public class AuthService {
 	}
 
 	/**
+	 * Chiude tutte le sessioni di un utente cancellando i suoi refresh token (account disattivato dal backoffice).
+	 * Gli access token già emessi restano validi fino alla scadenza, al massimo 15 minuti.
+	 */
+	@Transactional
+	public void revokeAllSessions(Integer userId) {
+		int deleted = refreshTokenRepository.deleteAllByUserId(userId);
+		log.info("Revoked {} sessions of user {}", deleted, userId);
+	}
+
+	/**
 	 * Verifica le credenziali e crea una nuova sessione.
 	 *
 	 * @return access token e refresh token

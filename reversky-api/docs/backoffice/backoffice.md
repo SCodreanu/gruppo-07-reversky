@@ -203,6 +203,21 @@ Controlli:
 
 Un admin non può disattivare se stesso né abbassarsi il ruolo.
 
+### Utenti: comportamento già implementato (API-03, #73)
+
+`admin/controller/AdminUserController` e `user/service/UserAdminService` (separato da `UserService` perché usa `AuthService`, che dipende già da `UserService`). L'admin che fa la richiesta si ricava sempre dal token.
+
+- `GET /admin/users?q=&role=&enabled=&page=&size=`: paginato in ordine di `id`; `q` cerca nello username o nell'email senza distinguere maiuscole e minuscole, `role` (`USER`, `ADMIN`, maiuscole facoltative; un ruolo inesistente dà una pagina vuota), `enabled` (`true`, `false` o vuoto). Ogni riga: `id`, `username`, `email`, `role`, `enabled`, `emailVerified`, `credits`, `createdAt`. Ruoli e saldi si leggono con una query ciascuno per tutta la pagina.
+- `POST /admin/users/{id}/disable` e `/enable`, `PUT /admin/users/{id}/role` con `{ "role": "ADMIN" }`: restituiscono l'utente con la stessa forma della lista. Sono idempotenti: disattivare un account già disattivato o assegnare lo stesso ruolo non cambia niente (la disattivazione cancella comunque i refresh token).
+- La disattivazione cancella i refresh token (`AuthService.revokeAllSessions`); gli access token già emessi restano validi fino alla scadenza, al massimo 15 minuti, come il cambio di ruolo. Il ticket in `matchmaking_queue` si cancellerà con API-47 (TODO in `UserAdminService.disable`).
+- Senza audit finché non arriva API-52.
+
+| Caso | Status | `code` |
+|---|---|---|
+| ruolo mancante o diverso da `USER` e `ADMIN` | `400` | `VALIDATION_FAILED` |
+| utente inesistente | `404` | `USER_NOT_FOUND` |
+| un admin disattiva se stesso o si toglie il ruolo `ADMIN` | `422` | `ADMIN_SELF_ACTION` |
+
 ### Correzione dei crediti: comportamento già implementato (API-17, #87)
 
 `POST /admin/users/{id}/credits` (`admin/controller/AdminUserController`, `InventoryService.adjustCredits`) riceve `{ "amount": -50, "reason": "..." }` e restituisce il nuovo saldo `{ "credits": 300 }`. `amount` positivo aggiunge, negativo toglie; il saldo non scende mai sotto zero.
