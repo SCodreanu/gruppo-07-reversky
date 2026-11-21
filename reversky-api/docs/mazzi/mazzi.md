@@ -151,3 +151,11 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - modifica o eliminazione di un mazzo in coda classificata → ticket rimosso;
 - eliminazione di un mazzo → le sue righe di `deck_cards` vengono eliminate;
 - modifica di un mazzo che conserva alcune carte → salvataggio riuscito (si aggiornano le righe esistenti: svuotando e reinserendo, Hibernate esegue gli insert prima dei delete e viola la chiave primaria).
+
+## Comportamento già implementato
+
+### Mazzi: nome, proprietà ed eliminazione (API-26, #96)
+
+- Package `deck/`: entità `Deck`, `DeckService`, `DeckController`. Ogni metodo riceve l'utente dal token e cerca il mazzo per id **e** utente, quindi il mazzo di un altro è `404 DECK_NOT_FOUND`.
+- `GET /decks` in ordine di nome, poi di id. Il nome si salva senza spazi all'inizio e alla fine; un nome già usato da un altro mazzo dello stesso utente è `409 DECK_NAME_ALREADY_USED`, anche con due richieste contemporanee (il vincolo `uq_decks_user_id_name` viene tradotto nello stesso errore).
+- `PUT /decks/{id}` toglie il ticket in coda classificata; `DELETE /decks/{id}` risponde `204`, e il ticket si cancella da solo (`ON DELETE CASCADE`). Un mazzo usato da un invito `PENDING` è `409 DECK_IN_USE`. Inviti e coda si leggono con SQL nativo in `DeckRepository` finché non esiste `battle/`.
