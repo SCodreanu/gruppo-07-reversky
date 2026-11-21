@@ -93,6 +93,31 @@ Altri endpoint:
 - `GET /api/v1/collection/summary` → carte uniche possedute sul totale del catalogo, per rarità (barra di completamento). Le varianti **non** contano nel totale: conta solo la carta originale, e possedere una variante vale come possedere la sua originale (Q-08, deciso l'11 novembre);
 - `GET /api/v1/users/{id}/collection` → carte di un altro utente (solo carte e quantità), per preparare uno scambio.
 
+## Comportamento già implementato (task API-23, #93)
+
+Package `collection/`: `CollectionCard` con `@EmbeddedId CollectionCardId(userId, cardId)`, `CollectionCardRepository`, `CollectionService`, `CollectionController`. Scelte del 20 novembre.
+
+`addCards` e `removeCards` hanno `@Transactional(propagation = MANDATORY)`: senza la transazione del chiamante lanciano `IllegalTransactionStateException`. Una mappa vuota o una quantità minore di 1 è un errore di programmazione (`IllegalArgumentException`). `removeCards` controlla tutte le carte prima di cambiarne una e conta le copie **possedute**, non quelle disponibili: la disponibilità la controlla il chiamante (lo scambio), perché le copie che sposta sono riservate proprio da quello scambio. Copie insufficienti → `NotEnoughCopiesException`, `422 NOT_ENOUGH_COPIES`.
+
+`GET /collection`:
+
+- ogni carta posseduta, anche **disattivata** (`active: false`) o **variante** (con `variantOfId`), come voce a sé;
+- `card` ha la stessa forma di `GET /cards/{id}` (`CatalogCardResponse`): oltre ai campi dell'esempio sopra ha `variantOfId`, `copyLimit` e `active`, e ancora niente `tags` (API-12);
+- `reservedQuantity`: copie nelle mie offerte degli scambi in cui ho fatto io la proposta in corso (regola di [scambi](../scambi/scambi.md#copie-riservate)); `usedInDecks`: numero dei miei mazzi che contengono la carta. Finché non esistono le entità `Trade` (API-31) e `Deck` (API-26) si calcolano con SQL nativo su `trade_offers` e `deck_cards`;
+- filtri `type`, `name`, `rarityId`, `factionId` (prima o seconda fazione) come `GET /cards`; un id inesistente dà una pagina vuota;
+- `sort` ammette solo `name`, `rarity` (per `sorting_order`), `type` e `quantity`, con `asc` o `desc`; senza, per nome. A parità si ordina sempre per nome e poi per id della carta, così le pagine restano stabili. Un'altra proprietà → `400 INVALID_COLLECTION_SORT`.
+
+`GET /collection/summary` restituisce `{ owned, total, rarities: [{ rarity: { id, name }, owned, total }] }`: `total` conta le carte **originali attive** del catalogo, `owned` quelle che possiedo direttamente o con una loro variante. Le carte disattivate non contano (così la barra arriva al 100%), le rarità senza originali attivi non compaiono, l'ordine è quello delle rarità.
+
+`GET /users/{id}/collection` (qualsiasi utente autenticato, perché gli scambi non sono limitati agli amici): stessi filtri e ordinamento, ogni voce è `{ card, availableQuantity }`, con le copie possedute meno quelle riservate dalle sue offerte aperte, **anche 0** (il frontend le mostra disattivate). Utente inesistente o disabilitato → `404 USER_NOT_FOUND`.
+
+| Caso | Status | `code` |
+|---|---|---|
+| nessun token | `401` | |
+| `type` sconosciuto | `400` | `VALIDATION_FAILED` |
+| `sort` su una proprietà non ammessa | `400` | `INVALID_COLLECTION_SORT` |
+| utente di `/users/{id}/collection` inesistente o disabilitato | `404` | `USER_NOT_FOUND` |
+
 ## Test minimi
 
 - `addCards` su carta già posseduta incrementa la quantità, su carta nuova crea la riga.
