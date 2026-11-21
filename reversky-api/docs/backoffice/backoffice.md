@@ -190,6 +190,22 @@ Controlli:
 - un pacchetto attivo deve poter riempire tutti i suoi slot base, anche con il ripiego descritto in [pacchetti](../pacchetti/pacchetti.md): altrimenti creazione, modifica e attivazione rispondono `422`;
 - i pacchetti già comprati e non aperti (`pack_inventory`) restano apribili anche se il pacchetto viene disattivato.
 
+### Pacchetti: comportamento già implementato (API-18 #88, API-19 #89, API-20 #90)
+
+`admin/controller/AdminPackController` e `pack/service/PackAdminService`. `POST` e `PUT /admin/packs` ricevono tutto in una richiesta (deciso il 21 novembre): `name`, `cost`, `purchaseLimit`, `imagePath`, `slots` `[{ rarityId, quantity }]` (almeno uno) e `bonuses` `[{ rarityId, probabilityUnits }]` (anche vuota). `PUT` sostituisce tutto, aggiornando le righe di slot e bonus esistenti invece di svuotare e reinserire. Le risposte riportano `active`, `cardCount` (somma degli slot), slot e bonus dalla rarità più comune, con `percentage` per ogni bonus. Senza audit e senza tag (API-21).
+
+- Un pacchetto nasce disattivato; `POST /{id}/activate` controlla che ogni slot base trovi almeno una carta attiva e originale, anche con il ripiego (`pack/service/CardPool`); un `PUT` su un pacchetto attivo fa lo stesso controllo.
+- `GET /api/v1/packs` (pubblico) elenca i pacchetti attivi con costo, limite, slot e solo i bonus di rarità che hanno carte.
+
+| Caso | Status | `code` |
+|---|---|---|
+| campi mancanti o fuori dai limiti, slot vuoti, rarità ripetuta (`slotRaritiesUnique`, `bonusRaritiesUnique`), pacchetto gratuito senza limite (`freePackLimited`) | `400` | `VALIDATION_FAILED` |
+| pacchetto inesistente | `404` | `PACK_NOT_FOUND` |
+| nome già usato | `409` | `PACK_NAME_ALREADY_USED` |
+| rarità inesistente in uno slot o in un bonus | `422` | `PACK_RARITY_INVALID` |
+| bonus non più raro di tutti gli slot base | `422` | `PACK_RULES_VIOLATED` |
+| slot base che non trova nessuna carta, neanche con il ripiego (attivazione o modifica di un pacchetto attivo) | `422` | `PACK_NOT_FILLABLE` |
+
 ## Utenti
 
 | Metodo | URL | Descrizione |
