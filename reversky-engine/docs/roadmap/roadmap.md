@@ -33,7 +33,7 @@ Lezioni in classe: lunedì 9, 16, 23 (SAL) e 30 novembre. Martedì 8 dicembre è
 | **P1** — meccaniche aggiunte da Downfall | Spell, Hidden, Terreni (bonus base), effetti con testo chiaro | le meccaniche di Spell, Hidden e Terreni non si tagliano; gli effetti si tagliano dal fondo della lista |
 | **P2** — dopo le decisioni | effetti ambigui, effetti secondari dei Terreni, bilanciamento fine | si rimanda |
 
-Un effetto non implementato **non rompe nulla**: non è in `GET /api/v1/effects`, quindi il backoffice non lo può assegnare a una carta.
+Un effetto non implementato **non rompe nulla**: non è nella tabella `effects` dell'API (`API-36`, allineata a mano con l'`EffectRegistry`), quindi il backoffice non lo può assegnare a una carta.
 Spell, Hidden, Terreni e Oggetti hanno sempre un effetto: finché il suo effetto non esiste, la carta non entra nel catalogo. Le creature possono non averne e fino a `ENG-23` non ne hanno.
 Le meccaniche `P1` (Spell, Hidden, Terreni) sono state **approvate dal cliente** il 2 novembre (D-21).
 
@@ -76,7 +76,7 @@ In questo sprint le creature non hanno effetti.
 | `ENG-20` | Zona Hidden e attivazione (D-15, D-16) e codici `P1` delle Hidden | A | M | `ENG-19` |
 | `ENG-21` | Terreni: bonus base (D-17, D-19) e codici dei quattro Terreni | A | S | `ENG-19` |
 | `ENG-33` | Oggetti (`ITEM`): messi accanto al mazzo come i Terreni, effetto monouso (D-47, D-48), eventi `ITEM_PLACED` e `ITEM_CONSUMED` e codici dei quattro Oggetti | A | S | `ENG-21` |
-| `ENG-14` | `GET /api/v1/effects`: elenco dei codici già implementati | B | S | `ENG-12`, `ENG-22` |
+| `ENG-14` | `GET /api/v1/effects`: elenco dei codici già implementati (rimosso con `ENG-43`) | B | S | `ENG-12`, `ENG-22` |
 | `ENG-15` | Swagger con springdoc 3.2.0, la stessa versione dell'API (D-41, serve l'ok del lead) | B | S | `ENG-12` |
 | `ENG-16` | `SimulationExamplesTest`: gli esempi 01–08, 10–12 e 90–95 di [`examples/`](../../examples/README.md) verdi | B | S | `ENG-11`, `ENG-12`, `ENG-22` |
 | `ENG-17` | Prova con Docker: engine nel `compose.yaml`, chiamata dall'API o da curl | B | S | `ENG-12` |
@@ -96,6 +96,7 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 | `ENG-41` | Una sola Hidden attiva per giocatore, le altre in fila (regola dei DSG del 20 novembre, D-15); prima di `ENG-28`, così il report misura la regola definitiva | A + B | S | `ENG-20` |
 | `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26`, `ENG-41` |
 | `ENG-42` | Bilanciamento delle fazioni: fase 1 ATK e DEF delle creature (griglia `pv30`, proposta del 20 novembre), fase 2 numeri degli effetti carta per carta prima del code freeze | A + B | L | `ENG-28` |
+| `ENG-43` | Rimozione di `GET /api/v1/effects`: l'engine espone solo `POST /api/v1/simulations`, l'elenco degli effetti sta nella tabella `effects` dell'API (`API-36`) | B | S | `ENG-14` |
 
 **Versione completa (30 novembre):** effetti `P1` nel registro, report di bilanciamento consegnato ai DSG.
 

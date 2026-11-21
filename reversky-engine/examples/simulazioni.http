@@ -4,9 +4,6 @@
 
 @engine = http://localhost:8081
 
-### Effetti implementati
-GET {{engine}}/api/v1/effects
-
 ### 01-base-esempio-regolamento
 POST {{engine}}/api/v1/simulations
 Content-Type: application/json
