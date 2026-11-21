@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.user.dto.UserResponse;
 import it.downfall.reversky.api.user.entity.Role;
 import it.downfall.reversky.api.user.entity.User;
@@ -28,6 +29,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
+	private final InventoryService inventoryService;
 
 	/**
 	 * @return true se lo username è già usato da un altro utente
@@ -105,7 +107,8 @@ public class UserService {
 	 */
 	@Transactional(readOnly = true)
 	public UserResponse getProfile(Integer id) {
-		return UserResponse.from(getById(id));
+		User user = getById(id);
+		return UserResponse.from(user, inventoryService.getCredits(user.getId()));
 	}
 
 	// "  Mario@Example.com " -> "mario@example.com": il vincolo UNIQUE di Postgres distingue le maiuscole

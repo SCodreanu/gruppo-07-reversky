@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
+import it.downfall.reversky.api.inventory.entity.CreditReason;
+import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 
@@ -42,6 +44,9 @@ class UserControllerIT {
 	@Autowired
 	private TestUsers testUsers;
 
+	@Autowired
+	private InventoryService inventoryService;
+
 	// Non serve al test: con la stessa configurazione di AuthControllerIT, Spring riusa
 	// il contesto già avviato (e il suo container) invece di crearne uno nuovo.
 	@MockitoBean
@@ -60,7 +65,21 @@ class UserControllerIT {
 			.andExpect(jsonPath("$.username").value(user.getUsername()))
 			.andExpect(jsonPath("$.email").value(user.getEmail()))
 			.andExpect(jsonPath("$.role").value("USER"))
-			.andExpect(jsonPath("$.emailVerified").value(false));
+			.andExpect(jsonPath("$.emailVerified").value(false))
+			.andExpect(jsonPath("$.credits").value(inventoryService.getCredits(user.getId())));
+	}
+
+	@Test
+	@DisplayName("The profile shows the current balance after it changes")
+	void me_afterSpending_returnsCurrentCredits() throws Exception {
+		// Arrange
+		User user = testUsers.create();
+		int balance = inventoryService.spendCredits(user.getId(), 50, CreditReason.PACK_PURCHASE);
+
+		// Act + Assert
+		me(jwtService.createAccessToken(user))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.credits").value(balance));
 	}
 
 	@Test

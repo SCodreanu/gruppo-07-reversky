@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.TestComponent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.user.entity.Role;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.repository.RoleRepository;
@@ -32,14 +33,19 @@ public class TestUsers {
 	private final RoleRepository roleRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JdbcTemplate jdbcTemplate;
+	private final InventoryService inventoryService;
 
 	/**
 	 * Crea un utente USER abilitato, con email non verificata e password {@link #PASSWORD}.
+	 * <p>
+	 * Come la registrazione, crea anche l'inventario con i crediti di benvenuto del rule set attivo.
 	 */
 	public User create() {
 		String suffix = uniqueSuffix();
 
-		return userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now());
+		User user = userService.createUser("user_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now());
+		inventoryService.createInventory(user.getId());
+		return user;
 	}
 
 	/**
@@ -52,7 +58,9 @@ public class TestUsers {
 		String suffix = uniqueSuffix();
 		Role adminRole = roleRepository.findByName(Role.ADMIN).orElseThrow();
 
-		return userRepository.save(new User(adminRole, "admin_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now()));
+		User admin = userRepository.save(new User(adminRole, "admin_" + suffix, suffix + "@example.com", passwordEncoder.encode(PASSWORD), Instant.now()));
+		inventoryService.createInventory(admin.getId());
+		return admin;
 	}
 
 	// SQL diretto: User non ha ancora un metodo per disabilitare, arriverà con il backoffice (#73)
@@ -64,8 +72,11 @@ public class TestUsers {
 		jdbcTemplate.update("UPDATE users SET email_verified_at = now() WHERE id = ?", user.getId());
 	}
 
-	// Va bene solo per utenti senza righe collegate (token, inventario...): non c'è ON DELETE CASCADE
+	// Cancella anche inventario e movimenti; va bene solo per utenti senza altre righe collegate (token, carte...):
+	// non c'è ON DELETE CASCADE
 	public void delete(User user) {
+		jdbcTemplate.update("DELETE FROM credit_transactions WHERE user_id = ?", user.getId());
+		jdbcTemplate.update("DELETE FROM inventories WHERE user_id = ?", user.getId());
 		jdbcTemplate.update("DELETE FROM users WHERE id = ?", user.getId());
 	}
 

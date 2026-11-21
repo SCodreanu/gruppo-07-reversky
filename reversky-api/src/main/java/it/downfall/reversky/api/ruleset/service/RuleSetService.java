@@ -71,6 +71,18 @@ public class RuleSetService {
 	}
 
 	/**
+	 * L'entità della versione attiva, per gli altri service che ne leggono i valori (crediti di benvenuto, mazzi,
+	 * partite).
+	 *
+	 * @throws NoActiveRuleSetException se nessuna versione è attiva
+	 */
+	@Transactional(readOnly = true)
+	public RuleSet getActiveRuleSet() {
+		return ruleSetRepository.findByIsActiveTrue()
+			.orElseThrow(() -> new NoActiveRuleSetException());
+	}
+
+	/**
 	 * Crea una nuova versione, disattivata.
 	 *
 	 * @param createdById admin che la crea; per ora sempre nullo (il backoffice non registra ancora l'autore)

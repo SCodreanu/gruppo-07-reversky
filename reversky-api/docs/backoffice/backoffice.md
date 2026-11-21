@@ -203,6 +203,19 @@ Controlli:
 
 Un admin non può disattivare se stesso né abbassarsi il ruolo.
 
+### Correzione dei crediti: comportamento già implementato (API-17, #87)
+
+`POST /admin/users/{id}/credits` (`admin/controller/AdminUserController`, `InventoryService.adjustCredits`) riceve `{ "amount": -50, "reason": "..." }` e restituisce il nuovo saldo `{ "credits": 300 }`. `amount` positivo aggiunge, negativo toglie; il saldo non scende mai sotto zero.
+
+| Caso | Status | `code` |
+|---|---|---|
+| `amount` mancante, `reason` vuoto o oltre 255 caratteri | `400` | `VALIDATION_FAILED` |
+| `amount` uguale a 0 (errore sul campo `amountNonZero`) | `400` | `VALIDATION_FAILED` |
+| utente inesistente | `404` | `INVENTORY_NOT_FOUND` |
+| la correzione porterebbe il saldo sotto zero | `422` | `INSUFFICIENT_CREDITS` |
+
+Finché non c'è l'audit (API-52, #122) il motivo non sta in `audit_logs`: si scrive solo nel log dell'applicazione (TODO in `InventoryService.adjustCredits`).
+
 ## Audit — `audit_logs`
 
 Ogni azione del backoffice salva una riga:

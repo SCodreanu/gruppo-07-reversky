@@ -42,7 +42,7 @@ Regole:
 
 Nella **stessa transazione**:
 1. crea l'utente con ruolo `USER`;
-2. crea il suo `inventories` con i crediti di benvenuto e la riga `SIGNUP` in `credit_transactions` (vedi [crediti](../crediti/crediti.md)) — **non ancora implementato**: arriva con l'inventario (TODO in `AuthService.register`);
+2. crea il suo `inventories` con i crediti di benvenuto e la riga `SIGNUP` in `credit_transactions` (vedi [crediti](../crediti/crediti.md)): il valore viene dal rule set attivo, e senza un rule set attivo la registrazione fallisce (`404 NO_ACTIVE_RULE_SET`) e l'utente non viene creato;
 3. crea un token di verifica email e invia la mail.
 
 Risposta `201 Created` senza corpo. Campi non validi → `400` con l'elenco dei campi in `errors`. Username o email già usati → `409 Conflict`.
@@ -156,12 +156,13 @@ public ResponseEntity<UserResponse> me(@AuthenticationPrincipal Jwt jwt) {
   "username": "pioggia_inversa",
   "email": "mario@example.com",
   "role": "USER",
-  "emailVerified": false
+  "emailVerified": false,
+  "credits": 350
 }
 ```
 
 - `emailVerified` serve al frontend per mostrare l'avviso e il pulsante di reinvio della verifica.
-- I **crediti** si aggiungeranno quando esisterà `inventories` (TODO in `UserResponse`).
+- `credits` è il saldo dell'inventario, letto da `InventoryService` (vedi [crediti](../crediti/crediti.md)).
 - Il service converte l'entità nel DTO dentro la propria transazione: il ruolo è `LAZY` e `spring.jpa.open-in-view=false`, quindi fuori dalla transazione non si può leggere.
 - Token valido di un utente eliminato nel frattempo → `404` (`USER_NOT_FOUND`).
 
