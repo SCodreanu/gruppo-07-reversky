@@ -7,7 +7,7 @@ Servono a tre cose:
 2. fare da **test di accettazione** automatici (`SimulationExamplesTest`, vedi [docs/test](../docs/test/test.md));
 3. capire le regole con numeri concreti prima di scrivere il codice.
 
-> **Dati di prova (mock).** I nomi vengono dal catalogo di 120 carte (alcuni nella traduzione inglese di lavoro), ma `id` e statistiche sono inventati per i test, e le carte che nel catalogo hanno un effetto qui ne sono prive, tranne Hidebehind nell'esempio 09.
+> **Dati di prova (mock).** I nomi vengono dal catalogo di 120 carte (alcuni nella traduzione inglese di lavoro), ma `id` e statistiche sono inventati per i test, e le creature che nel catalogo hanno un effetto qui ne sono prive, tranne Hidebehind nell'esempio 09. Spell, Hidden, Terreno e Oggetto dell'esempio 13 hanno l'effetto vero del catalogo.
 > Alcuni valori (es. DEF 1000 nell'esempio 07) sono fuori dai limiti di rarità apposta: l'engine non valida i limiti, lo fa l'API.
 > Come nel gioco, i nomi sono in inglese.
 
@@ -37,10 +37,11 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 75 round, PV 30–30 |
 | `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
-| `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `09-effetto-hidebehind` | primo effetto di creatura (`HIDEBEHIND`) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
 | `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–(−5) |
 | `11-doppia-fazione-vantaggio` | carta con due fazioni: prende il bonus della seconda fazione | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–28 |
 | `12-doppia-fazione-svantaggio` | carta con due fazioni: subisce anche lo svantaggio della seconda fazione | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `13-carte-speciali` | Spell `SHIELD` in attesa, Terreno, Oggetto (Badge), Spell `DAMAGE` alla pescata, Hidden `DAMAGE` nel secondo scontro | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 3 round, PV 30–27 |
 | `90-errore-effetto-sconosciuto` | `effectCode` scritto male (`HIDEBEHND`) | `400`, `UNKNOWN_EFFECT` |
 | `91-errore-mazzo-senza-creature` | mazzo con sola Spell | `400`, `NO_CREATURES_IN_DECK` |
 | `92-errore-fazione-sconosciuta` | `factionId` 9 non è tra le fazioni | `400`, `UNKNOWN_FACTION` |
@@ -112,7 +113,7 @@ Round 1: Hidebehind previene 2 dei 7 danni di Faceling (6 − 5 = 1), Faceling 9
 Round 2: Hidebehind 1 − 7 = −6 (muore), Faceling 1. Lo sfidante perde 6 PV.
 *Controprova:* senza effetto Hidebehind muore già al round 1 con DEF −1 e lo sfidante perde 1 PV.
 Il caso mostra un effetto collaterale della regola del danno: sopravvivere un round in più con poca DEF può costare **più** punti vita.
-Finché `HIDEBEHIND` non è nell'`EffectRegistry` questa richiesta deve dare `400 UNKNOWN_EFFECT`.
+Nel log, al round 1, `Hidebehind: prevents 2 damage from the first attack of Faceling`.
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).
@@ -134,6 +135,17 @@ Round 1: Archive Puppet 6 − 8 = −2 (muore, l'avversario perde 2 PV); Rootbou
 
 DEF dopo ogni round: 2/6 → **−6**/1. Rootbound Doppelganger muore, lo sfidante perde 6 PV.
 *Controprova:* con la sola fazione Dream nessun bonus: muoiono entrambe al round 2 e finisce `DRAW`.
+
+**13** — Seed `2219`: entrambi pescano nell'ordine del file. Sfidante (Archive): Veil of the Anchored, Watching Rift, SCP-131 8/6, Echo Strike, Archive Puppet 3/10. Avversario (Wound): Badge di Uscita Negata, Faceling 7/9, Skin Fracture, Crawlers 4/5. Archive batte Wound: +2 ATK per lo sfidante, −1 per l'avversario.
+
+- Pescata iniziale: Veil (+5 DEF) resta in attesa della prossima creatura dello sfidante; Watching Rift entra in gioco senza creature da potenziare; SCP-131 entra. L'avversario mette il Badge accanto al mazzo e gioca Faceling.
+- Inizio del primo scontro: SCP-131 riceve Veil (DEF 11), poi il bonus di Watching Rift (+1 ATK: 9/11; dal 21 novembre, `ENG-42`, il Terreno non dà più +1 DEF). Faceling è Wound, niente bonus.
+- Round 1: SCP-131 attacca con 9 + 2 = 11, Faceling con 7 − 1 = 6. Faceling 9 − 11 = −2; SCP-131 perde 6 (prima lo scudo di Veil, 5, poi 1): DEF 5. Il Badge salva Faceling, che resta con 1 DEF.
+- Round 2: Faceling 1 − 11 = −10, SCP-131 5 − 6 = −1: muoiono entrambe, nessun danno ai giocatori.
+- Lo sfidante pesca Echo Strike (coperta, pronta dal secondo scontro) e Archive Puppet. L'avversario pesca Skin Fracture, che colpisce subito Archive Puppet: Watching Rift toglie 1 punto alla prima Spell `DAMAGE` (10 − 4 = 6), poi Crawlers.
+- Inizio del secondo scontro: Archive Puppet riceve Watching Rift (4/6); Echo Strike si attiva su Crawlers (−2 ATK nel primo round, −2 DEF: DEF 3).
+- Round 3: Archive Puppet attacca con 4 + 2 = 6, Crawlers con 4 − 1 − 2 = 1. Crawlers 3 − 6 = **−3** (muore), Archive Puppet perde 1: DEF 5. L'avversario perde **3** PV → 27 e non ha più creature → `CHALLENGER_WIN`, `NO_CREATURES_LEFT`.
+- Creature sconfitte: lo sfidante 2 (Faceling, Crawlers), l'avversario 1 (SCP-131).
 
 ## Log minimo atteso (esempio 01)
 

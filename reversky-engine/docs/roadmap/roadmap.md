@@ -93,15 +93,25 @@ Con `API-54` l'API usa l'engine vero al posto del mock: una sfida con Spell, Hid
 | `ENG-23` | Effetti delle creature: `CreatureEffect` con numero massimo di attivazioni (D-31) e priorità (D-30), collegati al registro di `ENG-22`. Primi effetti `P1`: Hidebehind (esempio 09), Nurikabe, Kappa, SCP-096, SCP-2317, Smiler. A chiama i momenti dal `RoundResolver`, B scrive gli effetti | A + B | L | `ENG-22` |
 | `ENG-25` | Effetti Theory of the Invitation e Theory of the Archive ([catalogo](../effetti/catalogo-effetti.md)): i `P1` entro il 30 | A | L | `ENG-22`, `ENG-23` |
 | `ENG-26` | Effetti Theory of the Wound e Theory of the Dream: i `P1` entro il 30 | B | L | `ENG-22`, `ENG-23` |
-| `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26` |
+| `ENG-41` | Una sola Hidden attiva per giocatore, le altre in fila (regola dei DSG del 20 novembre, D-15); prima di `ENG-28`, così il report misura la regola definitiva | A + B | S | `ENG-20` |
+| `ENG-28` | Task `balanceTest` e `BalanceSimulationTest`: primo report per i DSG (vittorie per fazione, partite a `ROUND_LIMIT`, durata media) | B | M | `ENG-11`, `ENG-26`, `ENG-41` |
+| `ENG-42` | Bilanciamento delle fazioni: fase 1 ATK e DEF delle creature (griglia `pv30`, proposta del 20 novembre), fase 2 numeri degli effetti carta per carta prima del code freeze | A + B | L | `ENG-28` |
 
 **Versione completa (30 novembre):** effetti `P1` nel registro, report di bilanciamento consegnato ai DSG.
+
+Primo report di bilanciamento con l'engine vero (20 novembre, `ENG-28`): [report-bilanciamento](../bilanciamento/report-bilanciamento.md), si rigenera con `gradlew balanceTest`. Le forme del bonus di fazione da proporre per D-04: [report-forme-bonus](../bilanciamento/report-forme-bonus.md), con `gradlew balanceTest -PbalanceGrid=forme`. Il ribilanciamento delle statistiche di `ENG-42` (fase 1, proposta): [report-30pv](../bilanciamento/report-30pv.md), con `gradlew balanceTest -PbalanceGrid=pv30`.
 
 ## Sprint 7 — 30 novembre – 6 dicembre: test e rifinitura
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
 |---|---|---|---|---|
-| `ENG-25` / `ENG-26` | Effetti `P2` (tutti decisi l'11 novembre, servono i pezzi di motore del [catalogo](../effetti/catalogo-effetti.md#pezzi-di-motore-richiesti-dagli-effetti)) | A / B | M | D-xx |
+| `ENG-34` | Effetti `P2`: guarigione e momento "a ogni eliminazione" (The Bloodless Hound, Wendigo, SCP-109) | A + B | M | `ENG-26` |
+| `ENG-35` | Effetti `P2`: sospensione e rimozione dei bonus (L'Addetto alle Uscite, Deathmoths, SCP-3999, Static Interference) | A + B | M | `ENG-23` |
+| `ENG-36` | Effetti `P2`: rimozione del Terreno (The Null Witness, The Hollow Wyrm) | A + B | M | `ENG-27`, `ENG-35` |
+| `ENG-37` | Effetti `P2`: sopravvivenza al danno letale e condizioni delle Hidden (The Undying Blossom, Unseen Exit, Remnants of Reality) | A + B | L | `ENG-34`, `ENG-35` |
+| `ENG-38` | Effetti `P2`: effetti annullati, rubati e copiati (Il Predicatore sotto la Pioggia, SCP-2521, Kitsune, Baku, Il Custode delle Porte Incrociate) | A + B | L | `ENG-35` |
+| `ENG-39` | Effetti `P2`: mazzo e Hidden dell'avversario (La Regina dei Sentieri Perduti, L'Operatore della Stanza 0) | A + B | M | `ENG-34` |
+| `ENG-40` | Effetto `P1` rimasto: la Spell SCP-500 e la protezione dal primo danno di qualunque tipo (D-14, D-33) | A + B | S | `ENG-34` |
 | `ENG-27` | Effetti secondari dei Terreni, decisi l'11 novembre (D-18) | A | M | `ENG-21` |
 | `ENG-28` | Report di bilanciamento con gli effetti, dopo le modifiche dei DSG alle statistiche | B | S | `ENG-26` |
 | `ENG-29` | Casi limite e correzione bug; Javadoc su tutto il core pubblico | A + B | M | `ENG-25`, `ENG-26` |

@@ -198,7 +198,8 @@ Vedi [docs/test](docs/test/test.md). In breve:
 
 ## 12. Git e GitHub Projects
 
-- Branch: `feature/<n-issue>-descrizione`, `fix/<n-issue>-descrizione`.
+- Branch: `backend-engine/feature/<n-issue>-descrizione`, `backend-engine/fix/<n-issue>-descrizione`, creati da `backend_engine`.
+  Il prefisso usa il trattino e non il trattino basso: Git non permette `backend_engine/...` perché esiste già il branch `backend_engine`.
 - Commit in italiano: `tipo(ambito): descrizione` (`feat`, `fix`, `refactor`, `test`, `docs`, `chore`).
 - Sempre Pull Request con almeno una revisione di un altro SWD, che cita la issue (`Closes #N`).
 
