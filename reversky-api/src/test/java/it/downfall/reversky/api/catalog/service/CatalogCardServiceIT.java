@@ -221,11 +221,11 @@ class CatalogCardServiceIT {
 	@DisplayName("A valid update of an original changes every field")
 	void update_original_changesEveryField() {
 		// Arrange
-		// Arrange: creatura Common che diventa Spell Uncommon
+		// Arrange: creatura Common che diventa Spell Rare
 		CatalogCard card = testCards.createCreature();
-		Rarity uncommon = testCards.uncommon();
+		Rarity rare = testCards.rare();
 		String newName = uniqueName("Renamed");
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.SPELL, uncommon.getId(), null, null, CardSubtype.SHIELD,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.SPELL, rare.getId(), null, null, CardSubtype.SHIELD,
 				"SHIELD_TWO", null, null, null, 2, "Shields for 2", "New flavor");
 
 		// Act
@@ -234,9 +234,9 @@ class CatalogCardServiceIT {
 		// Assert
 		CatalogCard reloaded = reload(card);
 		assertThat(response.name()).isEqualTo(newName);
-		assertThat(response.rarity().id()).isEqualTo(uncommon.getId());
-		assertThat(response.rarity().name()).isEqualTo(uncommon.getName());
-		assertThat(reloaded.getRarity().getId()).isEqualTo(uncommon.getId());
+		assertThat(response.rarity().id()).isEqualTo(rare.getId());
+		assertThat(response.rarity().name()).isEqualTo(rare.getName());
+		assertThat(reloaded.getRarity().getId()).isEqualTo(rare.getId());
 		assertThat(reloaded.getName()).isEqualTo(newName);
 		assertThat(reloaded.getCardType()).isEqualTo(CardType.SPELL);
 		assertThat(reloaded.getCardSubtype()).isEqualTo(CardSubtype.SHIELD);
@@ -437,7 +437,7 @@ class CatalogCardServiceIT {
 		// Arrange: la rarità della richiesta non esiste, ma per una variante non si guarda nemmeno.
 		// Il service riceve l'originale come proxy (è già nel contesto come variantOf della variante):
 		// se copyRulesFrom leggesse original.rarity invece di getRarity(), copierebbe null e il salvataggio fallirebbe.
-		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL, testCards.uncommon());
+		CatalogCard original = testCards.create(uniqueName("Spell"), CardType.SPELL, testCards.rare());
 		CatalogCard variant = testCards.createVariantOf(original);
 		String newName = uniqueName("Event");
 		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(newName, CardType.CREATURE, MISSING_ID, testCards.faction().getId(), null, null,
@@ -616,14 +616,14 @@ class CatalogCardServiceIT {
 	}
 
 	@Test
-	@DisplayName("A spell or a hidden card with a Rare rarity is rejected")
-	void update_spellAndHiddenWithRare_throwInvalidRarity() {
-		// Arrange
+	@DisplayName("A spell or a hidden card with a Common rarity is rejected")
+	void update_spellAndHiddenWithCommon_throwInvalidRarity() {
+		// Arrange: Spell e Hidden sono solo Rare dal 21 novembre
 		CatalogCard card = testCards.createCreature();
-		Integer rareId = testCards.rare().getId();
-		CatalogCardUpdateRequest spell = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, rareId, null, null, CardSubtype.BURN,
+		Integer commonId = testCards.common().getId();
+		CatalogCardUpdateRequest spell = new CatalogCardUpdateRequest(card.getName(), CardType.SPELL, commonId, null, null, CardSubtype.BURN,
 				TestCards.EFFECT_CODE, null, null, null, null, null, null);
-		CatalogCardUpdateRequest hidden = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, rareId, null, null, CardSubtype.SURVIVAL,
+		CatalogCardUpdateRequest hidden = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.uncommon().getId(), null, null, CardSubtype.SURVIVAL,
 				TestCards.EFFECT_CODE, null, null, null, null, null, null);
 
 		// Act + Assert
@@ -637,21 +637,21 @@ class CatalogCardServiceIT {
 	}
 
 	@Test
-	@DisplayName("A spell and a hidden card accept Common and Uncommon")
-	void update_spellAndHiddenWithCommonOrUncommon_isAccepted() {
+	@DisplayName("A spell and a hidden card accept Rare")
+	void update_spellAndHiddenWithRare_isAccepted() {
 		// Arrange
 		CatalogCard spell = testCards.create(uniqueName("Spell"), CardType.SPELL);
 		CatalogCard hidden = testCards.create(uniqueName("Hidden"), CardType.HIDDEN);
 
 		// Act
 		CatalogCardResponse spellResponse = catalogCardService.update(spell.getId(), new CatalogCardUpdateRequest(spell.getName(),
-				CardType.SPELL, testCards.uncommon().getId(), null, null, CardSubtype.BURN, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+				CardType.SPELL, testCards.rare().getId(), null, null, CardSubtype.BURN, TestCards.EFFECT_CODE, null, null, null, null, null, null));
 		CatalogCardResponse hiddenResponse = catalogCardService.update(hidden.getId(), new CatalogCardUpdateRequest(hidden.getName(),
-				CardType.HIDDEN, testCards.common().getId(), null, null, CardSubtype.SURVIVAL, TestCards.EFFECT_CODE, null, null, null, null, null, null));
+				CardType.HIDDEN, testCards.rare().getId(), null, null, CardSubtype.SURVIVAL, TestCards.EFFECT_CODE, null, null, null, null, null, null));
 
 		// Assert
-		assertThat(spellResponse.rarity().id()).isEqualTo(testCards.uncommon().getId());
-		assertThat(hiddenResponse.rarity().id()).isEqualTo(testCards.common().getId());
+		assertThat(spellResponse.rarity().id()).isEqualTo(testCards.rare().getId());
+		assertThat(hiddenResponse.rarity().id()).isEqualTo(testCards.rare().getId());
 	}
 
 	@Test
@@ -854,7 +854,7 @@ class CatalogCardServiceIT {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
 		CatalogCard variant = testCards.createVariantOf(card, uniqueName("Event"));
-		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.common().getId(), null, null, CardSubtype.SURVIVAL,
+		CatalogCardUpdateRequest request = new CatalogCardUpdateRequest(card.getName(), CardType.HIDDEN, testCards.rare().getId(), null, null, CardSubtype.SURVIVAL,
 				TestCards.EFFECT_CODE, null, null, null, null, null, null);
 
 		// Act

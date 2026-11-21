@@ -47,3 +47,9 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// In locale bootRun usa il profilo dev, con i dati di prova di db/dev (API-25); SPRING_PROFILES_ACTIVE lo sostituisce.
+// L'immagine Docker e java -jar non lo attivano.
+tasks.named('bootRun') {
+	systemProperty 'spring.profiles.active', System.getenv('SPRING_PROFILES_ACTIVE') ?: 'dev'
+}

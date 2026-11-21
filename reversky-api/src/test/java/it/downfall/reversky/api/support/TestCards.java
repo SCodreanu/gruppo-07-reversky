@@ -51,7 +51,7 @@ public class TestCards {
 
 	/**
 	 * Carta originale valida del tipo indicato, con la rarità predefinita del tipo
-	 * (Rare per Terreni e Oggetti, Common per gli altri).
+	 * (Common per le creature, Rare per tutti gli altri).
 	 */
 	public CatalogCard create(String name, CardType type) {
 		return create(name, type, defaultRarity(type));
@@ -167,9 +167,9 @@ public class TestCards {
 			.orElseGet(() -> rarityRepository.save(new Rarity(name, 3, null, sortingOrder)));
 	}
 
-	// Una rarità ammessa dal tipo
+	// Una rarità ammessa dal tipo: Rare per Spell, Hidden, Terreni e Oggetti (dal 21 novembre), Common per le creature
 	private Rarity defaultRarity(CardType type) {
-		return (type == CardType.TERRAIN || type == CardType.ITEM) ? rare() : common();
+		return type == CardType.CREATURE ? common() : rare();
 	}
 
 	// Un sottotipo valido per i tipi che lo richiedono

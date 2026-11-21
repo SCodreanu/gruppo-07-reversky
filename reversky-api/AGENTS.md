@@ -137,7 +137,7 @@ Catalogo (`catalog/`):
 - fazioni: `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
 - rarità: `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`). Le rarità non hanno massimi di ATK e DEF (tolti con la baseline);
 - carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
-- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
+- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell, Hidden, Terreni e Oggetti solo Rare (Spell e Hidden dal 21 novembre), riconosciute da `sorting_order` e mai dal nome.
 - fazioni delle carte (task #81): `PUT /admin/cards` riceve `factionId` (obbligatoria per Creature, Terreni e Oggetti, vietata per Spell e Hidden) e `secondaryFactionId` (facoltativa, diversa dalla prima); una fazione inesistente è `422 CARD_FACTION_INVALID`. Le carte restituiscono `faction` e `secondaryFaction` come `{ id, name }`, e `GET /cards` e `GET /admin/cards` hanno il filtro `factionId` (prima o seconda fazione).
 - bonus di fazione: `GET/PUT /api/v1/admin/faction-bonuses` (`admin/controller/AdminFactionBonusController`, `catalog/service/FactionBonusService`): il `PUT` sostituisce tutta la matrice in una transazione, con due `PUT` contemporanei messi in fila. Senza audit. La matrice corrente compare anche in `GET /rules`. Dettagli ed errori in [docs/backoffice](docs/backoffice/backoffice.md#bonus-di-fazione-comportamento-già-implementato).
 
@@ -152,6 +152,11 @@ Amicizie (`friendship/`):
 Collezione (`collection/`):
 
 - `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
+
+Catalogo iniziale e dati di prova (API-55, API-25):
+
+- `V11__insert_initial_catalog.sql` carica le 120 carte di `catalogo-finale.csv` (ENG-42); Spell e Hidden sono Rare e non contano nel `max_per_deck`. Immagini segnaposto e testi in italiano finché i DSG non danno quelli definitivi.
+- Con il profilo `dev` (attivo da solo con `./gradlew bootRun`) `db/dev/R__dev_seed.sql` aggiunge `admin`, `alice` e `bob` (password di sviluppo `Reversky2026`) con collezioni complete, un mazzo valido ciascuno e l'amicizia tra alice e bob. Dettagli in [docs/database](docs/database/database.md#dati-di-prova-solo-sviluppo).
 
 Mazzi (`deck/`, API-26–29):
 

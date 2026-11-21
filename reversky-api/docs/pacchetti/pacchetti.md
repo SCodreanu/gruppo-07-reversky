@@ -59,8 +59,7 @@ Esempio: un pacchetto evento con tag `DREAM` contiene solo carte della Theory of
 ### Spell, Hidden, Terreni e Oggetti
 
 Sono carte del catalogo come le altre, con una loro rarità: escono negli slot della loro rarità. Per rispettare il regolamento:
-- Spell e Hidden hanno rarità **Common** o **Uncommon** → compaiono al posto di una Common/Uncommon;
-- Terreni e Oggetti hanno rarità **Rare** → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
+- Spell, Hidden, Terreni e Oggetti hanno rarità **Rare** (Spell e Hidden dal 21 novembre, prima Common o Uncommon) → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
 
 Spell e Hidden non hanno fazione: in un pacchetto con `pack_tags` escono solo se hanno uno dei tag nei **tag propri** (i tag di fazione non valgono per loro). Un pacchetto evento con tag `DREAM` quindi non contiene Spell né Hidden, a meno che non siano etichettate anche loro.
 

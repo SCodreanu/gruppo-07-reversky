@@ -66,14 +66,14 @@ class DeckValidatorTest {
 	void validate_oneMoreOfEachCategory_reportsEachCode() {
 		assertThat(codes(validate(withExtra(CardType.CREATURE, common, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.CREATURE_COUNT);
-		assertThat(codes(validate(withExtra(CardType.SPELL, common, CardSubtype.BURN))))
+		assertThat(codes(validate(withExtra(CardType.SPELL, rare, CardSubtype.BURN))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.SPELL_COUNT);
 		assertThat(codes(validate(withExtra(CardType.ITEM, rare, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.ITEM_COUNT);
 		assertThat(codes(validate(withExtra(CardType.TERRAIN, rare, null))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.TERRAIN_COUNT);
 		// Una terza Hidden SURVIVAL supera anche il massimo del sottotipo
-		assertThat(codes(validate(withExtra(CardType.HIDDEN, common, CardSubtype.SURVIVAL))))
+		assertThat(codes(validate(withExtra(CardType.HIDDEN, rare, CardSubtype.SURVIVAL))))
 			.containsExactly(DeckValidator.SIZE, DeckValidator.HIDDEN_COUNT, DeckValidator.HIDDEN_SUBTYPE_LIMIT);
 	}
 
@@ -104,7 +104,7 @@ class DeckValidatorTest {
 		Map<CatalogCard, Integer> deck = validDeck();
 		CatalogCard creature = first(deck, CardType.CREATURE);
 		deck.put(creature, deck.get(creature) - 1);
-		deck.put(card(CardType.SPELL, common, CardSubtype.DAMAGE), 1);
+		deck.put(card(CardType.SPELL, rare, CardSubtype.DAMAGE), 1);
 
 		// Act + Assert
 		assertThat(codes(validate(deck)))
@@ -150,18 +150,19 @@ class DeckValidatorTest {
 	@Test
 	@DisplayName("A copy limit lower than the rarity wins; a null copy limit uses the rarity limit")
 	void validate_cardCopyLimit_overridesRarity() {
-		// Arrange: una Spell con copy_limit 1 sostituisce una delle Spell da 3 copie
+		// Arrange: una Spell Rare con copy_limit 1 prende il posto di una Spell da 2 copie
 		Map<CatalogCard, Integer> deck = validDeck();
 		CatalogCard spell = first(deck, CardType.SPELL);
-		CatalogCard burn = card(CardType.SPELL, common, CardSubtype.BURN);
+		CatalogCard burn = card(CardType.SPELL, rare, CardSubtype.BURN);
 		ReflectionTestUtils.setField(burn, "copyLimit", 1);
-		deck.put(spell, deck.get(spell) - 2);
+		deck.remove(spell);
 		deck.put(burn, 2);
 
-		// Act + Assert
+		// Act + Assert: 2 copie oltre il copy_limit; 1 copia più un'altra Spell da 1 è valido
 		assertThat(codes(validate(deck))).containsExactly(DeckValidator.COPY_LIMIT);
+		assertThat(validate(deck).get(0).message()).endsWith("(2/1)");
 		deck.put(burn, 1);
-		deck.put(spell, deck.get(spell) + 1);
+		deck.put(card(CardType.SPELL, rare, CardSubtype.SHIELD), 1);
 		assertThat(validate(deck)).isEmpty();
 	}
 
@@ -213,6 +214,30 @@ class DeckValidatorTest {
 		// Act + Assert
 		assertThat(validate(fiveRares)).isEmpty();
 		assertThat(validate(sixRares).get(0).message()).isEqualTo("Too many Rare cards (6/5)");
+	}
+
+	@Test
+	@DisplayName("Rare Spells and Hidden cards do not count toward the Rare maximum")
+	void validate_rareMaximum_ignoresSpellsAndHidden() {
+		// Arrange: 6 Spell e 2 Hidden Rare, più Terreno, Oggetto e 3 creature Rare: contano solo 5 Rare
+		Map<CatalogCard, Integer> deck = withCreaturesOf(rare, 3);
+
+		// Act + Assert
+		assertThat(all(deck, CardType.SPELL)).allMatch(card -> card.getRarity() == rare);
+		assertThat(validate(deck)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("A Rare Spell still has the Rare copy limit of 2")
+	void validate_rareSpell_keepsCopyLimit() {
+		// Arrange
+		Map<CatalogCard, Integer> deck = validDeck();
+		List<CatalogCard> spells = all(deck, CardType.SPELL);
+		deck.put(spells.get(0), 3);
+		deck.put(spells.get(1), 1);
+
+		// Act + Assert
+		assertThat(codes(validate(deck))).containsExactly(DeckValidator.COPY_LIMIT);
 	}
 
 	// --- carte disattivate ---
@@ -327,17 +352,19 @@ class DeckValidatorTest {
 		return available;
 	}
 
-	// 20 creature (6 da 3 copie e 1 da 2), 2 Spell da 3, 2 Hidden SURVIVAL da 1, 1 Oggetto e 1 Terreno Rare
+	// 20 creature Common (6 da 3 copie e 1 da 2), 3 Spell Rare da 2, 2 Hidden SURVIVAL Rare da 1, 1 Oggetto e
+	// 1 Terreno Rare: le Rare che contano nel massimo sono solo Oggetto e Terreno
 	private Map<CatalogCard, Integer> validDeck() {
 		Map<CatalogCard, Integer> deck = new LinkedHashMap<>();
 		for (int i = 0; i < 6; i++) {
 			deck.put(card(CardType.CREATURE, common, null), 3);
 		}
 		deck.put(card(CardType.CREATURE, common, null), 2);
-		deck.put(card(CardType.SPELL, common, CardSubtype.BURN), 3);
-		deck.put(card(CardType.SPELL, common, CardSubtype.SHIELD), 3);
-		deck.put(card(CardType.HIDDEN, common, CardSubtype.SURVIVAL), 1);
-		deck.put(card(CardType.HIDDEN, common, CardSubtype.SURVIVAL), 1);
+		deck.put(card(CardType.SPELL, rare, CardSubtype.BURN), 2);
+		deck.put(card(CardType.SPELL, rare, CardSubtype.SHIELD), 2);
+		deck.put(card(CardType.SPELL, rare, CardSubtype.DAMAGE), 2);
+		deck.put(card(CardType.HIDDEN, rare, CardSubtype.SURVIVAL), 1);
+		deck.put(card(CardType.HIDDEN, rare, CardSubtype.SURVIVAL), 1);
 		deck.put(card(CardType.ITEM, rare, null), 1);
 		deck.put(card(CardType.TERRAIN, rare, null), 1);
 		return deck;
@@ -352,8 +379,8 @@ class DeckValidatorTest {
 	private Map<CatalogCard, Integer> withHidden(CardSubtype first, CardSubtype second) {
 		Map<CatalogCard, Integer> deck = validDeck();
 		all(deck, CardType.HIDDEN).forEach(deck::remove);
-		deck.put(card(CardType.HIDDEN, common, first), 1);
-		deck.put(card(CardType.HIDDEN, common, second), 1);
+		deck.put(card(CardType.HIDDEN, rare, first), 1);
+		deck.put(card(CardType.HIDDEN, rare, second), 1);
 		return deck;
 	}
 

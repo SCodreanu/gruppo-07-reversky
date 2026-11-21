@@ -30,7 +30,7 @@ public record CatalogCardUpdateRequest(
 	@NotNull(message = "Type is required")
 	CardType type,
 
-	@Schema(example = "5", description = "SPELL and HIDDEN must be Common or Uncommon, TERRAIN and ITEM must be Rare, "
+	@Schema(example = "5", description = "SPELL, HIDDEN, TERRAIN and ITEM must be Rare, "
 			+ "CREATURE accepts any rarity. Ignored for a variant: copied from the original")
 	@NotNull(message = "Rarity is required")
 	Integer rarityId,

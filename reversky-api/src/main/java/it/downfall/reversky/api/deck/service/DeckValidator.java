@@ -133,10 +133,15 @@ public class DeckValidator {
 		return cardLimit == null ? rarityLimit : Math.min(rarityLimit, cardLimit);
 	}
 
-	// Massimo per rarità (max_per_deck, vuoto = nessun limite): Terreno e Oggetto sono Rare e ne occupano un posto
+	// Massimo per rarità (max_per_deck, vuoto = nessun limite): Terreno e Oggetto sono Rare e ne occupano un posto,
+	// Spell e Hidden sono Rare ma non contano (CardType.countsTowardRarityMaximum)
 	private static void checkBalanceLimits(Map<CatalogCard, Integer> cards, List<DeckViolation> violations) {
 		Map<Rarity, Integer> copiesByRarity = new TreeMap<>(Comparator.comparing(Rarity::getSortingOrder));
-		cards.forEach((card, quantity) -> copiesByRarity.merge(card.getRarity(), quantity, Integer::sum));
+		cards.forEach((card, quantity) -> {
+			if (card.getCardType().countsTowardRarityMaximum()) {
+				copiesByRarity.merge(card.getRarity(), quantity, Integer::sum);
+			}
+		});
 
 		copiesByRarity.forEach((rarity, copies) -> {
 			Integer max = rarity.getMaxPerDeck();
