@@ -1,0 +1,456 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 3,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 2
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 27,
+    "creaturesDefeated" : 1
+  },
+  "seed" : 2219,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CARD_DRAWN",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Veil of the Anchored",
+      "cardType" : "SPELL"
+    },
+    "message" : "Challenger draws Veil of the Anchored (SPELL)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "SPELL_RESOLVED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Veil of the Anchored",
+      "effect" : "+5 DEF",
+      "target" : null
+    },
+    "message" : "Veil of the Anchored resolves"
+  }, {
+    "sequence" : 4,
+    "round" : 0,
+    "type" : "CARD_DRAWN",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Watching Rift",
+      "cardType" : "TERRAIN"
+    },
+    "message" : "Challenger draws Watching Rift (TERRAIN)"
+  }, {
+    "sequence" : 5,
+    "round" : 0,
+    "type" : "TERRAIN_PLACED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Watching Rift",
+      "replaced" : null
+    },
+    "message" : "Watching Rift enters play"
+  }, {
+    "sequence" : 6,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131",
+      "attack" : 8,
+      "defense" : 6
+    },
+    "message" : "Challenger plays SCP-131 (ATK 8, DEF 6)"
+  }, {
+    "sequence" : 7,
+    "round" : 0,
+    "type" : "CARD_DRAWN",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Badge di Uscita Negata",
+      "cardType" : "ITEM"
+    },
+    "message" : "Opponent draws Badge di Uscita Negata (ITEM)"
+  }, {
+    "sequence" : 8,
+    "round" : 0,
+    "type" : "ITEM_PLACED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Badge di Uscita Negata"
+    },
+    "message" : "Opponent places Badge di Uscita Negata"
+  }, {
+    "sequence" : 9,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling",
+      "attack" : 7,
+      "defense" : 9
+    },
+    "message" : "Opponent plays Faceling (ATK 7, DEF 9)"
+  }, {
+    "sequence" : 10,
+    "round" : 0,
+    "type" : "EFFECT_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131",
+      "description" : "+5 DEF from Veil of the Anchored (ATK 8, DEF 11)"
+    },
+    "message" : "SCP-131: +5 DEF from Veil of the Anchored (ATK 8, DEF 11)"
+  }, {
+    "sequence" : 11,
+    "round" : 0,
+    "type" : "EFFECT_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131",
+      "description" : "+1 ATK from Watching Rift (ATK 9, DEF 11)"
+    },
+    "message" : "SCP-131: +1 ATK from Watching Rift (ATK 9, DEF 11)"
+  }, {
+    "sequence" : 12,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 13,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "SCP-131",
+      "baseAttack" : 8,
+      "factionBonus" : 2,
+      "modifiers" : 1,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 11
+    },
+    "message" : "SCP-131 attacks with 11 (8 base, +2 faction, +1 modifiers)"
+  }, {
+    "sequence" : 14,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 7,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Faceling attacks with 6 (7 base, −1 faction)"
+  }, {
+    "sequence" : 15,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "SCP-131",
+      "target" : "Faceling",
+      "amount" : 11,
+      "targetDefense" : -2
+    },
+    "message" : "SCP-131 deals 11 damage to Faceling (DEF −2)"
+  }, {
+    "sequence" : 16,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "SCP-131",
+      "amount" : 6,
+      "targetDefense" : 5
+    },
+    "message" : "Faceling deals 6 damage to SCP-131 (DEF 5)"
+  }, {
+    "sequence" : 17,
+    "round" : 1,
+    "type" : "ITEM_CONSUMED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Badge di Uscita Negata",
+      "effect" : "stays at 1 DEF",
+      "creature" : "Faceling"
+    },
+    "message" : "Badge di Uscita Negata is used on Faceling"
+  }, {
+    "sequence" : 18,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 19,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "SCP-131",
+      "baseAttack" : 8,
+      "factionBonus" : 2,
+      "modifiers" : 1,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 11
+    },
+    "message" : "SCP-131 attacks with 11 (8 base, +2 faction, +1 modifiers)"
+  }, {
+    "sequence" : 20,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 7,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Faceling attacks with 6 (7 base, −1 faction)"
+  }, {
+    "sequence" : 21,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "SCP-131",
+      "target" : "Faceling",
+      "amount" : 11,
+      "targetDefense" : -10
+    },
+    "message" : "SCP-131 deals 11 damage to Faceling (DEF −10)"
+  }, {
+    "sequence" : 22,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "SCP-131",
+      "amount" : 6,
+      "targetDefense" : -1
+    },
+    "message" : "Faceling deals 6 damage to SCP-131 (DEF −1)"
+  }, {
+    "sequence" : 23,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131"
+    },
+    "message" : "SCP-131 is destroyed"
+  }, {
+    "sequence" : 24,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling"
+    },
+    "message" : "Faceling is destroyed"
+  }, {
+    "sequence" : 25,
+    "round" : 2,
+    "type" : "HIDDEN_SET",
+    "side" : "CHALLENGER",
+    "data" : { },
+    "message" : "Challenger sets a Hidden card"
+  }, {
+    "sequence" : 26,
+    "round" : 2,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Archive Puppet",
+      "attack" : 3,
+      "defense" : 10
+    },
+    "message" : "Challenger plays Archive Puppet (ATK 3, DEF 10)"
+  }, {
+    "sequence" : 27,
+    "round" : 2,
+    "type" : "CARD_DRAWN",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Skin Fracture",
+      "cardType" : "SPELL"
+    },
+    "message" : "Opponent draws Skin Fracture (SPELL)"
+  }, {
+    "sequence" : 28,
+    "round" : 2,
+    "type" : "SPELL_RESOLVED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Skin Fracture",
+      "effect" : "−5 DEF",
+      "target" : "Archive Puppet"
+    },
+    "message" : "Skin Fracture resolves on Archive Puppet"
+  }, {
+    "sequence" : 29,
+    "round" : 2,
+    "type" : "EFFECT_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Archive Puppet",
+      "description" : "takes 1 point less from Skin Fracture (Watching Rift)"
+    },
+    "message" : "Archive Puppet: takes 1 point less from Skin Fracture (Watching Rift)"
+  }, {
+    "sequence" : 30,
+    "round" : 2,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Crawlers",
+      "attack" : 4,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Crawlers (ATK 4, DEF 5)"
+  }, {
+    "sequence" : 31,
+    "round" : 2,
+    "type" : "EFFECT_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Archive Puppet",
+      "description" : "+1 ATK from Watching Rift (ATK 4, DEF 6)"
+    },
+    "message" : "Archive Puppet: +1 ATK from Watching Rift (ATK 4, DEF 6)"
+  }, {
+    "sequence" : 32,
+    "round" : 2,
+    "type" : "HIDDEN_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Echo Strike",
+      "effect" : "−2 ATK in the first round, −2 DEF to Crawlers"
+    },
+    "message" : "Echo Strike triggers"
+  }, {
+    "sequence" : 33,
+    "round" : 3,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 3
+    },
+    "message" : "Round 3"
+  }, {
+    "sequence" : 34,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 3,
+      "factionBonus" : 2,
+      "modifiers" : 1,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Archive Puppet attacks with 6 (3 base, +2 faction, +1 modifiers)"
+  }, {
+    "sequence" : 35,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Crawlers",
+      "baseAttack" : 4,
+      "factionBonus" : -1,
+      "modifiers" : -2,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 1
+    },
+    "message" : "Crawlers attacks with 1 (4 base, −1 faction, −2 modifiers)"
+  }, {
+    "sequence" : 36,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "Crawlers",
+      "amount" : 6,
+      "targetDefense" : -3
+    },
+    "message" : "Archive Puppet deals 6 damage to Crawlers (DEF −3)"
+  }, {
+    "sequence" : 37,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Crawlers",
+      "target" : "Archive Puppet",
+      "amount" : 1,
+      "targetDefense" : 5
+    },
+    "message" : "Crawlers deals 1 damage to Archive Puppet (DEF 5)"
+  }, {
+    "sequence" : 38,
+    "round" : 3,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Crawlers"
+    },
+    "message" : "Crawlers is destroyed"
+  }, {
+    "sequence" : 39,
+    "round" : 3,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 3,
+      "lifePoints" : 27
+    },
+    "message" : "Opponent loses 3 life points (27 left)"
+  }, {
+    "sequence" : 40,
+    "round" : 3,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Challenger wins (no creatures left)"
+  } ]
+}

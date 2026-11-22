@@ -1,0 +1,214 @@
+{
+  "result" : "OPPONENT_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 2,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 24,
+    "creaturesDefeated" : 0
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Hidebehind",
+      "attack" : 4,
+      "defense" : 6
+    },
+    "message" : "Challenger plays Hidebehind (ATK 4, DEF 6)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling",
+      "attack" : 7,
+      "defense" : 9
+    },
+    "message" : "Opponent plays Faceling (ATK 7, DEF 9)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Hidebehind",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Hidebehind attacks with 4 (4 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 7,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 7
+    },
+    "message" : "Faceling attacks with 7 (7 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "EFFECT_TRIGGERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Hidebehind",
+      "description" : "prevents 2 damage from the first attack of Faceling"
+    },
+    "message" : "Hidebehind: prevents 2 damage from the first attack of Faceling"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Hidebehind",
+      "target" : "Faceling",
+      "amount" : 4,
+      "targetDefense" : 5
+    },
+    "message" : "Hidebehind deals 4 damage to Faceling (DEF 5)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "Hidebehind",
+      "amount" : 5,
+      "targetDefense" : 1
+    },
+    "message" : "Faceling deals 5 damage to Hidebehind (DEF 1)"
+  }, {
+    "sequence" : 10,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 11,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Hidebehind",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Hidebehind attacks with 4 (4 base)"
+  }, {
+    "sequence" : 12,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 7,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 7
+    },
+    "message" : "Faceling attacks with 7 (7 base)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Hidebehind",
+      "target" : "Faceling",
+      "amount" : 4,
+      "targetDefense" : 1
+    },
+    "message" : "Hidebehind deals 4 damage to Faceling (DEF 1)"
+  }, {
+    "sequence" : 14,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "Hidebehind",
+      "amount" : 7,
+      "targetDefense" : -6
+    },
+    "message" : "Faceling deals 7 damage to Hidebehind (DEF −6)"
+  }, {
+    "sequence" : 15,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Hidebehind"
+    },
+    "message" : "Hidebehind is destroyed"
+  }, {
+    "sequence" : 16,
+    "round" : 2,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "amount" : 6,
+      "lifePoints" : 24
+    },
+    "message" : "Challenger loses 6 life points (24 left)"
+  }, {
+    "sequence" : 17,
+    "round" : 2,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "OPPONENT_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Opponent wins (no creatures left)"
+  } ]
+}

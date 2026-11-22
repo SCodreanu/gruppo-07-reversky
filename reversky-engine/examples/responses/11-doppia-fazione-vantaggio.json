@@ -1,0 +1,141 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 1,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 28,
+    "creaturesDefeated" : 0
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Rootbound Doppelganger",
+      "attack" : 6,
+      "defense" : 10
+    },
+    "message" : "Challenger plays Rootbound Doppelganger (ATK 6, DEF 10)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Archive Puppet",
+      "attack" : 6,
+      "defense" : 6
+    },
+    "message" : "Opponent plays Archive Puppet (ATK 6, DEF 6)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Rootbound Doppelganger",
+      "baseAttack" : 6,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "Rootbound Doppelganger attacks with 8 (6 base, +2 faction)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 6,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Archive Puppet attacks with 5 (6 base, −1 faction)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Rootbound Doppelganger",
+      "target" : "Archive Puppet",
+      "amount" : 8,
+      "targetDefense" : -2
+    },
+    "message" : "Rootbound Doppelganger deals 8 damage to Archive Puppet (DEF −2)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "Rootbound Doppelganger",
+      "amount" : 5,
+      "targetDefense" : 5
+    },
+    "message" : "Archive Puppet deals 5 damage to Rootbound Doppelganger (DEF 5)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Archive Puppet"
+    },
+    "message" : "Archive Puppet is destroyed"
+  }, {
+    "sequence" : 10,
+    "round" : 1,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 2,
+      "lifePoints" : 28
+    },
+    "message" : "Opponent loses 2 life points (28 left)"
+  }, {
+    "sequence" : 11,
+    "round" : 1,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Challenger wins (no creatures left)"
+  } ]
+}
