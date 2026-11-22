@@ -282,13 +282,13 @@ class CollectionServiceIT {
 
 		// Act
 		PageResponse<CollectionEntryResponse> spells = collectionService.findMine(user.getId(),
-			new CollectionFilter(CardType.SPELL, token, null, null), FIRST_PAGE);
+			new CollectionFilter(CardType.SPELL, token, null, null, null), FIRST_PAGE);
 		PageResponse<CollectionEntryResponse> rares = collectionService.findMine(user.getId(),
-			new CollectionFilter(null, token, rare.getId(), null), FIRST_PAGE);
+			new CollectionFilter(null, token, rare.getId(), null, null), FIRST_PAGE);
 		PageResponse<CollectionEntryResponse> ofSecond = collectionService.findMine(user.getId(),
-			new CollectionFilter(null, token, null, second.getId()), FIRST_PAGE);
+			new CollectionFilter(null, token, null, second.getId(), null), FIRST_PAGE);
 		PageResponse<CollectionEntryResponse> ofTestFaction = collectionService.findMine(user.getId(),
-			new CollectionFilter(null, token, null, testCards.faction().getId()), FIRST_PAGE);
+			new CollectionFilter(null, token, null, testCards.faction().getId(), null), FIRST_PAGE);
 
 		// Assert
 		assertThat(spells.content()).extracting(entry -> entry.card().id()).containsExactly(spell.getId());
@@ -397,6 +397,6 @@ class CollectionServiceIT {
 	}
 
 	private static CollectionFilter byName(String name) {
-		return new CollectionFilter(null, name, null, null);
+		return new CollectionFilter(null, name, null, null, null);
 	}
 }

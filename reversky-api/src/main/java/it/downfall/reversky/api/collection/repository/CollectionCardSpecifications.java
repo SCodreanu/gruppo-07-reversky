@@ -3,6 +3,7 @@ package it.downfall.reversky.api.collection.repository;
 import org.springframework.data.jpa.domain.Specification;
 
 import it.downfall.reversky.api.catalog.entity.CardType;
+import it.downfall.reversky.api.catalog.repository.CatalogCardSpecifications;
 import it.downfall.reversky.api.collection.entity.CollectionCard;
 
 /**
@@ -59,6 +60,20 @@ public final class CollectionCardSpecifications {
 			return builder.or(
 				builder.equal(root.get("card").get("faction").get("id"), factionId),
 				builder.equal(root.get("card").get("secondaryFaction").get("id"), factionId));
+		};
+	}
+
+	/**
+	 * Solo carte con quel tag, propri o di una delle loro fazioni (API-12); nome vuoto = nessun filtro. Stessa regola di
+	 * {@link CatalogCardSpecifications#hasTag}.
+	 */
+	public static Specification<CollectionCard> hasTag(String tag) {
+		return (root, query, builder) -> {
+			if (tag == null || tag.isBlank()) {
+				return null;
+			}
+
+			return CatalogCardSpecifications.isTagged(root.get("card"), tag.trim(), query, builder);
 		};
 	}
 }

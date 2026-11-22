@@ -59,7 +59,7 @@ Conseguenza: se l'utente offre o scambia una carta usata in un mazzo, quel mazzo
 | `factionId` | `3` | solo una fazione (anche come seconda fazione) |
 | `rarityId` | `4` | solo una rarità |
 | `type` | `CREATURE` | solo un tipo di carta |
-| `tag` | `DREAM` | solo carte con quel tag, proprio o di una delle loro fazioni (stessa regola dei pacchetti) |
+| `tag` | `DREAM` | solo carte con quel tag, proprio o di una delle loro fazioni, anche la seconda; Spell e Hidden solo con i propri (API-12) |
 | `name` | `wend` | ricerca per nome (contiene, senza maiuscole) |
 | `sort` | `rarity,desc` | ordinamento |
 
@@ -78,7 +78,6 @@ Risposta (un elemento):
     "def": 17,
     "subtype": null,
     "effectCode": "WENDIGO",
-    "tags": [],
     "effectDescription": "At the end of each round, the opposing creature loses 1 DEF...",
     "flavorText": "Hunger and frost that consume everything.",
     "imagePath": "/images/cards/wendigo.webp"
@@ -102,9 +101,9 @@ Package `collection/`: `CollectionCard` con `@EmbeddedId CollectionCardId(userId
 `GET /collection`:
 
 - ogni carta posseduta, anche **disattivata** (`active: false`) o **variante** (con `variantOfId`), come voce a sé;
-- `card` ha la stessa forma di `GET /cards/{id}` (`CatalogCardResponse`): oltre ai campi dell'esempio sopra ha `variantOfId`, `copyLimit` e `active`, e ancora niente `tags` (API-12);
+- `card` ha la stessa forma di `GET /cards/{id}` (`CatalogCardResponse`): oltre ai campi dell'esempio sopra ha `variantOfId`, `copyLimit` e `active`; i `tags` propri ci sono solo in `GET /cards/{id}` e nel backoffice, non nella collezione (deciso il 22 novembre con API-12);
 - `reservedQuantity`: copie nelle mie offerte degli scambi in cui ho fatto io la proposta in corso (regola di [scambi](../scambi/scambi.md#copie-riservate)); `usedInDecks`: numero dei miei mazzi che contengono la carta. Finché non esistono le entità `Trade` (API-31) e `Deck` (API-26) si calcolano con SQL nativo su `trade_offers` e `deck_cards`;
-- filtri `type`, `name`, `rarityId`, `factionId` (prima o seconda fazione) come `GET /cards`; un id inesistente dà una pagina vuota;
+- filtri `type`, `name`, `rarityId`, `factionId` (prima o seconda fazione) e `tag` come `GET /cards`; un id o un tag inesistente dà una pagina vuota. `tag` (API-12) trova le carte con quel tag tra i propri o tra quelli di una delle loro fazioni; il nome si confronta così com'è (`DREAM`, non `dream`). A differenza dei pacchetti, nel filtro anche una variante passa con i tag della sua fazione: nei pacchetti una variante esce solo con i tag propri. Spell e Hidden non hanno fazione e passano solo con i propri. Vale anche per `GET /users/{id}/collection`;
 - `sort` ammette solo `name`, `rarity` (per `sorting_order`), `type` e `quantity`, con `asc` o `desc`; senza, per nome. A parità si ordina sempre per nome e poi per id della carta, così le pagine restano stabili. Un'altra proprietà → `400 INVALID_COLLECTION_SORT`.
 
 `GET /collection/summary` restituisce `{ owned, total, rarities: [{ rarity: { id, name }, owned, total }] }`: `total` conta le carte **originali attive** del catalogo, `owned` quelle che possiedo direttamente o con una loro variante. Le carte disattivate non contano (così la barra arriva al 100%), le rarità senza originali attivi non compaiono, l'ordine è quello delle rarità.

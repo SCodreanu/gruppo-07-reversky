@@ -204,7 +204,7 @@ class PackOpeningControllerIT {
 		PackRequest request = new PackRequest(TestCards.uniqueName("Pack"), 10, null, "packs/test.webp",
 			List.of(new PackSlotRequest(testCards.common().getId(), 3), new PackSlotRequest(testCards.uncommon().getId(), 2),
 				new PackSlotRequest(testCards.rare().getId(), 2)),
-			List.of(new PackBonusRequest(mythicId, 1000)));
+			List.of(new PackBonusRequest(mythicId, 1000)), null);
 		Integer id = packAdminService.create(request).id();
 		packAdminService.activate(id);
 		return id;

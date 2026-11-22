@@ -1,5 +1,10 @@
 package it.downfall.reversky.api.catalog.dto;
 
+import java.util.Comparator;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
@@ -9,7 +14,9 @@ import it.downfall.reversky.api.common.storage.ImageStorage;
 /**
  * Carta restituita da GET /cards, GET /cards/{id} e dagli endpoint di /admin/cards.
  * <p>
- * Rarità e fazioni hanno la forma breve { id, name } di docs/collezione. I tag si aggiungono con #82.
+ * Rarità e fazioni hanno la forma breve { id, name } di docs/collezione. I tag propri della carta (API-12) ci sono
+ * solo in GET /cards/{id} e negli endpoint di /admin/cards ({@link #withTags}); negli elenchi, nella collezione e nei
+ * pacchetti aperti il campo manca, così non si caricano i tag di ogni carta.
  */
 public record CatalogCardResponse(
 
@@ -67,7 +74,12 @@ public record CatalogCardResponse(
 	String flavorText,
 
 	@Schema(example = "true", description = "An inactive card no longer drops from packs but stays in collections")
-	boolean active
+	boolean active,
+
+	@Schema(description = "The card's own tags, sorted by name. Only in GET /cards/{id} and the /admin/cards "
+		+ "responses; the tags of its factions are not listed here but count in the tag filter")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	List<TagResponse> tags
 ) {
 
 	/**
@@ -96,6 +108,23 @@ public record CatalogCardResponse(
 			ImageStorage.publicUrl(card.getImagePath()),
 			card.getEffectDescription(),
 			card.getFlavorText(),
-			card.isActive());
+			card.isActive(),
+			null);
+	}
+
+	/**
+	 * Come {@link #from}, con i tag propri della carta in ordine di nome: per il dettaglio e il backoffice. I tag si
+	 * caricano, quindi va chiamato dentro la transazione del service.
+	 */
+	public static CatalogCardResponse withTags(CatalogCard card) {
+		CatalogCardResponse base = from(card);
+		List<TagResponse> tags = card.getTags().stream()
+			.map(TagResponse::from)
+			.sorted(Comparator.comparing(TagResponse::name))
+			.toList();
+		return new CatalogCardResponse(base.id(), base.name(), base.type(), base.rarity(), base.faction(),
+			base.secondaryFaction(), base.subtype(), base.effectCode(), base.variantOfId(), base.atk(), base.def(),
+			base.copyLimit(), base.imagePath(), base.imageUrl(), base.effectDescription(), base.flavorText(),
+			base.active(), tags);
 	}
 }

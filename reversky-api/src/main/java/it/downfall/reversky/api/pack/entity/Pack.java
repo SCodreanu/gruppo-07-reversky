@@ -1,26 +1,34 @@
 package it.downfall.reversky.api.pack.entity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import it.downfall.reversky.api.catalog.entity.Rarity;
+import it.downfall.reversky.api.catalog.entity.Tag;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -69,6 +77,18 @@ public class Pack {
 	private List<PackBonusRule> bonuses = new ArrayList<>();
 
 	/**
+	 * Tag del pacchetto ({@code pack_tags}, API-21): senza tag esce qualsiasi carta attiva originale, con i tag solo le
+	 * carte che ne hanno almeno uno (docs/pacchetti, "Filtro delle carte"). Come slot e bonus, per una lista di
+	 * pacchetti si caricano con una query sola.
+	 */
+	@Getter(AccessLevel.NONE)
+	@Fetch(FetchMode.SUBSELECT)
+	@ManyToMany
+	@JoinTable(name = "pack_tags", joinColumns = @JoinColumn(name = "pack_id"),
+		inverseJoinColumns = @JoinColumn(name = "tag_id"))
+	private Set<Tag> tags = new HashSet<>();
+
+	/**
 	 * Pacchetto nuovo, disattivato.
 	 */
 	public Pack(String name, int cost, Integer purchaseLimit, String imagePath) {
@@ -99,6 +119,22 @@ public class Pack {
 	/** Bonus dalla rarità più comune, in sola lettura. */
 	public List<PackBonusRule> getBonuses() {
 		return sortedByRarity(bonuses, PackBonusRule::getRarity);
+	}
+
+	/** I tag del pacchetto, in sola lettura: si cambiano con {@link #replaceTags}. */
+	public Set<Tag> getTags() {
+		return Collections.unmodifiableSet(tags);
+	}
+
+	/** I nomi dei tag del pacchetto, per il filtro delle carte ({@code CardPool}); vuoto se non ne ha. */
+	public Set<String> getTagNames() {
+		return tags.stream().map(Tag::getName).collect(Collectors.toUnmodifiableSet());
+	}
+
+	/** Sostituisce tutti i tag del pacchetto; una lista vuota li toglie. Le righe si aggiornano alla fine della transazione. */
+	public void replaceTags(Collection<Tag> newTags) {
+		tags.clear();
+		tags.addAll(newTags);
 	}
 
 	/** Numero di carte del pacchetto: la somma degli slot base, anche quando escono bonus. */

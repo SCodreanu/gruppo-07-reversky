@@ -2,12 +2,17 @@ package it.downfall.reversky.api.catalog.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import jakarta.persistence.LockModeType;
 
 /**
  * Accesso alla tabella {@code catalog_cards}.
@@ -35,10 +40,19 @@ public interface CatalogCardRepository extends JpaRepository<CatalogCard, Intege
 	@EntityGraph(attributePaths = {"rarity", "faction", "secondaryFaction", "variantOf", "variantOf.rarity"})
 	public List<CatalogCard> findAllByIdIn(Collection<Integer> ids);
 
-	/** Le carte attive e originali con rarità e fazioni: tra queste si pescano le carte dei pacchetti. */
-	@EntityGraph(attributePaths = {"rarity", "faction", "secondaryFaction"})
-	public List<CatalogCard> findAllByIsActiveTrueAndVariantOfIsNullOrderByIdAsc();
+	/**
+	 * Le carte attive, varianti comprese, con rarità, fazioni, tag propri e tag delle fazioni: tra queste si pescano le
+	 * carte dei pacchetti, con il filtro dei tag (API-21).
+	 */
+	@EntityGraph(attributePaths = {"rarity", "tags", "faction", "faction.tags", "secondaryFaction", "secondaryFaction.tags"})
+	public List<CatalogCard> findAllByIsActiveTrueOrderByIdAsc();
 
 	// L'originale ha almeno una variante? Allora non può diventare a sua volta variante
 	public boolean existsByVariantOf(CatalogCard original);
+
+	// PUT /admin/cards/{id}/tags: due sostituzioni contemporanee dei tag della stessa carta si mettono in fila,
+	// invece di cancellare e reinserire le stesse righe di card_tags insieme (API-12)
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from CatalogCard c where c.id = :id")
+	public Optional<CatalogCard> findByIdForUpdate(@Param("id") Integer id);
 }

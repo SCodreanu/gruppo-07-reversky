@@ -1,7 +1,9 @@
 package it.downfall.reversky.api.catalog.service;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,12 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.downfall.reversky.api.catalog.dto.CatalogCardResponse;
+import it.downfall.reversky.api.catalog.dto.CardTagsRequest;
 import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
+import it.downfall.reversky.api.catalog.entity.Tag;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
@@ -25,11 +29,13 @@ import it.downfall.reversky.api.catalog.exception.InvalidCardEffectException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardFactionException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardImageException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardTagException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.CatalogCardSpecifications;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
+import it.downfall.reversky.api.catalog.repository.TagRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import it.downfall.reversky.api.common.storage.ImageStorage;
 import it.downfall.reversky.api.common.storage.InvalidImageException;
@@ -55,6 +61,7 @@ public class CatalogCardService {
 	private final CatalogCardRepository catalogCardRepository;
 	private final RarityRepository rarityRepository;
 	private final FactionRepository factionRepository;
+	private final TagRepository tagRepository;
 	private final EffectService effectService;
 	private final ImageStorage imageStorage;
 
@@ -63,16 +70,18 @@ public class CatalogCardService {
 	 *
 	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
 	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
+	 * @param tag       null = tutti i tag; propri o di una delle fazioni (API-12); un tag inesistente dà una pagina vuota
 	 */
 	@Transactional(readOnly = true)
 	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Integer factionId,
-			Pageable pageable) {
+			String tag, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
 			CatalogCardSpecifications.hasFaction(factionId),
+			CatalogCardSpecifications.hasTag(tag),
 			CatalogCardSpecifications.isActive(true)
 		);
 
@@ -85,22 +94,25 @@ public class CatalogCardService {
 	 *
 	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
 	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
+	 * @param tag       null = tutti i tag; propri o di una delle fazioni (API-12); un tag inesistente dà una pagina vuota
 	 * @param active    null = attive e disattivate
 	 */
 	@Transactional(readOnly = true)
 	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Integer factionId,
-			Boolean active, Pageable pageable) {
+			String tag, Boolean active, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
 			CatalogCardSpecifications.hasFaction(factionId),
+			CatalogCardSpecifications.hasTag(tag),
 			CatalogCardSpecifications.isActive(active)
 		);
 
+		// Il backoffice vede anche i tag propri (API-12), caricati a gruppi di 50 carte
 		Page<CatalogCard> page = catalogCardRepository.findAll(specification, withCardOrder(pageable));
-		return PageResponse.from(page.map(CatalogCardResponse::from));
+		return PageResponse.from(page.map(CatalogCardResponse::withTags));
 	}
 
 	/**
@@ -110,16 +122,17 @@ public class CatalogCardService {
 	 */
 	@Transactional(readOnly = true)
 	public CatalogCardResponse findById(Integer id) {
-		return CatalogCardResponse.from(loadCard(id));
+		return CatalogCardResponse.withTags(loadCard(id));
 	}
 
 	/**
-	 * Le carte attive e originali, con rarità e fazioni già caricate: tra queste si pescano le carte dei pacchetti
-	 * (docs/pacchetti). Le varianti escono solo dai pacchetti con i loro tag, che arrivano con API-21.
+	 * Le carte attive, varianti comprese, con rarità, fazioni e tag già caricati: tra queste si pescano le carte dei
+	 * pacchetti (docs/pacchetti). Il filtro dei tag lo applica {@code CardPool}: le varianti escono solo dai pacchetti
+	 * con uno dei loro tag propri (API-21).
 	 */
 	@Transactional(readOnly = true)
-	public List<CatalogCard> getActiveOriginals() {
-		return catalogCardRepository.findAllByIsActiveTrueAndVariantOfIsNullOrderByIdAsc();
+	public List<CatalogCard> getActiveForPacks() {
+		return catalogCardRepository.findAllByIsActiveTrueOrderByIdAsc();
 	}
 
 	/**
@@ -169,7 +182,7 @@ public class CatalogCardService {
 			? new CatalogCard(null, references.rarity(), references.faction(), references.secondaryFaction(), request.name(), request.type(), request.subtype(), request.effectCode(), imagePath, request.effectDescription(), request.flavorText(), request.atk(), request.def(), request.copyLimit())
 			: new CatalogCard(original, original.getRarity(), original.getFaction(), original.getSecondaryFaction(), request.name(), original.getCardType(), original.getCardSubtype(), original.getEffectCode(), imagePath, original.getEffectDescription(), request.flavorText(), original.getAtk(), original.getDef(), original.getCopyLimit());
 
-		return CatalogCardResponse.from(catalogCardRepository.save(card));
+		return CatalogCardResponse.withTags(catalogCardRepository.save(card));
 	}
 
 	/**
@@ -189,7 +202,7 @@ public class CatalogCardService {
 		card.changeImage(saveImage(image));
 		imageStorage.deleteAfterCommit(oldPath);
 
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -238,7 +251,7 @@ public class CatalogCardService {
 			}
 		}
 
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -250,7 +263,7 @@ public class CatalogCardService {
 	public CatalogCardResponse activate(Integer id) {
 		CatalogCard card = loadCard(id);
 		card.activate();
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -263,7 +276,31 @@ public class CatalogCardService {
 	public CatalogCardResponse deactivate(Integer id) {
 		CatalogCard card = loadCard(id);
 		card.deactivate();
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
+	}
+
+	/**
+	 * Sostituisce tutti i tag propri di una carta (PUT /admin/cards/{id}/tags, API-12). Le varianti non cambiano: ogni
+	 * carta ha i suoi tag (deciso il 22 novembre). La carta si blocca prima, così due sostituzioni contemporanee si
+	 * mettono in fila. Un id ripetuto conta una volta; se un tag non esiste non cambia niente.
+	 *
+	 * @throws CatalogCardNotFoundException se la carta non esiste
+	 * @throws InvalidCardTagException      se uno dei tag non esiste
+	 */
+	@Transactional
+	public CatalogCardResponse replaceTags(Integer id, CardTagsRequest request) {
+		CatalogCard card = catalogCardRepository.findByIdForUpdate(id)
+			.orElseThrow(() -> new CatalogCardNotFoundException());
+
+		Set<Integer> ids = new LinkedHashSet<>(request.tagIds());
+		List<Tag> tags = tagRepository.findAllById(ids);
+		if (tags.size() != ids.size()) {
+			Set<Integer> found = new LinkedHashSet<>(tags.stream().map(Tag::getId).toList());
+			throw new InvalidCardTagException(ids.stream().filter(tagId -> !found.contains(tagId)).toList());
+		}
+
+		card.replaceTags(tags);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	// Stessa pagina e dimensione chieste dal client, ma sempre con CARD_ORDER

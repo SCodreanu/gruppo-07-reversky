@@ -127,7 +127,7 @@ class CatalogCardServiceIT {
 		testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(active.getId());
@@ -144,7 +144,7 @@ class CatalogCardServiceIT {
 		testCards.create("Creature " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(CardType.SPELL, token, null, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(CardType.SPELL, token, null, null, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactlyInAnyOrder(spell.getId(), variant.getId());
@@ -159,7 +159,7 @@ class CatalogCardServiceIT {
 		CatalogCard first = testCards.create("A " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null,
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null, null,
 				PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "doesNotExist")));
 
 		// Assert
@@ -176,7 +176,7 @@ class CatalogCardServiceIT {
 		CatalogCard third = testCards.create("C " + token, CardType.CREATURE);
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null, PageRequest.of(1, 2));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findActive(null, token, null, null, null, PageRequest.of(1, 2));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(third.getId());
@@ -195,7 +195,7 @@ class CatalogCardServiceIT {
 		CatalogCard inactive = testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, null, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, null, null, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(active.getId(), inactive.getId());
@@ -210,7 +210,7 @@ class CatalogCardServiceIT {
 		CatalogCard inactive = testCards.deactivate(testCards.create("Inactive " + token, CardType.CREATURE));
 
 		// Act
-		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, null, false, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> page = catalogCardService.findAll(null, token, null, null, null, false, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(page.content()).extracting(CatalogCardResponse::id).containsExactly(inactive.getId());
@@ -1018,8 +1018,8 @@ class CatalogCardServiceIT {
 		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE, other);
 
 		// Act
-		PageResponse<CatalogCardResponse> publicPage = catalogCardService.findActive(null, token, other.getId(), null, PageRequest.of(0, 20));
-		PageResponse<CatalogCardResponse> adminPage = catalogCardService.findAll(null, token, testCards.common().getId(), null, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> publicPage = catalogCardService.findActive(null, token, other.getId(), null, null, PageRequest.of(0, 20));
+		PageResponse<CatalogCardResponse> adminPage = catalogCardService.findAll(null, token, testCards.common().getId(), null, null, null, PageRequest.of(0, 20));
 
 		// Assert
 		assertThat(publicPage.content()).extracting(CatalogCardResponse::id).containsExactly(otherCard.getId());
@@ -1043,11 +1043,11 @@ class CatalogCardServiceIT {
 		testCards.create("Spell " + token, CardType.SPELL);
 
 		// Act
-		PageResponse<CatalogCardResponse> publicPage = catalogCardService.findActive(null, token, null, faction.getId(),
+		PageResponse<CatalogCardResponse> publicPage = catalogCardService.findActive(null, token, null, faction.getId(), null,
 				PageRequest.of(0, 20));
-		PageResponse<CatalogCardResponse> adminPage = catalogCardService.findAll(null, token, null, faction.getId(), null,
+		PageResponse<CatalogCardResponse> adminPage = catalogCardService.findAll(null, token, null, faction.getId(), null, null,
 				PageRequest.of(0, 20));
-		PageResponse<CatalogCardResponse> missing = catalogCardService.findActive(null, token, null, MISSING_ID,
+		PageResponse<CatalogCardResponse> missing = catalogCardService.findActive(null, token, null, MISSING_ID, null,
 				PageRequest.of(0, 20));
 
 		// Assert: ordine per nome

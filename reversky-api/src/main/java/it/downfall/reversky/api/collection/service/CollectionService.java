@@ -232,7 +232,8 @@ public class CollectionService {
 			CollectionCardSpecifications.hasType(filter.type()),
 			CollectionCardSpecifications.nameContains(filter.name()),
 			CollectionCardSpecifications.hasRarity(filter.rarityId()),
-			CollectionCardSpecifications.hasFaction(filter.factionId()));
+			CollectionCardSpecifications.hasFaction(filter.factionId()),
+			CollectionCardSpecifications.hasTag(filter.tag()));
 
 		return collectionCardRepository.findAll(specification, withCollectionOrder(pageable));
 	}
