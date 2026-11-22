@@ -57,7 +57,7 @@ Priorità **Alta** (#41, chiusa). Dettagli nel [documento dell'engine](../../../
 
 | ID | Tema | Esito | Stato |
 |---|---|---|---|
-| D-01 | Punti vita iniziali | resta 30 nel rule set `1.0` e si ricontrolla con la simulazione (11 nov) | aperto |
+| D-01 | Punti vita iniziali | 30, il valore già nel rule set `1.0`: approvato dai DSG il 22 novembre | deciso |
 | D-02 | Limite di round | 75 round totali: valore iniziale del rule set `1.0` (`max_rounds`) | deciso |
 | D-03 | Danno al giocatore (incoerenza tra brief e bozza) | DEF negativa: 8 contro DEF 5 → 3 | deciso |
 | D-05 | Condizioni di fine partita 3–5 | come in `regole-base` | deciso |
@@ -172,7 +172,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Le sei rarità del catalogo con `sorting_order` 1–6 e le proposte di Q-02 e Q-03 (**[DA CONFERMARE]**); Special (D-23) arriva con la prima carta speciale | Special non ha ancora carte né limiti decisi | 20 nov |
 | Fazioni con il nome completo (`Theory of the Wound`, `Theory of the Invitation`, `Theory of the Archive`, `Theory of the Dream`), id 1–4 in quest'ordine come negli esempi dell'engine; `emblem_path` segnaposto `factions/<nome>.svg`, `description` vuota finché i DSG non danno il testo | gli id coincidono con l'engine; senza id espliciti la sequenza resta allineata e il primo `POST /admin/factions` riceve il 5 | 20 nov |
 | **Nessuna riga** in `faction_bonuses`: le partite si giocano senza bonus finché i DSG non decidono D-04 dopo il report di bilanciamento (ENG-28); si inseriscono con `PUT /admin/faction-bonuses` | il bonus +2/−1 ATK porta lo scontro di vantaggio al 99,8–100% | 20 nov |
-| Rule set `1.0` attivo con le proposte: 30 punti vita (D-01), 75 round (D-02, deciso), mazzo 30 = 20 / 6 / 2 / 1 / 1, Hidden `SURVIVAL` 2 e `DAMAGE` 1, `signup_bonus` 500 (Q-11), vittoria 30 e pareggio 10 (Q-12); `created_by_id` nullo. I valori aperti restano **[DA CONFERMARE]** | si cambiano dal backoffice | 20 nov |
+| Rule set `1.0` attivo con le proposte: 30 punti vita (D-01, deciso il 22 novembre), 75 round (D-02, deciso), mazzo 30 = 20 / 6 / 2 / 1 / 1, Hidden `SURVIVAL` 2 e `DAMAGE` 1, `signup_bonus` 500 (Q-11), vittoria 30 e pareggio 10 (Q-12); `created_by_id` nullo. I valori aperti restano **[DA CONFERMARE]** | si cambiano dal backoffice | 20 nov |
 
 ### Catalogo implementato
 
