@@ -396,7 +396,7 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 ### Rating Elo (API-46 #116)
 
 - `battle/service/Elo`: `eloDelta(rating, opponentRating, score, gamesPlayed)` come nella sezione "Elo" sopra (K 40 nelle prime 10 partite, poi 20; mai sotto 0) e `score(outcome)` (vittoria 1, pareggio 0,5, sconfitta 0). Funzioni pure, provate in `EloTest` con gli esempi 1000 contro 1100.
-- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo userà la partita classificata (`API-48`…`API-50`, non ancora fatte): oggi nessun codice cambia i rating.
+- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo userà l'aggiornamento dell'Elo della partita classificata (`API-50`, non ancora fatto): oggi nessun codice cambia i rating.
 - `RankingService.createIfMissing(userId)` crea la riga con i valori iniziali (`INSERT … ON CONFLICT DO NOTHING`, quindi due ingressi in coda contemporanei non falliscono): la chiamerà l'ingresso in coda di `API-47`.
 - `GET /api/v1/rankings/me` (`RankingController`), con il token: `{ rating, peakRating, gamesPlayed, wins, losses, draws }`. Chi non ha ancora una riga riceve 1000 e contatori a 0, e la riga **non** si crea (una lettura non scrive). Nessuna classifica né posizione (Q-10).
 
@@ -406,7 +406,7 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 - `GET /api/v1/matchmaking/queue`: `{ status: "WAITING", deckId, rating, queuedAt, window }`, con la finestra calcolata adesso da `MatchmakingTicket.searchWindow` (`min(100 + 50 × (secondi / 10), 400)`, mai sotto 100 se l'orologio va indietro); senza ticket `404 QUEUE_TICKET_NOT_FOUND`.
 - `DELETE /api/v1/matchmaking/queue`: `204` anche se non ero in coda (il ticket può essere appena stato abbinato o tolto); il rating resta.
 - `QueueTicketService` (dipende solo dal repository, come `PendingInviteService`) toglie il ticket quando il mazzo viene modificato (`DeckService.update`, al posto della query nativa in `DeckRepository`) e quando un admin disattiva l'account (`UserAdminService.disable`). L'eliminazione del mazzo lo toglie con `ON DELETE CASCADE`.
-- Non ci sono ancora l'abbinamento (il job ogni 2 secondi, l'anti-boosting) né la partita classificata: arrivano con `API-48`…`API-50`. Fino ad allora un ticket resta in coda finché l'utente non esce.
+- Non ci sono ancora l'abbinamento (il job ogni 2 secondi, l'anti-boosting, `API-49`), l'aggiornamento dell'Elo (`API-50`) né i crediti delle classificate (`API-45`). Le regole sul mazzo in coda di `API-48` (#118) sono già qui: la issue è chiusa con questa. Fino ad allora un ticket resta in coda finché l'utente non esce.
 
 ### Integrazione reale con l'engine (API-54 #124)
 

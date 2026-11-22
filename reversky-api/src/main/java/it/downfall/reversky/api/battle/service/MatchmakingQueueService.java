@@ -19,7 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Coda classificata (docs/sfide, "Classificata: matchmaking"): entrare, leggere il proprio ticket, uscire.
- * L'abbinamento dei ticket e la partita classificata non sono qui: arrivano con API-48.
+ * L'abbinamento dei ticket (API-49) e l'aggiornamento dell'Elo (API-50) non sono qui; le regole sul mazzo in coda
+ * (API-48) sì.
  */
 @Slf4j
 @Service
