@@ -177,6 +177,8 @@ class FriendlyBattleFlowIT {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.mode").value("FRIENDLY"))
 			.andExpect(jsonPath("$.outcome").value("WIN"))
+			.andExpect(jsonPath("$.ratingBefore").isEmpty())
+			.andExpect(jsonPath("$.ratingDelta").isEmpty())
 			.andExpect(jsonPath("$.mySide").value("CHALLENGER"))
 			.andExpect(jsonPath("$.opponent.id").value(opponent.getId()))
 			.andExpect(jsonPath("$.log[0].type").value("MATCH_STARTED"));

@@ -60,7 +60,7 @@ public class Battle implements Persistable<UUID> {
 	@Column(name = "rule_set_id", nullable = false, updatable = false)
 	private Integer ruleSetId;
 
-	// Solo RANKED, con API-50: per le amichevoli restano null (chk_battles_friendly_no_rating)
+	// Solo RANKED, scritte con il risultato (recordRatings): per le amichevoli restano null (chk_battles_friendly_no_rating)
 	@Column(name = "challenger_rating_before")
 	private Integer challengerRatingBefore;
 
@@ -103,9 +103,26 @@ public class Battle implements Persistable<UUID> {
 	 */
 	public static Battle friendly(UUID inviteId, Integer challengerId, Integer opponentId, Integer ruleSetId,
 			List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats, Instant createdAt) {
+		return prepared(BattleMode.FRIENDLY, inviteId, challengerId, opponentId, ruleSetId, challengerDeck, opponentDeck,
+			stats, createdAt);
+	}
+
+	/**
+	 * Partita classificata preparata dall'abbinamento di due ticket, senza invito e ancora senza risultato
+	 * ({@code chk_battles_invite_matches_mode}). Lo sfidante è chi era in coda da più tempo.
+	 */
+	public static Battle ranked(Integer challengerId, Integer opponentId, Integer ruleSetId,
+			List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats, Instant createdAt) {
+		return prepared(BattleMode.RANKED, null, challengerId, opponentId, ruleSetId, challengerDeck, opponentDeck,
+			stats, createdAt);
+	}
+
+	private static Battle prepared(BattleMode mode, UUID inviteId, Integer challengerId, Integer opponentId,
+			Integer ruleSetId, List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats,
+			Instant createdAt) {
 		Battle battle = new Battle();
 		battle.id = UUID.randomUUID();
-		battle.mode = BattleMode.FRIENDLY;
+		battle.mode = mode;
 		battle.inviteId = inviteId;
 		battle.challengerId = challengerId;
 		battle.opponentId = opponentId;
@@ -144,5 +161,22 @@ public class Battle implements Persistable<UUID> {
 		this.result = result;
 		this.battleStats = stats;
 		this.roundsLog = List.copyOf(roundsLog);
+	}
+
+	/**
+	 * Fotografia dell'Elo di una classificata (API-50): i rating dei due giocatori prima della partita e le loro
+	 * variazioni. Si scrive nella stessa transazione di {@link #complete}, così la riga rispetta
+	 * {@code chk_battles_ranked_rating_complete}.
+	 *
+	 * @throws IllegalStateException per un'amichevole, che non ha mai rating ({@code chk_battles_friendly_no_rating})
+	 */
+	public void recordRatings(int challengerBefore, int challengerDelta, int opponentBefore, int opponentDelta) {
+		if (mode != BattleMode.RANKED) {
+			throw new IllegalStateException("Only ranked battles have ratings: battle " + id);
+		}
+		this.challengerRatingBefore = challengerBefore;
+		this.challengerRatingDelta = challengerDelta;
+		this.opponentRatingBefore = opponentBefore;
+		this.opponentRatingDelta = opponentDelta;
 	}
 }

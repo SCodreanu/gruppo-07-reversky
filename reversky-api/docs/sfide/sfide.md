@@ -396,7 +396,7 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 ### Rating Elo (API-46 #116)
 
 - `battle/service/Elo`: `eloDelta(rating, opponentRating, score, gamesPlayed)` come nella sezione "Elo" sopra (K 40 nelle prime 10 partite, poi 20; mai sotto 0) e `score(outcome)` (vittoria 1, pareggio 0,5, sconfitta 0). Funzioni pure, provate in `EloTest` con gli esempi 1000 contro 1100.
-- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo userà l'aggiornamento dell'Elo della partita classificata (`API-50`, non ancora fatto): oggi nessun codice cambia i rating.
+- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo usa l'aggiornamento dell'Elo della partita classificata (`API-50`, vedi sotto).
 - `RankingService.createIfMissing(userId)` crea la riga con i valori iniziali (`INSERT … ON CONFLICT DO NOTHING`, quindi due ingressi in coda contemporanei non falliscono): la chiamerà l'ingresso in coda di `API-47`.
 - `GET /api/v1/rankings/me` (`RankingController`), con il token: `{ rating, peakRating, gamesPlayed, wins, losses, draws }`. Chi non ha ancora una riga riceve 1000 e contatori a 0, e la riga **non** si crea (una lettura non scrive). Nessuna classifica né posizione (Q-10).
 
@@ -406,7 +406,36 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 - `GET /api/v1/matchmaking/queue`: `{ status: "WAITING", deckId, rating, queuedAt, window }`, con la finestra calcolata adesso da `MatchmakingTicket.searchWindow` (`min(100 + 50 × (secondi / 10), 400)`, mai sotto 100 se l'orologio va indietro); senza ticket `404 QUEUE_TICKET_NOT_FOUND`.
 - `DELETE /api/v1/matchmaking/queue`: `204` anche se non ero in coda (il ticket può essere appena stato abbinato o tolto); il rating resta.
 - `QueueTicketService` (dipende solo dal repository, come `PendingInviteService`) toglie il ticket quando il mazzo viene modificato (`DeckService.update`, al posto della query nativa in `DeckRepository`) e quando un admin disattiva l'account (`UserAdminService.disable`). L'eliminazione del mazzo lo toglie con `ON DELETE CASCADE`.
-- Non ci sono ancora l'abbinamento (il job ogni 2 secondi, l'anti-boosting, `API-49`), l'aggiornamento dell'Elo (`API-50`) né i crediti delle classificate (`API-45`). Le regole sul mazzo in coda di `API-48` (#118) sono già qui: la issue è chiusa con questa. Fino ad allora un ticket resta in coda finché l'utente non esce.
+- L'ingresso pubblica un `QueueJoinedEvent`, che dopo il commit fa partire subito un abbinamento (vedi sotto, API-49). Le regole sul mazzo in coda di `API-48` (#118) sono già qui: la issue è chiusa con questa.
+
+### Abbinamento (API-49 #119)
+
+- `battle/service/MatchmakingService.matchAll()` legge gli id dei ticket in ordine di `queued_at` (poi `user_id`) senza bloccare niente e prova ogni ticket nella **sua** transazione, una partita per transazione:
+	1. blocca il ticket con `FOR UPDATE SKIP LOCKED` (`MatchmakingTicketRepository.lockIfFree`): se non c'è più o un'altra esecuzione lo tiene, si passa al prossimo senza aspettare;
+	2. controlla di nuovo il suo mazzo con `DeckService.getPlayableDeck`; se non è più valido toglie solo questo ticket;
+	3. cerca e blocca l'avversario (`lockOpponent`, anche lui `SKIP LOCKED`): un altro utente con il rating del ticket entro la finestra di adesso (`MatchmakingTicket.searchWindow`, del ticket che cerca), prima il rating più vicino, poi chi aspetta da più tempo, saltando chi ha giocato con me una `RANKED` preparata negli ultimi 10 minuti (anti-boosting, dal `Clock` dell'applicazione);
+	4. controlla il mazzo dell'avversario: se non è più valido toglie il suo ticket e cerca il prossimo avversario nella stessa transazione;
+	5. toglie i due ticket e prepara la partita con `BattleService.prepareRanked`: `mode = RANKED`, `invite_id` nullo (`Battle.ranked`), sfidante chi è in coda da più tempo (a pari ora l'id minore), seed, rule set attivo, fazioni, bonus e fotografie dei mazzi come nelle amichevoli.
+- Dopo il commit `BattleService.simulateRanked` chiama l'engine e salva l'esito nella transazione di salvataggio delle amichevoli (blocca la partita, non riscrive una partita già completata). Se l'engine non risponde o rifiuta i dati la partita resta senza risultato, i ticket sono già tolti e uno dei due giocatori la completa con `POST /battles/{id}/retry`. Il risultato di una `RANKED` si salva insieme all'Elo (`chk_battles_ranked_rating_complete`, vedi sotto).
+- Basta un giro: l'abbinamento toglie soltanto ticket, quindi un ticket rimasto senza avversario non ne trova uno nuovo più avanti nello stesso giro. Un errore inatteso su un ticket (es. nessun rule set attivo) si scrive nel log a livello `error`, annulla solo quel tentativo e il giro continua con il ticket dopo.
+- `DeckService.getPlayableDeck` ha `noRollbackFor` per `DeckNotFoundException` e `InvalidDeckException`: legge soltanto, e senza questo l'eccezione segnerebbe come da annullare la transazione dell'abbinamento, che non potrebbe più togliere il ticket né creare la partita con l'avversario dopo (`UnexpectedRollbackException`, provato il 22 novembre). Chi lascia propagare l'eccezione (inviti, ingresso in coda) annulla la propria transazione come prima.
+- `battle/job/MatchmakingJob` fa partire `matchAll` ogni 2 secondi (`fixedDelay`, quindi due giri programmati non si sovrappongono) e, con un `@TransactionalEventListener` sul `QueueJoinedEvent`, subito dopo il commit di ogni ingresso, sul `TaskScheduler` di Spring: `POST /matchmaking/queue` risponde `201` senza aspettare. Se due giri corrono insieme (il tentativo dopo un ingresso, o due istanze dell'API) li separa `SKIP LOCKED`.
+- `reversky.matchmaking.enabled` (default `true`) accende il job; i test lo spengono in `src/test/resources/config/application.properties` (vedi [test](../test/test.md#configurazione-dei-test)).
+
+### Aggiornamento dell'Elo (API-50 #120)
+
+- Nella transazione di salvataggio (`BattleService`, la stessa del risultato), solo per le `RANKED` e solo se la partita non era già completata: `RankingService.recordRankedGame` blocca le due righe di `player_ratings` con `SELECT … FOR UPDATE` (`PlayerRatingRepository.findByIdForUpdate`), l'id minore per primo, calcola le due variazioni con `Elo.eloDelta` sul rating e su `games_played` di adesso, cioè di prima della partita, e le applica con `PlayerRating.recordGame`.
+- `rating_before` è il rating di `player_ratings` al momento del salvataggio, non quello salvato nel ticket (deciso il 22 novembre): se il rating cambia tra l'abbinamento e un retry, conta quello del retry. Le due variazioni si calcolano entrambe sui valori di prima e solo dopo si applicano.
+- `Battle.recordRatings` scrive `challenger_rating_before`, `challenger_rating_delta`, `opponent_rating_before` e `opponent_rating_delta` insieme a `result` (`chk_battles_ranked_rating_complete`); per un'amichevole è `IllegalStateException` (`chk_battles_friendly_no_rating`).
+- L'Elo si applica **una volta sola** anche con retry sovrapposti: il salvataggio blocca prima la partita e non scrive niente se è già completata, quindi il secondo salvataggio non arriva mai ai rating. Un giocatore abbinato ha sempre la riga del rating (si crea all'ingresso in coda); se mancasse è un errore di programmazione (`IllegalStateException`), non un rating nuovo.
+- `GET /battles/{id}` (e le risposte di accettazione e retry) hanno anche `ratingBefore` e `ratingDelta` di chi guarda: null per le amichevoli e finché la classificata non è completata. Lo storico aveva già `ratingDelta`, letto dalla stessa riga.
+
+### Crediti delle classificate (API-45 #115)
+
+- Nella stessa transazione di salvataggio, dopo l'Elo e solo per le `RANKED`: vittoria → `win_reward` a chi vince con la riga `BATTLE_WIN`; pareggio → `draw_reward` a entrambi con `BATTLE_DRAW`, dopo aver bloccato i due inventari con `InventoryService.lockInventories` (`user_id` minore per primo). I crediti passano da `InventoryService.addCredits`, come ogni movimento (vedi [crediti](../crediti/crediti.md#crediti-delle-classificate-api-45-115)).
+- Le ricompense si leggono dal rule set **della partita** (`RuleSetService.getRuleSet(battle.ruleSetId)`), non da quello attivo: un retry dopo l'attivazione di un nuovo rule set paga con le regole della preparazione.
+- Una volta sola, anche con retry sovrapposti: lo stesso blocco della partita che protegge l'Elo. Niente crediti se l'engine non risponde (la partita resta senza risultato) e mai per le amichevoli.
+- Ordine dei blocchi nel salvataggio: partita, poi `player_ratings`, poi `inventories`. L'accettazione di uno scambio blocca lo scambio e poi gli stessi `inventories` nello stesso ordine, quindi un pareggio e uno scambio tra gli stessi giocatori si mettono in fila senza deadlock (`RankedBattleFlowIT`).
 
 ### Integrazione reale con l'engine (API-54 #124)
 

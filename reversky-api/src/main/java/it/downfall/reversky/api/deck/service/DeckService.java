@@ -110,14 +110,18 @@ public class DeckService {
 	}
 
 	/**
-	 * Un mio mazzo che deve essere valido adesso, per giocare (inviti e accettazione delle sfide, docs/sfide). Le carte,
-	 * con rarità e fazioni, sono già caricate per la fotografia della partita.
+	 * Un mio mazzo che deve essere valido adesso, per giocare (inviti, accettazione delle sfide e abbinamento della coda
+	 * classificata, docs/sfide). Le carte, con rarità e fazioni, sono già caricate per la fotografia della partita.
+	 * <p>
+	 * Le due eccezioni del mazzo non segnano la transazione del chiamante come da annullare: il metodo legge soltanto,
+	 * e l'abbinamento (API-49) le intercetta per togliere il solo ticket con il mazzo non valido e salvare nella stessa
+	 * transazione. Chi le lascia propagare annulla comunque la propria transazione, come prima.
 	 *
 	 * @throws DeckNotFoundException    se il mazzo non esiste o è di un altro utente
 	 * @throws InvalidDeckException     se il mazzo oggi non rispetta le regole (anche il possesso delle carte)
 	 * @throws NoActiveRuleSetException se nessun rule set è attivo
 	 */
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, noRollbackFor = {DeckNotFoundException.class, InvalidDeckException.class})
 	public Deck getPlayableDeck(Integer userId, Integer deckId) {
 		Deck deck = getOwnDeck(userId, deckId);
 		Map<CatalogCard, Integer> content = deck.getContent();
