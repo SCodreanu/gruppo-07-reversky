@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-15`…`API-20`, `API-22`…`API-44`, `API-54`, `API-55`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-15`…`API-20`, `API-22`…`API-44`, `API-54`, `API-55`, `API-57`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -14,10 +14,10 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Account | registrazione, login, token, reset password, verifica email, gestione degli utenti dal backoffice (`API-03`) |
 | Catalogo | rule set, rarità, fazioni, bonus di fazione, carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`) |
-| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`) |
+| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
 
-`./gradlew build` verde con 693 test (22 novembre).
+`./gradlew build` verde con 697 test (22 novembre, con `API-57`).
 
 ## Da fare
 
@@ -27,7 +27,6 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 |---|---|---|
 | `API-14` (#84) | `POST /admin/cards` e caricamento dell'immagine | deve usare `EffectService.validateForType` (`API-36`) |
 | `API-56` (#126) | Test di integrazione del flusso pacchetti: registrazione, crediti, acquisto, apertura, collezione | le parti singole sono già coperte; manca il flusso unico |
-| `API-57` (#127) | Test di integrazione di scambi e sfide amichevoli | la parte classificata è fuori perimetro (vedi sotto) |
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
 | — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
