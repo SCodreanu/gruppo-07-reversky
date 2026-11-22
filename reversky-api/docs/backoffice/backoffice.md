@@ -11,7 +11,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
 - Già implementato, senza audit (task API-52, #122):
   - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
-  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80) e le fazioni (task API-11, #81); i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` arrivano con API-14 (#84): fino ad allora le carte si inseriscono da migrazione. Dettagli in "Comportamento già implementato" qui sotto.
+  - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80) e le fazioni (task API-11, #81); i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` con l'illustrazione (API-14, #84). Dettagli in "Comportamento già implementato" e "Illustrazioni" qui sotto.
   - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
   - bonus di fazione: `GET/PUT /admin/faction-bonuses` (`AdminFactionBonusController`, `catalog/service/FactionBonusService`), inclusi anche in `GET /rules`. Dettagli in "Bonus di fazione: comportamento già implementato" qui sotto.
 
@@ -96,11 +96,29 @@ Messaggi delle fazioni: "A CREATURE card must have a faction", "A SPELL card mus
 
 `POST /admin/cards/{id}/deactivate` e `/activate` rispondono `200` con la carta e sono idempotenti (disattivare una carta già disattivata non cambia niente). Non toccano le varianti: una versione evento si attiva e disattiva per conto suo.
 
+### Illustrazioni (comportamento già implementato, API-14, #84)
+
+Decise il 22 novembre: le immagini stanno in una **cartella** e non nel database, e si servono dall'API.
+
+| Metodo | URL | Corpo | Risposta |
+|---|---|---|---|
+| `POST` | `/admin/cards` | `multipart/form-data`: parte `card` (JSON, gli stessi campi e controlli di `PUT /admin/cards/{id}`) e parte `image` (il file, obbligatorio) | `201` con la carta |
+| `POST` | `/admin/cards/{id}/image` | `multipart/form-data`: parte `image` | `200` con la carta |
+| `GET` | `/images/<imagePath>` | pubblico, senza token | il file, con cache di un anno |
+
+- **Creazione:** gli stessi controlli del `PUT` e nello stesso ordine (riferimenti, regole del tipo, rarità, nome, effetto), poi l'illustrazione: una carta non valida non scrive nessun file. Con `variantOfId` la carta nasce variante e copia i campi di gioco dall'originale (regola 8); nome, illustrazione e `flavorText` sono suoi. Una carta nuova è attiva. Per un'originale nuova il nome si controlla con `existsByNameAndVariantOfIsNull`: la query con `IdNot` e un id nullo non troverebbe mai un doppione.
+- **File ammessi:** PNG, JPEG o WebP fino a **2 MB** (`reversky.storage.max-image-size`), riconosciuti dai primi byte del file e mai dal nome o dal `Content-Type` del client. Un file vuoto, più grande o di un altro tipo è `422 CARD_IMAGE_INVALID` ("The image is empty", "The image must not exceed 2 MB", "The image must be a PNG, JPEG or WebP file"): la carta non si crea, `image_path` non cambia. Senza la parte `image` o `card` la risposta è `400`. Oltre il limite di Spring sul multipart (3 MB per file, 4 MB per richiesta) la risposta è `413`.
+- **Dove:** `common/storage/ImageStorage` scrive in `reversky.storage.images-dir` (`uploads` dentro `reversky-api` con `bootRun`, ignorata da Git; `/app/uploads` nel container, sul volume `images` di `compose.yaml`; `build/test-images` nei test). Il percorso salvato in `image_path` è relativo, es. `cards/<uuid>.png`: ogni caricamento ha un nome nuovo, così il browser non mostra la vecchia immagine dalla cache.
+- **URL:** ogni carta restituita ha `imagePath` e `imageUrl` = `/images/` + `imagePath`; il frontend aggiunge l'indirizzo dell'API. Le 120 carte di `V11` hanno ancora i percorsi segnaposto senza file: il loro `imageUrl` risponde `404` finché non si carica l'illustrazione.
+- **Transazioni:** il file system non partecipa alle transazioni. Il file nuovo si scrive dentro la transazione e si cancella se la transazione non arriva al commit; il file vecchio di una sostituzione si cancella solo dopo il commit (un segnaposto senza file non è un errore). Così `image_path` non indica mai un file che non esiste. Un percorso che uscirebbe dalla cartella (`../`) non si cancella.
+- **Consegna (API-61):** le immagini non sono nel `pg_dump`: la cartella (o il volume `images`) va nell'archivio insieme all'export del database.
+- Il pacchetto ha anche lui un'immagine (`packs.image_path`), ma resta un percorso scritto nella richiesta: `ImageStorage` si può riusare quando servirà il caricamento.
+
 ### Effetti (comportamento già implementato, task API-36, #106)
 
 - `GET /admin/effects` (`AdminEffectController`, `EffectService`), solo ADMIN e in sola lettura: `[{ code, appliesTo }]` per tipo di carta (ordine dell'enum `card_type`: CREATURE, TERRAIN, SPELL, HIDDEN, ITEM) e poi per codice. Nessuna paginazione: sono 92 righe.
 - `PUT /admin/cards/{id}` controlla l'effetto di un'originale con `effectCode` con `EffectService.validateForType`: è l'ultimo controllo, dopo il nome. Una creatura senza effetto non ha niente da controllare; una variante copia l'effetto dall'originale e quello della richiesta si ignora, anche se non esiste. Messaggi: "The effect X is not implemented by the game engine", "The effect X is for CREATURE cards, not SPELL".
-- Lo stesso controllo lo fa il database con `fk_catalog_cards_effect` (vedi [database](../database/database.md#tabella-effects-v13-api-36)), quindi anche una carta inserita da migrazione non può avere un effetto sbagliato. `POST /admin/cards` (API-14) dovrà usare `validateForType`.
+- Lo stesso controllo lo fa il database con `fk_catalog_cards_effect` (vedi [database](../database/database.md#tabella-effects-v13-api-36)), quindi anche una carta inserita da migrazione non può avere un effetto sbagliato. Anche `POST /admin/cards` (API-14) usa `validateForType`, nello stesso punto dei controlli.
 
 ## Dati di riferimento
 

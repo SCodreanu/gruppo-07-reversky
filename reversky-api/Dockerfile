@@ -18,6 +18,8 @@ FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 RUN groupadd --system spring && useradd --system --gid spring spring
+# Cartella delle immagini caricate (API-14): il volume di compose.yaml la copre e prende questo proprietario
+RUN mkdir -p /app/uploads && chown spring:spring /app/uploads
 COPY --from=build /workspace/build/libs/*.jar app.jar
 USER spring
 

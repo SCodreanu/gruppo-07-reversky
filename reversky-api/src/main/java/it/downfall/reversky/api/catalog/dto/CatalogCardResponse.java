@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.common.storage.ImageStorage;
 
 /**
  * Carta restituita da GET /cards, GET /cards/{id} e dagli endpoint di /admin/cards.
@@ -50,8 +51,14 @@ public record CatalogCardResponse(
 	@Schema(example = "1", description = "Null means only the rarity limit applies")
 	Integer copyLimit,
 
-	@Schema(example = "/images/cards/wendigo.webp")
+	@Schema(example = "cards/3f2a9c1e-5b7d-4e8a-9c0f-1d2e3f4a5b6c.webp", description = "Path of the illustration in the "
+		+ "image storage, as saved in the database")
 	String imagePath,
+
+	@Schema(example = "/images/cards/3f2a9c1e-5b7d-4e8a-9c0f-1d2e3f4a5b6c.webp", description = "Public URL of the "
+		+ "illustration on this server, no token needed. Cards loaded by migration point to placeholders that return "
+		+ "404 until their art is uploaded")
+	String imageUrl,
 
 	@Schema(example = "At the end of each round, the opposing creature loses 1 DEF.")
 	String effectDescription,
@@ -86,6 +93,7 @@ public record CatalogCardResponse(
 			card.getDef(),
 			card.getCopyLimit(),
 			card.getImagePath(),
+			ImageStorage.publicUrl(card.getImagePath()),
 			card.getEffectDescription(),
 			card.getFlavorText(),
 			card.isActive());

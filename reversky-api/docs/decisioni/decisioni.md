@@ -102,6 +102,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Il primo `ADMIN` e gli utenti di prova arrivano dalla migrazione dei dati di prova (#95), non da variabili d'ambiente | scelta più semplice per il team | 4 nov |
 | I test usano PostgreSQL vero con Testcontainers e caricano tutta l'applicazione (niente `@WebMvcTest`) | passano davvero da sicurezza, errori e database | #71 |
 | Lingua: documenti e commenti in italiano, nomi nel codice e testi tra virgolette in inglese; il gioco è in inglese (D-44) | decisione del team | 4 nov |
+| Illustrazioni caricate dal backoffice in una cartella (volume Docker `images`), servite dall'API su `GET /images/**` senza token; PNG, JPEG o WebP fino a 2 MB, riconosciuti dal contenuto; `POST /admin/cards` in multipart con la carta in JSON (API-14) | nessuna dipendenza nuova né tabella; le immagini vanno nell'archivio di consegna accanto al `pg_dump` | 22 nov |
 
 ### Sicurezza e autenticazione
 

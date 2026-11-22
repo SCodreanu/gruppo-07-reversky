@@ -48,6 +48,8 @@ tasks.named('test') {
 	useJUnitPlatform()
 	// EngineContractTest legge richieste e fotografie dell'engine (ENG-24): una modifica lì rilancia i test
 	inputs.dir('../reversky-engine/examples').withPathSensitivity(PathSensitivity.RELATIVE)
+	// Le immagini caricate dai test (API-14) finiscono in build/, non nella cartella uploads di bootRun
+	systemProperty 'reversky.storage.images-dir', layout.buildDirectory.dir('test-images').get().asFile.absolutePath
 }
 
 // In locale bootRun usa il profilo dev, con i dati di prova di db/dev (API-25); SPRING_PROFILES_ACTIVE lo sostituisce.

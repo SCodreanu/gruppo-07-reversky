@@ -487,14 +487,18 @@ class AdminCardControllerIT {
 	}
 
 	@Test
-	@DisplayName("OpenAPI has no create endpoint yet and no image path in the update form")
-	void apiDocs_adminCards_noCreateAndNoImagePath() throws Exception {
-		// Act + Assert: POST /admin/cards e l'immagine arrivano con API-14
+	@DisplayName("OpenAPI documents create and image replacement as multipart, with no image path in the card form")
+	void apiDocs_adminCards_multipartCreateAndNoImagePath() throws Exception {
+		// Act + Assert: dal API-14 l'immagine è un file del multipart, mai un campo della carta
 		mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post").doesNotExist())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post.requestBody.content['multipart/form-data']").exists())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post.requestBody.content['multipart/form-data'].encoding.card.contentType")
+				.value(MediaType.APPLICATION_JSON_VALUE))
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards/{id}/image'].post.requestBody.content['multipart/form-data']").exists())
 			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.name").exists())
-			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.imagePath").doesNotExist());
+			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.imagePath").doesNotExist())
+			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.imageUrl").exists());
 	}
 
 	@Test

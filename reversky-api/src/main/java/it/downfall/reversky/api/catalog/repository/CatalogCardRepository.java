@@ -21,6 +21,10 @@ public interface CatalogCardRepository extends JpaRepository<CatalogCard, Intege
 	// Per un'originale excludedId è il suo id, per una variante l'id della sua originale.
 	public boolean existsByNameAndVariantOfIsNullAndIdNot(String name, Integer excludedId);
 
+	// Nome già usato da una carta ORIGINALE, per una carta nuova (POST /admin/cards). Il metodo con IdNot non va bene:
+	// con excludedId null diventerebbe "id <> NULL", che non è mai vero, e il nome risulterebbe sempre libero.
+	public boolean existsByNameAndVariantOfIsNull(String name);
+
 	// Varianti di un'originale, per copiare le modifiche dell'originale
 	public List<CatalogCard> findAllByVariantOf(CatalogCard original);
 

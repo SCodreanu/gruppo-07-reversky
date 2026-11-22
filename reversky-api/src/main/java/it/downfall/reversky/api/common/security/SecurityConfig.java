@@ -62,6 +62,8 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/auth/email/resend").authenticated()
 				.requestMatchers("/api/v1/auth/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions", "/api/v1/rarities", "/api/v1/rules").permitAll()
+				// Illustrazioni caricate dal backoffice (API-14): pubbliche come il catalogo, per i tag <img> del frontend
+				.requestMatchers(HttpMethod.GET, "/images/**").permitAll()
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN)
