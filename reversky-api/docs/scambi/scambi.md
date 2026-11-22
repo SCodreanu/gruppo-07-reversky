@@ -168,6 +168,12 @@ Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), 
 - `GET /trades/{id}`: anche chiuso; un non partecipante o uno scambio inesistente sono entrambi `404 TRADE_NOT_FOUND`.
 - `POST /trades/{id}/reject`: chiunque dei due, anche fuori turno (il richiedente così ritira la proposta), risponde `200` con lo scambio `REJECTED`. Blocca la riga dello scambio (`SELECT ... FOR UPDATE`) e poi controlla, in quest'ordine, partecipante (`404`) e scambio aperto (`409 TRADE_CLOSED`).
 
+### Offerte (API-32, #102)
+
+- `TradeOffer` con chiave `@EmbeddedId` `TradeOfferId` (`trade_id`, `user_id`, `card_id`); `user_id` è chi **cede** la carta. Le offerte sono la lista `offers` di `Trade` (`cascade` e `orphanRemoval`).
+- `Trade.replaceOffers(giverId, given, otherGiven)` è l'unico modo di cambiarle: aggiorna la quantità delle righe che restano, elimina quelle tolte e aggiunge le nuove, mai svuotando e reinserendo. Un `giverId` che non partecipa o una quantità minore di 1 sono `IllegalArgumentException` (errore del chiamante: la richiesta li controlla prima).
+- `Trade.offeredBy(userId)`: le copie per carta che quel partecipante cede nell'offerta attuale.
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.
