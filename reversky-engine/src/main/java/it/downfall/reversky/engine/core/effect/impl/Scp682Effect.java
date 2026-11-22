@@ -22,6 +22,10 @@ public final class Scp682Effect implements CreatureEffect {
 
 	private boolean adapted;
 
+	/** Crea l'effetto. */
+	public Scp682Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -27,6 +27,10 @@ public final class WendigoEffect implements CreatureEffect {
 
 	private int kills;
 
+	/** Crea l'effetto. */
+	public WendigoEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -27,6 +27,10 @@ public final class NullWitnessEffect implements CreatureEffect {
 
 	private static final int DAMAGE = 4;
 
+	/** Crea l'effetto. */
+	public NullWitnessEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

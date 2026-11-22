@@ -22,6 +22,10 @@ public final class ToriiShadowEffect implements CreatureEffect {
 	private static final int DEFENSE_WITH_TERRAIN = 3;
 	private static final int DEFENSE_WITHOUT_TERRAIN = 2;
 
+	/** Crea l'effetto. */
+	public ToriiShadowEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

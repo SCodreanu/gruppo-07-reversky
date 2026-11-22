@@ -28,6 +28,10 @@ public final class BellWitchEffect implements CreatureEffect {
 
 	private int roundsInPlay;
 
+	/** Crea l'effetto. */
+	public BellWitchEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

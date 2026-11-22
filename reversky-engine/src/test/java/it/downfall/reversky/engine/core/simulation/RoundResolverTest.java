@@ -186,6 +186,25 @@ class RoundResolverTest {
 	}
 
 	@Test
+	@DisplayName("ENG-29: ATK negativo per un malus: il bonus di fazione si somma prima del minimo 0 (2 − 6 + 2 → 0)")
+	void resolve_negativeAttackFromMalus_factionBonusAddedBeforeFloor() {
+		// Arrange: Wound ha +2 contro Dream; Crawlers ha un malus di −6 ATK, quindi ATK −4
+		MatchState state = TestStates.inCombat(TestCards.creature("Crawlers", TestFactions.WOUND, 2, 20),
+				TestCards.creature("Kasa-obake", TestFactions.DREAM, 0, 5));
+		challenger(state).addModifier(StatModifier.attack(ModifierSource.EFFECT, Side.OPPONENT, -6,
+				ModifierDuration.whileInPlay()));
+
+		// Act
+		standard.resolve(state);
+
+		// Assert: regole-base, l'attacco effettivo (ATK + bonus di fazione) non scende sotto 0: −4 + 2 = −2 → 0,
+		// non max(0, −4) + 2 = 2. L'ATK della creatura resta −4
+		assertThat(challenger(state).attack()).isEqualTo(-4);
+		assertThat(attackTotals(state)).containsExactly(0, 0);
+		assertThat(opponent(state).defense()).isEqualTo(5);
+	}
+
+	@Test
 	@DisplayName("Due fazioni (esempio 11): Rootbound 6 + 0 + 2 = 8 contro Archive Puppet 6 + 0 − 1 = 5")
 	void resolve_twoFactionCard_sumsAllPairs() {
 		// Arrange

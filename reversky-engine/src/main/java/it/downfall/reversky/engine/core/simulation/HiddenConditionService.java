@@ -19,8 +19,9 @@ import it.downfall.reversky.engine.core.model.Side;
 
 /**
  * Hidden con una condizione (D-15, ENG-37): restano coperte nella zona Hidden finché la condizione si verifica, poi si
- * attivano una volta e si scartano. Si attiva la prima pronta del proprietario, nell'ordine di pescata; una Hidden
- * della pescata iniziale non si attiva nel primo scontro. Il Campanello del Torii dell'avversario la può annullare.
+ * attivano una volta e si scartano. Si controlla solo la Hidden attiva del proprietario, se è pronta: quelle in fila
+ * aspettano che si liberi il posto (ENG-41). Una Hidden della pescata iniziale non si attiva nel primo scontro. Il
+ * Campanello del Torii dell'avversario la può annullare.
  * <ul>
  * <li>{@link HiddenCondition#PENALTY} (Remnants of Reality): al controllo dopo ogni fase, se la creatura ha ricevuto
  * penalità ({@link #penalties}, deciso il 18 novembre).</li>

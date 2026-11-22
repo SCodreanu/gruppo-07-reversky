@@ -174,6 +174,27 @@ class ItemServiceTest {
 	}
 
 	@Test
+	@DisplayName("ENG-29: Hidden annullata dal Campanello del Torii, la prima in fila è attiva dallo scontro dopo")
+	void toriiBell_cancelledHidden_freesSlotForQueue() {
+		// Arrange: l'avversario ha Echo Strike attiva e Last Sanctuary in fila; il Campanello è dello sfidante
+		MatchState state = TestStates.inCombat(creature("A", 8, 6), creature("B", 4, 9));
+		state.challenger().placeItem(TORII_BELL);
+		state.opponent().setHidden(new SetHidden(ECHO_STRIKE, 1));
+		state.opponent().setHidden(new SetHidden(SANCTUARY, 1));
+
+		// Act + Assert: scontro 1, Echo Strike annullata; A non perde niente
+		resolver.startCombat(state);
+		assertThat(challenger(state).attack()).isEqualTo(8);
+		assertThat(challenger(state).defense()).isEqualTo(6);
+
+		// D-15 (22 novembre): la Hidden annullata libera il posto; Last Sanctuary si attiva nello scontro dopo
+		assertThat(state.opponent().hiddenZone()).containsExactly(new SetHidden(SANCTUARY, 2));
+		assertThat(state.opponent().waitingHidden()).isEmpty();
+		resolver.startCombat(state);
+		assertThat(opponent(state).defense()).isEqualTo(14);
+	}
+
+	@Test
 	@DisplayName("Campanello del Torii: una Hidden del proprietario non si annulla")
 	void toriiBell_ownHidden_notCancelled() {
 		// Arrange

@@ -19,6 +19,10 @@ public final class Scp2006Effect implements CreatureEffect {
 	/** Codice dell'effetto ({@code catalog_cards.effect_code}). */
 	public static final String CODE = "SCP_2006";
 
+	/** Crea l'effetto. */
+	public Scp2006Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

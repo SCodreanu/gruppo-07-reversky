@@ -26,6 +26,10 @@ public final class Scp3000Effect implements CreatureEffect {
 	private static final int RARE_ORDER = 3;
 	private static final int ATTACK_BONUS = 2;
 
+	/** Crea l'effetto. */
+	public Scp3000Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

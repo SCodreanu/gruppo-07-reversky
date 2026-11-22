@@ -34,6 +34,10 @@ public final class SmilerEffect implements CreatureEffect {
 	private CreatureInPlay penalized;
 	private int penaltyGiven;
 
+	/** Crea l'effetto. */
+	public SmilerEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

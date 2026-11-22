@@ -20,6 +20,10 @@ public final class NamelessCallerEffect implements CreatureEffect {
 
 	private static final int MAX_DAMAGE = 3;
 
+	/** Crea l'effetto. */
+	public NamelessCallerEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;
