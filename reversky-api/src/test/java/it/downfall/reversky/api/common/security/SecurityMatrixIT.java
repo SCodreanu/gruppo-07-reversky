@@ -150,6 +150,8 @@ class SecurityMatrixIT {
 			admin(HttpMethod.GET, "/admin/packs"), admin(HttpMethod.POST, "/admin/packs"),
 			admin(HttpMethod.PUT, "/admin/packs/{id}"), admin(HttpMethod.POST, "/admin/packs/{id}/activate"),
 			admin(HttpMethod.POST, "/admin/packs/{id}/deactivate"),
+			admin(HttpMethod.GET, "/admin/tags"), admin(HttpMethod.POST, "/admin/tags"),
+			admin(HttpMethod.PUT, "/admin/tags/{id}"),
 			admin(HttpMethod.GET, "/admin/rule-sets"), admin(HttpMethod.POST, "/admin/rule-sets"),
 			admin(HttpMethod.PUT, "/admin/rule-sets/{id}"), admin(HttpMethod.POST, "/admin/rule-sets/{id}/activate"));
 	}
