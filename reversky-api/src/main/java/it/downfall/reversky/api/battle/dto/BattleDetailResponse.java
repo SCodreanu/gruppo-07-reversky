@@ -15,6 +15,8 @@ import it.downfall.reversky.api.battle.entity.DeckCardSnapshot;
  *
  * @param mySide  {@code CHALLENGER} o {@code OPPONENT}: il campo {@code side} degli eventi del log usa questi valori
  * @param result  dal punto di vista della partita (null se non completata); {@code outcome} è il mio esito
+ * @param ratingBefore il mio rating prima della partita, solo per le classificate completate (API-50)
+ * @param ratingDelta  la variazione del mio rating, come {@code ratingDelta} dello storico; null per le amichevoli
  * @param log     eventi della partita così come li restituisce l'engine (reversky-engine/docs/log-partita)
  */
 public record BattleDetailResponse(
@@ -35,6 +37,14 @@ public record BattleDetailResponse(
 
 	@Schema(nullable = true)
 	BattleOutcome outcome,
+
+	@Schema(example = "1000", nullable = true,
+		description = "My rating before this battle; null for friendly battles and while the battle is not completed")
+	Integer ratingBefore,
+
+	@Schema(example = "13", nullable = true,
+		description = "Change of my rating; null for friendly battles and while the battle is not completed")
+	Integer ratingDelta,
 
 	@Schema(example = "OPPONENT")
 	String mySide,

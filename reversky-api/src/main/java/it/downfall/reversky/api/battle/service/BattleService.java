@@ -43,6 +43,7 @@ import it.downfall.reversky.api.battle.exception.NotFriendsException;
 import it.downfall.reversky.api.battle.repository.BattleHistoryRow;
 import it.downfall.reversky.api.battle.repository.BattleInviteRepository;
 import it.downfall.reversky.api.battle.repository.BattleRepository;
+import it.downfall.reversky.api.battle.service.RankingService.RatingChanges;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
@@ -81,6 +82,7 @@ public class BattleService {
 	private final FactionService factionService;
 	private final FactionBonusService factionBonusService;
 	private final UserService userService;
+	private final RankingService rankingService;
 	private final EngineClient engineClient;
 	private final RandomGenerator random;
 	private final Clock clock;
@@ -301,18 +303,37 @@ public class BattleService {
 
 	// --- passo 3: salvataggio ---
 
-	// Blocca la partita: se un'altra simulazione l'ha già completata non scrive niente, il risultato sarebbe identico
+	// Blocca la partita: se un'altra simulazione l'ha già completata non scrive niente, il risultato sarebbe identico.
+	// Così anche l'Elo di una classificata si applica una volta sola, con retry sovrapposti compresi.
 	private Battle complete(UUID battleId, SimulationResponse response) {
 		Battle battle = battleRepository.findByIdForUpdate(battleId)
 			.orElseThrow(() -> new BattleNotFoundException(battleId));
 		if (!battle.isCompleted()) {
+			BattleResult result = BattleResult.valueOf(response.result());
 			BattleStats stats = battle.getBattleStats().completed(response.endReason(), response.totalRounds(),
 				new PlayerStats(response.challenger().finalLifePoints(), response.challenger().creaturesDefeated()),
 				new PlayerStats(response.opponent().finalLifePoints(), response.opponent().creaturesDefeated()));
-			battle.complete(BattleResult.valueOf(response.result()), stats, response.log());
+			battle.complete(result, stats, response.log());
+			if (battle.getMode() == BattleMode.RANKED) {
+				applyElo(battle, result);
+			}
 			log.info("Battle {} completed: {}", battleId, response.result());
 		}
 		return battle;
+	}
+
+	// API-50: rating dei due giocatori dal valore di adesso, nella stessa transazione del risultato
+	private void applyElo(Battle battle, BattleResult result) {
+		RatingChanges changes = rankingService.recordRankedGame(battle.getChallengerId(), battle.getOpponentId(), result);
+		battle.recordRatings(changes.challengerBefore(), changes.challengerDelta(), changes.opponentBefore(),
+			changes.opponentDelta());
+		log.info("Ranked battle {} rated: user {} {} ({}), user {} {} ({})", battle.getId(), battle.getChallengerId(),
+			changes.challengerBefore(), signed(changes.challengerDelta()), battle.getOpponentId(),
+			changes.opponentBefore(), signed(changes.opponentDelta()));
+	}
+
+	private static String signed(int delta) {
+		return delta >= 0 ? "+" + delta : String.valueOf(delta);
 	}
 
 	// --- lettura ---
@@ -336,8 +357,10 @@ public class BattleService {
 			battle.getOpponentDeck());
 
 		return new BattleDetailResponse(battle.getId(), battle.getMode(), battle.getCreatedAt(), battle.isCompleted(),
-			battle.getResult(), BattleOutcome.of(battle.getResult(), asChallenger), asChallenger ? CHALLENGER : OPPONENT,
-			stats.endReason(), stats.totalRounds(), stats.rules().rulesVersion(), stats.seed(),
+			battle.getResult(), BattleOutcome.of(battle.getResult(), asChallenger),
+			asChallenger ? battle.getChallengerRatingBefore() : battle.getOpponentRatingBefore(),
+			asChallenger ? battle.getChallengerRatingDelta() : battle.getOpponentRatingDelta(),
+			asChallenger ? CHALLENGER : OPPONENT, stats.endReason(), stats.totalRounds(), stats.rules().rulesVersion(), stats.seed(),
 			asChallenger ? challenger : opponent, asChallenger ? opponent : challenger, battle.getRoundsLog());
 	}
 

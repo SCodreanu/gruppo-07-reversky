@@ -55,7 +55,8 @@ public class BattleController {
 	}
 
 	@Operation(summary = "Get one of my battles", description = "Returns the battle from my point of view, with both decks "
-		+ "as they were and the round by round log.")
+		+ "as they were and the round by round log. For a completed ranked battle it also has my rating before the "
+		+ "battle and its change.")
 	@ApiResponse(responseCode = "200", description = "Battle returned")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "404", description = "Battle not found, or not played by me")

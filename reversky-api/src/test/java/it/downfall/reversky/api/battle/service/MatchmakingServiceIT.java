@@ -157,6 +157,7 @@ class MatchmakingServiceIT {
 		assertThat(battle.get("invite_id")).isNull();
 		assertThat(battle.get("challenger_id")).isEqualTo(older.getId());
 		assertThat(battle.get("opponent_id")).isEqualTo(later.getId());
+		assertThat(battle.get("result")).isEqualTo("CHALLENGER_WIN");
 		assertThat(battle.get("rule_set_id")).isEqualTo(ruleSetService.getActiveRuleSet().getId());
 		assertThat(ticket(older)).isZero();
 		assertThat(ticket(later)).isZero();
