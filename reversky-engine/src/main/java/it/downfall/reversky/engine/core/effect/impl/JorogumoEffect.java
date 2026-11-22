@@ -22,6 +22,10 @@ public final class JorogumoEffect implements CreatureEffect {
 
 	private int attacksPrevented;
 
+	/** Crea l'effetto. */
+	public JorogumoEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

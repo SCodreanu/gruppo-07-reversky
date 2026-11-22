@@ -22,6 +22,10 @@ public final class BloodlessHoundEffect implements CreatureEffect {
 
 	private static final int KILL_HEAL = 4;
 
+	/** Crea l'effetto. */
+	public BloodlessHoundEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

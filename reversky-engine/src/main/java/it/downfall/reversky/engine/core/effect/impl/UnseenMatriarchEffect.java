@@ -28,6 +28,10 @@ public final class UnseenMatriarchEffect implements CreatureEffect {
 
 	private boolean used;
 
+	/** Crea l'effetto. */
+	public UnseenMatriarchEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -29,6 +29,10 @@ public final class KitsuneEffect implements CreatureEffect {
 	private static final int DEFENSE_GAIN = 3;
 	private static final int SEAL = 3;
 
+	/** Crea l'effetto. */
+	public KitsuneEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

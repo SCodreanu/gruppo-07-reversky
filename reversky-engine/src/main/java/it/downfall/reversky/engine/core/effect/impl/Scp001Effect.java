@@ -23,6 +23,10 @@ public final class Scp001Effect implements CreatureEffect {
 
 	private int strikesLeft = ROUND_STRIKES;
 
+	/** Crea l'effetto. */
+	public Scp001Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

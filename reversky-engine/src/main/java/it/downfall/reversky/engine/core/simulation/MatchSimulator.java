@@ -47,9 +47,10 @@ public final class MatchSimulator {
 	 * Simula una partita.
 	 * <p>
 	 * Ordine: controllo dell'input, mescolamento (prima lo sfidante, poi l'avversario, con un solo generatore creato
-	 * dal seed), poi un ciclo: chi non ha una creatura in campo pesca (prima lo sfidante), si controlla la fine della
-	 * partita, se c'è una nuova coppia di creature inizia un nuovo scontro, e se entrambe le creature sono in campo si
-	 * gioca un round. La pescata iniziale è il primo giro del ciclo.
+	 * dal seed), poi un ciclo: chi non ha una creatura in campo pesca (prima lo sfidante; prima di ogni pescata si
+	 * controllano i punti vita, ENG-29), si controlla la fine della partita, se c'è una nuova coppia di creature
+	 * inizia un nuovo scontro, e se entrambe le creature sono in campo si gioca un round. La pescata iniziale è il
+	 * primo giro del ciclo.
 	 *
 	 * @param input regole, fazioni, bonus, mazzi e seed
 	 * @return il risultato con il log round per round
@@ -94,12 +95,23 @@ public final class MatchSimulator {
 	 * Una creatura può morire anche fuori dal passo 4 (D-08): se all'inizio dello scontro ne resta una sola, il round
 	 * non si gioca e il giro dopo pesca chi ha il campo vuoto. Un campo vuoto che non si può riempire è sempre una
 	 * condizione di fine (3 o 4), quindi il ciclo non gira a vuoto.
+	 * <p>
+	 * Prima di ogni pescata si controllano i punti vita (ENG-29, regole-base: "la partita finisce subito"): chi è a 0
+	 * o meno ha già perso, e una sua Spell non può più portare a 0 anche l'altro giocatore.
 	 */
 	private MatchEnd playUntilEnd(MatchState state, RoundResolver resolver, EndConditionChecker checker) {
 		while (true) {
+			Optional<MatchEnd> end = checker.checkLifePoints(state);
+			if (end.isPresent()) {
+				return end.get();
+			}
 			boolean challengerDrew = refill(state, state.challenger());
+			end = checker.checkLifePoints(state);
+			if (end.isPresent()) {
+				return end.get();
+			}
 			boolean opponentDrew = refill(state, state.opponent());
-			Optional<MatchEnd> end = checker.check(state);
+			end = checker.check(state);
 			if (end.isPresent()) {
 				return end.get();
 			}

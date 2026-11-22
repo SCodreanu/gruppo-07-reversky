@@ -68,8 +68,9 @@ public final class RoundResolver {
 	 * sfidante.</li>
 	 * <li>Una Bussola dei Sentieri Falsi del proprietario programma gli scudi a inizio round della sua creatura,
 	 * dopo il Terreno (D-48).</li>
-	 * <li>Si attivano le Hidden pronte per questo scontro (D-15): prima le {@code DAMAGE}, poi le {@code SURVIVAL};
-	 * a parità, prima quelle dello sfidante, nell'ordine in cui sono state pescate (D-30).</li>
+	 * <li>Si attivano le Hidden senza condizione pronte per questo scontro, al massimo una per giocatore, quella attiva
+	 * (D-15, ENG-41): prima le {@code DAMAGE}, poi le {@code SURVIVAL}; a parità, prima quella dello sfidante
+	 * (D-30).</li>
 	 * <li>{@code onEnterPlay} delle creature che non sono ancora entrate (D-31), poi {@code onCombatStart} di
 	 * entrambe; dopo ognuno si controllano le morti.</li>
 	 * <li>Si fissa la DEF all'entrata delle creature appena entrate (M-06).</li>

@@ -27,6 +27,10 @@ public final class UndyingBlossomEffect implements CreatureEffect {
 
 	private boolean used;
 
+	/** Crea l'effetto. */
+	public UndyingBlossomEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

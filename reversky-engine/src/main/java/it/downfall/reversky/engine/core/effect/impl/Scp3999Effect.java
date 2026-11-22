@@ -34,6 +34,10 @@ public final class Scp3999Effect implements CreatureEffect {
 	private int roundsInPlay;
 	private int attackGained;
 
+	/** Crea l'effetto. */
+	public Scp3999Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

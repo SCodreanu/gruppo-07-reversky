@@ -21,6 +21,10 @@ public final class ServiceDoubleEffect implements CreatureEffect {
 	private static final int ATTACK_BONUS = 3;
 	private static final int ROUNDS = 2;
 
+	/** Crea l'effetto. */
+	public ServiceDoubleEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

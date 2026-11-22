@@ -29,6 +29,10 @@ public final class HollowWyrmEffect implements CreatureEffect {
 	private static final int DEFENSE_GAIN = 3;
 	private static final int NO_TERRAIN_DAMAGE = 4;
 
+	/** Crea l'effetto. */
+	public HollowWyrmEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -23,6 +23,10 @@ public final class DrownedMemoryEffect implements CreatureEffect {
 	private static final int ATTACK_THRESHOLD = 3;
 	private static final int ATTACK_BONUS = 1;
 
+	/** Crea l'effetto. */
+	public DrownedMemoryEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

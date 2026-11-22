@@ -25,6 +25,10 @@ public final class ShutenDojiEffect implements CreatureEffect {
 
 	private int bonus;
 
+	/** Crea l'effetto. */
+	public ShutenDojiEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

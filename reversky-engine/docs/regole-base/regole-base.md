@@ -68,6 +68,7 @@ DEF di B = DEF di B − attaccoA
 - L'**ATK non cambia** per i danni.
 - Una creatura **muore** quando la sua DEF è **≤ 0**.
 - Il bonus di fazione può essere negativo (−1, malus) e, per le carte con due fazioni, è la somma di tutte le coppie: vedi [fazioni](../fazioni/fazioni.md#come-si-applica). L'attacco effettivo non scende mai sotto 0.
+- L'ATK di una creatura può scendere sotto 0 per i malus degli effetti (es. Smiler); il minimo 0 vale per l'attacco effettivo, cioè dopo aver sommato il bonus di fazione: ATK 2 con un malus di −6 e +2 di fazione attacca con 0 (−4 + 2 = −2), non con 2 (`ENG-29`).
 
 ### 4. Esito del round
 
@@ -129,14 +130,22 @@ Si controlla **dopo ogni round**, in quest'ordine:
 
 Il risultato è `CHALLENGER_WIN`, `OPPONENT_WIN` o `DRAW` (gli stessi valori dell'enum `BattleResult` del database).
 
+Quando si controlla (deciso il 22 novembre, `ENG-29`):
+
+- Dopo un round chi ha il campo vuoto pesca (prima lo sfidante), poi si controllano tutte le condizioni. Le condizioni 3 e 4 hanno bisogno della pescata, perché le carte non creatura rimaste si risolvono prima (D-06).
+- Le condizioni 1 e 2 (punti vita) si controllano anche **prima di ogni pescata**: chi è a 0 punti vita o meno ha già perso e non pesca più. Così una sua Spell `DAMAGE` non può più portare a 0 anche l'altro giocatore e cambiare una vittoria in pareggio. Prima di `ENG-29` succedeva (bug corretto).
+- Il danno al giocatore viene solo da una morte singola, quindi con questo controllo la condizione 1 non si raggiunge più in una partita; resta nel codice per sicurezza.
+- Il limite di round (condizione 5) si controlla dopo le pescate, come le altre: se nell'ultimo round muore una creatura, il suo proprietario pesca ancora e una Spell pescata può cambiare i punti vita che decidono `ROUND_LIMIT`.
+
 Le condizioni 3, 4 e 5 erano proposte del team, approvate dai DSG il 9 novembre (D-05); servono perché il brief chiede una conclusione anche con mazzi esauriti o scontri infiniti (es. due creature con ATK 0).
 
 ## Casi limite da testare
 
 - Due creature con ATK 0 → la partita termina per `ROUND_LIMIT`, non va in loop.
 - Creatura che muore con DEF esattamente 0 → nessun danno al giocatore.
-- Danno al giocatore che porta i punti vita sotto zero → la partita finisce subito.
-- Morte simultanea all'ultimo round utile.
+- Danno al giocatore che porta i punti vita sotto zero → la partita finisce subito, prima che il perdente peschi.
+- Morte simultanea all'ultimo round utile → entrambi pescano, poi `ROUND_LIMIT`.
 - Mazzo che finisce mentre l'avversario ha ancora una creatura in campo.
+- ATK negativo per un malus, con un bonus di fazione positivo → l'attacco effettivo è 0.
 
-Quasi tutti questi casi hanno una richiesta pronta, con il calcolo passo per passo, in [`examples/`](../../examples/README.md) (01–07 e 10).
+Quasi tutti questi casi hanno una richiesta pronta, con il calcolo passo per passo, in [`examples/`](../../examples/README.md) (01–07 e 10); i test di `ENG-29` sono in [test](../test/test.md#casi-limite-eng-29).

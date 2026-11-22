@@ -28,6 +28,10 @@ public final class Scp096Effect implements CreatureEffect {
 
 	private CreatureInPlay marked;
 
+	/** Crea l'effetto. */
+	public Scp096Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;
