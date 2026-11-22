@@ -53,6 +53,7 @@ services:
         condition: service_started
     environment:
       SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}  # dev = dati di prova alice/bob/admin (docs/database)
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-reversky}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-reversky}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reversky}
@@ -60,8 +61,12 @@ services:
       REVERSKY_SECURITY_JWTSECRET: ${JWT_SECRET:-dev-only-secret-change-me-at-least-32-chars}  # reversky.security.jwt-secret
       SPRING_MAIL_HOST: mailpit                                # spring.mail.host
       SPRING_MAIL_PORT: 1025                                   # spring.mail.port
+      IMAGES_DIR: /app/uploads                                 # reversky.storage.images-dir (API-14)
     ports:
       - "${API_PORT:-8080}:8080"
+    volumes:
+      - images:/app/uploads                  # illustrazioni caricate dal backoffice, servite su /images/**
 
 volumes:
   db-data:
+  images:

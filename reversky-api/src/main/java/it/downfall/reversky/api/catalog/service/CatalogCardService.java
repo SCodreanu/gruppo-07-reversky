@@ -1,5 +1,10 @@
 package it.downfall.reversky.api.catalog.service;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,20 +14,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.downfall.reversky.api.catalog.dto.CatalogCardResponse;
+import it.downfall.reversky.api.catalog.dto.CardTagsRequest;
 import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
+import it.downfall.reversky.api.catalog.entity.Tag;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNameAlreadyUsedException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardNotFoundException;
 import it.downfall.reversky.api.catalog.exception.CatalogCardRulesViolatedException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardEffectException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardFactionException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardImageException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardRarityException;
+import it.downfall.reversky.api.catalog.exception.InvalidCardTagException;
 import it.downfall.reversky.api.catalog.exception.InvalidCardVariantException;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.CatalogCardSpecifications;
+import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
+import it.downfall.reversky.api.catalog.repository.TagRepository;
 import it.downfall.reversky.api.common.dto.PageResponse;
+import it.downfall.reversky.api.common.storage.ImageStorage;
+import it.downfall.reversky.api.common.storage.InvalidImageException;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,21 +55,33 @@ public class CatalogCardService {
 	// id come secondo criterio, così due carte con lo stesso nome hanno sempre lo stesso ordine tra le pagine.
 	private static final Sort CARD_ORDER = Sort.by("name", "id");
 
+	// Sottocartella delle illustrazioni delle carte nella cartella delle immagini (es. cards/<uuid>.png)
+	private static final String CARD_IMAGES_FOLDER = "cards";
+
 	private final CatalogCardRepository catalogCardRepository;
 	private final RarityRepository rarityRepository;
+	private final FactionRepository factionRepository;
+	private final TagRepository tagRepository;
+	private final EffectService effectService;
+	private final ImageStorage imageStorage;
 
 	/**
 	 * Carte attive, con filtri facoltativi (GET /cards, pubblico).
 	 *
-	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
+	 * @param tag       null = tutti i tag; propri o di una delle fazioni (API-12); un tag inesistente dà una pagina vuota
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findActive(CardType type, String name, Integer rarityId, Integer factionId,
+			String tag, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
+			CatalogCardSpecifications.hasFaction(factionId),
+			CatalogCardSpecifications.hasTag(tag),
 			CatalogCardSpecifications.isActive(true)
 		);
 
@@ -64,21 +92,27 @@ public class CatalogCardService {
 	/**
 	 * Tutte le carte, anche disattivate, con filtri facoltativi (GET /admin/cards).
 	 *
-	 * @param rarityId null = tutte le rarità; un id inesistente dà una pagina vuota
-	 * @param active   null = attive e disattivate
+	 * @param rarityId  null = tutte le rarità; un id inesistente dà una pagina vuota
+	 * @param factionId null = tutte le fazioni; prima o seconda fazione; un id inesistente dà una pagina vuota
+	 * @param tag       null = tutti i tag; propri o di una delle fazioni (API-12); un tag inesistente dà una pagina vuota
+	 * @param active    null = attive e disattivate
 	 */
 	@Transactional(readOnly = true)
-	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Boolean active, Pageable pageable) {
+	public PageResponse<CatalogCardResponse> findAll(CardType type, String name, Integer rarityId, Integer factionId,
+			String tag, Boolean active, Pageable pageable) {
 
 		Specification<CatalogCard> specification = Specification.allOf(
 			CatalogCardSpecifications.hasType(type),
 			CatalogCardSpecifications.nameContains(name),
 			CatalogCardSpecifications.hasRarity(rarityId),
+			CatalogCardSpecifications.hasFaction(factionId),
+			CatalogCardSpecifications.hasTag(tag),
 			CatalogCardSpecifications.isActive(active)
 		);
 
+		// Il backoffice vede anche i tag propri (API-12), caricati a gruppi di 50 carte
 		Page<CatalogCard> page = catalogCardRepository.findAll(specification, withCardOrder(pageable));
-		return PageResponse.from(page.map(CatalogCardResponse::from));
+		return PageResponse.from(page.map(CatalogCardResponse::withTags));
 	}
 
 	/**
@@ -88,7 +122,87 @@ public class CatalogCardService {
 	 */
 	@Transactional(readOnly = true)
 	public CatalogCardResponse findById(Integer id) {
-		return CatalogCardResponse.from(loadCard(id));
+		return CatalogCardResponse.withTags(loadCard(id));
+	}
+
+	/**
+	 * Le carte attive, varianti comprese, con rarità, fazioni e tag già caricati: tra queste si pescano le carte dei
+	 * pacchetti (docs/pacchetti). Il filtro dei tag lo applica {@code CardPool}: le varianti escono solo dai pacchetti
+	 * con uno dei loro tag propri (API-21).
+	 */
+	@Transactional(readOnly = true)
+	public List<CatalogCard> getActiveForPacks() {
+		return catalogCardRepository.findAllByIsActiveTrueOrderByIdAsc();
+	}
+
+	/**
+	 * Le carte con quegli id, anche disattivate, per gli altri service (mazzi): rarità, fazioni e carta originale sono
+	 * già caricate. Gli id che non esistono mancano dalla lista, senza errore: decide chi chiama.
+	 */
+	@Transactional(readOnly = true)
+	public List<CatalogCard> getCardsByIds(Collection<Integer> ids) {
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		return catalogCardRepository.findAllByIdIn(ids);
+	}
+
+	/**
+	 * Crea una carta con la sua illustrazione (POST /admin/cards, API-14).
+	 * <p>
+	 * Stessi controlli di {@link #update} e nello stesso ordine; per ultima l'illustrazione, che si salva solo se la
+	 * carta è valida. Con {@code variantOfId} la carta nasce variante: i campi di gioco si copiano dall'originale,
+	 * nome, illustrazione e {@code flavorText} sono suoi. Una carta nuova è sempre attiva.
+	 *
+	 * @param image contenuto del file dell'illustrazione, obbligatorio
+	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale
+	 * @throws InvalidCardRarityException           se la rarità non esiste o non è ammessa per il tipo
+	 * @throws InvalidCardFactionException          se la prima o la seconda fazione non esiste
+	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazioni non vanno con il tipo
+	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
+	 * @throws InvalidCardEffectException           se l'effetto non esiste o è di un altro tipo di carta
+	 * @throws InvalidCardImageException            se l'illustrazione è vuota, troppo grande o non PNG, JPEG o WebP
+	 */
+	@Transactional
+	public CatalogCardResponse create(CatalogCardUpdateRequest request, byte[] image) {
+
+		CatalogCard original = loadOriginal(request.variantOfId());
+		OriginalReferences references = (original == null) ? validateOriginal(request) : null;
+
+		if (original == null) {
+			checkNameAvailableForNewOriginal(request.name());
+		} else {
+			// Una variante può usare il nome della sua originale, non quello di un'altra
+			checkNameAvailable(request.name(), original.getId());
+		}
+		validateEffect(request, original);
+
+		String imagePath = saveImage(image);
+		CatalogCard card = (original == null)
+			? new CatalogCard(null, references.rarity(), references.faction(), references.secondaryFaction(), request.name(), request.type(), request.subtype(), request.effectCode(), imagePath, request.effectDescription(), request.flavorText(), request.atk(), request.def(), request.copyLimit())
+			: new CatalogCard(original, original.getRarity(), original.getFaction(), original.getSecondaryFaction(), request.name(), original.getCardType(), original.getCardSubtype(), original.getEffectCode(), imagePath, original.getEffectDescription(), request.flavorText(), original.getAtk(), original.getDef(), original.getCopyLimit());
+
+		return CatalogCardResponse.withTags(catalogCardRepository.save(card));
+	}
+
+	/**
+	 * Sostituisce l'illustrazione di una carta (POST /admin/cards/{id}/image, API-14), anche di una variante o di una
+	 * carta disattivata. Il file vecchio si cancella solo dopo il commit; se il file nuovo non è valido
+	 * {@code image_path} non cambia.
+	 *
+	 * @param image contenuto del file della nuova illustrazione
+	 * @throws CatalogCardNotFoundException se la carta non esiste
+	 * @throws InvalidCardImageException    se l'illustrazione è vuota, troppo grande o non PNG, JPEG o WebP
+	 */
+	@Transactional
+	public CatalogCardResponse replaceImage(Integer id, byte[] image) {
+		CatalogCard card = loadCard(id);
+		String oldPath = card.getImagePath();
+
+		card.changeImage(saveImage(image));
+		imageStorage.deleteAfterCommit(oldPath);
+
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -98,39 +212,36 @@ public class CatalogCardService {
 	 * dall'originale. Per un'originale, dopo la modifica, le sue varianti ricevono gli stessi campi di gioco.
 	 * Tutti i controlli avvengono prima di modificare la carta.
 	 *
+	 * Per un'originale prima si controllano i riferimenti (rarità e fazioni esistono), poi le regole del tipo
+	 * (statistiche, sottotipo, effetto, fazioni), poi la rarità ammessa e il nome (deciso il 20 novembre, #81).
+	 * Per ultimo l'effetto, che deve essere nella tabella {@code effects} per quel tipo di carta (API-36).
+	 *
 	 * @throws CatalogCardNotFoundException         se la carta non esiste
 	 * @throws InvalidCardVariantException          se variantOfId non indica una carta originale valida
 	 * @throws InvalidCardRarityException           se la rarità non esiste o non è ammessa per il tipo
-	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazione non vanno con il tipo
+	 * @throws InvalidCardFactionException          se la prima o la seconda fazione non esiste
+	 * @throws CatalogCardRulesViolatedException    se statistiche, sottotipo, effetto o fazioni non vanno con il tipo
 	 * @throws CatalogCardNameAlreadyUsedException  se il nome è di un'altra carta originale
+	 * @throws InvalidCardEffectException           se l'effetto non esiste o è di un altro tipo di carta
 	 */
 	@Transactional
 	public CatalogCardResponse update(Integer id, CatalogCardUpdateRequest request) {
 
 		CatalogCard card = loadCard(id);
 		CatalogCard original = resolveOriginal(card, request.variantOfId());
-		Rarity rarity = null;
-
-		if (original == null) {
-			rarity = loadRarity(request.rarityId());
-
-			validateRules(request.type(), request.subtype(), request.effectCode(), request.atk(), request.def());
-			validateRarity(request.type(), rarity);
-			validateFaction(request.type(), card);
-		}
+		OriginalReferences references = (original == null) ? validateOriginal(request) : null;
 
 		Integer excludedId = (original != null) ? original.getId() : card.getId();
 		checkNameAvailable(request.name(), excludedId);
+		validateEffect(request, original);
 
 		card.changeVariantOf(original);
 		if (original != null) {
 			card.copyRulesFrom(original);
 		} else {
-			card.updateRules(rarity, request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
-			if (!request.type().hasFaction()) {
-				// Spell e Hidden sono condivise: una carta che lo diventa perde le fazioni
-				card.changeFactions(null, null);
-			}
+			card.updateRules(references.rarity(), request.type(), request.subtype(), request.effectCode(), request.effectDescription(), request.atk(), request.def(), request.copyLimit());
+			// PUT sostituisce tutta la carta: per Spell e Hidden le fazioni sono null, già controllato
+			card.changeFactions(references.faction(), references.secondaryFaction());
 		}
 
 		card.updateDetails(request.name(), request.flavorText());
@@ -140,7 +251,7 @@ public class CatalogCardService {
 			}
 		}
 
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -152,7 +263,7 @@ public class CatalogCardService {
 	public CatalogCardResponse activate(Integer id) {
 		CatalogCard card = loadCard(id);
 		card.activate();
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	/**
@@ -165,7 +276,31 @@ public class CatalogCardService {
 	public CatalogCardResponse deactivate(Integer id) {
 		CatalogCard card = loadCard(id);
 		card.deactivate();
-		return CatalogCardResponse.from(card);
+		return CatalogCardResponse.withTags(card);
+	}
+
+	/**
+	 * Sostituisce tutti i tag propri di una carta (PUT /admin/cards/{id}/tags, API-12). Le varianti non cambiano: ogni
+	 * carta ha i suoi tag (deciso il 22 novembre). La carta si blocca prima, così due sostituzioni contemporanee si
+	 * mettono in fila. Un id ripetuto conta una volta; se un tag non esiste non cambia niente.
+	 *
+	 * @throws CatalogCardNotFoundException se la carta non esiste
+	 * @throws InvalidCardTagException      se uno dei tag non esiste
+	 */
+	@Transactional
+	public CatalogCardResponse replaceTags(Integer id, CardTagsRequest request) {
+		CatalogCard card = catalogCardRepository.findByIdForUpdate(id)
+			.orElseThrow(() -> new CatalogCardNotFoundException());
+
+		Set<Integer> ids = new LinkedHashSet<>(request.tagIds());
+		List<Tag> tags = tagRepository.findAllById(ids);
+		if (tags.size() != ids.size()) {
+			Set<Integer> found = new LinkedHashSet<>(tags.stream().map(Tag::getId).toList());
+			throw new InvalidCardTagException(ids.stream().filter(tagId -> !found.contains(tagId)).toList());
+		}
+
+		card.replaceTags(tags);
+		return CatalogCardResponse.withTags(card);
 	}
 
 	// Stessa pagina e dimensione chieste dal client, ma sempre con CARD_ORDER
@@ -235,18 +370,95 @@ public class CatalogCardService {
 		}
 	}
 
-	// chk_catalog_cards_faction_matches_type. Le fazioni non si modificano ancora da PUT (arriva con #81):
-	// una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto perché non ha una fazione.
-	// Il caso opposto va bene: update toglie le fazioni.
-	private void validateFaction(CardType type, CatalogCard card) {
-		if (type.hasFaction() && card.getFaction() == null) {
+	// La fazione indicata, o null se l'id è null; 422 e non 404 se non esiste, come la rarità
+	private Faction loadFaction(Integer factionId) {
+		if (factionId == null) {
+			return null;
+		}
+
+		return factionRepository.findById(factionId)
+			.orElseThrow(() -> InvalidCardFactionException.notFound(factionId));
+	}
+
+	// chk_catalog_cards_faction_matches_type e chk_catalog_cards_distinct_factions di V3, e
+	// chk_catalog_cards_secondary_faction_creature_only di V14. Una seconda fazione
+	// senza la prima cade sempre in uno dei primi due casi: o il tipo vuole la fazione, o non ne ammette.
+	private void validateFactions(CardType type, Integer factionId, Integer secondaryFactionId) {
+		if (type.hasFaction() && factionId == null) {
 			throw CatalogCardRulesViolatedException.missingFaction(type);
+		}
+
+		if (!type.hasFaction() && (factionId != null || secondaryFactionId != null)) {
+			throw CatalogCardRulesViolatedException.unexpectedFaction(type);
+		}
+
+		// V14 (API-71): Terreni e Oggetti hanno una fazione sola
+		if (secondaryFactionId != null && !type.acceptsSecondaryFaction()) {
+			throw CatalogCardRulesViolatedException.unexpectedSecondaryFaction(type);
+		}
+
+		if (secondaryFactionId != null && secondaryFactionId.equals(factionId)) {
+			throw CatalogCardRulesViolatedException.sameFactions();
 		}
 	}
 
 	private void checkNameAvailable(String name, Integer excludedId) {
 		if (catalogCardRepository.existsByNameAndVariantOfIsNullAndIdNot(name, excludedId)) {
 			throw new CatalogCardNameAlreadyUsedException(name);
+		}
+	}
+
+	private void checkNameAvailableForNewOriginal(String name) {
+		if (catalogCardRepository.existsByNameAndVariantOfIsNull(name)) {
+			throw new CatalogCardNameAlreadyUsedException(name);
+		}
+	}
+
+	// Rarità e fazioni di una carta originale, già controllate con le regole del tipo
+	private record OriginalReferences(Rarity rarity, Faction faction, Faction secondaryFaction) {
+	}
+
+	// Per un'originale prima i riferimenti (rarità e fazioni esistono), poi le regole del tipo, poi la rarità ammessa
+	private OriginalReferences validateOriginal(CatalogCardUpdateRequest request) {
+		Rarity rarity = loadRarity(request.rarityId());
+		Faction faction = loadFaction(request.factionId());
+		Faction secondaryFaction = loadFaction(request.secondaryFactionId());
+
+		validateRules(request.type(), request.subtype(), request.effectCode(), request.atk(), request.def());
+		validateFactions(request.type(), request.factionId(), request.secondaryFactionId());
+		validateRarity(request.type(), rarity);
+
+		return new OriginalReferences(rarity, faction, secondaryFaction);
+	}
+
+	// Ultimo controllo dei campi (API-36): l'effetto è tra quelli della tabella effects e del tipo della carta. Una
+	// creatura senza effetto non ha niente da controllare; una variante copia l'effetto dall'originale.
+	private void validateEffect(CatalogCardUpdateRequest request, CatalogCard original) {
+		if (original == null && request.effectCode() != null) {
+			effectService.validateForType(request.type(), request.effectCode());
+		}
+	}
+
+	// L'originale di una carta nuova: deve esistere e non essere una variante. Null se la carta nasce originale.
+	private CatalogCard loadOriginal(Integer variantOfId) {
+		if (variantOfId == null) {
+			return null;
+		}
+
+		CatalogCard original = catalogCardRepository.findById(variantOfId)
+			.orElseThrow(() -> InvalidCardVariantException.originalNotFound(variantOfId));
+		if (original.isVariant()) {
+			throw InvalidCardVariantException.originalIsVariant(variantOfId);
+		}
+		return original;
+	}
+
+	// Il codice di errore delle immagini dipende da cosa si carica: per le carte è CARD_IMAGE_INVALID
+	private String saveImage(byte[] image) {
+		try {
+			return imageStorage.saveInTransaction(CARD_IMAGES_FOLDER, image);
+		} catch (InvalidImageException e) {
+			throw new InvalidCardImageException(e.getMessage());
 		}
 	}
 }

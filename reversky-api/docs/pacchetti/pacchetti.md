@@ -59,8 +59,7 @@ Esempio: un pacchetto evento con tag `DREAM` contiene solo carte della Theory of
 ### Spell, Hidden, Terreni e Oggetti
 
 Sono carte del catalogo come le altre, con una loro rarità: escono negli slot della loro rarità. Per rispettare il regolamento:
-- Spell e Hidden hanno rarità **Common** o **Uncommon** → compaiono al posto di una Common/Uncommon;
-- Terreni e Oggetti hanno rarità **Rare** → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
+- Spell, Hidden, Terreni e Oggetti hanno rarità **Rare** (Spell e Hidden dal 21 novembre, prima Common o Uncommon) → compaiono solo al posto di una Rare, mai al posto di Mythic o Legendary.
 
 Spell e Hidden non hanno fazione: in un pacchetto con `pack_tags` escono solo se hanno uno dei tag nei **tag propri** (i tag di fazione non valgono per loro). Un pacchetto evento con tag `DREAM` quindi non contiene Spell né Hidden, a meno che non siano etichettate anche loro.
 
@@ -170,3 +169,30 @@ Risposta dell'apertura:
 - Con più bonus riusciti che slot vincono i più rari, e il numero di carte non cambia.
 - Uno slot base senza carte della sua rarità scende alla rarità inferiore; se sotto non c'è niente, sale. Il numero di carte non cambia e il ripiego non sceglie mai un Terreno né un Oggetto.
 - Uno slot che non trova nessuna carta → `422`: pacchetto ancora nell'inventario, collezione invariata, nessuna riga in `pack_openings`.
+
+## Comportamento già implementato
+
+### Negozio e acquisto (API-18 #88, API-22 #92)
+
+- `GET /api/v1/packs` è pubblico: pacchetti attivi in ordine di id, con `cost`, `purchaseLimit`, `cardCount`, slot e solo i bonus di rarità che hanno carte (con `probabilityUnits` e `percentage`). Con il token, `remainingPurchases` dice quanti pacchetti con limite l'utente può ancora comprare; senza token o senza limite è `null`.
+- `POST /api/v1/packs/{id}/purchase` con `{ "quantity": 1..10 }` (`PackService.purchase`): blocca l'inventario **prima** di contare i pacchetti già comprati (aperti + da aprire), così due acquisti contemporanei non superano il limite; poi `spendCredits` (riga `PACK_PURCHASE`, anche da 0) e `addPacks`. Risponde con l'inventario aggiornato, come `GET /inventory`.
+
+| Caso | Status | `code` |
+|---|---|---|
+| `quantity` mancante o fuori da 1–10 | `400` | `VALIDATION_FAILED` |
+| pacchetto inesistente | `404` | `PACK_NOT_FOUND` |
+| pacchetto disattivato | `422` | `PACK_NOT_AVAILABLE` |
+| oltre `purchase_limit`, contando gli aperti | `422` | `PACK_PURCHASE_LIMIT` |
+| crediti insufficienti | `422` | `INSUFFICIENT_CREDITS` |
+
+### Apertura (API-24 #94)
+
+- `POST /api/v1/inventory/packs/{packId}/open` (`pack/controller/PackOpeningController`, `PackService.open`), in una transazione: `InventoryService.takePack` blocca l'inventario e toglie il pacchetto (a 0 elimina la riga), `PackDrawer` estrae le carte da `CardPool`, `CollectionService.addCards` le aggiunge e `pack_openings` salva gli id nell'ordine degli slot. Un pacchetto disattivato dopo l'acquisto si apre lo stesso.
+- Casualità: bean `RandomGenerator` (`common/config/RandomConfig`, `SecureRandom`); `PackDrawer` e `CardPool` non usano il database e i test li provano con un seed fisso, comprese 100.000 aperture per le frequenze dei bonus.
+- Risposta: `{ packId, remainingPacks, cards: [{ card: <carta completa del catalogo>, isNew }] }` (deciso il 21 novembre, al posto della carta ridotta dell'esempio sopra). `isNew` è vero solo se l'utente non possedeva la carta, e solo per la prima copia uscita nel pacchetto.
+- Il filtro dei tag (API-21) è quello di "Filtro delle carte" sopra: `CardPool` riceve tutte le carte attive, varianti comprese, con i tag propri e delle fazioni (una query sola, `CatalogCardService.getActiveForPacks`), e i nomi dei tag del pacchetto. Senza tag escono solo le originali; con i tag una carta con uno dei tag tra i propri o tra quelli di una delle sue fazioni; una variante solo con i propri; Spell e Hidden solo con i propri. Vale per l'apertura, per i bonus mostrati da `GET /packs` (calcolati per ogni pacchetto con i suoi tag) e per il controllo del backoffice sugli slot. Test: `CardPoolTagsTest` e `PackTagsIT`.
+
+| Caso | Status | `code` |
+|---|---|---|
+| nessun pacchetto di quel tipo da aprire | `422` | `NO_PACK_TO_OPEN` |
+| uno slot senza carte nemmeno con il ripiego (carte disattivate dopo l'attivazione): niente cambia, il pacchetto resta | `422` | `PACK_SLOT_EMPTY` |

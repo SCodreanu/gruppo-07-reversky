@@ -21,6 +21,7 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
@@ -83,9 +84,9 @@ class CardControllerIT {
 			.andExpect(jsonPath("$.content[0].name").value(card.getName()))
 			.andExpect(jsonPath("$.content[0].type").value("SPELL"))
 			.andExpect(jsonPath("$.content[0].subtype").value("BURN"))
-			.andExpect(jsonPath("$.content[0].effectCode").value(TestCards.EFFECT_CODE))
-			.andExpect(jsonPath("$.content[0].rarity.id").value(testCards.common().getId()))
-			.andExpect(jsonPath("$.content[0].rarity.name").value(testCards.common().getName()))
+			.andExpect(jsonPath("$.content[0].effectCode").value(TestCards.SPELL_EFFECT))
+			.andExpect(jsonPath("$.content[0].rarity.id").value(testCards.rare().getId()))
+			.andExpect(jsonPath("$.content[0].rarity.name").value(testCards.rare().getName()))
 			.andExpect(jsonPath("$.content[0].active").value(true))
 			.andExpect(jsonPath("$.page").value(0))
 			.andExpect(jsonPath("$.size").value(20))
@@ -137,6 +138,26 @@ class CardControllerIT {
 			.andExpect(jsonPath("$.content.length()").value(1))
 			.andExpect(jsonPath("$.content[0].id").value(otherCard.getId()))
 			.andExpect(jsonPath("$.content[0].rarity.id").value(other.getId()));
+	}
+
+	@Test
+	@DisplayName("The factionId parameter filters the list and each card shows its factions")
+	void findAll_factionIdParameter_filtersByFaction() throws Exception {
+		// Arrange: la carta ha la fazione cercata come seconda; la Spell non ha fazioni
+		String token = TestUsers.uniqueSuffix();
+		CatalogCard card = testCards.create("Creature " + token, CardType.CREATURE);
+		Faction searched = testCards.createFaction();
+		card.changeFactions(testCards.faction(), searched);
+		catalogCardRepository.save(card);
+		testCards.create("Spell " + token, CardType.SPELL);
+
+		// Act + Assert
+		mockMvc.perform(get(BASE_PATH).param("name", token).param("factionId", searched.getId().toString()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(card.getId()))
+			.andExpect(jsonPath("$.content[0].faction.id").value(testCards.faction().getId()))
+			.andExpect(jsonPath("$.content[0].secondaryFaction.name").value(searched.getName()));
 	}
 
 	@Test

@@ -245,13 +245,13 @@ Table catalog_cards {
 
   rarity_id int [not null, ref: > rarities.id]
   faction_id int [ref: > factions.id]             // obbligatoria per Creature, Terreni e Oggetti; nulla per Spell e Hidden, che sono condivise tra le fazioni
-  secondary_faction_id int [ref: > factions.id]   // seconda fazione facoltativa (es. Mutant): la carta prende bonus e malus di entrambe
+  secondary_faction_id int [ref: > factions.id]   // seconda fazione facoltativa (es. Mutant), solo per le creature: la carta prende bonus e malus di entrambe
   variant_of_id int [ref: > catalog_cards.id]     // versione evento di un'altra carta: stesse regole, altra grafica. Nullo = carta originale
 
   name varchar(255) [not null]
   type CardType [not null]
   subtype CardSubtype              // solo Spell e Hidden
-  effect_code varchar(100)         // codice di un effetto implementato nell'engine, inviato come effectCode
+  effect_code varchar(100)         // codice di un effetto implementato nell'engine, inviato come effectCode; con type deve essere in effects (fk_catalog_cards_effect)
 
   image_path text [not null]
 
@@ -283,6 +283,7 @@ Table catalog_cards {
     `(type = 'CREATURE' AND atk IS NOT NULL AND def IS NOT NULL AND atk >= 0 AND def >= 1) OR (type <> 'CREATURE' AND atk IS NULL AND def IS NULL)` [name: 'chk_catalog_cards_stats_match_type']
     `(type IN ('SPELL', 'HIDDEN') AND faction_id IS NULL AND secondary_faction_id IS NULL) OR (type NOT IN ('SPELL', 'HIDDEN') AND faction_id IS NOT NULL)` [name: 'chk_catalog_cards_faction_matches_type']
     `secondary_faction_id IS NULL OR (faction_id IS NOT NULL AND secondary_faction_id != faction_id)` [name: 'chk_catalog_cards_distinct_factions']
+    `type = 'CREATURE' OR secondary_faction_id IS NULL` [name: 'chk_catalog_cards_secondary_faction_creature_only', note: 'V14, API-71']
     `(type = 'SPELL' AND subtype IS NOT NULL AND subtype IN ('DAMAGE', 'SHIELD', 'BURN')) OR (type = 'HIDDEN' AND subtype IS NOT NULL AND subtype IN ('SURVIVAL', 'DAMAGE')) OR (type IN ('CREATURE', 'TERRAIN', 'ITEM') AND subtype IS NULL)` [name: 'chk_catalog_cards_subtype_matches_type']
     `type = 'CREATURE' OR effect_code IS NOT NULL` [name: 'chk_catalog_cards_effect_required']
     `variant_of_id IS NULL OR variant_of_id != id` [name: 'chk_catalog_cards_not_own_variant']
@@ -290,6 +291,20 @@ Table catalog_cards {
 
   Note: 'I tag si assegnano tramite card_tags e servono ai filtri dei pacchetti. Effetto e sottotipo stanno nelle colonne effect_code e subtype.'
 }
+
+// V13 (API-36): gli effetti che l'engine implementa. Sola lettura, si aggiorna con una migrazione insieme al codice
+// dell'engine; l'API non chiede mai l'elenco all'engine.
+Table effects {
+  code varchar(100) [pk]
+  applies_to CardType [not null]   // l'unico tipo di carta che può portarlo
+
+  Indexes {
+    (code, applies_to) [unique, name: 'uq_effects_code_applies_to', note: 'destinazione di fk_catalog_cards_effect']
+  }
+}
+
+// Chiave composta: effect_code nullo (creature senza effetto) non si controlla
+Ref fk_catalog_cards_effect: catalog_cards.(effect_code, type) > effects.(code, applies_to)
 
 Table collection_cards {
   user_id int [not null, ref: > users.id]

@@ -32,6 +32,8 @@ import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
 import it.downfall.reversky.api.common.security.SecurityProperties;
 import it.downfall.reversky.api.common.security.TokenHasher;
+import it.downfall.reversky.api.inventory.service.InventoryService;
+import it.downfall.reversky.api.ruleset.exception.NoActiveRuleSetException;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.exception.UserNotFoundException;
 import it.downfall.reversky.api.user.service.UserService;
@@ -50,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthService {
 
 	private final UserService userService;
+	private final InventoryService inventoryService;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final PasswordResetTokenRepository passwordResetTokenRepository;
 	private final EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -63,10 +66,12 @@ public class AuthService {
 	/**
 	 * Registra un nuovo utente con ruolo USER.
 	 * <p>
-	 * Nella stessa transazione crea l'utente e il token di verifica, poi invia l'email di verifica.
+	 * Nella stessa transazione crea l'utente, il suo inventario con i crediti di benvenuto (docs/crediti) e il token
+	 * di verifica, poi invia l'email di verifica.
 	 *
 	 * @throws UsernameAlreadyUsedException se lo username è già usato
 	 * @throws EmailAlreadyUsedException    se l'email è già usata
+	 * @throws NoActiveRuleSetException     se nessun rule set è attivo: l'utente non viene creato
 	 */
 	@Transactional
 	public void register(RegisterRequest request) {
@@ -84,7 +89,7 @@ public class AuthService {
 
 		User user = userService.createUser(request.username(), request.email(), passwordHash, now);
 
-		// TODO(@tommasofatticcioni): creare inventories con signup_bonus e la riga SIGNUP in credit_transactions (docs/crediti)
+		inventoryService.createInventory(user.getId());
 
 		sendEmailVerification(user, now);
 		log.info("User {} registered", user.getId());
@@ -99,6 +104,16 @@ public class AuthService {
 
 		emailVerificationTokenRepository.save(new EmailVerificationToken(user, tokenHasher.hash(token), expiresAt));
 		emailSender.sendEmailVerification(user.getEmail(), token);
+	}
+
+	/**
+	 * Chiude tutte le sessioni di un utente cancellando i suoi refresh token (account disattivato dal backoffice).
+	 * Gli access token già emessi restano validi fino alla scadenza, al massimo 15 minuti.
+	 */
+	@Transactional
+	public void revokeAllSessions(Integer userId) {
+		int deleted = refreshTokenRepository.deleteAllByUserId(userId);
+		log.info("Revoked {} sessions of user {}", deleted, userId);
 	}
 
 	/**

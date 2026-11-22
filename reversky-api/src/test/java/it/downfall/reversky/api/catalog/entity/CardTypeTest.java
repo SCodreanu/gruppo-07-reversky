@@ -109,15 +109,26 @@ class CardTypeTest {
 	}
 
 	@Test
-	@DisplayName("Spells and hidden cards accept only Common and Uncommon")
-	void acceptsRarity_spellAndHidden_acceptOnlyCommonAndUncommon() {
+	@DisplayName("Spells and hidden cards accept only Rare")
+	void acceptsRarity_spellAndHidden_acceptOnlyRare() {
 		// Act + Assert
 		for (CardType type : new CardType[] { CardType.SPELL, CardType.HIDDEN }) {
-			assertThat(type.acceptsRarity(rarity("Common", Rarity.COMMON_ORDER))).as("%s Common", type).isTrue();
-			assertThat(type.acceptsRarity(rarity("Uncommon", Rarity.UNCOMMON_ORDER))).as("%s Uncommon", type).isTrue();
-			assertThat(type.acceptsRarity(rarity("Rare", Rarity.RARE_ORDER))).as("%s Rare", type).isFalse();
+			assertThat(type.acceptsRarity(rarity("Rare", Rarity.RARE_ORDER))).as("%s Rare", type).isTrue();
+			assertThat(type.acceptsRarity(rarity("Common", Rarity.COMMON_ORDER))).as("%s Common", type).isFalse();
+			assertThat(type.acceptsRarity(rarity("Uncommon", Rarity.UNCOMMON_ORDER))).as("%s Uncommon", type).isFalse();
 			assertThat(type.acceptsRarity(rarity("Mythic", 4))).as("%s Mythic", type).isFalse();
 		}
+	}
+
+	@Test
+	@DisplayName("Only spells and hidden cards stay out of the rarity maximum per deck")
+	void countsTowardRarityMaximum_spellAndHiddenExcluded() {
+		// Act + Assert
+		assertThat(CardType.SPELL.countsTowardRarityMaximum()).isFalse();
+		assertThat(CardType.HIDDEN.countsTowardRarityMaximum()).isFalse();
+		assertThat(CardType.CREATURE.countsTowardRarityMaximum()).isTrue();
+		assertThat(CardType.TERRAIN.countsTowardRarityMaximum()).isTrue();
+		assertThat(CardType.ITEM.countsTowardRarityMaximum()).isTrue();
 	}
 
 	@Test

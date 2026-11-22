@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Immagini caricate dal backoffice con bootRun (API-14) ###
+uploads/

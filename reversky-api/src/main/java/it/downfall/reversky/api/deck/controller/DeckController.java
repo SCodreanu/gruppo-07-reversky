@@ -1,0 +1,126 @@
+package it.downfall.reversky.api.deck.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import it.downfall.reversky.api.common.config.OpenApiConfig;
+import it.downfall.reversky.api.deck.dto.DeckRequest;
+import it.downfall.reversky.api.deck.dto.DeckResponse;
+import it.downfall.reversky.api.deck.dto.DeckRulesResponse;
+import it.downfall.reversky.api.deck.dto.DeckSummaryResponse;
+import it.downfall.reversky.api.deck.dto.DeckValidationRequest;
+import it.downfall.reversky.api.deck.dto.DeckValidationResponse;
+import it.downfall.reversky.api.deck.service.DeckService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * Mazzi dell'utente autenticato (docs/mazzi). L'utente si ricava sempre dal token.
+ */
+@Tag(name = "Decks", description = "Decks of the authenticated user")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
+@RestController
+@RequestMapping("/api/v1/decks")
+@RequiredArgsConstructor
+public class DeckController {
+
+	private final DeckService deckService;
+
+	@Operation(summary = "List my decks", description = "Returns my decks sorted by name, with the number of cards and "
+		+ "whether each deck is valid today, without the cards.")
+	@ApiResponse(responseCode = "200", description = "Decks returned")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@GetMapping
+	public ResponseEntity<List<DeckSummaryResponse>> findMine(@AuthenticationPrincipal Jwt jwt) {
+		return ResponseEntity.ok(deckService.findMine(userId(jwt)));
+	}
+
+	@Operation(summary = "Get one of my decks", description = "Returns the deck with its cards, sorted by card id, and the "
+		+ "rules it breaks today (a saved deck can become invalid when rules or cards change).")
+	@ApiResponse(responseCode = "200", description = "Deck returned")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "404", description = "Deck not found, or owned by another user")
+	@GetMapping("/{id}")
+	public ResponseEntity<DeckResponse> findById(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id) {
+		return ResponseEntity.ok(deckService.findMine(userId(jwt), id));
+	}
+
+	@Operation(summary = "Create a deck", description = "The name must be unique among my decks. Each card appears once, "
+		+ "with its quantity.")
+	@ApiResponse(responseCode = "201", description = "Deck created")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid fields, or the same card listed twice")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "409", description = "I already have a deck with this name")
+	@ApiResponse(responseCode = "422", description = "Invalid deck (DECK_INVALID): every broken rule is listed in violations")
+	@PostMapping
+	public ResponseEntity<DeckResponse> create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody DeckRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(deckService.create(userId(jwt), request));
+	}
+
+	@Operation(summary = "Replace a deck", description = "Replaces the name and all the cards of the deck. "
+		+ "If the deck is in the ranked queue, the ticket is removed.")
+	@ApiResponse(responseCode = "200", description = "Deck updated")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid fields, or the same card listed twice")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "404", description = "Deck not found, or owned by another user")
+	@ApiResponse(responseCode = "409", description = "Another of my decks already has this name")
+	@ApiResponse(responseCode = "422", description = "Invalid deck (DECK_INVALID): every broken rule is listed in violations")
+	@PutMapping("/{id}")
+	public ResponseEntity<DeckResponse> update(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id,
+			@Valid @RequestBody DeckRequest request) {
+		return ResponseEntity.ok(deckService.update(userId(jwt), id, request));
+	}
+
+	@Operation(summary = "Delete a deck", description = "Deletes the deck and its ranked queue ticket. "
+		+ "A deck used by a pending challenge cannot be deleted.")
+	@ApiResponse(responseCode = "204", description = "Deck deleted")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "404", description = "Deck not found, or owned by another user")
+	@ApiResponse(responseCode = "409", description = "The deck is used by a pending challenge")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id) {
+		deckService.delete(userId(jwt), id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@Operation(summary = "Validate a deck without saving it", description = "Checks the same rules as saving and returns "
+		+ "every broken rule, for the deck builder.")
+	@ApiResponse(responseCode = "200", description = "Validation result returned, valid or not")
+	@ApiResponse(responseCode = "400", description = "Missing or invalid fields, or the same card listed twice")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@PostMapping("/validate")
+	public ResponseEntity<DeckValidationResponse> validate(@AuthenticationPrincipal Jwt jwt,
+			@Valid @RequestBody DeckValidationRequest request) {
+		return ResponseEntity.ok(deckService.validate(userId(jwt), request));
+	}
+
+	@Operation(summary = "Get the deck rules", description = "Returns the composition required by the active rule set and "
+		+ "the copy limits and deck maximums of each rarity, so the frontend does not duplicate them.")
+	@ApiResponse(responseCode = "200", description = "Rules returned")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "404", description = "No active rule set")
+	@GetMapping("/rules")
+	public ResponseEntity<DeckRulesResponse> rules() {
+		return ResponseEntity.ok(deckService.rules());
+	}
+
+	private static Integer userId(Jwt jwt) {
+		return Integer.valueOf(jwt.getSubject());
+	}
+}

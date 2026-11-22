@@ -57,7 +57,7 @@ Priorità **Alta** (#41, chiusa). Dettagli nel [documento dell'engine](../../../
 
 | ID | Tema | Esito | Stato |
 |---|---|---|---|
-| D-01 | Punti vita iniziali | resta 30 nel rule set `1.0` e si ricontrolla con la simulazione (11 nov) | aperto |
+| D-01 | Punti vita iniziali | 30, il valore già nel rule set `1.0`: approvato dai DSG il 22 novembre | deciso |
 | D-02 | Limite di round | 75 round totali: valore iniziale del rule set `1.0` (`max_rounds`) | deciso |
 | D-03 | Danno al giocatore (incoerenza tra brief e bozza) | DEF negativa: 8 contro DEF 5 → 3 | deciso |
 | D-05 | Condizioni di fine partita 3–5 | come in `regole-base` | deciso |
@@ -90,6 +90,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Bilanciamento (limiti di copie, massimi per rarità nel mazzo, statistiche delle carte) a cura degli SWD | scelta di Tommaso | 9 nov |
 | **Niente massimi di ATK e DEF per rarità**: tolti `rarities.max_atk` e `max_def` (chiude Q-04) | le carte personalizzate possono superare qualsiasi soglia; il bilanciamento resta nelle statistiche di ogni carta | 9 nov |
 | **Notifiche con SSE** (amicizie, inviti, partite, scambi), più una tabella `notifications` (già nella baseline, #141); le implementano Tommaso e Claude più avanti (task API-65 – API-69). Chiude Q-16 | il frontend riceve gli eventi senza polling | 9 nov |
+| **Notifiche e SSE nel dettaglio**: canale `GET /notifications/stream` con l'header `Authorization: Bearer` (il frontend usa un client basato su `fetch`, niente token nell'URL), chiuso alla scadenza dell'access token e ripreso con `Last-Event-ID`; evento con `id` = notifica, `event` = tipo; payload di soli id e username dell'altro utente; notifiche lette eliminate dopo 30 giorni. Dettagli in [notifiche](../notifiche/notifiche.md) | `EventSource` non manda l'header `Authorization`; un token nell'URL finirebbe nei log | 22 nov |
 
 ### Progetto e infrastruttura
 
@@ -102,6 +103,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Il primo `ADMIN` e gli utenti di prova arrivano dalla migrazione dei dati di prova (#95), non da variabili d'ambiente | scelta più semplice per il team | 4 nov |
 | I test usano PostgreSQL vero con Testcontainers e caricano tutta l'applicazione (niente `@WebMvcTest`) | passano davvero da sicurezza, errori e database | #71 |
 | Lingua: documenti e commenti in italiano, nomi nel codice e testi tra virgolette in inglese; il gioco è in inglese (D-44) | decisione del team | 4 nov |
+| Illustrazioni caricate dal backoffice in una cartella (volume Docker `images`), servite dall'API su `GET /images/**` senza token; PNG, JPEG o WebP fino a 2 MB, riconosciuti dal contenuto; `POST /admin/cards` in multipart con la carta in JSON (API-14) | nessuna dipendenza nuova né tabella; le immagini vanno nell'archivio di consegna accanto al `pg_dump` | 22 nov |
 
 ### Sicurezza e autenticazione
 
@@ -164,6 +166,16 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Il Terreno occupa uno dei posti delle Rare in `max_per_deck` | scelta del team | 4 nov |
 | Le varianti contano insieme all'originale per il limite di copie | cambiano solo la grafica | 4 nov |
 
+### Dati di riferimento (`V9__insert_reference_data.sql`, API-15, #85)
+
+| Decisione | Perché | Quando |
+|---|---|---|
+| Una sola migrazione `V9` per rarità, fazioni e rule set | un cambiamento logico | 20 nov |
+| Le sei rarità del catalogo con `sorting_order` 1–6 e le proposte di Q-02 e Q-03 (**[DA CONFERMARE]**); Special (D-23) arriva con la prima carta speciale | Special non ha ancora carte né limiti decisi | 20 nov |
+| Fazioni con il nome completo (`Theory of the Wound`, `Theory of the Invitation`, `Theory of the Archive`, `Theory of the Dream`), id 1–4 in quest'ordine come negli esempi dell'engine; `emblem_path` segnaposto `factions/<nome>.svg`, `description` vuota finché i DSG non danno il testo | gli id coincidono con l'engine; senza id espliciti la sequenza resta allineata e il primo `POST /admin/factions` riceve il 5 | 20 nov |
+| **Nessuna riga** in `faction_bonuses`: le partite si giocano senza bonus finché i DSG non decidono D-04 dopo il report di bilanciamento (ENG-28); si inseriscono con `PUT /admin/faction-bonuses` | il bonus +2/−1 ATK porta lo scontro di vantaggio al 99,8–100% | 20 nov |
+| Rule set `1.0` attivo con le proposte: 30 punti vita (D-01, deciso il 22 novembre), 75 round (D-02, deciso), mazzo 30 = 20 / 6 / 2 / 1 / 1, Hidden `SURVIVAL` 2 e `DAMAGE` 1, `signup_bonus` 500 (Q-11), vittoria 30 e pareggio 10 (Q-12); `created_by_id` nullo. I valori aperti restano **[DA CONFERMARE]** | si cambiano dal backoffice | 20 nov |
+
 ### Catalogo implementato
 
 | Decisione | Perché | Task |
@@ -173,7 +185,25 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Rarità: due DTO, `RarityCreateRequest` con `sortingOrder` e `RarityUpdateRequest` senza | `sorting_order` arriva all'engine come `rarityOrder` e gli effetti lo confrontano con soglie nel codice | #75 |
 | `sorting_order` univoco, scelto alla creazione e poi immutabile; doppia protezione con `@Column(updatable = false)` | come sopra | #75 |
 | Un `sortingOrder` inviato nel `PUT` viene ignorato, non rifiutato (verificato da un test: Jackson ignora i campi sconosciuti) | client più semplici | #75 |
+| Fazioni della carta nella risposta come `faction` e `secondaryFaction` `{ id, name }` (`FactionSummaryResponse`), come in docs/collezione (20 nov) | il frontend mostra il nome senza chiamare `GET /factions` | #81 |
+| Fazione inesistente: `422 CARD_FACTION_INVALID` (`InvalidCardFactionException`); fazioni non coerenti con il tipo: `422 CARD_RULES_VIOLATED` (20 nov) | come la rarità: un riferimento sbagliato nel corpo non è un `404` | #81 |
+| Ordine dei controlli del `PUT`: riferimenti (rarità, poi fazioni), regole del tipo (fazioni dopo statistiche, sottotipo ed effetto), rarità ammessa, nome (20 nov) | ogni riferimento sbagliato si segnala prima delle regole | #81 |
+| Filtro `factionId` su `GET /cards` e `GET /admin/cards`, sulla prima o sulla seconda fazione; un id inesistente dà una pagina vuota (20 nov) | come `rarityId`; Spell e Hidden non hanno fazioni | #81 |
 | `GET /rarities` ordinato per `sorting_order` | ordine naturale per il frontend | #75 |
+
+### Collezione implementata (task API-23, #93, 20 novembre)
+
+| Decisione | Perché |
+|---|---|
+| Branch sopra API-11 (#81): la carta della collezione mostra già le fazioni | serve la forma della carta con `faction` |
+| `card` è `CatalogCardResponse`, la stessa di `GET /cards` | una sola forma della carta |
+| `reservedQuantity` e `usedInDecks` subito, con SQL nativo su `trade_offers` e `deck_cards` | numeri giusti da subito; diventano query JPA con API-31 e API-26 |
+| `GET /users/{id}/collection` per ogni utente autenticato, con `availableQuantity` (anche 0) | gli scambi non sono limitati agli amici e si chiede solo quello che è disponibile |
+| `sort` solo su `name`, `rarity`, `type`, `quantity`, spareggio per nome e id; altrimenti `400 INVALID_COLLECTION_SORT`, con un codice proprio come `INVALID_FRIENDSHIP_BOX` | niente `500` su proprietà sconosciute, pagine stabili |
+| Riepilogo sulle originali attive, per rarità | una carta ritirata non deve impedire il 100% |
+| `removeCards` conta le copie possedute, `422 NOT_ENOUGH_COPIES`; `addCards` e `removeCards` con `propagation = MANDATORY` | lo scambio sposta copie che lui stesso riserva; la transazione è del chiamante (docs/collezione) |
+| Carte disattivate e varianti elencate nella collezione | restano possedute (Q-07) |
+| Tutti gli endpoint in `collection/`, anche `/users/{id}/collection` | la funzionalità resta insieme |
 
 ## Prima della consegna
 

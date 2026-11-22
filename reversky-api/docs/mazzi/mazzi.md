@@ -51,6 +51,8 @@ Serve un vincolo che impedisca di riempire il mazzo solo con le carte più forti
 
 Il Terreno e l'Oggetto sono carte Rare e occupano ciascuno uno dei posti del massimo delle Rare.
 
+Anche Spell e Hidden sono Rare (deciso il 21 novembre, con il catalogo di 120 carte), ma **non** contano nel massimo delle Rare: hanno già il loro numero esatto nel rule set. Il limite di copie della Rare (`deck_limit` 2) vale anche per loro (`CardType.countsTowardRarityMaximum`).
+
 Non c'è nessun vincolo tra la fazione del Terreno o dell'Oggetto e le fazioni delle creature del mazzo.
 
 La distribuzione "circa 10 Common, 7 Uncommon…" del regolamento è solo indicativa: **non** si valida.
@@ -83,13 +85,14 @@ Codici di errore (usati dal frontend):
 
 | Codice | Esempio di messaggio |
 |---|---|
+| `DECK_CARD_NOT_FOUND` | The card 999 does not exist |
 | `DECK_SIZE` | The deck has 28 cards, 30 are required |
-| `DECK_CREATURE_COUNT` | 20 creatures are required, there are 19 |
-| `DECK_SPELL_COUNT` | 6 Spells are required, there are 7 |
-| `DECK_HIDDEN_COUNT` | 2 Hidden cards are required, there is 1 |
+| `DECK_CREATURE_COUNT` | The deck needs exactly 20 creatures, it has 19 |
+| `DECK_SPELL_COUNT` | The deck needs exactly 6 Spells, it has 7 |
+| `DECK_HIDDEN_COUNT` | The deck needs exactly 2 Hidden cards, it has 1 |
 | `DECK_HIDDEN_SUBTYPE_LIMIT` | Too many SURVIVAL Hidden cards (3/2) |
-| `DECK_ITEM_COUNT` | Exactly 1 Item is required |
-| `DECK_TERRAIN_COUNT` | Exactly 1 Terrain is required |
+| `DECK_ITEM_COUNT` | The deck needs exactly 1 Item, it has 0 |
+| `DECK_TERRAIN_COUNT` | The deck needs exactly 1 Terrain, it has 2 |
 | `DECK_COPY_LIMIT` | Too many copies of 'Hounds' (2/1) |
 | `DECK_BALANCE_LIMIT` | Too many Legendary cards (3/2) |
 | `DECK_NOT_OWNED` | You have 1 available copy of 'Kappa', the deck contains 2 |
@@ -151,3 +154,33 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 - modifica o eliminazione di un mazzo in coda classificata → ticket rimosso;
 - eliminazione di un mazzo → le sue righe di `deck_cards` vengono eliminate;
 - modifica di un mazzo che conserva alcune carte → salvataggio riuscito (si aggiornano le righe esistenti: svuotando e reinserendo, Hibernate esegue gli insert prima dei delete e viola la chiave primaria).
+
+## Comportamento già implementato
+
+### Mazzi: nome, proprietà ed eliminazione (API-26, #96)
+
+- Package `deck/`: entità `Deck`, `DeckService`, `DeckController`. Ogni metodo riceve l'utente dal token e cerca il mazzo per id **e** utente, quindi il mazzo di un altro è `404 DECK_NOT_FOUND`.
+- `GET /decks` in ordine di nome, poi di id. Il nome si salva senza spazi all'inizio e alla fine; un nome già usato da un altro mazzo dello stesso utente è `409 DECK_NAME_ALREADY_USED`, anche con due richieste contemporanee (il vincolo `uq_decks_user_id_name` viene tradotto nello stesso errore).
+- `PUT /decks/{id}` toglie il ticket in coda classificata; `DELETE /decks/{id}` risponde `204`, e il ticket si cancella da solo (`ON DELETE CASCADE`). Un mazzo usato da un invito `PENDING` è `409 DECK_IN_USE`. L'invito si controlla con `PendingInviteService.isDeckInPendingInvite` di `battle/`; il ticket in coda si toglie con `QueueTicketService.removeForDeck` di `battle/` (API-47), che ha sostituito la query nativa in `DeckRepository`.
+
+### Contenuto del mazzo (API-27, #97)
+
+- `POST` e `PUT` ricevono `cards` (obbligatoria, anche vuota a livello di formato): ogni carta compare una volta sola con `quantity` ≥ 1, altrimenti `400 VALIDATION_FAILED` (campo `cardIdsUnique` per una carta ripetuta, `cards[i].quantity` per una quantità sotto 1).
+- `PUT` sostituisce tutto il contenuto con `Deck.replaceCards`, che aggiorna le righe esistenti, elimina quelle tolte (`orphanRemoval`) e aggiunge le nuove.
+- Una carta che non esiste rende il mazzo non valido: `422 DECK_INVALID` con `violations` (codice `DECK_CARD_NOT_FOUND`, `cardId`), e niente viene salvato. `violations` è un campo in più del ProblemDetail, scritto da `GlobalExceptionHandler` tramite `BusinessException.getExtraProperties()`.
+- `GET /decks` restituisce `id`, `name`, `cardCount` (somma delle copie); `GET /decks/{id}` e le risposte di `POST` e `PUT` anche `cards`, in ordine di id della carta, ognuna con tutti i dati del catalogo (`card`) e `quantity`.
+
+### Validazione (API-28, #98)
+
+- `deck/service/DeckValidator` (bean senza stato, nessun accesso al database) riceve `DeckRules` (composizione del rule set attivo) e le carte con rarità e originale già caricate, e restituisce **tutte** le violazioni in quest'ordine: carte totali, composizione per tipo, Hidden per sottotipo, copie (varianti sommate all'originale, limite `min(deck_limit, copy_limit)` dell'originale), bilanciamento per rarità (`max_per_deck`, Terreno e Oggetto contano tra le Rare), carte disattivate. Dentro ogni controllo, carte in ordine di id e rarità di `sorting_order`.
+- Al salvataggio (`POST`, `PUT`) un mazzo con violazioni è `422 DECK_INVALID` con `violations` e non si salva; le carte inesistenti (`DECK_CARD_NOT_FOUND`) sono in testa alla lista.
+- `valid` si ricalcola a ogni lettura: in `GET /decks` per ogni mazzo, in `GET /decks/{id}` insieme a `violations` (lista vuota se valido). Un mazzo salvato diventa non valido, ad esempio, se una sua carta viene disattivata o se il rule set attivo cambia.
+- `POST /decks/validate` con `{ "cards": [...] }` risponde sempre `200 { valid, violations }` (stesse regole del salvataggio, niente salvato); una carta ripetuta è `400`.
+- `GET /decks/rules`: composizione del rule set attivo (`deckSize`, `deckCreatures`, `deckSpells`, `deckHidden`, `deckItems`, `deckTerrains`, `maxHiddenSurvival`, `maxHiddenDamage`) e `rarities` con `deckLimit` e `maxPerDeck`, dalla più comune. Senza rule set attivo, `404 NO_ACTIVE_RULE_SET`.
+- I test (`DeckValidatorTest`) coprono ogni regola nel caso valido e al limite; `support/TestDecks` crea contenuti validi per il rule set attivo con le carte già nella collezione.
+
+### Possesso delle carte (API-29, #99)
+
+- `CollectionService.getAvailableCopies(userId, cardIds)`: copie possedute meno quelle riservate dalle offerte di scambio aperte dell'utente (stessa query di `GET /collection`), mai sotto zero. Una variante è una carta a sé: servono copie della variante, non bastano quelle dell'originale.
+- `DeckValidator` aggiunge `DECK_NOT_OWNED` (dopo il bilanciamento, prima delle carte disattivate) per ogni carta con più copie nel mazzo che disponibili, con `cardId`. Vale al salvataggio, in `POST /decks/validate` e a ogni lettura: dopo aver ceduto o offerto una carta il mazzo risulta `valid: false` e non viene modificato. `GET /decks` legge le copie disponibili una volta sola per tutti i mazzi.
+- `usedInDecks` di `GET /collection` c'era già da API-23 (SQL nativo in `CollectionCardRepository`).

@@ -1,12 +1,16 @@
 package it.downfall.reversky.api.user.service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.user.dto.UserResponse;
 import it.downfall.reversky.api.user.entity.Role;
 import it.downfall.reversky.api.user.entity.User;
@@ -28,6 +32,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
+	private final InventoryService inventoryService;
 
 	/**
 	 * @return true se lo username è già usato da un altro utente
@@ -70,6 +75,26 @@ public class UserService {
 	}
 
 	/**
+	 * Username di più utenti in una sola query (liste delle sfide). Gli id che non esistono mancano dalla mappa.
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, String> getUsernames(Collection<Integer> ids) {
+		return userRepository.findAllById(ids).stream()
+			.collect(Collectors.toMap(User::getId, User::getUsername));
+	}
+
+	/**
+	 * Restituisce un utente dal suo username (usato dalle amicizie).
+	 *
+	 * @throws UserNotFoundException se l'utente non esiste
+	 */
+	@Transactional(readOnly = true)
+	public User getByUsername(String username) {
+		return userRepository.findByUsername(username)
+			.orElseThrow(() -> new UserNotFoundException());
+	}
+
+	/**
 	 * Crea un nuovo utente con ruolo USER, abilitato e con email non verificata.
 	 *
 	 * @param passwordHash password già cifrata con BCrypt
@@ -94,7 +119,8 @@ public class UserService {
 	 */
 	@Transactional(readOnly = true)
 	public UserResponse getProfile(Integer id) {
-		return UserResponse.from(getById(id));
+		User user = getById(id);
+		return UserResponse.from(user, inventoryService.getCredits(user.getId()));
 	}
 
 	// "  Mario@Example.com " -> "mario@example.com": il vincolo UNIQUE di Postgres distingue le maiuscole

@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.support.TestUsers;
@@ -47,7 +47,7 @@ class FactionControllerIT {
 	@DisplayName("The list of factions is public: no token needed")
 	void findAll_withoutToken_returnsFactions() throws Exception {
 		// Arrange
-		FactionResponse faction = factionService.create(new FactionRequest("Faction " + uniqueSuffix(), "factions/test.svg", "A test faction"));
+		AdminFactionResponse faction = factionService.create(new FactionRequest("Faction " + uniqueSuffix(), "factions/test.svg", "A test faction"));
 
 		// Act + Assert
 		mockMvc.perform(get("/api/v1/factions"))

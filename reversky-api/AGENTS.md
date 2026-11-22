@@ -16,6 +16,7 @@ Gestisce tutto ciò che **non** è la simulazione della partita, ed è l'unico m
 - amicizie;
 - scambi tra utenti (con controproposte);
 - sfide e storico partite;
+- notifiche degli utenti, salvate e inviate in tempo reale con SSE;
 - backoffice (catalogo, pacchetti, utenti) con registro di audit.
 
 La partita **non** viene calcolata qui: viene delegata al modulo `reversky-engine`, chiamato via HTTP da un service dedicato (vedi [docs/sfide](docs/sfide/sfide.md)).
@@ -58,12 +59,14 @@ src/main/java/it/downfall/reversky/api/
 ├── user/          utenti e ruoli
 ├── inventory/     crediti e pacchetti da aprire
 ├── catalog/       carte, rarità, fazioni, bonus di fazione, tag
+├── ruleset/       regole di gioco versionate (rule set attivo, GET /rules)
 ├── pack/          pacchetti: acquisto e apertura
 ├── collection/    carte possedute
 ├── deck/          mazzi e validazione
 ├── friendship/    amicizie
 ├── trade/         scambi e controproposte
 ├── battle/        inviti, partite, storico, client verso l'engine
+├── notification/  notifiche degli utenti e canale SSE
 ├── admin/         endpoint di backoffice e audit
 └── common/        errori, sicurezza, configurazione condivisa
 ```
@@ -87,8 +90,10 @@ Prima di toccare una funzionalità, leggi il documento corrispondente:
 | Amicizie | [docs/amicizie](docs/amicizie/amicizie.md) |
 | Scambi | [docs/scambi](docs/scambi/scambi.md) |
 | Sfide e storico | [docs/sfide](docs/sfide/sfide.md) |
+| Notifiche e canale SSE | [docs/notifiche](docs/notifiche/notifiche.md) |
 | Backoffice e audit | [docs/backoffice](docs/backoffice/backoffice.md) |
 | Strategia di test | [docs/test](docs/test/test.md) |
+| Stato del lavoro e piano fino alla consegna | [docs/roadmap](docs/roadmap/roadmap.md) |
 
 Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirements.md).
 
@@ -122,16 +127,74 @@ L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni 
 - errori in formato ProblemDetail, Swagger con il pulsante Authorize;
 - test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
 
-Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`.
+Gestione degli utenti dal backoffice (API-03): `GET /api/v1/admin/users` con ricerca, filtri `role` ed `enabled`, ruolo e crediti; `POST /api/v1/admin/users/{id}/disable` (cancella i refresh token) e `/enable`, `PUT /api/v1/admin/users/{id}/role`; un admin non può disattivarsi né togliersi il ruolo (`422 ADMIN_SELF_ACTION`). Dettagli in [docs/backoffice](docs/backoffice/backoffice.md#utenti-comportamento-già-implementato-api-03-73).
+
+Inventario e crediti (`inventory/`, API-16 e API-17):
+
+- la registrazione crea l'inventario con i crediti di benvenuto del rule set attivo e la riga `SIGNUP`; `GET /api/v1/users/me` restituisce anche `credits`;
+- `InventoryService` è l'unico che modifica il saldo (`addCredits`, `spendCredits`, `lockInventories` in ordine di `user_id`), sempre con la riga di `credit_transactions`; `GET /api/v1/inventory` con il saldo;
+- `POST /api/v1/admin/users/{id}/credits` per la correzione dal backoffice, con motivo obbligatorio (per ora solo nel log, l'audit arriva con API-52);
+- `V10__create_missing_inventories.sql` crea l'inventario per gli utenti registrati prima. Dettagli in [docs/crediti](docs/crediti/crediti.md#comportamento-già-implementato-api-16-86-api-17-87).
 
 Catalogo (`catalog/`):
 
-- fazioni: `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
+- fazioni: `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`); i tag delle fazioni (API-13) con `PUT /api/v1/admin/factions/{id}/tags`, che sostituisce tutto l'insieme (tag inesistente `422 FACTION_TAG_INVALID`), e nelle sole risposte del backoffice (`AdminFactionResponse`); `V15` crea e collega `WOUND`, `INVITATION`, `ARCHIVE`, `DREAM`;
 - rarità: `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`). Le rarità non hanno massimi di ATK e DEF (tolti con la baseline);
-- carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
-- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
-- fazioni delle carte: l'entità `CatalogCard` ha `faction` e `secondaryFaction` e `CardType` ha `ITEM`, come la baseline. `PUT /admin/cards` non riceve ancora le fazioni (#81): una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto (`422`), mentre una carta che diventa Spell o Hidden perde le fazioni.
+- carte: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /api/v1/admin/cards` (multipart: la carta in JSON e l'illustrazione obbligatoria, anche per creare una variante) e `POST /api/v1/admin/cards/{id}/image` (API-14): le immagini (PNG, JPEG o WebP fino a 2 MB, riconosciute dal contenuto) le salva `common/storage/ImageStorage` in una cartella (`reversky.storage.images-dir`, un volume nel container) e sono pubbliche su `GET /images/**`; le carte hanno `imageUrl`. Dettagli in [docs/backoffice](docs/backoffice/backoffice.md#illustrazioni-comportamento-già-implementato-api-14-84).
+- effetti delle carte (API-36): la tabella `effects` di `V13__create_effects.sql` (92 codici del registro dell'engine, uno per tipo di carta, con la chiave esterna `fk_catalog_cards_effect`) e `GET /api/v1/admin/effects` (`admin/controller/AdminEffectController`); `PUT /admin/cards` rifiuta un effetto inesistente o di un altro tipo con `422 CARD_EFFECT_INVALID`. L'engine si chiama solo per simulare.
+- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell, Hidden, Terreni e Oggetti solo Rare (Spell e Hidden dal 21 novembre), riconosciute da `sorting_order` e mai dal nome.
+- fazioni delle carte (task #81): `PUT /admin/cards` riceve `factionId` (obbligatoria per Creature, Terreni e Oggetti, vietata per Spell e Hidden) e `secondaryFactionId` (facoltativa, diversa dalla prima, solo per le creature: `V14` e API-71); una fazione inesistente è `422 CARD_FACTION_INVALID`. Le carte restituiscono `faction` e `secondaryFaction` come `{ id, name }`, e `GET /cards` e `GET /admin/cards` hanno il filtro `factionId` (prima o seconda fazione).
+- tag delle carte (API-12): `PUT /api/v1/admin/cards/{id}/tags` sostituisce i tag propri della carta (non si copiano alle varianti; tag inesistente `422 CARD_TAG_INVALID`); `tags` solo in `GET /cards/{id}` e in `/admin/cards`; filtro `tag` (nome esatto, propri o di una delle fazioni, Spell e Hidden solo propri) su `GET /cards`, `GET /admin/cards`, `GET /collection` e `GET /users/{id}/collection`.
+- tag (API-07): `GET/POST /api/v1/admin/tags` e `PUT /api/v1/admin/tags/{id}` (`admin/controller/AdminTagController`, `catalog/service/TagService`), in ordine di nome; il nome si controlla così com'è (`^[A-Z0-9_]+$`, al massimo 100 caratteri, altrimenti `400`) ed è univoco (`409 TAG_NAME_TAKEN`). I collegamenti a carte, fazioni e pacchetti non ci sono ancora (API-12, API-13, API-21). Dettagli in [docs/backoffice](docs/backoffice/backoffice.md#tag-comportamento-già-implementato-api-07-77).
+- bonus di fazione: `GET/PUT /api/v1/admin/faction-bonuses` (`admin/controller/AdminFactionBonusController`, `catalog/service/FactionBonusService`): il `PUT` sostituisce tutta la matrice in una transazione, con due `PUT` contemporanei messi in fila. Senza audit. La matrice corrente compare anche in `GET /rules`. Dettagli ed errori in [docs/backoffice](docs/backoffice/backoffice.md#bonus-di-fazione-comportamento-già-implementato).
 
-Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+Regole di gioco (`ruleset/`):
+
+- `GET /api/v1/rules` pubblico (rule set attivo, con la matrice corrente dei bonus di fazione) e `GET/POST /api/v1/admin/rule-sets`, `PUT /api/v1/admin/rule-sets/{id}`, `POST /api/v1/admin/rule-sets/{id}/activate` (`admin/controller/AdminRuleSetController`). Una versione già usata da una partita non si modifica; l'attivazione disattiva la precedente nella stessa transazione. Senza audit e con `created_by_id` nullo. Il rule set `1.0` attivo, le sei rarità e le quattro fazioni (id 1–4 come nell'engine) sono inseriti da `V9__insert_reference_data.sql` (#85); la matrice dei bonus di fazione è vuota finché i DSG non decidono D-04.
+
+Amicizie (`friendship/`):
+
+- `GET /api/v1/friends`, `GET /api/v1/friends/requests?box=incoming|outgoing`, `POST /api/v1/friends/requests`, `POST /api/v1/friends/requests/{requesterId}/accept` e `/reject`, `DELETE /api/v1/friends/{userId}` (`FriendshipController`). La richiesta inversa accetta quella esistente; rimuovere un amico elimina anche gli inviti di sfida `PENDING` tra i due (`battle/service/PendingInviteService`). Dettagli ed errori in [docs/amicizie](docs/amicizie/amicizie.md#comportamento-già-implementato).
+
+Collezione (`collection/`):
+
+- `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo in `CollectionCardRepository`: `TradeService` e `DeckService` usano `CollectionService`, quindi il contrario creerebbe un ciclo di bean. `getOwnedCopies` (copie possedute, senza riserve) serve agli scambi. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
+
+Sfide amichevoli (`battle/`, API-35, 37–44):
+
+- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`, dati rifiutati dall'engine (`4xx`) = `500 ENGINE_INPUT_REJECTED` (API-71); il JSON è controllato da `EngineContractTest` con le richieste e le fotografie delle risposte di `reversky-engine/examples/` (ENG-24);
+- inviti tra amici con un mazzo valido (`/api/v1/battle-invites`, `box=incoming|outgoing`, `reject`, ritiro con `DELETE`); `accept` prepara la partita (seed dal server, fotografia dei mazzi, regole in `battle_stats`), fa simulare l'engine fuori transazione e salva l'esito; `GET /api/v1/battles` (storico senza log), `GET /api/v1/battles/{id}` (dettaglio dal punto di vista di chi guarda, con log) e `POST /api/v1/battles/{id}/retry` con la stessa identica partita. Le amichevoli non danno crediti né rating. Dettagli in [docs/sfide](docs/sfide/sfide.md#comportamento-già-implementato).
+- rating Elo (API-46): `Elo.eloDelta` e `Elo.score` (funzioni pure), `PlayerRating` con `recordGame`, usato dall'aggiornamento dell'Elo (API-50), `RankingService.createIfMissing` per l'ingresso in coda e `GET /api/v1/rankings/me` (`RankingController`), che senza una riga restituisce 1000 e contatori a 0 senza scrivere. Nessuna classifica (Q-10).
+- coda classificata (API-47): `POST/GET/DELETE /api/v1/matchmaking/queue` (`MatchmakingController`, `MatchmakingQueueService`). Si entra con un mio mazzo valido (`getPlayableDeck`), al primo ingresso si crea il rating, un secondo ingresso è `409 ALREADY_IN_QUEUE`; il ticket `{ status, deckId, rating, queuedAt, window }` dà la finestra di ricerca di adesso (`MatchmakingTicket.searchWindow`), senza ticket `GET` è `404 QUEUE_TICKET_NOT_FOUND`, `DELETE` è sempre `204`. `QueueTicketService` toglie il ticket quando il mazzo cambia o l'account viene disattivato.
+- abbinamento (API-49): `MatchmakingService.matchAll()` prova ogni ticket dal più vecchio, uno per transazione, con `FOR UPDATE SKIP LOCKED` sul ticket e sull'avversario (rating più vicino nella finestra, poi il più vecchio, anti-boosting di 10 minuti); un mazzo non più valido toglie solo il suo ticket (`getPlayableDeck` ha `noRollbackFor`); la partita `RANKED` si prepara con `BattleService.prepareRanked` e l'engine si chiama dopo il commit (`simulateRanked`). `battle/job/MatchmakingJob` lo fa partire ogni 2 secondi e dopo ogni ingresso in coda (`QueueJoinedEvent`); `reversky.matchmaking.enabled=false` lo spegne, come fanno i test (`src/test/resources/config/application.properties`). Il risultato di una classificata si salva con l'Elo (API-50): `RankingService.recordRankedGame` blocca le due righe di `player_ratings` (id minore per primo), calcola con `Elo.eloDelta` sui valori di adesso e applica `recordGame`, e `Battle.recordRatings` scrive le quattro colonne di rating nella stessa transazione, una volta sola anche con retry sovrapposti; `GET /battles/{id}` ha `ratingBefore` e `ratingDelta` di chi guarda. Nella stessa transazione arrivano i crediti (API-45): `win_reward` a chi vince (`BATTLE_WIN`) o `draw_reward` a entrambi (`BATTLE_DRAW`, dopo `lockInventories`), dal rule set della partita (`RuleSetService.getRuleSet(battle.ruleSetId)`), con `InventoryService`.
+
+Notifiche (`notification/`, API-65…69):
+
+- `NotificationService.notify(userId, type, payload)` salva la notifica dentro la transazione del chiamante (`Propagation.MANDATORY`), con un `payload` di soli id e username; `GET /api/v1/notifications` (paginato, dalla più recente, `?unread=true`), `GET /api/v1/notifications/unread-count`, `POST /api/v1/notifications/{id}/read` e `/read-all` (`NotificationController`), solo per le proprie (`404 NOTIFICATION_NOT_FOUND`). `NotificationCleanupJob` elimina ogni notte le lette più vecchie di `reversky.notifications.retention` (30 giorni). Canale SSE `GET /api/v1/notifications/stream` (`NotificationStreamService`, connessioni in memoria per utente): invio dopo il commit (`NotificationCreatedEvent` + `@TransactionalEventListener`), timeout alla scadenza dell'access token, `Last-Event-ID` con al massimo 100 notifiche perse, `: ping` ogni 30 secondi (`NotificationHeartbeatJob`), connessioni chiuse alla disattivazione dell'account (`UserDisabledEvent`) e `403 AUTH_ACCOUNT_DISABLED` all'apertura per un account disattivato. Il frontend lo apre con un client `fetch` e l'header `Authorization`. Le amicizie notificano richiesta ricevuta e accettata (`FRIEND_REQUEST_RECEIVED`, `FRIEND_REQUEST_ACCEPTED`, API-67); le sfide `BATTLE_INVITE_RECEIVED`, `BATTLE_INVITE_ACCEPTED`, `MATCH_FOUND` e `BATTLE_COMPLETED` (una volta sola, solo con un risultato, API-68); gli scambi `TRADE_PROPOSED` e `TRADE_COUNTERED` a chi deve rispondere, `TRADE_ACCEPTED` e `TRADE_REJECTED` all'altra parte (API-69). Dettagli in [docs/notifiche](docs/notifiche/notifiche.md#comportamento-già-implementato).
+
+Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
+
+- backoffice `GET/POST/PUT /api/v1/admin/packs`, `/activate`, `/deactivate` con slot e bonus nella stessa richiesta; un pacchetto si attiva solo se ogni slot trova carte (anche con il ripiego);
+- `GET /api/v1/packs` pubblico (con il token anche `remainingPurchases`), `POST /api/v1/packs/{id}/purchase`, `POST /api/v1/inventory/packs/{packId}/open`; `GET /inventory` elenca i pacchetti da aprire;
+- estrazione in `PackDrawer`/`CardPool` senza database, casualità dal bean `RandomGenerator`; filtro dei tag (API-21): `tagIds` facoltativo in `POST/PUT /admin/packs` (inesistente `422 PACK_TAG_INVALID`), senza tag solo originali, con i tag le carte con uno dei tag propri o di una delle loro fazioni, le varianti solo con i propri, Spell e Hidden solo con i propri; un pacchetto attivo deve riempire ogni slot con i suoi tag (`422 PACK_NOT_FILLABLE`);
+- `V12__insert_base_pack.sql` mette in vendita il *Base Pack*. Dettagli in [docs/pacchetti](docs/pacchetti/pacchetti.md#comportamento-già-implementato) e [docs/backoffice](docs/backoffice/backoffice.md#pacchetti-comportamento-già-implementato-api-18-88-api-19-89-api-20-90).
+
+Catalogo iniziale e dati di prova (API-55, API-25):
+
+- `V11__insert_initial_catalog.sql` carica le 120 carte di `catalogo-finale.csv` (ENG-42); Spell e Hidden sono Rare e non contano nel `max_per_deck`. Immagini segnaposto e testi in italiano finché i DSG non danno quelli definitivi.
+- Con il profilo `dev` (attivo da solo con `./gradlew bootRun`) `db/dev/R__dev_seed.sql` aggiunge `admin`, `alice` e `bob` (password di sviluppo `Reversky2026`) con collezioni complete, un mazzo valido ciascuno e l'amicizia tra alice e bob. Dettagli in [docs/database](docs/database/database.md#dati-di-prova-solo-sviluppo).
+
+Mazzi (`deck/`, API-26–29):
+
+- `GET/POST /api/v1/decks`, `GET/PUT/DELETE /api/v1/decks/{id}`, `POST /api/v1/decks/validate`, `GET /api/v1/decks/rules` (`DeckController`); il mazzo di un altro è `404`, nome univoco per utente (`409`), un mazzo in un invito `PENDING` non si elimina (`409`), la modifica toglie il ticket in coda classificata.
+- `DeckValidator` senza database restituisce tutte le violazioni `DECK_*` (composizione del rule set attivo, Hidden per sottotipo, copie con varianti sommate, `max_per_deck`, possesso sulle copie disponibili, carte disattivate); un mazzo non valido è `422 DECK_INVALID` con `violations` e non si salva; `valid` si ricalcola a ogni lettura. Gli inviti si controllano con `PendingInviteService`, il ticket in coda classificata si toglie con `QueueTicketService` (API-47). Dettagli in [docs/mazzi](docs/mazzi/mazzi.md#comportamento-già-implementato).
+
+Scambi (`trade/`, API-31–34):
+
+- `GET /api/v1/trades?box=incoming|outgoing` (solo aperti, paginata, ultima mossa prima), `GET /api/v1/trades/{id}` e `POST /api/v1/trades/{id}/reject` (`TradeController`), sempre dal punto di vista di chi guarda (`give`, `receive`, `other`, `myTurn`); un non partecipante riceve `404`.
+- `POST /api/v1/trades` e `POST /api/v1/trades/{id}/counter`: le copie offerte restano in collezione ma sono riservate (solo per chi ha fatto l'offerta in corso) finché lo scambio è aperto; chi propone blocca la sua riga `inventories` prima di contare le copie disponibili. Le offerte si aggiornano al loro posto (`Trade.replaceOffers`).
+- `POST /api/v1/trades/{id}/accept` in una sola transazione: blocca lo scambio, poi le righe `inventories` di entrambi in ordine di `user_id`, controlla le copie disponibili di chi accetta e sposta le carte con `CollectionService`; l'altro disattivato è `422 TRADE_USER_DISABLED`. Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
+
+Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite. Cosa manca e in che ordine è nella [roadmap](docs/roadmap/roadmap.md).
 
 Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.

@@ -16,8 +16,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.FactionTagsRequest;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.config.OpenApiConfig;
 import jakarta.validation.Valid;
@@ -37,13 +38,13 @@ public class AdminFactionController {
 
 	private final FactionService factionService;
 
-	@Operation(summary = "List the factions", description = "Returns every faction, sorted by id.")
+	@Operation(summary = "List the factions", description = "Returns every faction with its tags, sorted by id.")
 	@ApiResponse(responseCode = "200", description = "Factions returned")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@GetMapping
-	public ResponseEntity<List<FactionResponse>> findAll() {
-		return ResponseEntity.ok(factionService.findAll().stream().toList());
+	public ResponseEntity<List<AdminFactionResponse>> findAll() {
+		return ResponseEntity.ok(factionService.findAllForAdmin());
 	}
 
 	@Operation(summary = "Create a faction", description = "The name must be unique.")
@@ -53,11 +54,11 @@ public class AdminFactionController {
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@ApiResponse(responseCode = "409", description = "Name already used by another faction")
 	@PostMapping
-	public ResponseEntity<FactionResponse> create(@Valid @RequestBody FactionRequest request) {
+	public ResponseEntity<AdminFactionResponse> create(@Valid @RequestBody FactionRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(factionService.create(request));
 	}
 
-	@Operation(summary = "Update a faction", description = "Replaces name, emblem and description. The name must stay unique.")
+	@Operation(summary = "Update a faction", description = "Replaces name, emblem and description; the tags stay. The name must stay unique.")
 	@ApiResponse(responseCode = "200", description = "Faction updated")
 	@ApiResponse(responseCode = "400", description = "Missing name or emblem path, or name too long")
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
@@ -65,7 +66,22 @@ public class AdminFactionController {
 	@ApiResponse(responseCode = "404", description = "Faction not found")
 	@ApiResponse(responseCode = "409", description = "Name already used by another faction")
 	@PutMapping("/{id}")
-	public ResponseEntity<FactionResponse> update(@PathVariable Integer id, @Valid @RequestBody FactionRequest request) {
+	public ResponseEntity<AdminFactionResponse> update(@PathVariable Integer id, @Valid @RequestBody FactionRequest request) {
 		return ResponseEntity.ok(factionService.update(id, request));
+	}
+
+	@Operation(summary = "Replace the tags of a faction", description = "Sets exactly these tags on the faction; an "
+		+ "empty list removes them all and a repeated id counts once. Every card of the faction gets them in the tag "
+		+ "filters; Spell and Hidden cards have no faction, so faction tags never reach them.")
+	@ApiResponse(responseCode = "200", description = "Tags replaced, faction returned with its tags")
+	@ApiResponse(responseCode = "400", description = "Missing tag list or a null id")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "403", description = "Not an admin")
+	@ApiResponse(responseCode = "404", description = "Faction not found")
+	@ApiResponse(responseCode = "422", description = "A tag does not exist (FACTION_TAG_INVALID): nothing changes")
+	@PutMapping("/{id}/tags")
+	public ResponseEntity<AdminFactionResponse> replaceTags(@PathVariable Integer id,
+			@Valid @RequestBody FactionTagsRequest request) {
+		return ResponseEntity.ok(factionService.replaceTags(id, request));
 	}
 }

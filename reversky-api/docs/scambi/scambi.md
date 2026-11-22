@@ -156,6 +156,58 @@ Si possono offrire anche carte usate in un mazzo. Finché le copie sono riservat
 
 Un utente non partecipante che chiede uno scambio riceve `404`.
 
+## Comportamento già implementato
+
+Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), destinatario esistente e attivo senza obbligo di amicizia, scambi mostrati dal punto di vista di chi guarda, carte disattivate scambiabili, nessun limite di carte o di scambi aperti, la stessa carta non può stare in entrambi i lati.
+
+### Consultazione e rifiuto (API-31, #101)
+
+- `trade/` con `Trade` (UUID generato dall'API), `TradeStatus`, `TradeRepository`, `TradeService` e `TradeController`.
+- `GET /trades?box=incoming|outgoing`: solo gli scambi **aperti**; `incoming` sono quelli in cui tocca a me, `outgoing` quelli in cui aspetto l'altro. Paginata (`PageResponse`, `page` e `size`), ordine fisso: ultima mossa (`updatedAt`) prima, poi `id`. Un `box` diverso è `400 INVALID_TRADE_BOX`. Gli scambi chiusi si leggono solo con `GET /trades/{id}`.
+- Ogni scambio è dal punto di vista di chi guarda: `id`, `other { id, username }`, `status`, `myTurn` (sempre `false` su uno scambio chiuso), `createdAt`, `updatedAt`.
+- `GET /trades/{id}`: anche chiuso; un non partecipante o uno scambio inesistente sono entrambi `404 TRADE_NOT_FOUND`.
+- `POST /trades/{id}/reject`: chiunque dei due, anche fuori turno (il richiedente così ritira la proposta), risponde `200` con lo scambio `REJECTED`. Blocca la riga dello scambio (`SELECT ... FOR UPDATE`) e poi controlla, in quest'ordine, partecipante (`404`) e scambio aperto (`409 TRADE_CLOSED`).
+
+### Offerte (API-32, #102)
+
+- `TradeOffer` con chiave `@EmbeddedId` `TradeOfferId` (`trade_id`, `user_id`, `card_id`); `user_id` è chi **cede** la carta. Le offerte sono la lista `offers` di `Trade` (`cascade` e `orphanRemoval`).
+- `Trade.replaceOffers(giverId, given, otherGiven)` è l'unico modo di cambiarle: aggiorna la quantità delle righe che restano, elimina quelle tolte e aggiunge le nuove, mai svuotando e reinserendo. Un `giverId` che non partecipa o una quantità minore di 1 sono `IllegalArgumentException` (errore del chiamante: la richiesta li controlla prima).
+- `Trade.offeredBy(userId)`: le copie per carta che quel partecipante cede nell'offerta attuale.
+
+### Proposta e controproposta (API-33, #103)
+
+- `POST /trades` (`TradeRequest`: `recipientId`, `give`, `receive`) risponde `201` con lo scambio; `POST /trades/{id}/counter` (`TradeCounterRequest`: `give`, `receive`, dal punto di vista di chi controproponde) risponde `200`.
+- Forma della richiesta (`400 VALIDATION_FAILED`): `give` e `receive` obbligatori (anche vuoti), `cardId` e `quantity` obbligatori, `quantity` ≥ 1, nessuna carta ripetuta nello stesso lato.
+- Controlli della proposta, in quest'ordine:
+
+| Caso | Status | `code` |
+|---|---|---|
+| destinatario uguale a me | `422` | `TRADE_SELF` |
+| destinatario inesistente o disattivato (nessun obbligo di amicizia) | `404` | `USER_NOT_FOUND` |
+| nessuna carta in nessuno dei due lati | `422` | `TRADE_EMPTY` |
+| la stessa carta in `give` e in `receive` | `422` | `TRADE_SAME_CARD_BOTH_SIDES` |
+| una carta che non esiste (le carte disattivate e le varianti si possono scambiare) | `422` | `TRADE_CARD_NOT_FOUND` |
+| con la mia riga `inventories` bloccata: meno copie **disponibili** di quelle che do | `422` | `TRADE_NOT_ENOUGH_COPIES` |
+| il destinatario possiede meno copie di quelle che chiedo (si guardano solo le possedute, e il messaggio non dice quante) | `422` | `TRADE_NOT_OWNED` |
+
+- La controproposta blocca prima lo scambio e controlla partecipante (`404 TRADE_NOT_FOUND`), scambio aperto (`409 TRADE_CLOSED`) e mio turno (`409 TRADE_NOT_YOUR_TURN`), poi fa gli stessi controlli della proposta dal terzo in poi verso l'altro partecipante. Sostituisce le offerte con `Trade.replaceOffers` e passa il turno (`Trade.passTurn`): con il turno passa la riserva. Questo scambio non riserva niente a chi controproponde, perché la riserva è di chi ha fatto l'offerta in corso.
+- Le risposte hanno `give` e `receive` dal punto di vista di chi guarda: `[{ card, quantity }]` con la carta completa di `GET /collection`, per nome; le offerte di una pagina intera si leggono con una query (`TradeOfferRepository.findAllByIdTradeIdIn`).
+- `reservedQuantity` di `GET /collection` e le copie disponibili usate dai mazzi (`DECK_NOT_OWNED`) leggono già queste righe (`CollectionCardRepository.countReserved`): un mazzo che usa copie riservate risulta non valido finché lo scambio è aperto.
+
+### Accettazione atomica (API-34, #104)
+
+- `POST /trades/{id}/accept` (`TradeService.accept`) risponde `200` con lo scambio `ACCEPTED`, in una sola transazione e in quest'ordine:
+  1. blocca lo scambio e controlla partecipante (`404 TRADE_NOT_FOUND`), scambio aperto (`409 TRADE_CLOSED`, anche per una seconda accettazione) e mio turno (`409 TRADE_NOT_YOUR_TURN`); se l'altro è disattivato `422 TRADE_USER_DISABLED`;
+  2. `InventoryService.lockInventories` blocca le righe `inventories` di entrambi in ordine di `user_id`;
+  3. le mie copie **disponibili** di quelle che do devono bastare (`422 TRADE_NOT_ENOUGH_COPIES`); le carte dell'altro sono già riservate dalla sua offerta;
+  4. `CollectionService.removeCards` e `addCards` spostano le carte di ogni lato non vuoto, poi lo scambio diventa `ACCEPTED`.
+- In ogni errore la transazione fa rollback: nessuna carta si muove e lo scambio resta com'era. `NOT_ENOUGH_COPIES` di `CollectionService` resta solo come rete di sicurezza.
+- `TradeAcceptIT` controlla il totale delle carte, due scambi incrociati accettati insieme (nessun deadlock, nessuna copia duplicata) e uno scambio accettato mentre un pacchetto aggiunge la stessa carta a chi riceve (nessuna copia persa).
+
+### Notifiche (API-69 #139)
+
+- Ogni mossa avvisa l'altro partecipante nella sua transazione, con `tradeId` e `userId` e `username` di chi ha fatto la mossa: `TRADE_PROPOSED` al destinatario di una proposta, `TRADE_COUNTERED` a chi deve rispondere alla controproposta, `TRADE_ACCEPTED` e `TRADE_REJECTED` all'altra parte (anche quando chi ha proposto ritira fuori turno). Una mossa rifiutata dall'API (fuori turno, scambio chiuso) annulla la transazione e non avvisa nessuno. Dettagli in [notifiche](../notifiche/notifiche.md#scambi-api-69-139).
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.

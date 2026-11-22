@@ -50,11 +50,39 @@ Dati inseriti con le migrazioni:
 | Dati | Dove |
 |---|---|
 | ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
-| rule set `1.0` attivo, rarità, fazioni, bonus di fazione | migrazione dedicata del task API-15 (#85) |
-| tag delle fazioni | migrazione del task API-13 (#83) |
-| catalogo iniziale (120 carte, dal *Catalogo completo 120 carte*, vedi [decisioni](../decisioni/decisioni.md)) | migrazione dedicata del task API-55 (#125) |
-| pacchetto base | migrazione dedicata del task API-63 (#133) |
-| primo `ADMIN`, utenti, carte e collezioni di prova | task API-25 (#95), che decide anche come caricarli solo in sviluppo e test |
+| rule set `1.0` attivo, rarità e fazioni (nessun bonus di fazione finché non si decide D-04) | `V9__insert_reference_data.sql`, task API-15 (#85); valori in [decisioni](../decisioni/decisioni.md) |
+| inventario e riga `SIGNUP` per gli utenti registrati prima di API-17 (su un database vuoto non inserisce niente) | `V10__create_missing_inventories.sql`, task API-17 (#87) |
+| catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
+| pacchetto base attivo: *Base Pack*, 100 crediti **[DA CONFERMARE]**, 3 Common, 2 Uncommon, 2 Rare, bonus Mythic 10%, Legendary 5%, Mutant 2,5% | `V12__insert_base_pack.sql`, task API-63 (#133) |
+| tabella `effects` con i 92 effetti del registro dell'engine e chiave esterna `fk_catalog_cards_effect`: prima struttura nuova dopo la baseline, decisa il 21 novembre | `V13__create_effects.sql`, task API-36 (#106): vedi [Effetti](#effetti-sottotipi-e-tag) |
+| vincolo `chk_catalog_cards_secondary_faction_creature_only`: solo le creature hanno una seconda fazione, come chiede l'engine (deciso il 22 novembre) | `V14__add_secondary_faction_check.sql`, task API-71 (#146) |
+| tag delle quattro fazioni `WOUND`, `INVITATION`, `ARCHIVE`, `DREAM`, collegati per nome alla loro fazione | `V15__insert_faction_tags.sql`, task API-13 (#83) |
+| utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
+
+### Catalogo iniziale (`V11`)
+
+Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engine`) con uno script usa e getta, non nel repository: le correzioni si fanno dal backoffice o con una migrazione nuova.
+
+- Rarità per `sorting_order` e fazioni per nome, come le inserisce `V9`. Spell e Hidden non hanno rarità nel CSV: sono **Rare** (deciso il 21 novembre) e non contano nel `max_per_deck` (vedi [mazzi](../mazzi/mazzi.md#bilanciamento-richiesto-dal-brief)).
+- Nomi ed `effect_description` come nel CSV, in italiano: la traduzione arriva nell'ultima settimana. Ogni `effect_code` esiste nell'engine, anche quelli delle creature.
+- **[DA CONFERMARE]** `image_path` segnaposto `cards/<nome-della-carta>.webp` finché non ci sono le illustrazioni, che si caricano con `POST /admin/cards/{id}/image` (API-14, vedi [backoffice](../backoffice/backoffice.md#illustrazioni-comportamento-già-implementato-api-14-84)). `copy_limit` e `flavor_text` vuoti, nessun tag proprio (API-12).
+- I due Mutant (Invitation/Dream e Wound/Archive) hanno la seconda fazione.
+
+### Dati di prova (solo sviluppo)
+
+`db/dev/R__dev_seed.sql` è una migrazione **ripetibile**: Flyway la esegue dopo quelle versionate e di nuovo solo quando il file cambia, e ogni istruzione inserisce soltanto ciò che manca (nessun duplicato, niente sovrascritto). La cartella `db/dev` è nelle `spring.flyway.locations` solo con il profilo `dev` (`application-dev.properties`).
+
+- **Attivazione:** `./gradlew bootRun` usa il profilo `dev` da solo (`build.gradle`); con `SPRING_PROFILES_ACTIVE` impostato vale quello. Il `compose.yaml` della cartella principale passa `SPRING_PROFILES_ACTIVE` all'API (default `default`): `docker compose up --build` carica i dati di prova solo con `SPRING_PROFILES_ACTIVE=dev` nell'ambiente o nel file `.env` (vedi `.env.example` e [sfide](../sfide/sfide.md#prova-sullo-stack-completo)). `java -jar` senza profilo e i test (tranne `DevSeedIT`, che ha il suo database) non li caricano.
+- **Utenti**, tutti con email verificata e password di sviluppo `Reversky2026` (mai usarla altrove):
+
+| Username | Email | Ruolo | Dati |
+|---|---|---|---|
+| `admin` | `admin@reversky.dev` | `ADMIN` | solo l'inventario |
+| `alice` | `alice@reversky.dev` | `USER` | crediti di benvenuto, tutte le carte originali attive fino al limite di copie, mazzo valido *Alice Invitation* |
+| `bob` | `bob@reversky.dev` | `USER` | come alice, con il mazzo *Bob Wound* |
+
+- `alice` e `bob` sono amici (`ACCEPTED`), così possono sfidarsi in amichevole.
+- Per ripartire da zero basta cancellare il volume del database locale.
 
 ### Regole
 
@@ -102,6 +130,7 @@ Quali tabelle usano `UUID`: token (`refresh_tokens`, `password_reset_tokens`, `e
 | `factions` | fazioni: nome, `emblem_path` (emblema) e `description` (testo mostrato ai giocatori, facoltativo) |
 | `faction_bonuses` | bonus ATK/DEF di una fazione contro un'altra: `atk_bonus` può essere negativo (malus −1), `def_bonus` ≥ 0 |
 | `catalog_cards` | carte: tipo (Creatura, Spell, Hidden, Terreno, Oggetto), `subtype` (solo Spell e Hidden), `effect_code`, rarità, fazione (obbligatoria per Creature, Terreni e Oggetti, nulla per Spell e Hidden, che sono condivise) e seconda fazione facoltativa (`secondary_faction_id`, diversa dalla prima), ATK/DEF (nulli per le carte senza statistiche), `copy_limit` (nullo = solo il limite della rarità), `variant_of_id` (versione evento di un'altra carta), `is_active`, immagine, `effect_description`, `flavor_text`. Il nome è univoco tra le carte originali |
+| `effects` | effetti implementati dall'engine (`code`, `applies_to`): gli unici `effect_code` ammessi, ognuno per un solo tipo di carta. Sola lettura, si aggiorna con una migrazione (V13) |
 | `tags` / `card_tags` / `faction_tags` | etichette libere per carte e fazioni, usate dai filtri dei pacchetti |
 
 ### Collezione e mazzi → [collezione](../collezione/collezione.md), [mazzi](../mazzi/mazzi.md)
@@ -159,12 +188,19 @@ Effetto e sottotipo di una carta sono **colonne** di `catalog_cards`, così il d
 
 | Dato | Dove | Regola |
 |---|---|---|
-| Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta |
+| Effetto | `effect_code` | codice di un effetto implementato nell'engine, es. `HIDEBEHIND`. Al massimo uno per carta. Deve essere nella tabella `effects` con lo stesso tipo della carta (`fk_catalog_cards_effect`, V13) |
 | Sottotipo di una Spell | `subtype` | `DAMAGE`, `SHIELD` o `BURN` (obbligatorio) |
 | Sottotipo di una Hidden | `subtype` | `SURVIVAL` o `DAMAGE` (obbligatorio) |
 | Sottotipo di Creature, Terreni e Oggetti | `subtype` | sempre nullo |
 | Fazione | `faction_id` | obbligatoria per Creature, Terreni e Oggetti; sempre nulla per Spell e Hidden (`chk_catalog_cards_faction_matches_type`) |
 | Etichette | `tags` | libere, in maiuscolo (`^[A-Z0-9_]+$`), usate dai filtri dei pacchetti (`pack_tags`) |
+
+### Tabella `effects` (V13, API-36)
+
+L'elenco degli effetti validi vive **nell'API**: l'engine si chiama solo per simulare (`POST /api/v1/simulations`), mai per sapere quali effetti esistono (deciso il 21 novembre). `V13` copia i 92 codici di `EffectRegistry.withAllEffects()` dell'engine (commit `1719c94` di `backend_engine`, ENG-42), ognuno con il suo tipo di carta (`applies_to`).
+
+- Chiave esterna composta `fk_catalog_cards_effect`: `catalog_cards (effect_code, type)` → `effects (code, applies_to)`, con l'unicità `uq_effects_code_applies_to` come destinazione. Il database rifiuta un codice inesistente o di un altro tipo; con `effect_code` nullo (creature senza effetto) non si controlla niente.
+- Un effetto nuovo è codice Java nell'engine: arriva con una migrazione nuova nello stesso momento, mai dal backoffice. Tabella e registro dell'engine vanno tenuti uguali a mano.
 
 ## Mappatura JPA
 

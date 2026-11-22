@@ -138,7 +138,7 @@ Controlli:
 
 Il ticket salva il mazzo scelto e il rating attuale. Si esce dalla coda con `DELETE /api/v1/matchmaking/queue`. Se il mazzo in coda viene modificato o eliminato, il ticket viene rimosso.
 
-Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge l'ultima partita con `GET /api/v1/battles?mode=RANKED&size=1`.
+Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "deckId": 3, "rating": 1013, "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge l'ultima partita con `GET /api/v1/battles?mode=RANKED&size=1`.
 
 Il ticket sparisce anche senza abbinamento (mazzo non più valido, account disattivato). Perciò la partita è quella appena abbinata solo se il suo `createdAt` è successivo al `queuedAt` visto dal client; altrimenti il client avvisa l'utente che è uscito dalla coda.
 
@@ -326,7 +326,7 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Ingresso in coda due volte → `409`.
 - Due abbinamenti in parallelo non usano lo stesso ticket (`SKIP LOCKED`).
 - Mazzo non più valido al momento dell'abbinamento → solo quel ticket viene rimosso, nessuna partita creata.
-- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; vince 1100 → −7 / +7; pareggio a rating uguale → 0.
+- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; vince 1100 → −7 / +7; pareggio a rating uguale → 0 (`EloTest`, API-46).
 - Retry di una classificata non completata → l'Elo viene applicato una sola volta.
 - Due retry sovrapposti della stessa classificata → Elo e crediti assegnati una sola volta.
 - Pareggio in classificata mentre i due giocatori accettano uno scambio → nessun deadlock, crediti e carte corretti.
@@ -334,3 +334,139 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Rifiuto o ritiro di un invito → riga eliminata.
 - Eliminazione del mazzo di un invito già accettato → ok, `challenger_deck_id` diventa `NULL`, la partita resta leggibile.
 - Due utenti appena affrontati in classificata → non vengono abbinati di nuovo per 10 minuti, anche se sono gli unici in coda.
+
+## Comportamento già implementato
+
+### EngineClient (API-35, #105)
+
+Il JSON scambiato con l'engine è controllato da un test di contratto da entrambe le parti (`ENG-24`, #62): `EngineContractTest` qui e `SimulationContractTest` nell'engine leggono le stesse richieste e fotografie delle risposte di `reversky-engine/examples/` (vedi [test](../test/test.md#test-di-contratto-eng-24)).
+
+- `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
+- `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
+- Engine spento, timeout o risposta `5xx` → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita.
+- Risposta `4xx` → `EngineInputRejectedException`, `500 ENGINE_INPUT_REJECTED` (API-71, deciso il 22 novembre): l'engine ha rifiutato i dati della partita, un errore nostro. Il `code` e il `detail` del `ProblemDetail` dell'engine (es. `UNKNOWN_EFFECT`) vanno solo nel log, a livello `error`, con il seed. La partita resta senza risultato e la risposta porta `battleId`, ma il retry manda la stessa fotografia e riceve lo stesso `500`. L'API chiama **solo** `POST /api/v1/simulations`: gli effetti validi stanno nella tabella `effects` dell'API (API-36, vedi [backoffice](../backoffice/backoffice.md#effetti-comportamento-già-implementato-task-api-36-106)), e `GET /api/v1/effects` dell'engine non si usa.
+
+### Controlli dell'engine e dell'API (API-71, #146)
+
+Ogni controllo della tabella "Errori" di `reversky-engine/docs/api-engine` è già garantito dai dati dell'API, così una partita preparata da dati validi del database non riceve mai `400`:
+
+| Controllo dell'engine | Dove lo garantisce l'API |
+|---|---|
+| `VALIDATION_FAILED` (campi obbligatori, `rulesVersion` vuota, regole < 1, mazzo vuoto, fazione ripetuta) | colonne `NOT NULL`, `RuleSetRequest` (`version` non vuota, punti vita e round ≥ 1, `chk_rule_sets_match`), chiave primaria di `factions`, composizione esatta del rule set nel `DeckValidator` |
+| `UNKNOWN_FACTION` | `BattleService` manda **tutte** le fazioni; le carte e i bonus hanno chiavi esterne verso `factions` |
+| `INVALID_FACTION_BONUS` | chiave primaria `(origin, target)`, `chk_faction_bonuses_no_self_matchup`, `chk_faction_bonuses_def_nonnegative` e i controlli di `FactionBonusService` |
+| `INVALID_CARD_FACTIONS` | `chk_catalog_cards_faction_matches_type`, `chk_catalog_cards_distinct_factions`, `chk_catalog_cards_secondary_faction_creature_only` (`V14`) e `CatalogCardService` |
+| `NO_CREATURES_IN_DECK` | `deck_creatures ≥ 1` nel rule set e composizione esatta nel `DeckValidator` |
+| `INVALID_STATS` | `chk_catalog_cards_stats_match_type` (ATK ≥ 0, DEF ≥ 1) |
+| `MISSING_SUBTYPE` | `chk_catalog_cards_subtype_matches_type` e `CardType.acceptsSubtype` |
+| `MISSING_EFFECT` | `chk_catalog_cards_effect_required`, `effectCode` non vuoto nel DTO, e un codice vuoto non è in `effects` |
+| `UNKNOWN_EFFECT` | `fk_catalog_cards_effect` verso la tabella `effects` (`V13`, API-36) |
+
+Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o una tabella `effects` diversa dal registro dell'engine: in quel caso la partita risponde `500 ENGINE_INPUT_REJECTED` e il log dice quale controllo è fallito.
+
+### Inviti amichevoli (API-37 #107, API-38 #108, API-39 #109)
+
+- `battle/controller/BattleInviteController`, `battle/service/BattleInviteService`: `POST /battle-invites` con `{ opponentId, deckId }`, `GET /battle-invites?box=incoming|outgoing` (in attesa, dal più recente), `POST /battle-invites/{id}/reject` e `DELETE /battle-invites/{id}` (eliminano la riga, `204`).
+- `battle/service/PendingInviteService` serve gli inviti `PENDING` alle altre funzionalità: `isDeckInPendingInvite` per `DeckService` (un mazzo in attesa non si elimina) e `deletePendingBetween` per `FriendshipService` (fine di un'amicizia). Dipende solo da `BattleInviteRepository`, perché `BattleInviteService` e `BattleService` usano già `DeckService` e `FriendshipService` e il contrario creerebbe un ciclo di bean.
+- Controlli in quest'ordine: non a se stessi (`422 BATTLE_SELF_CHALLENGE`), avversario esistente e attivo (`404 USER_NOT_FOUND`), amici (`403 NOT_FRIENDS`, `FriendshipService.areFriends`), mazzo mio (`404 DECK_NOT_FOUND`) e valido adesso, possesso compreso (`422 DECK_INVALID` con `violations`, `DeckService.getPlayableDeck`), nessun altro invito in attesa verso lo stesso avversario (`409 INVITE_ALREADY_PENDING`, anche con due richieste contemporanee). Un invito nella direzione opposta è un'altra sfida.
+- Risposta: `id` (UUID), `challenger` e `opponent` `{ id, username }`, `createdAt` e `deck { id, name }` **solo per lo sfidante**: l'avversario scopre il mazzo nella partita (deciso il 21 novembre).
+- Rifiuto e ritiro di un invito che non è mio o non è più in attesa: `404 BATTLE_INVITE_NOT_FOUND`. Un `box` diverso: `400 INVALID_BOX`.
+
+### Accettazione, simulazione e storico (API-40 #110, API-41 #111, API-42 #112, API-43 #113)
+
+- `POST /battle-invites/{id}/accept` con `{ deckId }` (`BattleService.accept`), nei tre passi descritti sopra con `TransactionTemplate`: preparazione (blocca l'invito, amici, entrambi i mazzi validi adesso, seed dal bean `RandomGenerator`, rule set attivo, fazioni e bonus di fazione, fotografia dei mazzi, invito `ACCEPTED`), chiamata a `EngineClient` fuori transazione, salvataggio (blocca la partita e non scrive niente se è già completata). Nessun credito né rating per le amichevoli.
+- La richiesta all'engine si costruisce **solo** da ciò che è salvato nella partita (`BattleService.toRequest`): seed, regole, fazioni e bonus in `battle_stats`, mazzi dalle fotografie, una voce per copia. Così il retry manda la stessa identica partita.
+- Risposta (anche di `GET /battles/{id}`) dal punto di vista di chi guarda (deciso il 21 novembre): `id`, `mode`, `createdAt`, `completed`, `result`, `outcome` (`WIN`, `LOSS`, `DRAW`), `mySide` (`CHALLENGER` o `OPPONENT`, come il campo `side` del log), `endReason`, `totalRounds`, `rulesVersion`, `seed`, `me` e `opponent` (`id`, `username`, `finalLifePoints`, `creaturesDefeated`, `deck` come era alla preparazione) e `log`.
+- Engine non disponibile: `503 ENGINE_UNAVAILABLE` con `battleId`; la partita resta salvata con `completed: false` e si completa con il retry.
+- `GET /battles?mode=FRIENDLY|RANKED&page&size`: dalla più recente, con `battleId`, `createdAt`, `mode`, `opponent`, `completed`, `outcome`, `endReason`, punti vita finali, `rounds`, `ratingDelta` (null per le amichevoli). La query legge solo i campi che servono (`BattleHistoryRow`), senza log né mazzi.
+
+| Caso | Status | `code` |
+|---|---|---|
+| invito inesistente o non per me | `404` | `BATTLE_INVITE_NOT_FOUND` |
+| invito già accettato | `409` | `BATTLE_INVITE_ALREADY_ACCEPTED` |
+| non più amici | `403` | `NOT_FRIENDS` |
+| uno dei due mazzi non valido: l'invito resta in attesa, nessuna partita | `422` | `DECK_INVALID` |
+| partita inesistente o non mia | `404` | `BATTLE_NOT_FOUND` |
+
+### Retry (API-44 #114)
+
+- `POST /battles/{id}/retry` (`BattleService.retry`): solo i due giocatori (`404 BATTLE_NOT_FOUND` per gli altri). Rimanda all'engine la richiesta costruita dalla partita salvata (stesso seed, stesse fotografie dei mazzi, stesse regole e bonus), anche se nel frattempo il catalogo o il rule set sono cambiati; il salvataggio blocca la riga e non riscrive una partita già completata.
+- Una partita già completata si restituisce così com'è con `200`, senza chiamare l'engine (deciso il 21 novembre: il retry è idempotente). Engine ancora spento: `503 ENGINE_UNAVAILABLE` con `battleId`.
+
+### Rating Elo (API-46 #116)
+
+- `battle/service/Elo`: `eloDelta(rating, opponentRating, score, gamesPlayed)` come nella sezione "Elo" sopra (K 40 nelle prime 10 partite, poi 20; mai sotto 0) e `score(outcome)` (vittoria 1, pareggio 0,5, sconfitta 0). Funzioni pure, provate in `EloTest` con gli esempi 1000 contro 1100.
+- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo usa l'aggiornamento dell'Elo della partita classificata (`API-50`, vedi sotto).
+- `RankingService.createIfMissing(userId)` crea la riga con i valori iniziali (`INSERT … ON CONFLICT DO NOTHING`, quindi due ingressi in coda contemporanei non falliscono): la chiamerà l'ingresso in coda di `API-47`.
+- `GET /api/v1/rankings/me` (`RankingController`), con il token: `{ rating, peakRating, gamesPlayed, wins, losses, draws }`. Chi non ha ancora una riga riceve 1000 e contatori a 0, e la riga **non** si crea (una lettura non scrive). Nessuna classifica né posizione (Q-10).
+
+### Coda classificata (API-47 #117)
+
+- `POST /api/v1/matchmaking/queue` con `{ deckId }` (`MatchmakingController`, `MatchmakingQueueService.join`), in una transazione: il mazzo dev'essere mio e valido adesso (`DeckService.getPlayableDeck`: `404 DECK_NOT_FOUND`, `422 DECK_INVALID` con le violazioni), poi `RankingService.createIfMissing` crea il rating al primo ingresso e il ticket salva il rating attuale e l'ora del `Clock`. Il ticket si inserisce con `INSERT … ON CONFLICT DO NOTHING`: un secondo ingresso, anche con un altro mazzo o nello stesso momento, è `409 ALREADY_IN_QUEUE`. Risponde `201`.
+- `GET /api/v1/matchmaking/queue`: `{ status: "WAITING", deckId, rating, queuedAt, window }`, con la finestra calcolata adesso da `MatchmakingTicket.searchWindow` (`min(100 + 50 × (secondi / 10), 400)`, mai sotto 100 se l'orologio va indietro); senza ticket `404 QUEUE_TICKET_NOT_FOUND`.
+- `DELETE /api/v1/matchmaking/queue`: `204` anche se non ero in coda (il ticket può essere appena stato abbinato o tolto); il rating resta.
+- `QueueTicketService` (dipende solo dal repository, come `PendingInviteService`) toglie il ticket quando il mazzo viene modificato (`DeckService.update`, al posto della query nativa in `DeckRepository`) e quando un admin disattiva l'account (`UserAdminService.disable`). L'eliminazione del mazzo lo toglie con `ON DELETE CASCADE`.
+- L'ingresso pubblica un `QueueJoinedEvent`, che dopo il commit fa partire subito un abbinamento (vedi sotto, API-49). Le regole sul mazzo in coda di `API-48` (#118) sono già qui: la issue è chiusa con questa.
+
+### Abbinamento (API-49 #119)
+
+- `battle/service/MatchmakingService.matchAll()` legge gli id dei ticket in ordine di `queued_at` (poi `user_id`) senza bloccare niente e prova ogni ticket nella **sua** transazione, una partita per transazione:
+	1. blocca il ticket con `FOR UPDATE SKIP LOCKED` (`MatchmakingTicketRepository.lockIfFree`): se non c'è più o un'altra esecuzione lo tiene, si passa al prossimo senza aspettare;
+	2. controlla di nuovo il suo mazzo con `DeckService.getPlayableDeck`; se non è più valido toglie solo questo ticket;
+	3. cerca e blocca l'avversario (`lockOpponent`, anche lui `SKIP LOCKED`): un altro utente con il rating del ticket entro la finestra di adesso (`MatchmakingTicket.searchWindow`, del ticket che cerca), prima il rating più vicino, poi chi aspetta da più tempo, saltando chi ha giocato con me una `RANKED` preparata negli ultimi 10 minuti (anti-boosting, dal `Clock` dell'applicazione);
+	4. controlla il mazzo dell'avversario: se non è più valido toglie il suo ticket e cerca il prossimo avversario nella stessa transazione;
+	5. toglie i due ticket e prepara la partita con `BattleService.prepareRanked`: `mode = RANKED`, `invite_id` nullo (`Battle.ranked`), sfidante chi è in coda da più tempo (a pari ora l'id minore), seed, rule set attivo, fazioni, bonus e fotografie dei mazzi come nelle amichevoli.
+- Dopo il commit `BattleService.simulateRanked` chiama l'engine e salva l'esito nella transazione di salvataggio delle amichevoli (blocca la partita, non riscrive una partita già completata). Se l'engine non risponde o rifiuta i dati la partita resta senza risultato, i ticket sono già tolti e uno dei due giocatori la completa con `POST /battles/{id}/retry`. Il risultato di una `RANKED` si salva insieme all'Elo (`chk_battles_ranked_rating_complete`, vedi sotto).
+- Basta un giro: l'abbinamento toglie soltanto ticket, quindi un ticket rimasto senza avversario non ne trova uno nuovo più avanti nello stesso giro. Un errore inatteso su un ticket (es. nessun rule set attivo) si scrive nel log a livello `error`, annulla solo quel tentativo e il giro continua con il ticket dopo.
+- `DeckService.getPlayableDeck` ha `noRollbackFor` per `DeckNotFoundException` e `InvalidDeckException`: legge soltanto, e senza questo l'eccezione segnerebbe come da annullare la transazione dell'abbinamento, che non potrebbe più togliere il ticket né creare la partita con l'avversario dopo (`UnexpectedRollbackException`, provato il 22 novembre). Chi lascia propagare l'eccezione (inviti, ingresso in coda) annulla la propria transazione come prima.
+- `battle/job/MatchmakingJob` fa partire `matchAll` ogni 2 secondi (`fixedDelay`, quindi due giri programmati non si sovrappongono) e, con un `@TransactionalEventListener` sul `QueueJoinedEvent`, subito dopo il commit di ogni ingresso, sul `TaskScheduler` di Spring: `POST /matchmaking/queue` risponde `201` senza aspettare. Se due giri corrono insieme (il tentativo dopo un ingresso, o due istanze dell'API) li separa `SKIP LOCKED`.
+- `reversky.matchmaking.enabled` (default `true`) accende il job; i test lo spengono in `src/test/resources/config/application.properties` (vedi [test](../test/test.md#configurazione-dei-test)).
+
+### Aggiornamento dell'Elo (API-50 #120)
+
+- Nella transazione di salvataggio (`BattleService`, la stessa del risultato), solo per le `RANKED` e solo se la partita non era già completata: `RankingService.recordRankedGame` blocca le due righe di `player_ratings` con `SELECT … FOR UPDATE` (`PlayerRatingRepository.findByIdForUpdate`), l'id minore per primo, calcola le due variazioni con `Elo.eloDelta` sul rating e su `games_played` di adesso, cioè di prima della partita, e le applica con `PlayerRating.recordGame`.
+- `rating_before` è il rating di `player_ratings` al momento del salvataggio, non quello salvato nel ticket (deciso il 22 novembre): se il rating cambia tra l'abbinamento e un retry, conta quello del retry. Le due variazioni si calcolano entrambe sui valori di prima e solo dopo si applicano.
+- `Battle.recordRatings` scrive `challenger_rating_before`, `challenger_rating_delta`, `opponent_rating_before` e `opponent_rating_delta` insieme a `result` (`chk_battles_ranked_rating_complete`); per un'amichevole è `IllegalStateException` (`chk_battles_friendly_no_rating`).
+- L'Elo si applica **una volta sola** anche con retry sovrapposti: il salvataggio blocca prima la partita e non scrive niente se è già completata, quindi il secondo salvataggio non arriva mai ai rating. Un giocatore abbinato ha sempre la riga del rating (si crea all'ingresso in coda); se mancasse è un errore di programmazione (`IllegalStateException`), non un rating nuovo.
+- `GET /battles/{id}` (e le risposte di accettazione e retry) hanno anche `ratingBefore` e `ratingDelta` di chi guarda: null per le amichevoli e finché la classificata non è completata. Lo storico aveva già `ratingDelta`, letto dalla stessa riga.
+
+### Notifiche delle sfide (API-68 #138)
+
+- Invito nuovo → `BATTLE_INVITE_RECEIVED` all'avversario; accettazione → `BATTLE_INVITE_ACCEPTED` allo sfidante; abbinamento in classificata → `MATCH_FOUND` a entrambi; risultato salvato (anche dal retry) → `BATTLE_COMPLETED` a entrambi, con il proprio esito. Ogni notifica nasce nella transazione del passo che la causa e parte sul canale SSE dopo il commit (vedi [notifiche](../notifiche/notifiche.md#sfide-api-68-138)).
+- Con `MATCH_FOUND` il client non deve più confrontare `createdAt` e `queuedAt` per capire se il ticket è sparito per un abbinamento (Q-17); il confronto resta valido per chi non usa il canale.
+
+### Crediti delle classificate (API-45 #115)
+
+- Nella stessa transazione di salvataggio, dopo l'Elo e solo per le `RANKED`: vittoria → `win_reward` a chi vince con la riga `BATTLE_WIN`; pareggio → `draw_reward` a entrambi con `BATTLE_DRAW`, dopo aver bloccato i due inventari con `InventoryService.lockInventories` (`user_id` minore per primo). I crediti passano da `InventoryService.addCredits`, come ogni movimento (vedi [crediti](../crediti/crediti.md#crediti-delle-classificate-api-45-115)).
+- Le ricompense si leggono dal rule set **della partita** (`RuleSetService.getRuleSet(battle.ruleSetId)`), non da quello attivo: un retry dopo l'attivazione di un nuovo rule set paga con le regole della preparazione.
+- Una volta sola, anche con retry sovrapposti: lo stesso blocco della partita che protegge l'Elo. Niente crediti se l'engine non risponde (la partita resta senza risultato) e mai per le amichevoli.
+- Ordine dei blocchi nel salvataggio: partita, poi `player_ratings`, poi `inventories`. L'accettazione di uno scambio blocca lo scambio e poi gli stessi `inventories` nello stesso ordine, quindi un pareggio e uno scambio tra gli stessi giocatori si mettono in fila senza deadlock (`RankedBattleFlowIT`).
+
+### Integrazione reale con l'engine (API-54 #124)
+
+Provata il 22 novembre sullo stack completo di Docker Compose (`compose.yaml` nella cartella principale: database, Mailpit, engine e API), con la copia di `reversky-engine` di `backend_api` uguale a quella di `backend_engine` (#212, #213). Il JSON scambiato resta controllato in automatico dal test di contratto (ENG-24); questa prova mostra che le due applicazioni vere si parlano.
+
+#### Prova sullo stack completo
+
+I passi si ripetono con [`scripts/prova-sfida.ps1`](../../../scripts/prova-sfida.ps1), che esegue tutte le chiamate, ferma e riavvia da solo il container dell'engine ed esce con codice `1` se un controllo fallisce. Dalla cartella principale del repository:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "dev"     # dati di prova alice, bob e admin (vedi database)
+docker compose up --build -d
+powershell -ExecutionPolicy Bypass -File scripts\prova-sfida.ps1
+```
+
+Al posto della variabile si può scrivere `SPRING_PROFILES_ACTIVE=dev` nel file `.env` (vedi `.env.example`); senza, l'API parte con il profilo `default` e senza utenti di prova. Per ripartire da zero: `docker compose down -v`. La porta `8025` di Mailpit è la stessa del `compose.yaml` di `reversky-api` usato da `bootRun`: se quei container sono accesi vanno fermati prima (`docker compose -f reversky-api/compose.yaml stop`).
+
+| # | Passo | Risultato atteso |
+|---|---|---|
+| 1 | login di `alice` e `bob` (dati di prova, vedi [database](../database/database.md#dati-di-prova-solo-sviluppo)), `GET /decks` e `GET /decks/{id}` | *Alice Invitation* e *Bob Wound* validi, 30 carte: 20 creature, 6 Spell, 2 Hidden (`SURVIVAL` e `DAMAGE`), 1 Terreno, 1 Oggetto |
+| 2 | `alice` invita `bob` con `POST /battle-invites`, `bob` accetta con `POST /battle-invites/{id}/accept` | `200`, `completed: true`; `GET /battles/{id}` con il log da `MATCH_STARTED` a `MATCH_ENDED`, un `ROUND_STARTED` per round, e le carte speciali: `SPELL_RESOLVED`, `HIDDEN_SET` (e `HIDDEN_TRIGGERED`), `TERRAIN_PLACED`, `ITEM_PLACED` e `ITEM_CONSUMED`; `outcome` opposto per i due giocatori |
+| 3 | `docker compose stop engine`, nuovo invito e accettazione | `503 ENGINE_UNAVAILABLE` con `battleId` (dopo al massimo 10 secondi, il timeout del client); `GET /battles/{battleId}` dà `completed: false` e `result` nullo |
+| 4 | `docker compose start engine`, poi `POST /battles/{battleId}/retry` | `200`, partita completata con lo stesso seed salvato alla preparazione |
+| 5 | secondo `POST /battles/{battleId}/retry` | `200` con la stessa partita; nel log dell'engine (`docker compose logs engine`) non compare una nuova riga `Simulazione completata` |
+| 6 | scambio: `alice` propone con `POST /trades` (1 copia contro 1), `bob` contropropone con `POST /trades/{id}/counter` (1 copia contro 2), `bob` prova ad accettare, poi accetta `alice` | `201` e copia di alice riservata; `200` e riserva passata a bob; `409 TRADE_NOT_YOUR_TURN`; `200 ACCEPTED`, copie spostate (alice −2/+1, bob +2/−1), nessuna copia riservata e mazzi ancora validi |
+
+Esito del 22 novembre, su un volume nuovo: tutti i controlli superati. Partita 1 in 39 round (`LIFE_POINTS_ZERO`, 393 eventi, 12 `SPELL_RESOLVED`, 4 `HIDDEN_SET`, 2 `TERRAIN_PLACED`, 2 `ITEM_PLACED`); partita 2 `503` a engine spento, completata dal retry in 39 round, secondo retry senza nuova chiamata all'engine; scambio accettato. Nessun bug trovato.
+
+Due cose da sapere per la demo: i testi delle carte nel log sono ancora in italiano (nomi inglesi dai DSG nell'ultima settimana); Windows PowerShell 5.1 legge le risposte JSON come Latin-1 e mostra male le lettere accentate con `Invoke-RestMethod`, per questo lo script decodifica le risposte in UTF-8.

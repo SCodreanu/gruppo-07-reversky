@@ -1,5 +1,6 @@
 package it.downfall.reversky.api.catalog.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -33,6 +34,15 @@ public class RarityService {
 			.stream()
 			.map(RarityResponse::from)
 			.toList();
+	}
+
+	/**
+	 * Le rarità con quegli id, per gli altri service (slot e bonus dei pacchetti). Gli id che non esistono mancano
+	 * dalla lista, senza errore: decide chi chiama.
+	 */
+	@Transactional(readOnly = true)
+	public List<Rarity> getRaritiesByIds(Collection<Integer> ids) {
+		return rarityRepository.findAllById(ids);
 	}
 
 	/**

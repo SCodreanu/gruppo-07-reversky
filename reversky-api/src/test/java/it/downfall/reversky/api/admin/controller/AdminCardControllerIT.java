@@ -28,6 +28,7 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.entity.CardSubtype;
 import it.downfall.reversky.api.catalog.entity.CardType;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
+import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.entity.Rarity;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
@@ -185,25 +186,25 @@ class AdminCardControllerIT {
 	void update_validRequest_returns200WithCard() throws Exception {
 		// Arrange
 		CatalogCard card = testCards.createCreature();
-		Rarity uncommon = testCards.uncommon();
+		Rarity rare = testCards.rare();
 		String newName = uniqueName("Renamed");
 
 		// Act + Assert
-		putCard(card.getId(), body(newName, CardType.HIDDEN, uncommon.getId(), CardSubtype.DAMAGE, "HIDE_BEHIND", null, null, null, 1))
+		putCard(card.getId(), body(newName, CardType.HIDDEN, rare.getId(), CardSubtype.DAMAGE, TestCards.HIDDEN_EFFECT, null, null, null, 1))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(card.getId()))
 			.andExpect(jsonPath("$.name").value(newName))
 			.andExpect(jsonPath("$.type").value("HIDDEN"))
-			.andExpect(jsonPath("$.rarity.id").value(uncommon.getId()))
-			.andExpect(jsonPath("$.rarity.name").value(uncommon.getName()))
+			.andExpect(jsonPath("$.rarity.id").value(rare.getId()))
+			.andExpect(jsonPath("$.rarity.name").value(rare.getName()))
 			.andExpect(jsonPath("$.subtype").value("DAMAGE"))
-			.andExpect(jsonPath("$.effectCode").value("HIDE_BEHIND"))
+			.andExpect(jsonPath("$.effectCode").value(TestCards.HIDDEN_EFFECT))
 			.andExpect(jsonPath("$.atk").isEmpty())
 			.andExpect(jsonPath("$.copyLimit").value(1));
 		CatalogCard saved = reload(card);
 		assertThat(saved.getName()).isEqualTo(newName);
 		assertThat(saved.getCardType()).isEqualTo(CardType.HIDDEN);
-		assertThat(saved.getRarity().getId()).isEqualTo(uncommon.getId());
+		assertThat(saved.getRarity().getId()).isEqualTo(rare.getId());
 	}
 
 	@Test
@@ -229,8 +230,9 @@ class AdminCardControllerIT {
 		// Arrange: CatalogCardUpdateRequest non ha il campo, quindi Jackson lo scarta
 		CatalogCard card = testCards.createCreature();
 		String bodyWithImage = """
-			{"name": "%s", "type": "CREATURE", "rarityId": %d, "atk": 1, "def": 1, "imagePath": "/images/other.webp"}
-			""".formatted(card.getName(), testCards.common().getId());
+			{"name": "%s", "type": "CREATURE", "rarityId": %d, "factionId": %d, "atk": 1, "def": 1,
+			"imagePath": "/images/other.webp"}
+			""".formatted(card.getName(), testCards.common().getId(), card.getFaction().getId());
 
 		// Act + Assert
 		putCard(card.getId(), bodyWithImage)
@@ -307,7 +309,7 @@ class AdminCardControllerIT {
 		CatalogCard card = testCards.createCreature();
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.SPELL, null, TestCards.EFFECT_CODE, null, null, null, null))
+		putCard(card.getId(), body(card.getName(), CardType.SPELL, null, TestCards.effectCodeFor(CardType.SPELL), null, null, null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"));
 	}
@@ -319,7 +321,7 @@ class AdminCardControllerIT {
 		CatalogCard card = testCards.create(uniqueName("Terrain"), CardType.TERRAIN);
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.TERRAIN, testCards.common().getId(), null, TestCards.EFFECT_CODE, null, null, null, null))
+		putCard(card.getId(), body(card.getName(), CardType.TERRAIN, testCards.common().getId(), null, TestCards.effectCodeFor(CardType.TERRAIN), null, null, null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RARITY_INVALID"));
 		assertThat(reload(card).getRarity().getId()).isEqualTo(testCards.rare().getId());
@@ -338,17 +340,67 @@ class AdminCardControllerIT {
 	}
 
 	@Test
-	@DisplayName("A spell cannot become a creature until factions can be sent: 422")
-	void update_spellToCreature_returns422() throws Exception {
-		// Arrange: la Spell non ha fazione e PUT non la riceve ancora (#81)
+	@DisplayName("A spell becomes a creature with the factions sent, shown as id and name")
+	void update_spellToCreatureWithFactions_returnsFactions() throws Exception {
+		// Arrange
 		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+		Faction first = testCards.faction();
+		Faction second = testCards.createFaction();
 
 		// Act + Assert
-		putCard(card.getId(), body(card.getName(), CardType.CREATURE, testCards.common().getId(), null, null, null, 7, 8, null))
+		putCard(card.getId(), creatureBody(card.getName(), first.getId(), second.getId()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.type").value("CREATURE"))
+			.andExpect(jsonPath("$.faction.id").value(first.getId()))
+			.andExpect(jsonPath("$.faction.name").value(first.getName()))
+			.andExpect(jsonPath("$.secondaryFaction.id").value(second.getId()))
+			.andExpect(jsonPath("$.secondaryFaction.name").value(second.getName()));
+		assertThat(reload(card).getCardType()).isEqualTo(CardType.CREATURE);
+	}
+
+	@Test
+	@DisplayName("A creature without factionId is rejected with 422 CARD_RULES_VIOLATED")
+	void update_creatureWithoutFaction_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+
+		// Act + Assert
+		putCard(card.getId(), creatureBody(card.getName(), null, null))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("CARD_RULES_VIOLATED"))
 			.andExpect(jsonPath("$.detail").value("A CREATURE card must have a faction"));
-		assertThat(reload(card).getCardType()).isEqualTo(CardType.SPELL);
+	}
+
+	@Test
+	@DisplayName("A faction id that does not exist is 422 CARD_FACTION_INVALID, not 404")
+	void update_missingFaction_returns422FactionInvalid() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.createCreature();
+
+		// Act + Assert
+		putCard(card.getId(), creatureBody(card.getName(), card.getFaction().getId(), Integer.MAX_VALUE))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_FACTION_INVALID"))
+			.andExpect(jsonPath("$.detail").value("The faction " + Integer.MAX_VALUE + " does not exist"));
+		assertThat(reload(card).getSecondaryFaction()).isNull();
+	}
+
+	@Test
+	@DisplayName("GET /admin/cards filters by faction, first or second")
+	void findAll_factionFilter_returnsOnlyThatFaction() throws Exception {
+		// Arrange
+		String token = TestUsers.uniqueSuffix();
+		CatalogCard inFaction = testCards.create("In " + token, CardType.CREATURE);
+		CatalogCard otherCard = testCards.create("Other " + token, CardType.CREATURE);
+		otherCard.changeFactions(testCards.createFaction(), null);
+		catalogCardRepository.save(otherCard);
+
+		// Act + Assert
+		mockMvc.perform(asAdmin(get(BASE_PATH)).param("name", token)
+				.param("factionId", testCards.faction().getId().toString()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(inFaction.getId()));
 	}
 
 	@Test
@@ -435,14 +487,18 @@ class AdminCardControllerIT {
 	}
 
 	@Test
-	@DisplayName("OpenAPI has no create endpoint yet and no image path in the update form")
-	void apiDocs_adminCards_noCreateAndNoImagePath() throws Exception {
-		// Act + Assert: POST /admin/cards e l'immagine arrivano con API-14
+	@DisplayName("OpenAPI documents create and image replacement as multipart, with no image path in the card form")
+	void apiDocs_adminCards_multipartCreateAndNoImagePath() throws Exception {
+		// Act + Assert: dal API-14 l'immagine è un file del multipart, mai un campo della carta
 		mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post").doesNotExist())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post.requestBody.content['multipart/form-data']").exists())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].post.requestBody.content['multipart/form-data'].encoding.card.contentType")
+				.value(MediaType.APPLICATION_JSON_VALUE))
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards/{id}/image'].post.requestBody.content['multipart/form-data']").exists())
 			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.name").exists())
-			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.imagePath").doesNotExist());
+			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.imagePath").doesNotExist())
+			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.imageUrl").exists());
 	}
 
 	@Test
@@ -455,6 +511,37 @@ class AdminCardControllerIT {
 			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.required", hasItems("name", "type", "rarityId")))
 			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.rarity").exists())
 			.andExpect(jsonPath("$.components.schemas.RaritySummaryResponse.properties.name").exists());
+	}
+
+	@Test
+	@DisplayName("OpenAPI documents the factions: filter on both lists, fields in the update form, objects in the card")
+	void apiDocs_cards_documentFactions() throws Exception {
+		// Act + Assert
+		mockMvc.perform(get("/v3/api-docs"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.paths['/api/v1/admin/cards'].get.parameters[*].name", hasItems("factionId")))
+			.andExpect(jsonPath("$.paths['/api/v1/cards'].get.parameters[*].name", hasItems("factionId")))
+			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.factionId").exists())
+			.andExpect(jsonPath("$.components.schemas.CatalogCardUpdateRequest.properties.secondaryFactionId").exists())
+			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.faction").exists())
+			.andExpect(jsonPath("$.components.schemas.CatalogCardResponse.properties.secondaryFaction").exists())
+			.andExpect(jsonPath("$.components.schemas.FactionSummaryResponse.properties.name").exists());
+	}
+
+	// --- effetto (API-36) ---
+
+	@Test
+	@DisplayName("An effect code that is not in the effects table returns 422 CARD_EFFECT_INVALID")
+	void update_unknownEffect_returns422() throws Exception {
+		// Arrange
+		CatalogCard card = testCards.create(uniqueName("Spell"), CardType.SPELL);
+
+		// Act + Assert
+		putCard(card.getId(), body(card.getName(), CardType.SPELL, testCards.rare().getId(), CardSubtype.BURN,
+				"NOT_IN_ENGINE", null, null, null, null))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("CARD_EFFECT_INVALID"));
+		assertThat(reload(card).getEffectCode()).isEqualTo(TestCards.SPELL_EFFECT);
 	}
 
 	// --- supporto ---
@@ -480,6 +567,12 @@ class AdminCardControllerIT {
 		return body(name, CardType.CREATURE, testCards.common().getId(), null, null, variantOfId, 7, 8, null);
 	}
 
+	// Creatura originale Common valida con le fazioni date (anche null o inesistenti)
+	private String creatureBody(String name, Integer factionId, Integer secondaryFactionId) {
+		return body(name, CardType.CREATURE, testCards.common().getId(), factionId, secondaryFactionId, null, null, null,
+				7, 8, null);
+	}
+
 	// Come sotto, con la rarità ammessa dal tipo: Rare per i Terreni, Common per gli altri
 	private String body(String name, CardType type, CardSubtype subtype, String effectCode, Integer variantOfId,
 			Integer atk, Integer def, Integer copyLimit) {
@@ -487,13 +580,23 @@ class AdminCardControllerIT {
 		return body(name, type, rarityId, subtype, effectCode, variantOfId, atk, def, copyLimit);
 	}
 
+	// La fazione della carta di prova per i tipi che la richiedono (#81), nessuna per Spell e Hidden
+	private String body(String name, CardType type, Integer rarityId, CardSubtype subtype, String effectCode,
+			Integer variantOfId, Integer atk, Integer def, Integer copyLimit) {
+		Integer factionId = (type != null && type.hasFaction()) ? testCards.faction().getId() : null;
+		return body(name, type, rarityId, factionId, null, subtype, effectCode, variantOfId, atk, def, copyLimit);
+	}
+
 	// I null diventano il JSON null, come li manderebbe il frontend per un campo vuoto
-	private static String body(String name, CardType type, Integer rarityId, CardSubtype subtype, String effectCode, Integer variantOfId,
-			Integer atk, Integer def, Integer copyLimit) {
+	private static String body(String name, CardType type, Integer rarityId, Integer factionId,
+			Integer secondaryFactionId, CardSubtype subtype, String effectCode, Integer variantOfId, Integer atk,
+			Integer def, Integer copyLimit) {
 		return """
-			{"name": %s, "type": %s, "rarityId": %s, "subtype": %s, "effectCode": %s, "variantOfId": %s, "atk": %s, "def": %s, "copyLimit": %s,
+			{"name": %s, "type": %s, "rarityId": %s, "factionId": %s, "secondaryFactionId": %s, "subtype": %s,
+			"effectCode": %s, "variantOfId": %s, "atk": %s, "def": %s, "copyLimit": %s,
 			"effectDescription": "Effect text", "flavorText": "Flavor text"}
-			""".formatted(quoted(name), quoted(type), rarityId, quoted(subtype), quoted(effectCode), variantOfId, atk, def, copyLimit);
+			""".formatted(quoted(name), quoted(type), rarityId, factionId, secondaryFactionId, quoted(subtype),
+				quoted(effectCode), variantOfId, atk, def, copyLimit);
 	}
 
 	private static String quoted(Object value) {

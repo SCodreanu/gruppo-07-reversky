@@ -1,5 +1,11 @@
 package it.downfall.reversky.api.catalog.entity;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -12,6 +18,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -91,6 +99,18 @@ public class CatalogCard {
 	private boolean isActive;
 
 	/**
+	 * Tag propri della carta ({@code card_tags}, API-12): ognuna ha i suoi, anche una variante, e non si copiano
+	 * dall'originale. Nei filtri per tag contano insieme a quelli delle fazioni; nei pacchetti una variante esce solo
+	 * con i propri (docs/pacchetti). Si caricano quando servono, a gruppi per le pagine del backoffice.
+	 */
+	@ManyToMany
+	@JoinTable(name = "card_tags", joinColumns = @JoinColumn(name = "card_id"),
+		inverseJoinColumns = @JoinColumn(name = "tag_id"))
+	@BatchSize(size = 50)
+	@Getter(AccessLevel.NONE)
+	private Set<Tag> tags = new HashSet<>();
+
+	/**
 	 * Crea una carta. Oggi la usano solo i test (le carte arrivano da migrazione),
 	 * da API-14 la userà POST /admin/cards. Una carta nuova è sempre attiva.
 	 * <p>
@@ -127,6 +147,15 @@ public class CatalogCard {
 	public void updateDetails(String name, String flavorText) {
 		this.name = name;
 		this.flavorText = flavorText;
+	}
+
+	/**
+	 * Nuova illustrazione (POST /admin/cards/{id}/image, API-14): è propria della carta, anche per una variante.
+	 *
+	 * @param imagePath percorso relativo restituito da {@code ImageStorage}
+	 */
+	public void changeImage(String imagePath) {
+		this.imagePath = imagePath;
 	}
 
 	/**
@@ -190,4 +219,17 @@ public class CatalogCard {
 		this.isActive = false;
 	}
 
+	/** I tag propri della carta, in sola lettura: si cambiano con {@link #replaceTags}. */
+	public Set<Tag> getTags() {
+		return Collections.unmodifiableSet(tags);
+	}
+
+	/**
+	 * Sostituisce tutti i tag propri della carta (PUT /admin/cards/{id}/tags); una lista vuota li toglie tutti. Non
+	 * tocca le varianti: i tag sono ciò che distingue una versione evento (deciso il 22 novembre).
+	 */
+	public void replaceTags(Collection<Tag> newTags) {
+		tags.clear();
+		tags.addAll(newTags);
+	}
 }

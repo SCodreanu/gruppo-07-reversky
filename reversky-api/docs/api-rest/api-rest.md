@@ -30,6 +30,7 @@ POST   /api/v1/trades/{id}/accept azione su uno scambio
 | Risorsa inesistente **o non visibile all'utente** | `404 Not Found` |
 | Stato non compatibile (scambio già chiuso o fuori turno, invito già accettato) | `409 Conflict` |
 | Regola di gioco violata (mazzo non valido, crediti insufficienti) | `422 Unprocessable Content` |
+| Errore nostro previsto che il client non può risolvere (l'engine rifiuta i dati di una partita, `ENGINE_INPUT_REJECTED`, API-71); gli errori inattesi sono `INTERNAL_ERROR` | `500 Internal Server Error` |
 | Engine non raggiungibile | `503 Service Unavailable` |
 
 ## Formato degli errori
@@ -53,6 +54,7 @@ Usiamo `ProblemDetail` di Spring (standard RFC 9457). Tutti gli errori hanno que
 - `code`: codice stabile in inglese che il frontend può usare per tradurre o gestire il caso.
 - `title` e `detail`: testo leggibile in inglese (il prodotto è English first).
 - `errors`: presente solo per errori di validazione con più problemi.
+- Quando il corpo è una lista (es. `PUT /admin/faction-bonuses`), `field` comincia con l'indice della riga: `[1].defBonus` per un campo della seconda riga, `[1]` per una riga `null`. Lo gestisce `GlobalExceptionHandler.handleHandlerMethodValidationException`, con lo stesso formato di `VALIDATION_FAILED`.
 
 ## Paginazione
 
@@ -125,7 +127,7 @@ public class DeckController {
 | Utente | `GET /users/me`, `GET /users/{id}/collection` |
 | Inventario | `GET /inventory`, `POST /inventory/packs/{packId}/open` |
 | Carte | `GET /cards`, `GET /cards/{id}`, `GET /rarities`, `GET /factions` |
-| Regole | `GET /rules` (rule set attivo e bonus di fazione, per la pagina del regolamento) |
+| Regole | `GET /rules` (rule set attivo e bonus di fazione correnti in `factionBonuses`, per la pagina del regolamento) |
 | Pacchetti | `GET /packs`, `POST /packs/{id}/purchase` |
 | Collezione | `GET /collection`, `GET /collection/summary` |
 | Mazzi | `GET/POST /decks`, `GET/PUT/DELETE /decks/{id}`, `POST /decks/validate`, `GET /decks/rules` |

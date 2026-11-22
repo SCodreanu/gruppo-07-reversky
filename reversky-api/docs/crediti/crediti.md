@@ -91,6 +91,31 @@ public Inventory spendCredits(Integer userId, int amount, CreditReason reason) {
 |---|---|---|
 | `GET` | `/api/v1/inventory` | crediti e pacchetti non aperti |
 
+## Comportamento già implementato (API-16 #86, API-17 #87)
+
+- Package `inventory/`: entità `Inventory` e `CreditTransaction`, enum `CreditReason`, `InventoryService`, `InventoryController`.
+- `InventoryService` è l'unico che modifica `inventories.credits`:
+	- `createInventory(userId)`: chiamato da `AuthService.register` nella stessa transazione, crea l'inventario con `signup_bonus` del rule set attivo e la riga `SIGNUP`;
+	- `addCredits` e `spendCredits` bloccano la riga (`findByUserIdForUpdate`) e scrivono la riga di `credit_transactions`, anche da 0 crediti; un importo negativo è un errore di programmazione (`IllegalArgumentException`); restituiscono il nuovo saldo;
+	- `lockInventories(userIds)` blocca gli inventari di più utenti in ordine di `user_id` crescente: va chiamato all'inizio di ogni operazione che sposta crediti, carte o pacchetti tra più utenti;
+	- `adjustCredits` per la correzione dal backoffice (vedi [backoffice](../backoffice/backoffice.md#correzione-dei-crediti-comportamento-già-implementato-api-17-87)).
+- `InventoryService` non dipende da `UserService`: è `UserService.getProfile` a chiedere il saldo per `GET /users/me`.
+- `GET /api/v1/inventory` restituisce `{ "credits": 350, "packs": [{ "packId": 1, "name": "Base Pack", "imagePath": "packs/base.webp", "quantity": 2 }] }`, pacchetti in ordine di id (API-22, #92). `InventoryService` gestisce anche `pack_inventory`: `addPacks` nell'acquisto, `takePack` (blocca l'inventario, a 0 elimina la riga) nell'apertura.
+- Gli utenti registrati prima di API-17 ricevono l'inventario dalla migrazione `V10__create_missing_inventories.sql`.
+
+| Caso | Status | `code` |
+|---|---|---|
+| saldo insufficiente | `422` | `INSUFFICIENT_CREDITS` |
+| utente senza inventario | `404` | `INVENTORY_NOT_FOUND` |
+| registrazione senza rule set attivo | `404` | `NO_ACTIVE_RULE_SET` |
+
+### Crediti delle classificate (API-45 #115)
+
+- Il salvataggio di una partita `RANKED` (`BattleService`, la transazione che scrive il risultato e l'Elo) chiama `InventoryService.addCredits`: `win_reward` a chi vince con `BATTLE_WIN`, oppure `draw_reward` a entrambi con `BATTLE_DRAW`. Con un pareggio prima `lockInventories` blocca i due inventari in ordine di `user_id`, come uno scambio.
+- I valori vengono dal rule set della partita (`battles.rule_set_id`, letto con `RuleSetService.getRuleSet`), non dal rule set attivo: un retry dopo l'attivazione di una nuova versione paga come alla preparazione.
+- Ogni partita paga una volta sola, anche con due retry sovrapposti, perché il salvataggio blocca la partita e non riscrive una partita già completata. Engine non disponibile = partita senza risultato e nessun credito; le amichevoli non arrivano mai qui.
+- Provato in `RankedBattleFlowIT`: vittoria, pareggio, retry, retry sovrapposti, nuovo rule set attivo e pareggio durante l'accettazione di uno scambio tra gli stessi giocatori (dettagli in [sfide](../sfide/sfide.md#crediti-delle-classificate-api-45-115)).
+
 ## Preparazione alla fase 2
 
 Non si sviluppa niente di pagamento. Il **tasso di conversione crediti/euro** è definito dai DSG nel modello economico (serve per le proiezioni a 12, 24 e 48 mesi) e, quando servirà, starà nel rule set (backoffice) come gli altri valori economici, senza logica collegata.

@@ -7,6 +7,7 @@ import it.downfall.reversky.api.user.entity.User;
  * Profilo dell'utente autenticato (GET /api/v1/users/me, docs/autenticazione).
  *
  * @param emailVerified false finché l'utente non conferma l'email: il frontend mostra il pulsante di reinvio
+ * @param credits       saldo dei crediti dell'inventario (docs/crediti)
  */
 public record UserResponse(
 
@@ -23,15 +24,19 @@ public record UserResponse(
 	String role,
 
 	@Schema(example = "false")
-	boolean emailVerified
-) {
+	boolean emailVerified,
 
-	// TODO(@tommasofatticcioni): aggiungere i crediti quando esisterà inventories (docs/crediti)
+	@Schema(example = "350")
+	int credits
+) {
 
 	/**
 	 * Converte l'entità nel DTO. Il ruolo è LAZY: va chiamato dentro la transazione del service.
+	 *
+	 * @param credits saldo letto da {@code InventoryService}
 	 */
-	public static UserResponse from(User user) {
-		return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().getName(), user.isEmailVerified());
+	public static UserResponse from(User user, int credits) {
+		return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().getName(),
+			user.isEmailVerified(), credits);
 	}
 }

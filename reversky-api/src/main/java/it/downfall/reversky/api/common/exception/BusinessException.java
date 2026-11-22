@@ -1,5 +1,7 @@
 package it.downfall.reversky.api.common.exception;
 
+import java.util.Map;
+
 import lombok.Getter;
 
 /**
@@ -22,6 +24,7 @@ public abstract class BusinessException extends RuntimeException {
 		NOT_FOUND,          // 404 inesistente o non visibile all'utente
 		CONFLICT,           // 409 stato non compatibile
 		RULE_VIOLATION,     // 422 regola di gioco violata
+		INTERNAL_ERROR,     // 500 errore nostro, previsto ma non risolvibile dal client (es. input rifiutato dall'engine)
 		SERVICE_UNAVAILABLE // 503 engine non raggiungibile
 	}
 
@@ -39,5 +42,13 @@ public abstract class BusinessException extends RuntimeException {
 		this.category = category;
 		this.code = code;
 		this.title = title;
+	}
+
+	/**
+	 * Campi in più della risposta, oltre a {@code code} (es. {@code violations} di un mazzo non valido).
+	 * Le sottoclassi che ne hanno bisogno lo sovrascrivono; di base non ce ne sono.
+	 */
+	public Map<String, Object> getExtraProperties() {
+		return Map.of();
 	}
 }

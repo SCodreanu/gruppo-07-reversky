@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.service.FactionService;
@@ -104,7 +104,7 @@ class AdminFactionControllerIT {
 	@DisplayName("A USER cannot update a faction")
 	void update_userRole_returns403() throws Exception {
 		// Arrange
-		FactionResponse faction = createFaction(uniqueName());
+		AdminFactionResponse faction = createFaction(uniqueName());
 
 		// Act + Assert
 		mockMvc.perform(asUser(put(BASE_PATH + "/" + faction.id())).contentType(MediaType.APPLICATION_JSON).content(body(uniqueName(), "factions/test.svg", null)))
@@ -119,7 +119,7 @@ class AdminFactionControllerIT {
 	@DisplayName("An ADMIN gets the list of factions")
 	void findAll_adminRole_returnsFactions() throws Exception {
 		// Arrange
-		FactionResponse faction = createFaction(uniqueName());
+		AdminFactionResponse faction = createFaction(uniqueName());
 
 		// Act + Assert
 		mockMvc.perform(asAdmin(get(BASE_PATH)))
@@ -184,7 +184,7 @@ class AdminFactionControllerIT {
 	@DisplayName("An ADMIN updates a faction: 200 with the new values, saved in the database")
 	void update_validRequest_returns200WithFaction() throws Exception {
 		// Arrange
-		FactionResponse faction = createFaction(uniqueName());
+		AdminFactionResponse faction = createFaction(uniqueName());
 		String newName = uniqueName();
 
 		// Act + Assert
@@ -203,7 +203,7 @@ class AdminFactionControllerIT {
 	@DisplayName("Updating with a blank name returns 400")
 	void update_blankName_returns400() throws Exception {
 		// Arrange
-		FactionResponse faction = createFaction(uniqueName());
+		AdminFactionResponse faction = createFaction(uniqueName());
 
 		// Act + Assert
 		putFaction(faction.id(), body("", "factions/test.svg", null))
@@ -227,7 +227,7 @@ class AdminFactionControllerIT {
 		// Arrange
 		String takenName = uniqueName();
 		createFaction(takenName);
-		FactionResponse other = createFaction(uniqueName());
+		AdminFactionResponse other = createFaction(uniqueName());
 
 		// Act + Assert
 		putFaction(other.id(), body(takenName, "factions/test.svg", null))
@@ -266,7 +266,7 @@ class AdminFactionControllerIT {
 		return mockMvc.perform(asAdmin(put(BASE_PATH + "/" + id)).contentType(MediaType.APPLICATION_JSON).content(json));
 	}
 
-	private FactionResponse createFaction(String name) {
+	private AdminFactionResponse createFaction(String name) {
 		return factionService.create(new FactionRequest(name, "factions/test.svg", "A test faction"));
 	}
 
