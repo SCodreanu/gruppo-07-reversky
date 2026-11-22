@@ -77,7 +77,7 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 ### Notifiche: entità e consultazione (API-65 #135)
 
 - `notification/entity/Notification` (`type` come `NotificationType` salvato in testo, `payload` `jsonb` come mappa) e `NotificationRepository`, sempre in ordine di id decrescente (indice `idx_notifications_user_id_id`).
-- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. I collegamenti con amicizie, sfide e scambi arrivano con API-67…69.
+- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. I collegamenti con sfide e scambi arrivano con API-68 e API-69.
 - `NotificationController`: `GET /notifications` (paginato come le altre liste, il `sort` del client si ignora), `GET /notifications/unread-count`, `POST /notifications/{id}/read` (idempotente, tiene la prima ora di lettura) e `POST /notifications/read-all`.
 - `notification/job/NotificationCleanupJob` ogni notte alle 3:30 elimina le notifiche lette create prima di adesso meno `reversky.notifications.retention` (`NotificationProperties`, 30 giorni in `application.properties`: configurazione tecnica, non una regola di gioco).
 
@@ -100,10 +100,16 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 | account disattivato | `403` | `AUTH_ACCOUNT_DISABLED` |
 | `Last-Event-ID` non numerico | `400` | |
 
+### Amicizie (API-67 #137)
+
+- `FriendshipService` chiama `notify` nella transazione della richiesta o dell'accettazione: `FRIEND_REQUEST_RECEIVED` al destinatario di una richiesta nuova, `FRIEND_REQUEST_ACCEPTED` a chi l'aveva mandata quando viene accettata, anche dalla richiesta inversa ([amicizie](../amicizie/amicizie.md), regola 2). Il payload ha `userId` e `username` di chi ha fatto l'azione.
+- Rifiuto, ritiro, rimozione e una richiesta doppia (`409`, la transazione si annulla) non creano notifiche (`FriendshipNotificationIT`).
+
 ## Test minimi
 
 - Un utente vede e segna come lette solo le proprie notifiche; quella di un altro → `404` (`NotificationControllerIT`).
 - Una notifica creata in una transazione annullata non resta (`NotificationServiceIT`).
 - La pulizia elimina solo le lette e vecchie (`NotificationServiceIT`, `NotificationCleanupJobTest`).
 - Un evento arriva solo al destinatario, su tutte le sue connessioni; una transazione annullata non invia eventi; `Last-Event-ID` rimanda le perse; un account disattivato perde le connessioni e non ne apre di nuove (`NotificationStreamIT`, `NotificationStreamServiceTest`, API-66).
-- Ogni evento di amicizie, sfide e scambi crea una notifica e la invia (API-67…69).
+- Ogni evento delle amicizie crea una notifica e la invia sul canale; rifiuto, ritiro e rimozione no (`FriendshipNotificationIT`, API-67).
+- Ogni evento di sfide e scambi crea una notifica e la invia (API-68, API-69).

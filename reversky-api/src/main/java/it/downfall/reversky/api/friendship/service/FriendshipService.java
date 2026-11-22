@@ -1,6 +1,7 @@
 package it.downfall.reversky.api.friendship.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,15 @@ import it.downfall.reversky.api.friendship.exception.FriendshipNotFoundException
 import it.downfall.reversky.api.friendship.exception.FriendshipRequestNotFoundException;
 import it.downfall.reversky.api.friendship.exception.FriendshipSelfRequestException;
 import it.downfall.reversky.api.friendship.repository.FriendshipRepository;
+import it.downfall.reversky.api.notification.entity.NotificationType;
+import it.downfall.reversky.api.notification.service.NotificationService;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Amicizie (docs/amicizie).
+ * Amicizie (docs/amicizie). Una richiesta ricevuta e una richiesta accettata creano una notifica per l'altro
+ * utente (API-67, docs/notifiche); rifiutare, ritirare o rimuovere no.
  * <p>
  * Tutte le operazioni che cambiano stato sono in transazione: la riga è unica per coppia
  * (vincolo {@code uq_friendships_pair} su LEAST/GREATEST), quindi due richieste opposte
@@ -35,6 +39,7 @@ public class FriendshipService {
 	private final FriendshipRepository friendshipRepository;
 	private final UserService userService;
 	private final PendingInviteService pendingInviteService;
+	private final NotificationService notificationService;
 
 	// --- letture ---
 
@@ -116,8 +121,9 @@ public class FriendshipService {
 				// Stessa direzione, già PENDING: la riga esiste e non c'è niente da fare
 				throw new FriendshipAlreadyExistsException();
 			}
-			// Richiesta inversa: diventa ACCEPTED (regola 2)
+			// Richiesta inversa: diventa ACCEPTED (regola 2), e chi aveva chiesto per primo lo sa
 			existing.accept();
+			notifyFrom(currentUserId, target.getId(), NotificationType.FRIEND_REQUEST_ACCEPTED);
 			return toResponse(existing);
 		}
 
@@ -131,6 +137,7 @@ public class FriendshipService {
 		} catch (DataIntegrityViolationException ex) {
 			throw new FriendshipAlreadyExistsException();
 		}
+		notifyFrom(currentUserId, target.getId(), NotificationType.FRIEND_REQUEST_RECEIVED);
 		return toResponse(created);
 	}
 
@@ -143,6 +150,7 @@ public class FriendshipService {
 	public FriendRequestResponse accept(Integer currentUserId, Integer requesterId) {
 		Friendship friendship = loadPendingRequest(requesterId, currentUserId);
 		friendship.accept();
+		notifyFrom(currentUserId, requesterId, NotificationType.FRIEND_REQUEST_ACCEPTED);
 		return toResponse(friendship);
 	}
 
@@ -181,6 +189,12 @@ public class FriendshipService {
 	}
 
 	// --- supporto ---
+
+	// API-67: notifica all'altro utente, con id e username di chi ha fatto l'azione; parte sul canale SSE dopo il commit
+	private void notifyFrom(Integer actorId, Integer recipientId, NotificationType type) {
+		User actor = userService.getById(actorId);
+		notificationService.notify(recipientId, type, Map.of("userId", actor.getId(), "username", actor.getUsername()));
+	}
 
 	private Friendship loadPendingRequest(Integer requesterId, Integer currentUserId) {
 		Friendship friendship = friendshipRepository.findById(new FriendshipId(requesterId, currentUserId))
