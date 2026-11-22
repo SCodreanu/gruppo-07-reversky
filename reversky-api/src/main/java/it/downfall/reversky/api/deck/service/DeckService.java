@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.downfall.reversky.api.battle.service.PendingInviteService;
+import it.downfall.reversky.api.battle.service.QueueTicketService;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.service.CatalogCardService;
 import it.downfall.reversky.api.catalog.service.RarityService;
@@ -58,6 +59,7 @@ public class DeckService {
 	private final DeckValidator deckValidator;
 	private final CollectionService collectionService;
 	private final PendingInviteService pendingInviteService;
+	private final QueueTicketService queueTicketService;
 
 	/**
 	 * I miei mazzi, in ordine di nome, con {@code valid} ricalcolato (GET /api/v1/decks).
@@ -166,7 +168,7 @@ public class DeckService {
 
 		deck.rename(name);
 		deck.replaceCards(content);
-		deckRepository.deleteQueueTicket(deckId);
+		queueTicketService.removeForDeck(deckId);
 		return DeckResponse.from(saveChecked(deck, name), List.of());
 	}
 

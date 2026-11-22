@@ -248,7 +248,7 @@ Un admin non può disattivare se stesso né abbassarsi il ruolo.
 
 - `GET /admin/users?q=&role=&enabled=&page=&size=`: paginato in ordine di `id`; `q` cerca nello username o nell'email senza distinguere maiuscole e minuscole, `role` (`USER`, `ADMIN`, maiuscole facoltative; un ruolo inesistente dà una pagina vuota), `enabled` (`true`, `false` o vuoto). Ogni riga: `id`, `username`, `email`, `role`, `enabled`, `emailVerified`, `credits`, `createdAt`. Ruoli e saldi si leggono con una query ciascuno per tutta la pagina.
 - `POST /admin/users/{id}/disable` e `/enable`, `PUT /admin/users/{id}/role` con `{ "role": "ADMIN" }`: restituiscono l'utente con la stessa forma della lista. Sono idempotenti: disattivare un account già disattivato o assegnare lo stesso ruolo non cambia niente (la disattivazione cancella comunque i refresh token).
-- La disattivazione cancella i refresh token (`AuthService.revokeAllSessions`); gli access token già emessi restano validi fino alla scadenza, al massimo 15 minuti, come il cambio di ruolo. Il ticket in `matchmaking_queue` si cancellerà con API-47 (TODO in `UserAdminService.disable`).
+- La disattivazione cancella i refresh token (`AuthService.revokeAllSessions`); gli access token già emessi restano validi fino alla scadenza, al massimo 15 minuti, come il cambio di ruolo. Il ticket in `matchmaking_queue` si cancella nella stessa transazione con `QueueTicketService.removeForUser` (API-47).
 - Senza audit finché non arriva API-52.
 
 | Caso | Status | `code` |

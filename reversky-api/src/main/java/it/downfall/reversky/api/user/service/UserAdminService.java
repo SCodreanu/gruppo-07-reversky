@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.downfall.reversky.api.auth.service.AuthService;
+import it.downfall.reversky.api.battle.service.QueueTicketService;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.user.dto.AdminUserResponse;
@@ -42,6 +43,7 @@ public class UserAdminService {
 	private final RoleRepository roleRepository;
 	private final AuthService authService;
 	private final InventoryService inventoryService;
+	private final QueueTicketService queueTicketService;
 
 	/**
 	 * Utenti filtrati e paginati in ordine di id, con ruolo e saldo (tre query in tutto: utenti, conteggio, saldi).
@@ -65,7 +67,8 @@ public class UserAdminService {
 	}
 
 	/**
-	 * Disattiva un account e chiude tutte le sue sessioni (refresh token cancellati).
+	 * Disattiva un account, chiude tutte le sue sessioni (refresh token cancellati) e lo toglie dalla coda
+	 * classificata (API-47).
 	 *
 	 * @param adminId id dell'admin che fa la richiesta, dal token
 	 * @throws AdminSelfActionException se l'admin prova a disattivare se stesso
@@ -80,7 +83,8 @@ public class UserAdminService {
 		User user = getUser(userId);
 		user.disable();
 		authService.revokeAllSessions(userId);
-		// TODO(@antoninoconsolato-its): cancellare anche il ticket in matchmaking_queue con API-47 (#117)
+		// API-47: un account disattivato non resta in coda classificata
+		queueTicketService.removeForUser(userId);
 
 		log.info("User {} disabled by admin {}", userId, adminId);
 		return toResponse(user);
