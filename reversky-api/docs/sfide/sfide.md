@@ -326,7 +326,7 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 - Ingresso in coda due volte → `409`.
 - Due abbinamenti in parallelo non usano lo stesso ticket (`SKIP LOCKED`).
 - Mazzo non più valido al momento dell'abbinamento → solo quel ticket viene rimosso, nessuna partita creata.
-- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; vince 1100 → −7 / +7; pareggio a rating uguale → 0.
+- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; vince 1100 → −7 / +7; pareggio a rating uguale → 0 (`EloTest`, API-46).
 - Retry di una classificata non completata → l'Elo viene applicato una sola volta.
 - Due retry sovrapposti della stessa classificata → Elo e crediti assegnati una sola volta.
 - Pareggio in classificata mentre i due giocatori accettano uno scambio → nessun deadlock, crediti e carte corretti.
@@ -392,6 +392,13 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 
 - `POST /battles/{id}/retry` (`BattleService.retry`): solo i due giocatori (`404 BATTLE_NOT_FOUND` per gli altri). Rimanda all'engine la richiesta costruita dalla partita salvata (stesso seed, stesse fotografie dei mazzi, stesse regole e bonus), anche se nel frattempo il catalogo o il rule set sono cambiati; il salvataggio blocca la riga e non riscrive una partita già completata.
 - Una partita già completata si restituisce così com'è con `200`, senza chiamare l'engine (deciso il 21 novembre: il retry è idempotente). Engine ancora spento: `503 ENGINE_UNAVAILABLE` con `battleId`.
+
+### Rating Elo (API-46 #116)
+
+- `battle/service/Elo`: `eloDelta(rating, opponentRating, score, gamesPlayed)` come nella sezione "Elo" sopra (K 40 nelle prime 10 partite, poi 20; mai sotto 0) e `score(outcome)` (vittoria 1, pareggio 0,5, sconfitta 0). Funzioni pure, provate in `EloTest` con gli esempi 1000 contro 1100.
+- `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo userà la partita classificata (`API-48`…`API-50`, non ancora fatte): oggi nessun codice cambia i rating.
+- `RankingService.createIfMissing(userId)` crea la riga con i valori iniziali (`INSERT … ON CONFLICT DO NOTHING`, quindi due ingressi in coda contemporanei non falliscono): la chiamerà l'ingresso in coda di `API-47`.
+- `GET /api/v1/rankings/me` (`RankingController`), con il token: `{ rating, peakRating, gamesPlayed, wins, losses, draws }`. Chi non ha ancora una riga riceve 1000 e contatori a 0, e la riga **non** si crea (una lettura non scrive). Nessuna classifica né posizione (Q-10).
 
 ### Integrazione reale con l'engine (API-54 #124)
 
