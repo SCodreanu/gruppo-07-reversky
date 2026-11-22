@@ -29,7 +29,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | `API-56` (#126) | Test di integrazione del flusso pacchetti: registrazione, crediti, acquisto, apertura, collezione | le parti singole sono già coperte; manca il flusso unico |
 | `API-57` (#127) | Test di integrazione di scambi e sfide amichevoli | la parte classificata è fuori perimetro (vedi sotto) |
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
-| — | Chiedere ai DSG D-01 (punti vita) e D-04 (bonus di fazione) | servono a `ENG-30` e ad `API-64` |
+| — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
 ### 30 novembre – 6 dicembre (code freeze)
 
