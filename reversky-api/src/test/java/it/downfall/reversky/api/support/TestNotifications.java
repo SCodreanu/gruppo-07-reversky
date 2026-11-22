@@ -25,6 +25,16 @@ public class TestNotifications {
 			user.getId());
 	}
 
+	/**
+	 * Toglie le notifiche degli utenti, es. quelle nate dalla preparazione del test (un'amicizia creata con
+	 * {@code FriendshipService} manda le sue notifiche).
+	 */
+	public void clear(User... users) {
+		for (User user : users) {
+			jdbcTemplate.update("DELETE FROM notifications WHERE user_id = ?", user.getId());
+		}
+	}
+
 	/** Il payload JSON dell'ultima notifica di quel tipo dell'utente, così com'è salvato. */
 	public String lastPayload(User user, String type) {
 		return jdbcTemplate.queryForObject("SELECT payload::text FROM notifications WHERE user_id = ? AND type = ? "

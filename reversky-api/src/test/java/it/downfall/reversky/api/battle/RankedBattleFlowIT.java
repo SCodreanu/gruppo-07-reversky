@@ -64,6 +64,7 @@ import it.downfall.reversky.api.support.TestCards;
 import it.downfall.reversky.api.support.TestCollections;
 import it.downfall.reversky.api.support.TestDecks;
 import it.downfall.reversky.api.support.TestFriends;
+import it.downfall.reversky.api.support.TestNotifications;
 import it.downfall.reversky.api.support.TestRuleSets;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
@@ -331,6 +332,10 @@ class RankedBattleFlowIT {
 		User loser = challengerDelta > 0 ? opponent : challenger;
 		assertThat(rewards(winner)).containsExactly("BATTLE_WIN:" + winReward);
 		assertThat(rewards(loser)).isEmpty();
+		// API-68: anche la notifica della partita completata parte una volta sola per giocatore
+		TestNotifications testNotifications = new TestNotifications(jdbcTemplate);
+		assertThat(testNotifications.types(winner)).containsOnlyOnce("BATTLE_COMPLETED");
+		assertThat(testNotifications.types(loser)).containsOnlyOnce("BATTLE_COMPLETED");
 	}
 
 	@Test

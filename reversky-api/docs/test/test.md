@@ -181,7 +181,7 @@ Le carte non si cancellano mai, quindi restano nel database tra un test e l'altr
 
 `TestFactionBonuses` aiuta i test dei bonus di fazione: `createFaction()` crea una fazione con nome univoco, `currentMatrix()` legge la matrice nella forma del corpo del `PUT`, `toJson(rows)` la scrive per i test HTTP. Come `TestRuleSets` **non** è un `@TestComponent`: si crea con `new TestFactionBonuses(factionBonusService, factionService)`. La matrice è una sola per tutto il database e `GET /rules` la legge: un test che la modifica chiama `rememberMatrix()` in `@BeforeEach` e `restoreMatrix()` in `@AfterEach`. Esempi in `FactionBonusServiceIT`.
 
-`TestNotifications` legge le notifiche di un utente per i test dei collegamenti (API-67…69): `types(user)` dalla più vecchia e `lastPayload(user, type)` come testo JSON; si crea con `new TestNotifications(jdbcTemplate)`.
+`TestNotifications` legge le notifiche di un utente per i test dei collegamenti (API-67…69): `types(user)` dalla più vecchia, `lastPayload(user, type)` come testo JSON e `clear(users...)` per togliere quelle nate dalla preparazione (un'amicizia creata con `FriendshipService` manda le sue); si crea con `new TestNotifications(jdbcTemplate)`.
 
 `TestFriends` aiuta i test delle amicizie: `makeFriends(a, b)` e `sendRequest(a, b)` passano per `FriendshipService`, `countRowsBetween(a, b)` conta le righe tra due utenti in entrambe le direzioni, `createBattleInvite(challenger, opponent, status)` e `battleInviteExists(id)` scrivono e leggono `battle_invites` con SQL (con un mazzo vuoto dello sfidante) finché non esistono le entità delle sfide. Come `TestRuleSets` **non** è un `@TestComponent`: si crea con `new TestFriends(friendshipService, jdbcTemplate)`.
 
