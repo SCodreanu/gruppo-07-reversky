@@ -53,6 +53,8 @@
 .sectionCard h3 { margin: 14px 0 6px; color: var(--bone); font-size: 23px; line-height: 1.1; }
 .sectionCard p { margin: 0; color: var(--ash); font-size: 10px; line-height: 1.65; }
 .cardStatus { align-self: flex-start; margin-top: auto; padding-top: 14px; color: var(--bronze); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+.sectionLink { color: inherit; transition: border-color 140ms ease, transform 140ms ease; }
+.sectionLink:hover { border-color: var(--bronze); transform: translateY(-2px); }
 
 .accountStrip { display: flex; align-items: center; gap: 26px; border-top: 1px solid var(--line); padding: 20px 0 0; }
 .accountStrip h2 { margin: 4px 0 0; font-size: 22px; }

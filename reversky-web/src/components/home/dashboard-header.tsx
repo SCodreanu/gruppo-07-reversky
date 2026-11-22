@@ -4,17 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/brand-mark";
 import { CreditMark } from "@/components/credit-mark";
-import type { UserProfile } from "@/lib/api/contracts";
+import { gameFetch } from "@/lib/api/browser";
+import type { Inventory, UserProfile } from "@/lib/api/contracts";
 import { ProfileAvatar } from "./profile-avatar";
 import styles from "./dashboard-header.module.css";
-
-function readCreditBalance(value: unknown): number | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const record = value as Record<string, unknown>;
-  const raw = record.credits ?? record.balance ?? record.creditBalance ?? record.currentCredits;
-  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
-  return readCreditBalance(record.inventory ?? record.wallet ?? record.data);
-}
 
 export function DashboardHeader({
   user,
@@ -43,17 +36,10 @@ export function DashboardHeader({
     }
     window.addEventListener("reversky:credits-updated", handleCreditUpdate);
     async function loadCredits() {
-      try {
-        const response = await fetch("/api/auth/wallet", { cache: "no-store" });
-        const result = response.ok ? await response.json().catch(() => null) : null;
-        if (active) {
-          setCredits(readCreditBalance(result));
-        }
-      } catch {
-        if (active) setCredits(null);
-      } finally {
-        if (active) setCreditsLoading(false);
-      }
+      const result = await gameFetch<Inventory>("inventory");
+      if (!active) return;
+      setCredits(result.ok ? result.data.credits : null);
+      setCreditsLoading(false);
     }
     void loadCredits();
     return () => {
@@ -97,10 +83,12 @@ export function DashboardHeader({
           </>
         ) : (
           <>
-            <Link href="/home#overview">Overview</Link>
+            <Link href="/home">Home</Link>
+            <Link href="/catalog">Catalog</Link>
+            <Link href="/collection">Collection</Link>
+            <Link href="/decks">Decks</Link>
             <Link href="/shop">Shop</Link>
-            <Link href="/home#sections">Your world</Link>
-            <Link href="/guide">Portal guide</Link>
+            <Link href="/inventory">Inventory</Link>
           </>
         )}
       </nav>
@@ -143,6 +131,9 @@ export function DashboardHeader({
                 </span>
               </div>
               <div className={styles.menuLinks}>
+                <Link href="/inventory" onClick={() => setMenuOpen(false)}>
+                  <span aria-hidden="true">◈</span> Sealed packs
+                </Link>
                 <Link href="/account" onClick={() => setMenuOpen(false)}>
                   <span aria-hidden="true">◉</span> Manage account
                 </Link>

@@ -5,226 +5,54 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CreditMark } from "@/components/credit-mark";
+import { gameFetch, needsLogin, problemMessage, type GameResult } from "@/lib/api/browser";
+import type { Inventory, Pack, PackPurchaseRequest } from "@/lib/api/contracts";
 import styles from "./shop-experience.module.css";
 
-type ShopPack = {
-  id: string;
-  name: string;
-  cost: number;
-  cardCount: number;
-  purchaseLimit: number | null;
-  remainingPurchases: number | null;
-  contents: string[];
-  bonusOdds: string[];
-  note?: string;
-};
-
-type ShopSnapshot = {
-  packs?: unknown;
-  inventory?: unknown;
-  catalogueUnavailable?: boolean;
-};
-
-type OpeningCard = { id?: number | string; name: string; rarity: string; isNew?: boolean };
-type OpeningExperience = {
-  id: number;
-  packName: string;
-  phase: "opening" | "revealed" | "error";
-  preview: boolean;
-  cards: OpeningCard[];
-  error?: string;
-};
-
-const previewReveal: OpeningCard[] = [
-  { name: "Common slot", rarity: "Common" },
-  { name: "Uncommon slot", rarity: "Uncommon" },
-  { name: "Rare slot", rarity: "Rare" },
-];
-
-const previewPacks: ShopPack[] = [
-  {
-    id: "preview-mini",
-    name: "Mini",
-    cost: 300,
-    cardCount: 3,
-    purchaseLimit: null,
-    remainingPurchases: null,
-    contents: ["1 Common", "1 Uncommon", "1 Rare slot"],
-    bonusOdds: [],
-    note: "Format under review",
-  },
-  {
-    id: "preview-standard",
-    name: "Standard",
-    cost: 600,
-    cardCount: 7,
-    purchaseLimit: null,
-    remainingPurchases: null,
-    contents: ["3 Common", "2 Uncommon", "1 Rare", "1 flexible slot"],
-    bonusOdds: [],
-  },
-  {
-    id: "preview-premium",
-    name: "Premium",
-    cost: 1200,
-    cardCount: 15,
-    purchaseLimit: null,
-    remainingPurchases: null,
-    contents: ["5 Common", "4 Uncommon", "3 Rare", "3 flexible slots"],
-    bonusOdds: [],
-    note: "Format under review",
-  },
-];
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null;
-}
-
-function pickNumber(record: Record<string, unknown>, keys: string[]): number | null {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
-  }
-  return null;
-}
-
-function rarityName(value: unknown): string | null {
-  if (typeof value === "string") return value;
-  const record = asRecord(value);
-  return record && typeof record.name === "string" ? record.name : null;
-}
-
-function packRows(payload: unknown): unknown[] {
-  if (Array.isArray(payload)) return payload;
-  const record = asRecord(payload);
-  if (!record) return [];
-  for (const key of ["packs", "items", "content"]) {
-    if (Array.isArray(record[key])) return record[key] as unknown[];
-  }
-  return [];
-}
-
-function normalisePack(value: unknown, index: number): ShopPack | null {
-  const record = asRecord(value);
-  if (!record) return null;
-  const name = typeof record.name === "string" && record.name.trim() ? record.name : `Pack ${index + 1}`;
-  const cost = pickNumber(record, ["cost", "price", "creditsCost"]);
-  const rulesValue = record.slots ?? record.rarityRules ?? record.contents ?? record.composition;
-  const rules = Array.isArray(rulesValue) ? rulesValue : [];
-  const parsedContents = rules.flatMap((rule) => {
-    const row = asRecord(rule);
-    const rarity = row ? rarityName(row.rarity) : null;
-    if (!row || !rarity) return [];
-    const quantity = pickNumber(row, ["quantity", "count"]);
-    return quantity === null ? [] : [`${quantity} ${rarity}`];
-  });
-  const cardCountFromRules = rules.reduce<number>((total, rule) => {
-    const row = asRecord(rule);
-    return total + (row ? pickNumber(row, ["quantity", "count"]) ?? 0 : 0);
-  }, 0);
-  const bonuses = Array.isArray(record.bonuses) ? record.bonuses : [];
-  const bonusOdds = bonuses.flatMap((bonus) => {
-    const row = asRecord(bonus);
-    const rarity = row ? rarityName(row.rarity) : null;
-    if (!row || !rarity) return [];
-    const percentage = pickNumber(row, ["percentage"]) ?? ((pickNumber(row, ["probabilityUnits"]) ?? 0) / 100);
-    return percentage > 0 ? [`${rarity} · ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(percentage)}%`] : [];
-  });
-  const id = record.id;
-  const cardCount = pickNumber(record, ["cardCount", "totalCards", "numberOfCards"]) ?? cardCountFromRules;
-  if (
-    (typeof id !== "number" && typeof id !== "string") ||
-    !/^\d+$/.test(String(id)) ||
-    cost === null || cost < 0 ||
-    cardCount <= 0
-  ) {
-    return null;
-  }
-
-  return {
-    id: String(id),
-    name,
-    cost,
-    cardCount,
-    purchaseLimit: pickNumber(record, ["purchaseLimit", "purchase_limit"]) ?? null,
-    remainingPurchases: pickNumber(record, ["remainingPurchases", "remainingPurchaseLimit", "remainingQuantity"]) ?? null,
-    contents: parsedContents,
-    bonusOdds,
-  };
-}
-
-function readCredits(value: unknown): number | null {
-  const record = asRecord(value);
-  if (!record) return null;
-  const direct = pickNumber(record, ["credits", "balance", "creditBalance", "currentCredits"]);
-  if (direct !== null) return direct;
-  const nested = asRecord(record.inventory ?? record.wallet ?? record.data);
-  return nested ? pickNumber(nested, ["credits", "balance", "creditBalance"]) : null;
-}
-
-function readUnopenedPacks(value: unknown): Record<string, number> {
-  const record = asRecord(value);
-  if (!record) return {};
-  const nested = asRecord(record.inventory ?? record.data) ?? record;
-  const rows = nested.packInventory ?? nested.unopenedPacks ?? nested.packs;
-  const result: Record<string, number> = {};
-  if (Array.isArray(rows)) {
-    for (const value of rows) {
-      const row = asRecord(value);
-      if (!row) continue;
-      const pack = asRecord(row.pack);
-      const rawId = row.packId ?? pack?.id ?? row.id;
-      const quantity = pickNumber(row, ["quantity", "count", "remainingPacks"]);
-      if ((typeof rawId === "number" || typeof rawId === "string") && quantity !== null && quantity > 0) {
-        result[String(rawId)] = quantity;
-      }
-    }
-  } else {
-    const map = asRecord(rows);
-    if (map) {
-      for (const [id, value] of Object.entries(map)) {
-        const row = asRecord(value);
-        const quantity = typeof value === "number" ? value : row ? pickNumber(row, ["quantity", "count"]) : null;
-        if (/^\d+$/.test(id) && quantity !== null && quantity > 0) result[id] = quantity;
-      }
-    }
-  }
-  return result;
-}
+const MAX_PURCHASE_QUANTITY = 10;
+const percentFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 function formatCredits(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-async function responseMessage(response: Response, action: "purchase" | "open" = "purchase"): Promise<string> {
-  const result = (await response.json().catch(() => ({}))) as { message?: string; detail?: string };
-  if (response.status === 404) return action === "open" ? "Pack openings are not available yet." : "Pack purchases are not available yet.";
-  return result.message ?? result.detail ?? "We couldn’t complete that request. Please try again.";
+function packContents(pack: Pack): string[] {
+  return pack.slots.map((slot) => `${slot.quantity} ${slot.rarity.name}`);
+}
+
+function bonusOdds(pack: Pack): string[] {
+  return pack.bonuses
+    .filter((bonus) => bonus.percentage > 0)
+    .map((bonus) => `${bonus.rarity.name} · ${percentFormat.format(bonus.percentage)}%`);
+}
+
+function ownedCounts(inventory: Inventory): Record<number, number> {
+  return Object.fromEntries(inventory.packs.map((row) => [row.packId, row.quantity]));
+}
+
+type ShopLoad = [GameResult<Pack[]>, GameResult<Inventory>];
+
+function fetchShop(): Promise<ShopLoad> {
+  return Promise.all([gameFetch<Pack[]>("packs"), gameFetch<Inventory>("inventory")]);
+}
+
+function announceCredits(credits: number) {
+  window.dispatchEvent(new CustomEvent("reversky:credits-updated", { detail: credits }));
 }
 
 export function ShopExperience() {
   const router = useRouter();
-  const [packs, setPacks] = useState(previewPacks);
-  const [selectedId, setSelectedId] = useState("preview-standard");
+  const [packs, setPacks] = useState<Pack[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
-  const [ownedPacks, setOwnedPacks] = useState<Record<string, number>>({});
-  const [catalogLive, setCatalogLive] = useState(false);
-  const [balanceLive, setBalanceLive] = useState(false);
-  const [previewNote, setPreviewNote] = useState("");
+  const [ownedPacks, setOwnedPacks] = useState<Record<number, number>>({});
+  const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
-  const [openPending, setOpenPending] = useState(false);
-  const [message, setMessage] = useState("");
+  const [purchased, setPurchased] = useState<{ quantity: number; packName: string } | null>(null);
   const [error, setError] = useState("");
-  const [opening, setOpening] = useState<OpeningExperience | null>(null);
-  const openingSequence = useRef(0);
-  const openingDialogRef = useRef<HTMLElement>(null);
-  const openingCloseRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const dialogCloseRef = useRef<HTMLButtonElement>(null);
 
@@ -233,65 +61,41 @@ export function ShopExperience() {
     [packs, selectedId],
   );
 
-  const loadShop = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/auth/shop", { cache: "no-store" });
-      if (response.status === 401 || response.status === 403) {
-        router.replace(`/login?next=${encodeURIComponent("/shop")}`);
-        return;
-      }
-      if (!response.ok) {
-        setCatalogLive(false);
-        setBalanceLive(false);
-        setCredits(null);
-        setOwnedPacks({});
-        setPacks(previewPacks);
-        setSelectedId("preview-standard");
-        setPreviewNote(
-          response.status === 404
-            ? "The live shop catalogue is still being connected. These pack formats and prices are a preview from the design."
-            : "We can’t reach the live shop right now. These pack formats and prices are a preview from the design.",
-        );
-        return;
-      }
-
-      const result = (await response.json()) as ShopSnapshot;
-      const livePacks = packRows(result.packs).map(normalisePack).filter((pack): pack is ShopPack => Boolean(pack));
-      if (livePacks.length) {
-        setPacks(livePacks);
-        setCatalogLive(true);
-        const preferredPack = livePacks.find((pack) => pack.name.toLowerCase() === "standard") ?? livePacks[0];
-        setSelectedId(preferredPack.id);
-        setPreviewNote("");
-      } else {
-        setCatalogLive(false);
-        setPacks(previewPacks);
-        setSelectedId("preview-standard");
-        setPreviewNote(result.catalogueUnavailable
-          ? "The live pack catalogue is still connecting. These formats and prices are a preview; your inventory balance remains live."
-          : "The live catalogue has no available packs yet. These formats and prices are a design preview.");
-      }
-      const currentCredits = readCredits(result.inventory);
-      setCredits(currentCredits);
-      setBalanceLive(currentCredits !== null);
-      setOwnedPacks(readUnopenedPacks(result.inventory));
-    } catch {
-      setCatalogLive(false);
-      setBalanceLive(false);
-      setCredits(null);
-      setOwnedPacks({});
-      setPacks(previewPacks);
-      setSelectedId("preview-standard");
-      setPreviewNote("We can’t reach the live shop right now. These pack formats and prices are a preview from the design.");
-    } finally {
-      setLoading(false);
-    }
+  const goToLogin = useCallback(() => {
+    router.replace(`/login?next=${encodeURIComponent("/shop")}`);
   }, [router]);
 
+  const applyShop = useCallback(([packResult, inventoryResult]: ShopLoad) => {
+    setLoading(false);
+    if (needsLogin(inventoryResult)) {
+      goToLogin();
+      return;
+    }
+    if (!packResult.ok || !inventoryResult.ok) {
+      const problem = !packResult.ok ? packResult.problem : !inventoryResult.ok ? inventoryResult.problem : {};
+      setLoadError(problemMessage(problem, "We can’t reach the shop right now."));
+      return;
+    }
+    setLoadError("");
+    setPacks(packResult.data);
+    setSelectedId((current) =>
+      packResult.data.some((pack) => pack.id === current) ? current : packResult.data[0]?.id ?? null,
+    );
+    setCredits(inventoryResult.data.credits);
+    setOwnedPacks(ownedCounts(inventoryResult.data));
+  }, [goToLogin]);
+
+  const loadShop = useCallback(() => fetchShop().then(applyShop), [applyShop]);
+
   useEffect(() => {
-    void loadShop();
-  }, [loadShop]);
+    let active = true;
+    void fetchShop().then((result) => {
+      if (active) applyShop(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [applyShop]);
 
   useEffect(() => {
     if (!dialogOpen) return;
@@ -323,159 +127,88 @@ export function ShopExperience() {
   }, [dialogOpen]);
 
   async function confirmPurchase() {
-    if (!selectedPack || !catalogLive || pending) return;
+    if (!selectedPack || pending) return;
     setPending(true);
     setError("");
-    setMessage("");
-    try {
-      const response = await fetch(`/api/auth/shop/purchase/${encodeURIComponent(selectedPack.id)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity }),
-      });
-      if (response.status === 401 || response.status === 403) {
-        router.replace(`/login?next=${encodeURIComponent("/shop")}`);
-        return;
-      }
-      if (!response.ok) {
-        setError(await responseMessage(response));
-        return;
-      }
-
-      const receipt = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-      const updatedCredits = receipt ? readCredits(receipt) : null;
-      const nextCredits = updatedCredits ?? (credits === null ? null : credits - selectedPack.cost * quantity);
-      setCredits(nextCredits);
-      if (nextCredits !== null) window.dispatchEvent(new CustomEvent("reversky:credits-updated", { detail: nextCredits }));
-      setMessage(`${quantity} ${selectedPack.name} ${quantity === 1 ? "pack is" : "packs are"} now in your inventory.`);
-      setDialogOpen(false);
-      setQuantity(1);
-      void loadShop();
-    } catch {
-      setError("Connection unavailable. Please try again shortly.");
-    } finally {
-      setPending(false);
+    setPurchased(null);
+    const body: PackPurchaseRequest = { quantity };
+    const result = await gameFetch<Inventory>(`packs/${selectedPack.id}/purchase`, { method: "POST", body });
+    setPending(false);
+    if (needsLogin(result)) {
+      goToLogin();
+      return;
     }
-  }
-
-  async function previewOpening() {
-    const sequence = openingSequence.current + 1;
-    openingSequence.current = sequence;
-    setOpening({ id: sequence, packName: selectedPack.name, phase: "opening", preview: true, cards: [] });
-    await new Promise<void>((resolve) => window.setTimeout(resolve, 1650));
-    setOpening((current) => current?.id === sequence ? { ...current, phase: "revealed" } : current);
-  }
-
-  async function openOwnedPack() {
-    if (!selectedPack || !ownedPacks[selectedPack.id] || openPending) return;
-    setOpenPending(true);
-    const sequence = openingSequence.current + 1;
-    openingSequence.current = sequence;
-    setOpening({ id: sequence, packName: selectedPack.name, phase: "opening", preview: false, cards: [] });
-
-    const [request] = await Promise.allSettled([
-      fetch(`/api/auth/shop/open/${encodeURIComponent(selectedPack.id)}`, { method: "POST" }),
-      new Promise<void>((resolve) => window.setTimeout(resolve, 1650)),
-    ] as const);
-    setOpenPending(false);
-    if (request.status === "fulfilled" && request.value.ok) void loadShop();
-    if (openingSequence.current !== sequence) return;
-    if (request.status !== "fulfilled") {
-      setOpening({ id: sequence, packName: selectedPack.name, phase: "error", preview: false, cards: [], error: "Connection unavailable. Your pack is still in your inventory." });
+    if (!result.ok) {
+      setError(problemMessage(result.problem));
       return;
     }
 
-    if (request.value.status === 401 || request.value.status === 403) {
-      router.replace(`/login?next=${encodeURIComponent("/shop")}`);
-      return;
-    }
-    if (!request.value.ok) {
-      setOpening({ id: sequence, packName: selectedPack.name, phase: "error", preview: false, cards: [], error: await responseMessage(request.value, "open") });
-      return;
-    }
-
-    const result = asRecord(await request.value.json().catch(() => null));
-    const cards = Array.isArray(result?.cards) ? result.cards.flatMap((value) => {
-      const row = asRecord(value);
-      const card = row ? asRecord(row.card) : null;
-      const cardName = card?.name;
-      const cardId = card?.id;
-      const name = typeof cardName === "string" ? cardName : typeof row?.name === "string" ? row.name : null;
-      if (!row || !name) return [];
-      return [{
-        id: typeof cardId === "number" || typeof cardId === "string"
-          ? cardId
-          : typeof row.id === "number" || typeof row.id === "string" ? row.id : undefined,
-        name,
-        rarity: rarityName(card?.rarity ?? row.rarity) ?? "Card",
-        isNew: typeof row.isNew === "boolean" ? row.isNew : undefined,
-      } satisfies OpeningCard];
-    }) : [];
-    setOpening({ id: sequence, packName: selectedPack.name, phase: "revealed", preview: false, cards });
+    setCredits(result.data.credits);
+    setOwnedPacks(ownedCounts(result.data));
+    announceCredits(result.data.credits);
+    setPurchased({ quantity, packName: selectedPack.name });
+    setDialogOpen(false);
+    setQuantity(1);
+    // remainingPurchases changes for packs with a limit: read the catalogue again.
+    if (selectedPack.purchaseLimit !== null) void loadShop();
   }
 
-  function closeOpening() {
-    openingSequence.current += 1;
-    setOpening(null);
+  const wallet = (
+    <section className={styles.wallet} aria-label="Credit balance">
+      <div className={styles.walletMark} aria-hidden="true"><CreditMark className={styles.walletCoin} size={24} /></div>
+      <div className={styles.walletText}>
+        <p className="eyebrow">Your credits</p>
+        <strong>{loading && credits === null ? "Loading…" : credits !== null ? formatCredits(credits) : "Unavailable"}</strong>
+        <span>{credits !== null ? "Available to spend" : "Your balance appears when the shop is reachable"}</span>
+      </div>
+      <Link href="/guide" className={styles.walletLink}>How to earn credits <span aria-hidden="true">→</span></Link>
+    </section>
+  );
+
+  if (loadError || !selectedPack) {
+    return (
+      <div className={styles.shop}>
+        {wallet}
+        {loading ? (
+          <p className={styles.previewNote} role="status">Loading the shop…</p>
+        ) : (
+          <div className={styles.emptyState} role={loadError ? "alert" : "status"}>
+            <p>{loadError || "There are no packs on sale right now."}</p>
+            <button className="button button--quiet" onClick={() => {
+              setLoading(true);
+              void loadShop();
+            }} type="button">Try again</button>
+          </div>
+        )}
+      </div>
+    );
   }
 
-  useEffect(() => {
-    if (opening?.id === undefined) return;
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    openingCloseRef.current?.focus();
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        openingSequence.current += 1;
-        setOpening(null);
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusable = openingDialogRef.current?.querySelectorAll<HTMLElement>("button:not([disabled])");
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      opener?.focus();
-    };
-  }, [opening?.id]);
-
-  if (!selectedPack) return null;
   const totalCost = selectedPack.cost * quantity;
-  const insufficientCredits = balanceLive && credits !== null && totalCost > credits;
-  const maxQuantity = Math.min(10, selectedPack.remainingPurchases ?? 10);
-  const selectedPackCount = catalogLive ? ownedPacks[selectedPack.id] ?? 0 : 0;
+  const insufficientCredits = credits !== null && totalCost > credits;
+  const maxQuantity = Math.min(MAX_PURCHASE_QUANTITY, selectedPack.remainingPurchases ?? MAX_PURCHASE_QUANTITY);
+  const selectedPackCount = ownedPacks[selectedPack.id] ?? 0;
+  const contents = packContents(selectedPack);
+  const odds = bonusOdds(selectedPack);
 
   return (
     <div className={styles.shop}>
-      <section className={styles.wallet} aria-label="Credit balance">
-        <div className={styles.walletMark} aria-hidden="true"><CreditMark className={styles.walletCoin} size={24} /></div>
-        <div className={styles.walletText}>
-          <p className="eyebrow">Your credits</p>
-          <strong>{loading ? "Loading…" : balanceLive && credits !== null ? formatCredits(credits) : "Unavailable"}</strong>
-          <span>{balanceLive ? "Available to spend" : "Live balance will appear here"}</span>
-        </div>
-        <Link href="/guide" className={styles.walletLink}>How to earn credits <span aria-hidden="true">→</span></Link>
-      </section>
+      {wallet}
 
-      {previewNote && <p className={styles.previewNote} role="status"><span aria-hidden="true">✦</span>{previewNote}</p>}
-      {message && <p className={styles.successNote} role="status"><span aria-hidden="true">✓</span>{message}</p>}
+      {purchased && (
+        <p className={styles.successNote} role="status">
+          <span aria-hidden="true">✓</span>
+          {purchased.quantity} × {purchased.packName} added to your inventory.
+          <Link className="text-link" href="/inventory">Open {purchased.quantity === 1 ? "it" : "them"} now →</Link>
+        </p>
+      )}
 
       <div className={styles.sectionHeading}>
         <div>
           <p className="eyebrow">Sealed for the crossing</p>
           <h2 className="display-type">Choose your pack</h2>
         </div>
-        <span className={styles.draftLabel}>{catalogLive ? "Live catalogue" : "Formats and prices to validate"}</span>
+        <span className={styles.draftLabel}>Live catalogue</span>
       </div>
 
       <div className={styles.layout}>
@@ -483,6 +216,7 @@ export function ShopExperience() {
           {packs.map((pack, index) => {
             const active = selectedPack.id === pack.id;
             const thumbnailTone = index % 3 === 1 ? styles.packThumbnail1 : index % 3 === 2 ? styles.packThumbnail2 : "";
+            const owned = ownedPacks[pack.id] ?? 0;
             return (
               <button
                 aria-pressed={active}
@@ -503,11 +237,10 @@ export function ShopExperience() {
                   <span className={styles.packPrice}><CreditMark className={styles.inlineCoin} size={12} />{formatCredits(pack.cost)} credits</span>
                 </span>
                 <span className={styles.packArrow} aria-hidden="true">›</span>
-                {pack.note && <span className={styles.reviewChip}>{pack.note}</span>}
+                {owned > 0 && <span className={styles.reviewChip}>{owned} owned</span>}
               </button>
             );
           })}
-          {!packs.length && <p className={styles.emptyState}>There are no packs available right now.</p>}
         </div>
 
         <section className={styles.details} aria-labelledby="selected-pack-title">
@@ -520,41 +253,35 @@ export function ShopExperience() {
             <p className="eyebrow">{selectedPack.name} / sealed pack</p>
             <h3 className="display-type" id="selected-pack-title">{selectedPack.name}</h3>
             <p className={styles.detailDescription}>{selectedPack.cardCount} cards to reveal. Keep the pack sealed in your inventory until the moment feels right.</p>
+            {selectedPackCount > 0 && (
+              <Link className={styles.openButton} href="/inventory">
+                {selectedPackCount} sealed in your inventory · open {selectedPackCount === 1 ? "it" : "them"} <span aria-hidden="true">✦</span>
+              </Link>
+            )}
             <div className={styles.detailStats}>
               <div><span>Cards</span><strong>{selectedPack.cardCount}</strong></div>
               <div><span>Price</span><strong><CreditMark className={styles.inlineCoin} size={12} />{formatCredits(selectedPack.cost)} <small>credits</small></strong></div>
             </div>
             <div className={styles.contents}>
               <p className="eyebrow">Expected contents</p>
-              {selectedPack.contents.length ? (
-                <ul>
-                  {selectedPack.contents.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              ) : <p className={styles.oddsNote}>The live catalogue has not published the pack composition yet.</p>}
-              {selectedPack.bonusOdds.length > 0 ? (
+              <ul>
+                {contents.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              {odds.length > 0 ? (
                 <>
                   <p className="eyebrow">Bonus chances</p>
-                  <ul>{selectedPack.bonusOdds.map((item) => <li key={item}>{item}</li>)}</ul>
+                  <ul>{odds.map((item) => <li key={item}>{item}</li>)}</ul>
                 </>
               ) : (
-                <p className={styles.oddsNote}>{catalogLive ? "No bonus cards are configured for this pack." : "Bonus cards and exact odds appear when the catalogue is connected."}</p>
+                <p className={styles.oddsNote}>No bonus cards are configured for this pack.</p>
               )}
             </div>
             {selectedPack.remainingPurchases !== null && (
               <p className={styles.limitNote}>{selectedPack.remainingPurchases} purchases remaining for this pack.</p>
             )}
-            {selectedPackCount > 0 && <p className={styles.ownedCopy}>{selectedPackCount} unopened {selectedPackCount === 1 ? "pack" : "packs"} in your inventory.</p>}
-            {selectedPackCount > 0 && (
-              <button className={styles.openButton} disabled={openPending} onClick={() => void openOwnedPack()} type="button">
-                {openPending ? "Opening pack…" : "Open one from your inventory"} <span aria-hidden="true">✦</span>
-              </button>
-            )}
-            <button className={styles.previewButton} onClick={() => void previewOpening()} type="button">
-              Preview the opening animation <span aria-hidden="true">↗</span>
-            </button>
             <button
               className={`button ${styles.purchaseButton}`}
-              disabled={!catalogLive || selectedPack.remainingPurchases === 0}
+              disabled={selectedPack.remainingPurchases === 0}
               onClick={() => {
                 setError("");
                 setQuantity(1);
@@ -562,10 +289,9 @@ export function ShopExperience() {
               }}
               type="button"
             >
-              {catalogLive ? `Choose ${formatCredits(selectedPack.cost)} credits` : "Preview pack"}
+              {`Choose ${formatCredits(selectedPack.cost)} credits`}
               <span aria-hidden="true">›</span>
             </button>
-            {!catalogLive && <p className={styles.unavailableCopy}>Purchases will open when the shop catalogue is connected.</p>}
             {error && <p className={styles.errorNote} role="alert">{error}</p>}
           </div>
         </section>
@@ -579,7 +305,7 @@ export function ShopExperience() {
             <button aria-label="Close purchase confirmation" className={styles.dialogClose} onClick={() => setDialogOpen(false)} ref={dialogCloseRef} type="button">×</button>
             <p className="eyebrow">Final check</p>
             <h2 className="display-type" id="purchase-title">Confirm your purchase</h2>
-            <p className={styles.dialogSummary}>{selectedPack.name} pack <span>·</span> {selectedPack.cardCount} cards</p>
+            <p className={styles.dialogSummary}>{selectedPack.name} <span>·</span> {selectedPack.cardCount} cards</p>
             <div className={styles.quantityRow}>
               <span>Quantity</span>
               <div className={styles.quantityControl}>
@@ -589,7 +315,7 @@ export function ShopExperience() {
               </div>
             </div>
             <div className={styles.totalRow}><span>Total</span><strong><CreditMark className={styles.inlineCoin} size={14} />{formatCredits(totalCost)} credits</strong></div>
-            {balanceLive && credits !== null && <p className={styles.balanceAfter}>Balance after purchase <span>{formatCredits(credits - totalCost)} credits</span></p>}
+            {credits !== null && !insufficientCredits && <p className={styles.balanceAfter}>Balance after purchase <span>{formatCredits(credits - totalCost)} credits</span></p>}
             {insufficientCredits && <p className={styles.errorNote} role="alert">You need {formatCredits(totalCost - (credits ?? 0))} more credits for this purchase.</p>}
             {error && <p className={styles.errorNote} role="alert">{error}</p>}
             <button className={`button ${styles.purchaseButton}`} disabled={pending || insufficientCredits} onClick={() => void confirmPurchase()} type="button">
@@ -601,45 +327,6 @@ export function ShopExperience() {
         </div>
       )}
 
-      {opening && (
-        <div className={styles.openingBackdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOpening(); }}>
-          <section aria-labelledby="opening-title" aria-live="polite" aria-modal="true" className={styles.openingDialog} ref={openingDialogRef} role="dialog">
-            <button aria-label="Close pack opening" className={styles.dialogClose} onClick={closeOpening} ref={openingCloseRef} type="button">×</button>
-            <p className="eyebrow">{opening.preview ? "Visual preview" : "Pack opening"}</p>
-            <h2 className="display-type" id="opening-title">{opening.phase === "opening" ? "The seal is breaking." : opening.phase === "error" ? "The pack stayed sealed." : "Cards revealed."}</h2>
-            <p className={styles.openingSubtitle}>{opening.packName} / {opening.preview ? "opening preview" : "your pack"}</p>
-            {opening.phase === "opening" && (
-              <div className={styles.openingStage}>
-                <span aria-hidden="true" className={styles.openingSpark}>✦</span>
-                <div className={styles.openingPack}>
-                  <Image src="/images/reversky-card-back.png" alt="" fill sizes="145px" />
-                  <span aria-hidden="true" className={styles.tearLine} />
-                </div>
-                <p>{opening.preview ? "A glimpse of what waits inside…" : "Revealing the cards inside…"}</p>
-              </div>
-            )}
-            {opening.phase === "revealed" && (
-              <>
-                <div className={styles.revealGrid}>
-                  {(opening.preview ? previewReveal : opening.cards).map((card, index) => (
-                    <article className={styles.revealCard} key={card.id ?? `${card.rarity}-${card.name}-${index}`}>
-                      <span className={styles.revealCardMark} aria-hidden="true">✦</span>
-                      <span className={styles.revealRarity}>{card.rarity}</span>
-                      <strong>{card.name}</strong>
-                      {card.isNew && <small>New to collection</small>}
-                    </article>
-                  ))}
-                </div>
-                {opening.preview
-                  ? <p className={styles.previewOnly}>Animation preview only. No cards are added to your collection.</p>
-                  : <p className={styles.openingResultCount}>{opening.cards.length} {opening.cards.length === 1 ? "card" : "cards"} added to your collection.</p>}
-              </>
-            )}
-            {opening.phase === "error" && <p className={styles.errorNote} role="alert">{opening.error}</p>}
-            {opening.phase !== "opening" && <button className={`button ${styles.closeOpening}`} onClick={closeOpening} type="button">Close</button>}
-          </section>
-        </div>
-      )}
     </div>
   );
 }

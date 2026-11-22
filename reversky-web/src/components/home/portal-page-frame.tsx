@@ -7,6 +7,7 @@ import { Brand } from "@/components/brand-mark";
 import { DashboardHeader } from "@/components/home/dashboard-header";
 import { PortalMobileNav } from "@/components/home/portal-mobile-nav";
 import type { UserProfile } from "@/lib/api/contracts";
+import { fetchSession, type SessionLoad } from "@/lib/api/session-client";
 import { getOrCreateProfileAvatar, saveProfileAvatar } from "@/lib/profile-avatar";
 import styles from "./portal-page-frame.module.css";
 
@@ -23,8 +24,6 @@ export function usePortalProfile(): PortalProfileContextValue {
   if (!value) throw new Error("usePortalProfile must be used inside PortalPageFrame");
   return value;
 }
-
-type SessionResponse = { user?: UserProfile; message?: string };
 
 export function PortalPageFrame({
   eyebrow,
@@ -46,32 +45,28 @@ export function PortalPageFrame({
   const [logoutPending, setLogoutPending] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
-  const loadSession = useCallback(async () => {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const response = await fetch("/api/auth/session", { cache: "no-store" });
-      if (response.status === 401 || response.status === 403 || response.status === 404) {
-        router.replace(`/login?next=${encodeURIComponent(pathname || "/account")}`);
-        return;
-      }
-      const result = (await response.json().catch(() => ({}))) as SessionResponse;
-      if (!response.ok || !result.user) {
-        setLoadError("We couldn’t load your account. Please try again.");
-        return;
-      }
+  const applySession = useCallback((result: SessionLoad) => {
+    if (result.kind === "signed-out") {
+      router.replace(`/login?next=${encodeURIComponent(pathname || "/account")}`);
+      return;
+    }
+    if (result.kind === "error") setLoadError(result.message);
+    else {
       setAvatarIndex(getOrCreateProfileAvatar(result.user.id));
       setUser(result.user);
-    } catch {
-      setLoadError("Connection unavailable. Please try again shortly.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }, [pathname, router]);
 
   useEffect(() => {
-    void loadSession();
-  }, [attempt, loadSession]);
+    let active = true;
+    void fetchSession().then((result) => {
+      if (active) applySession(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [attempt, applySession]);
 
   const chooseAvatar = useCallback((index: number) => {
     if (!user) return;
@@ -104,7 +99,11 @@ export function PortalPageFrame({
         <Brand compact href="/home" />
         <h1 className="display-type">We can’t reach your space.</h1>
         <p>{loadError || "Please try again shortly."}</p>
-        <button className="button" type="button" onClick={() => setAttempt((value) => value + 1)}>Try again</button>
+        <button className="button" type="button" onClick={() => {
+          setLoading(true);
+          setLoadError("");
+          setAttempt((value) => value + 1);
+        }}>Try again</button>
       </main>
     );
   }

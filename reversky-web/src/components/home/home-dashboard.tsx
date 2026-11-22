@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Brand } from "@/components/brand-mark";
 import { DashboardHeader } from "@/components/home/dashboard-header";
 import { PortalMobileNav } from "@/components/home/portal-mobile-nav";
 import type { UserProfile } from "@/lib/api/contracts";
+import { fetchSession, type SessionLoad } from "@/lib/api/session-client";
 import { getOrCreateProfileAvatar } from "@/lib/profile-avatar";
 import styles from "./home-dashboard.module.css";
 
-type SessionResponse = { user?: UserProfile; message?: string; code?: string };
+type ProblemResponse = { message?: string; code?: string };
 
 const sections = [
-  { number: "01", title: "Catalog", text: "Discover the cards and stories that cross the veil." },
-  { number: "02", title: "Collection", text: "Collect cards and choose which ones to take with you." },
-  { number: "03", title: "Decks", text: "Build a strategy around your favorite cards." },
-  { number: "04", title: "Challenges", text: "Meet other players at the Reversky table." },
+  { number: "01", title: "Catalog", text: "Discover the cards and stories that cross the veil.", href: "/catalog" },
+  { number: "02", title: "Collection", text: "Collect cards and choose which ones to take with you.", href: "/collection" },
+  { number: "03", title: "Decks", text: "Build a strategy around your favorite cards.", href: "/decks" },
+  { number: "04", title: "Challenges", text: "Meet other players at the Reversky table.", href: null },
 ];
 
 export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
@@ -28,37 +29,30 @@ export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
   const [resending, setResending] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [logoutPending, setLogoutPending] = useState(false);
-  const sessionRequestInFlight = useRef(false);
+  const [attempt, setAttempt] = useState(0);
 
-  const loadSession = useCallback(async () => {
-    if (sessionRequestInFlight.current) return;
-    sessionRequestInFlight.current = true;
-    setLoading(true);
-    setLoadError("");
-    try {
-      const response = await fetch("/api/auth/session", { cache: "no-store" });
-      if (response.status === 401 || response.status === 403 || response.status === 404) {
-        router.replace(`/login?next=${encodeURIComponent("/home")}`);
-        return;
-      }
-      const result = (await response.json().catch(() => ({}))) as SessionResponse;
-      if (!response.ok || !result.user) {
-        setLoadError("We couldn’t load your account. Please try again.");
-        return;
-      }
+  const applySession = useCallback((result: SessionLoad) => {
+    if (result.kind === "signed-out") {
+      router.replace(`/login?next=${encodeURIComponent("/home")}`);
+      return;
+    }
+    if (result.kind === "error") setLoadError(result.message);
+    else {
       setAvatarIndex(getOrCreateProfileAvatar(result.user.id));
       setUser(result.user);
-    } catch {
-      setLoadError("Connection unavailable. Please try again shortly.");
-    } finally {
-      sessionRequestInFlight.current = false;
-      setLoading(false);
     }
+    setLoading(false);
   }, [router]);
 
   useEffect(() => {
-    void loadSession();
-  }, [loadSession]);
+    let active = true;
+    void fetchSession().then((result) => {
+      if (active) applySession(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [attempt, applySession]);
 
   async function resendVerification() {
     setResending(true);
@@ -72,7 +66,7 @@ export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
           router.replace(`/login?next=${encodeURIComponent("/home")}`);
           return;
         }
-        const result = (await response.json().catch(() => ({}))) as SessionResponse;
+        const result = (await response.json().catch(() => ({}))) as ProblemResponse;
         setVerificationMessage(
           result.code === "AUTH_EMAIL_ALREADY_VERIFIED"
             ? "This email address is already verified."
@@ -112,7 +106,11 @@ export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
         <Brand compact href="/home" />
         <h1 className="display-type">We can’t reach your space.</h1>
         <p>{loadError || "Please try again shortly."}</p>
-        <button className="button" type="button" onClick={() => void loadSession()}>Try again</button>
+        <button className="button" type="button" onClick={() => {
+          setLoading(true);
+          setLoadError("");
+          setAttempt((value) => value + 1);
+        }}>Try again</button>
       </main>
     );
   }
@@ -175,17 +173,24 @@ export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
             <span className={styles.headingNote}>Your journey starts here</span>
           </div>
           <div className={styles.sectionGrid}>
-            {sections.map((section) => (
-              <article className={styles.sectionCard} key={section.number}>
-                <div className={styles.cardTop}>
-                  <span>{section.number}</span>
-                  <span className={styles.cardStar} aria-hidden="true">✦</span>
-                </div>
-                <h3 className="display-type">{section.title}</h3>
-                <p>{section.text}</p>
-                <span className={styles.cardStatus}>Coming soon</span>
-              </article>
-            ))}
+            {sections.map((section) => {
+              const content = (
+                <>
+                  <div className={styles.cardTop}>
+                    <span>{section.number}</span>
+                    <span className={styles.cardStar} aria-hidden="true">✦</span>
+                  </div>
+                  <h3 className="display-type">{section.title}</h3>
+                  <p>{section.text}</p>
+                  <span className={styles.cardStatus}>{section.href ? <>Open <span aria-hidden="true">→</span></> : "Coming soon"}</span>
+                </>
+              );
+              return section.href ? (
+                <Link className={`${styles.sectionCard} ${styles.sectionLink}`} href={section.href} key={section.number}>{content}</Link>
+              ) : (
+                <article className={styles.sectionCard} key={section.number}>{content}</article>
+              );
+            })}
           </div>
         </section>
 
