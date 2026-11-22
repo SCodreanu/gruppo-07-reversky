@@ -1,0 +1,97 @@
+.muted { color: var(--ash); font-size: 11px; }
+.valid { color: #8fc79a; font-size: 11px; }
+.invalid { color: #f08b8f; font-size: 11px; }
+
+/* Deck list */
+
+.listHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.deckGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.deckCard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; background: var(--night-soft); }
+.deckLink { display: grid; gap: 4px; padding: 18px 18px 12px; }
+.deckLink strong { font-size: 24px; line-height: 1.1; }
+.deckLink:hover strong { color: #fff; }
+.deckMark { color: var(--bronze); font-size: 16px; }
+.deckActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding: 10px 18px;
+  font-size: 11px;
+}
+.confirm { display: flex; gap: 12px; }
+.plainLink, .dangerLink { border: 0; padding: 0; background: none; cursor: pointer; font-size: 11px; }
+.plainLink { color: var(--ash); }
+.plainLink:hover { color: var(--bone); }
+.dangerLink { color: #f08b8f; font-weight: 600; }
+
+/* Builder */
+
+.builder { display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; gap: 18px; }
+.picker { display: grid; gap: 12px; min-width: 0; }
+.picker h2, .panel h2 { margin: 0; font-size: 24px; line-height: 1.1; }
+.panel {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 12px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--surface);
+}
+
+.counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.counters li { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+.counters span { display: block; color: var(--ash); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+.counters strong { font-size: 15px; }
+.counterOk { border-color: rgb(143 199 154 / 50%) !important; }
+.counterOk strong { color: #8fc79a; }
+
+.status { min-height: 18px; }
+.violations {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  border: 1px solid rgb(240 139 143 / 30%);
+  border-radius: 6px;
+  padding: 8px 10px 8px 24px;
+  background: rgb(240 139 143 / 6%);
+  color: #f3b3b6;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.deckCards { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.deckCards li { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line); padding: 4px 0; font-size: 11px; }
+.deckCardName { display: flex; min-width: 0; align-items: baseline; gap: 6px; }
+.deckCardName small { color: var(--ash-dim); font-size: 9px; }
+.toneDot { width: 7px; height: 7px; flex: none; align-self: center; border-radius: 50%; background: var(--tone); }
+
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper span { min-width: 16px; text-align: center; color: var(--bone); font-weight: 600; }
+.stepper button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  line-height: 1;
+}
+.stepper button:hover:not(:disabled) { border-color: var(--bronze); }
+.stepper button:disabled { cursor: not-allowed; opacity: 0.35; }
+
+@media (max-width: 900px) {
+  .builder { grid-template-columns: 1fr; }
+  .panel { position: static; max-height: none; order: -1; }
+}

@@ -6,8 +6,9 @@ import styles from "./portal-mobile-nav.module.css";
 
 const tabs = [
   { label: "Home", href: "/home", symbol: "⌂" },
+  { label: "Cards", href: "/collection", symbol: "✦" },
+  { label: "Decks", href: "/decks", symbol: "▤" },
   { label: "Shop", href: "/shop", symbol: "◈" },
-  { label: "Guide", href: "/guide", symbol: "✦" },
   { label: "Account", href: "/account", symbol: "◉" },
 ];
 

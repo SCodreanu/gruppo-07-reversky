@@ -1,0 +1,27 @@
+.summary {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: var(--night-soft);
+}
+.summaryHead { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.summaryHead h2 { margin: 4px 0 0; font-size: 26px; line-height: 1.1; }
+.percent { color: var(--bronze); font-size: 28px; font-weight: 500; }
+.rarities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rarities li { display: grid; grid-template-columns: 84px 1fr 48px; align-items: center; gap: 10px; font-size: 10px; }
+.rarityName { color: var(--tone); letter-spacing: 0.08em; text-transform: uppercase; }
+.bar { height: 6px; overflow: hidden; border-radius: 999px; background: var(--line); }
+.bar span { display: block; height: 100%; border-radius: inherit; background: var(--tone); }
+.rarityCount { color: var(--ash); text-align: right; }
+
+.ownership { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 0; }
+.ownership div { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.ownership dt { color: var(--ash); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+.ownership dd { margin: 2px 0 0; font-size: 18px; }

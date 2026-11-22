@@ -1,0 +1,226 @@
+/* Shared card faces, filters, pager and detail dialog (catalog, collection, decks). */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 14px;
+}
+
+.cardCell { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.card {
+  --tone: var(--ash);
+  position: relative;
+  display: flex;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+  border-radius: 8px;
+  padding: 12px 12px 11px;
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--tone) 16%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--surface-raised), var(--night-soft));
+  color: var(--bone);
+  text-align: left;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+button.card { cursor: pointer; font: inherit; }
+button.card:hover { transform: translateY(-2px); border-color: var(--tone); }
+
+.tone-common { --tone: #8c867a; }
+.tone-uncommon { --tone: #7fa8ab; }
+.tone-rare { --tone: #a67c3d; }
+.tone-mythic { --tone: #c2454b; }
+.tone-legendary { --tone: #d9b45b; }
+.tone-mutant { --tone: #9a7ad6; }
+
+.dimmed { opacity: 0.45; }
+
+.cardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+.rarity { color: var(--tone); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.badge {
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 1px 8px;
+  background: rgb(15 14 13 / 85%);
+  color: var(--bone);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Illustration over the text face (full card render): hidden until loaded, removed when missing. */
+.art { z-index: 1; object-fit: cover; opacity: 0; transition: opacity 220ms ease; }
+.artLoaded { opacity: 1; }
+
+/* ATK and DEF in the two orbs of the frame. Position and size come from each card's measure (card-art.tsx),
+   in % of the art; cqw follows the art's width, so the numbers scale with any card size. */
+.orbLayer { position: absolute; z-index: 2; inset: 0; container-type: inline-size; pointer-events: none; }
+.orb {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  /* Lining digits, all the same height (Georgia's old-style digits go up and down) */
+  font-family: "Times New Roman", Times, "Liberation Serif", serif;
+  font-weight: 700;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  /* Centre the digits themselves (cap height to baseline), not the line box */
+  text-box: trim-both cap alphabetic;
+  -webkit-text-stroke: 0.45cqw rgb(0 0 0 / 85%);
+  paint-order: stroke fill;
+  text-shadow: 0 0.3cqw 0.9cqw rgb(0 0 0 / 70%);
+}
+.statUp { color: #b9f5c3; }
+.statDown { color: #ffb0b3; }
+.cardMark { margin: auto 0 6px; color: var(--tone); font-size: 15px; opacity: 0.85; }
+.cardName { font-size: 19px; line-height: 1.1; overflow-wrap: anywhere; }
+.cardType { margin-top: 6px; color: var(--bone-muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+.cardFaction { color: var(--ash); font-size: 10px; }
+.stats { display: flex; gap: 8px; margin-top: 10px; }
+.stats > span {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.stats small { color: var(--ash); font-size: 8px; letter-spacing: 0.1em; }
+.effectPreview {
+  display: -webkit-box;
+  margin-top: 8px;
+  overflow: hidden;
+  color: var(--ash);
+  font-size: 9px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.inactive { margin-top: 6px; color: #f08b8f; font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+.cardFooter { display: flex; align-items: center; justify-content: space-between; gap: 6px; color: var(--ash); font-size: 10px; }
+
+/* Filters */
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(auto-fit, minmax(130px, 1fr));
+  align-items: end;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--night-soft);
+}
+.filterField { display: grid; gap: 6px; min-width: 0; }
+.filters select { appearance: auto; }
+.filterSummary {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ash);
+  font-size: 10px;
+}
+.clearFilters {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--bone);
+  cursor: pointer;
+  font-size: 10px;
+  text-decoration: underline;
+  text-decoration-color: var(--bronze);
+  text-underline-offset: 3px;
+}
+
+.pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; color: var(--ash); font-size: 11px; }
+.pager :global(.button) { min-height: 38px; }
+
+.state {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: 32px 16px;
+  color: var(--ash);
+  text-align: center;
+}
+.state p { margin: 0; }
+
+/* Detail dialog */
+
+.backdrop {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(5 4 4 / 78%);
+}
+.detail {
+  --tone: var(--ash);
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-radius: 10px;
+  padding: 26px 24px 22px;
+  background:
+    radial-gradient(circle at 50% 0, color-mix(in srgb, var(--tone) 14%, transparent), transparent 55%),
+    var(--surface);
+}
+.detail h2 { margin: 8px 0 2px; font-size: 34px; line-height: 1.05; }
+.detailLayout { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: start; gap: 22px; }
+.detailCard { cursor: default; }
+.detailBody { min-width: 0; padding-top: 6px; }
+.detail :global(.eyebrow) { color: var(--tone); }
+.dialogClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.detailFaction { margin: 0 0 14px; color: var(--ash); font-size: 11px; }
+.detailStats { display: flex; gap: 10px; margin-bottom: 14px; }
+.detailStats div { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.detailStats span { display: block; color: var(--ash); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.detailStats strong { font-size: 22px; }
+.detailBlock p:last-child { margin: 6px 0 14px; color: var(--bone-muted); font-size: 12px; line-height: 1.7; }
+.flavor { margin: 0 0 14px; border-left: 2px solid var(--tone); padding-left: 12px; color: var(--ash); font-size: 12px; font-style: italic; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.tags li { border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 9px; color: var(--bone-muted); font-size: 9px; letter-spacing: 0.06em; }
+.inactiveNote { color: #f08b8f; font-size: 11px; }
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .filters { grid-template-columns: 1fr 1fr; }
+  .filters > .filterField:first-child { grid-column: 1 / -1; }
+  .cardName { font-size: 16px; }
+  .detail { padding: 22px 16px 18px; }
+  .detailLayout { grid-template-columns: 1fr; }
+  .detailCard { width: min(220px, 70%); justify-self: center; }
+}
