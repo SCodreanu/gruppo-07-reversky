@@ -90,6 +90,7 @@ Decise il 10 novembre, prima della revisione degli effetti (dettagli nel [docume
 | Bilanciamento (limiti di copie, massimi per rarità nel mazzo, statistiche delle carte) a cura degli SWD | scelta di Tommaso | 9 nov |
 | **Niente massimi di ATK e DEF per rarità**: tolti `rarities.max_atk` e `max_def` (chiude Q-04) | le carte personalizzate possono superare qualsiasi soglia; il bilanciamento resta nelle statistiche di ogni carta | 9 nov |
 | **Notifiche con SSE** (amicizie, inviti, partite, scambi), più una tabella `notifications` (già nella baseline, #141); le implementano Tommaso e Claude più avanti (task API-65 – API-69). Chiude Q-16 | il frontend riceve gli eventi senza polling | 9 nov |
+| **Notifiche e SSE nel dettaglio**: canale `GET /notifications/stream` con l'header `Authorization: Bearer` (il frontend usa un client basato su `fetch`, niente token nell'URL), chiuso alla scadenza dell'access token e ripreso con `Last-Event-ID`; evento con `id` = notifica, `event` = tipo; payload di soli id e username dell'altro utente; notifiche lette eliminate dopo 30 giorni. Dettagli in [notifiche](../notifiche/notifiche.md) | `EventSource` non manda l'header `Authorization`; un token nell'URL finirebbe nei log | 22 nov |
 
 ### Progetto e infrastruttura
 
