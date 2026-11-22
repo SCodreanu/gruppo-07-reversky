@@ -17,7 +17,7 @@ const sections = [
   { number: "01", title: "Catalog", text: "Discover the cards and stories that cross the veil.", href: "/catalog" },
   { number: "02", title: "Collection", text: "Collect cards and choose which ones to take with you.", href: "/collection" },
   { number: "03", title: "Decks", text: "Build a strategy around your favorite cards.", href: "/decks" },
-  { number: "04", title: "Challenges", text: "Meet other players at the Reversky table.", href: null },
+  { number: "04", title: "Challenges", text: "Meet other players at the Reversky table.", href: "/battles" },
 ];
 
 export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {

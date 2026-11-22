@@ -87,6 +87,7 @@ export function DashboardHeader({
             <Link href="/catalog">Catalog</Link>
             <Link href="/collection">Collection</Link>
             <Link href="/decks">Decks</Link>
+            <Link href="/battles">Play</Link>
             <Link href="/shop">Shop</Link>
             <Link href="/inventory">Inventory</Link>
           </>

@@ -74,12 +74,12 @@ class DevSeedIT {
 	}
 
 	@Test
-	@DisplayName("alice and bob start with the signup bonus and one valid 30-card deck each")
-	void seedPlayers_haveCreditsAndValidDeck() {
+	@DisplayName("all dev accounts start with three valid 30-card decks")
+	void seedUsers_haveCreditsAndThreeValidDecks() {
 		// Arrange
 		int signupBonus = ruleSetService.getActiveRuleSet().getSignupBonus();
 
-		for (String email : List.of("alice@reversky.dev", "bob@reversky.dev")) {
+		for (String email : List.of("admin@reversky.dev", "alice@reversky.dev", "bob@reversky.dev")) {
 			User user = userService.findByEmail(email).orElseThrow();
 
 			// Act
@@ -87,29 +87,32 @@ class DevSeedIT {
 
 			// Assert
 			assertThat(inventoryService.getCredits(user.getId())).as(email).isEqualTo(signupBonus);
-			assertThat(decks).as(email).hasSize(1);
-			assertThat(decks.get(0).cardCount()).as(email).isEqualTo(30);
-			assertThat(decks.get(0).valid()).as(email).isTrue();
+			assertThat(decks).as(email).hasSize(3).allSatisfy(deck -> {
+				assertThat(deck.cardCount()).as(email + " " + deck.name()).isEqualTo(30);
+				assertThat(deck.valid()).as(email + " " + deck.name()).isTrue();
+			});
 		}
 	}
 
 	@Test
-	@DisplayName("alice and bob are friends and own every active original card")
-	void seedPlayers_areFriendsWithFullCollection() {
+	@DisplayName("all dev accounts own every active card and alice and bob are friends")
+	void seedUsers_haveFullCollectionAndFriendship() {
 		// Act
 		Integer friendships = jdbcTemplate.queryForObject("""
 			SELECT count(*) FROM friendships f
 			JOIN users a ON a.id = f.requester_id JOIN users b ON b.id = f.recipient_id
 			WHERE f.status = 'ACCEPTED' AND a.email = 'alice@reversky.dev' AND b.email = 'bob@reversky.dev'""", Integer.class);
-		Integer originals = jdbcTemplate.queryForObject(
-			"SELECT count(*) FROM catalog_cards WHERE is_active AND variant_of_id IS NULL", Integer.class);
-		Integer aliceCards = jdbcTemplate.queryForObject("""
-			SELECT count(*) FROM collection_cards cc JOIN users u ON u.id = cc.user_id
-			WHERE u.email = 'alice@reversky.dev'""", Integer.class);
+		Integer activeCards = jdbcTemplate.queryForObject(
+			"SELECT count(*) FROM catalog_cards WHERE is_active", Integer.class);
 
 		// Assert
 		assertThat(friendships).isEqualTo(1);
-		assertThat(aliceCards).isEqualTo(originals).isEqualTo(120);
+		for (String email : List.of("admin@reversky.dev", "alice@reversky.dev", "bob@reversky.dev")) {
+			Integer ownedCards = jdbcTemplate.queryForObject("""
+				SELECT count(*) FROM collection_cards cc JOIN users u ON u.id = cc.user_id
+				WHERE u.email = ?""", Integer.class, email);
+			assertThat(ownedCards).as(email).isEqualTo(activeCards);
+		}
 	}
 
 	@Test

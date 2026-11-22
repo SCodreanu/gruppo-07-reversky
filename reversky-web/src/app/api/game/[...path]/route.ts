@@ -32,6 +32,20 @@ const ALLOWED_ROUTES: AllowedRoute[] = [
   { method: "POST", pattern: /^decks\/validate$/ },
   { method: "PUT", pattern: /^decks\/\d+$/ },
   { method: "DELETE", pattern: /^decks\/\d+$/ },
+  // Friends, challenges, matchmaking and battle history
+  { method: "GET", pattern: /^friends$/ },
+  { method: "GET", pattern: /^rankings\/me$/ },
+  { method: "POST", pattern: /^battle-invites$/ },
+  { method: "GET", pattern: /^battle-invites$/ },
+  { method: "POST", pattern: /^battle-invites\/[0-9a-fA-F-]{36}\/accept$/ },
+  { method: "POST", pattern: /^battle-invites\/[0-9a-fA-F-]{36}\/reject$/ },
+  { method: "DELETE", pattern: /^battle-invites\/[0-9a-fA-F-]{36}$/ },
+  { method: "POST", pattern: /^matchmaking\/queue$/ },
+  { method: "GET", pattern: /^matchmaking\/queue$/ },
+  { method: "DELETE", pattern: /^matchmaking\/queue$/ },
+  { method: "GET", pattern: /^battles$/ },
+  { method: "GET", pattern: /^battles\/[0-9a-fA-F-]{36}$/ },
+  { method: "POST", pattern: /^battles\/[0-9a-fA-F-]{36}\/retry$/ },
 ];
 
 function noStore(response: NextResponse): NextResponse {

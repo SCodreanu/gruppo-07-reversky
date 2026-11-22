@@ -6,9 +6,8 @@
 -- che gli utenti di prova hanno cambiato nel frattempo.
 --
 -- Utenti (password di sviluppo per tutti: Reversky2026, mai usarla altrove):
--- - admin / admin@reversky.dev: ADMIN, senza carte;
--- - alice / alice@reversky.dev e bob / bob@reversky.dev: USER, amici tra loro, con tutte le carte originali attive
---   fino al limite di copie e un mazzo valido ciascuno (Alice Invitation, Bob Wound).
+-- - ogni account nel database dev: tutte le carte attive fino al limite di copie e tre mazzi validi
+--   (Invitation, Wound, Archive); admin resta ADMIN, alice e bob sono amici.
 
 -- Utenti con email verificata e privacy e termini accettati
 INSERT INTO users (role_id, username, email, password_hash, email_verified_at, privacy_accepted_at, terms_accepted_at)
@@ -34,15 +33,13 @@ INSERT INTO credit_transactions (user_id, amount, reason)
 SELECT user_id, credits, 'SIGNUP'
 FROM created;
 
--- Collezione completa: ogni carta originale attiva fino al suo limite di copie, min(deck_limit, copy_limit)
+-- Collezione completa per tutti gli account nel database dev: ogni carta attiva fino al suo limite di copie,
+-- min(deck_limit, copy_limit). Le copie già presenti restano invariate.
 INSERT INTO collection_cards (user_id, card_id, quantity)
 SELECT u.id, c.id, LEAST(r.deck_limit, COALESCE(c.copy_limit, r.deck_limit))
 FROM users u
-CROSS JOIN catalog_cards c
+JOIN catalog_cards c ON c.is_active
 JOIN rarities r ON r.id = c.rarity_id
-WHERE u.email IN ('alice@reversky.dev', 'bob@reversky.dev')
-	AND c.is_active
-	AND c.variant_of_id IS NULL
 ON CONFLICT (user_id, card_id) DO NOTHING;
 
 -- alice e bob sono amici, così possono sfidarsi in amichevole
@@ -57,76 +54,50 @@ WHERE alice.email = 'alice@reversky.dev'
 			AND GREATEST(f.requester_id, f.recipient_id) = GREATEST(alice.id, bob.id)
 	);
 
--- Un mazzo valido per il rule set 1.0 (30 carte): 7 creature Common da 2 copie e 6 Uncommon da 1 della fazione,
--- 3 Spell da 2 copie, una Hidden SURVIVAL e una DAMAGE, l'Oggetto e il Terreno della fazione. Le carte si scelgono
--- in ordine di id; le righe si inseriscono solo per un mazzo appena creato, mai in uno che esiste già.
-WITH owner AS (
-	SELECT id FROM users WHERE email = 'alice@reversky.dev'
-), deck AS (
+-- Tre mazzi validi per ciascun account sul rule set iniziale (30 carte): 7 creature Common da 2 copie,
+-- 6 Uncommon da 1, 3 Spell da 2, una Hidden per sottotipo, un Oggetto e un Terreno della fazione.
+-- Le carte si scelgono in ordine di id; si aggiungono contenuti solo ai mazzi creati qui, mai a quelli esistenti.
+WITH templates (suffix, faction_name, spell_offset, hidden_offset) AS (
+	VALUES ('Invitation', 'Theory of the Invitation', 0, 0),
+	       ('Wound', 'Theory of the Wound', 3, 1),
+	       ('Archive', 'Theory of the Archive', 6, 2)
+), owners AS (
+	SELECT id, username FROM users
+), specs AS (
+	SELECT owners.id AS user_id,
+	       initcap(owners.username) || ' ' || templates.suffix AS deck_name,
+	       templates.faction_name, templates.spell_offset, templates.hidden_offset
+	FROM owners CROSS JOIN templates
+), created AS (
 	INSERT INTO decks (user_id, name)
-	SELECT owner.id, 'Alice Invitation' FROM owner
-	WHERE NOT EXISTS (SELECT 1 FROM decks d WHERE d.user_id = owner.id AND d.name = 'Alice Invitation')
-	RETURNING id
-), faction AS (
-	SELECT id FROM factions WHERE name = 'Theory of the Invitation'
-), cards AS (
+	SELECT specs.user_id, specs.deck_name
+	FROM specs
+	WHERE NOT EXISTS (SELECT 1 FROM decks d WHERE d.user_id = specs.user_id AND d.name = specs.deck_name)
+	RETURNING id, user_id, name
+)
+INSERT INTO deck_cards (deck_id, card_id, quantity)
+SELECT created.id, cards.id, cards.quantity
+FROM created
+JOIN specs ON specs.user_id = created.user_id AND specs.deck_name = created.name
+JOIN factions faction ON faction.name = specs.faction_name
+CROSS JOIN LATERAL (
 	(SELECT c.id, 2 AS quantity FROM catalog_cards c JOIN rarities r ON r.id = c.rarity_id
-		WHERE c.type = 'CREATURE' AND r.sorting_order = 1 AND c.faction_id = (SELECT id FROM faction)
+		WHERE c.type = 'CREATURE' AND r.sorting_order = 1 AND c.faction_id = faction.id
 			AND c.is_active AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 7)
 	UNION ALL
 	(SELECT c.id, 1 FROM catalog_cards c JOIN rarities r ON r.id = c.rarity_id
-		WHERE c.type = 'CREATURE' AND r.sorting_order = 2 AND c.faction_id = (SELECT id FROM faction)
+		WHERE c.type = 'CREATURE' AND r.sorting_order = 2 AND c.faction_id = faction.id
 			AND c.is_active AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 6)
 	UNION ALL
 	(SELECT c.id, 2 FROM catalog_cards c WHERE c.type = 'SPELL' AND c.is_active AND c.variant_of_id IS NULL
-		ORDER BY c.id LIMIT 3)
+		ORDER BY c.id OFFSET specs.spell_offset LIMIT 3)
 	UNION ALL
 	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type = 'HIDDEN' AND c.subtype = 'SURVIVAL' AND c.is_active
-		AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 1)
+		AND c.variant_of_id IS NULL ORDER BY c.id OFFSET specs.hidden_offset LIMIT 1)
 	UNION ALL
 	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type = 'HIDDEN' AND c.subtype = 'DAMAGE' AND c.is_active
-		AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 1)
+		AND c.variant_of_id IS NULL ORDER BY c.id OFFSET specs.hidden_offset LIMIT 1)
 	UNION ALL
-	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type IN ('ITEM', 'TERRAIN') AND c.faction_id = (SELECT id FROM faction)
+	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type IN ('ITEM', 'TERRAIN') AND c.faction_id = faction.id
 		AND c.is_active AND c.variant_of_id IS NULL)
-)
-INSERT INTO deck_cards (deck_id, card_id, quantity)
-SELECT deck.id, cards.id, cards.quantity
-FROM deck
-CROSS JOIN cards;
-
--- Stesso mazzo per bob con la Theory of the Wound e le Spell successive
-WITH owner AS (
-	SELECT id FROM users WHERE email = 'bob@reversky.dev'
-), deck AS (
-	INSERT INTO decks (user_id, name)
-	SELECT owner.id, 'Bob Wound' FROM owner
-	WHERE NOT EXISTS (SELECT 1 FROM decks d WHERE d.user_id = owner.id AND d.name = 'Bob Wound')
-	RETURNING id
-), faction AS (
-	SELECT id FROM factions WHERE name = 'Theory of the Wound'
-), cards AS (
-	(SELECT c.id, 2 AS quantity FROM catalog_cards c JOIN rarities r ON r.id = c.rarity_id
-		WHERE c.type = 'CREATURE' AND r.sorting_order = 1 AND c.faction_id = (SELECT id FROM faction)
-			AND c.is_active AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 7)
-	UNION ALL
-	(SELECT c.id, 1 FROM catalog_cards c JOIN rarities r ON r.id = c.rarity_id
-		WHERE c.type = 'CREATURE' AND r.sorting_order = 2 AND c.faction_id = (SELECT id FROM faction)
-			AND c.is_active AND c.variant_of_id IS NULL ORDER BY c.id LIMIT 6)
-	UNION ALL
-	(SELECT c.id, 2 FROM catalog_cards c WHERE c.type = 'SPELL' AND c.is_active AND c.variant_of_id IS NULL
-		ORDER BY c.id OFFSET 3 LIMIT 3)
-	UNION ALL
-	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type = 'HIDDEN' AND c.subtype = 'SURVIVAL' AND c.is_active
-		AND c.variant_of_id IS NULL ORDER BY c.id OFFSET 1 LIMIT 1)
-	UNION ALL
-	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type = 'HIDDEN' AND c.subtype = 'DAMAGE' AND c.is_active
-		AND c.variant_of_id IS NULL ORDER BY c.id OFFSET 1 LIMIT 1)
-	UNION ALL
-	(SELECT c.id, 1 FROM catalog_cards c WHERE c.type IN ('ITEM', 'TERRAIN') AND c.faction_id = (SELECT id FROM faction)
-		AND c.is_active AND c.variant_of_id IS NULL)
-)
-INSERT INTO deck_cards (deck_id, card_id, quantity)
-SELECT deck.id, cards.id, cards.quantity
-FROM deck
-CROSS JOIN cards;
+) cards;

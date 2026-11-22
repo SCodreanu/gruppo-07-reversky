@@ -8,8 +8,8 @@ const tabs = [
   { label: "Home", href: "/home", symbol: "⌂" },
   { label: "Cards", href: "/collection", symbol: "✦" },
   { label: "Decks", href: "/decks", symbol: "▤" },
+  { label: "Play", href: "/battles", symbol: "✧" },
   { label: "Shop", href: "/shop", symbol: "◈" },
-  { label: "Account", href: "/account", symbol: "◉" },
 ];
 
 export function PortalMobileNav() {

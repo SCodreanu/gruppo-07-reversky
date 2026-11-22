@@ -31,7 +31,7 @@ export type SpringProblemDetail = {
   /** DECK_INVALID: the rules the deck breaks. */
   violations?: DeckViolation[];
   /** ENGINE_UNAVAILABLE / ENGINE_INPUT_REJECTED: the battle to retry. */
-  battleId?: number;
+  battleId?: string | number;
 };
 
 export type ApiResult<T = unknown> = {
@@ -145,6 +145,73 @@ export type DeckSummary = { id: number; name: string; cardCount: number; valid: 
 export type Deck = DeckSummary & {
   cards: { card: CatalogCard; quantity: number }[];
   violations: DeckViolation[];
+};
+
+/* Battles */
+
+export type FriendSummary = { userId: number; username: string };
+export type BattlePlayerSummary = { id: number; username: string };
+export type BattleInvite = {
+  id: string;
+  challenger: BattlePlayerSummary;
+  opponent: BattlePlayerSummary;
+  deck: { id: number; name: string } | null;
+  createdAt: string;
+};
+export type QueueTicket = {
+  status: "WAITING";
+  deckId: number;
+  rating: number;
+  queuedAt: string;
+  window: number;
+};
+export type PlayerRanking = {
+  rating: number;
+  peakRating: number;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+};
+export type BattleOutcome = "WIN" | "LOSS" | "DRAW";
+export type BattleSummary = {
+  battleId: string;
+  createdAt: string;
+  mode: "FRIENDLY" | "RANKED";
+  opponent: BattlePlayerSummary;
+  completed: boolean;
+  outcome: BattleOutcome | null;
+  endReason: string | null;
+  myFinalLifePoints: number | null;
+  opponentFinalLifePoints: number | null;
+  rounds: number | null;
+  ratingDelta: number | null;
+};
+export type BattleEvent = {
+  sequence?: number;
+  round?: number;
+  type?: string;
+  side?: "CHALLENGER" | "OPPONENT" | null;
+  data?: Record<string, unknown>;
+  message?: string;
+};
+export type BattleDetail = {
+  id: string;
+  mode: "FRIENDLY" | "RANKED";
+  createdAt: string;
+  completed: boolean;
+  result: "CHALLENGER_WIN" | "OPPONENT_WIN" | "DRAW" | null;
+  outcome: BattleOutcome | null;
+  ratingBefore: number | null;
+  ratingDelta: number | null;
+  mySide: "CHALLENGER" | "OPPONENT";
+  endReason: string | null;
+  totalRounds: number | null;
+  rulesVersion: string;
+  seed: number;
+  me: { id: number; username: string; finalLifePoints: number | null; creaturesDefeated: number | null; deck: unknown[] };
+  opponent: { id: number; username: string; finalLifePoints: number | null; creaturesDefeated: number | null; deck: unknown[] };
+  log: BattleEvent[];
 };
 
 export type DeckRules = {

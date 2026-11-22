@@ -70,18 +70,19 @@ Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engin
 
 ### Dati di prova (solo sviluppo)
 
-`db/dev/R__dev_seed.sql` è una migrazione **ripetibile**: Flyway la esegue dopo quelle versionate e di nuovo solo quando il file cambia, e ogni istruzione inserisce soltanto ciò che manca (nessun duplicato, niente sovrascritto). La cartella `db/dev` è nelle `spring.flyway.locations` solo con il profilo `dev` (`application-dev.properties`).
+`db/dev/R__dev_seed.sql` è una migrazione **ripetibile**: Flyway la esegue dopo quelle versionate e di nuovo solo quando il file cambia. Nel profilo dev assegna tutte le carte attive e crea tre mazzi starter per ogni account esistente; inserisce solo carte e mazzi mancanti, senza sovrascrivere i contenuti già presenti. La cartella `db/dev` è nelle `spring.flyway.locations` solo con il profilo `dev` (`application-dev.properties`).
 
 - **Attivazione:** `./gradlew bootRun` usa il profilo `dev` da solo (`build.gradle`); con `SPRING_PROFILES_ACTIVE` impostato vale quello. Il `compose.yaml` della cartella principale passa `SPRING_PROFILES_ACTIVE` all'API (default `default`): `docker compose up --build` carica i dati di prova solo con `SPRING_PROFILES_ACTIVE=dev` nell'ambiente o nel file `.env` (vedi `.env.example` e [sfide](../sfide/sfide.md#prova-sullo-stack-completo)). `java -jar` senza profilo e i test (tranne `DevSeedIT`, che ha il suo database) non li caricano.
 - **Utenti**, tutti con email verificata e password di sviluppo `Reversky2026` (mai usarla altrove):
 
 | Username | Email | Ruolo | Dati |
 |---|---|---|---|
-| `admin` | `admin@reversky.dev` | `ADMIN` | solo l'inventario |
-| `alice` | `alice@reversky.dev` | `USER` | crediti di benvenuto, tutte le carte originali attive fino al limite di copie, mazzo valido *Alice Invitation* |
-| `bob` | `bob@reversky.dev` | `USER` | come alice, con il mazzo *Bob Wound* |
+| `admin` | `admin@reversky.dev` | `ADMIN` | crediti di benvenuto, tutte le carte attive fino al limite di copie, mazzi validi *Admin Invitation*, *Admin Wound*, *Admin Archive* |
+| `alice` | `alice@reversky.dev` | `USER` | come admin, con i mazzi validi *Alice Invitation*, *Alice Wound*, *Alice Archive* |
+| `bob` | `bob@reversky.dev` | `USER` | come admin, con i mazzi validi *Bob Invitation*, *Bob Wound*, *Bob Archive* |
 
 - `alice` e `bob` sono amici (`ACCEPTED`), così possono sfidarsi in amichevole.
+- Gli altri account creati nello stesso database di sviluppo ricevono anch'essi tutte le carte attive e i tre mazzi starter quando viene eseguita la migrazione ripetibile.
 - Per ripartire da zero basta cancellare il volume del database locale.
 
 ### Regole

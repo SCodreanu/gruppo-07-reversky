@@ -182,7 +182,7 @@ Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
 Catalogo iniziale e dati di prova (API-55, API-25):
 
 - `V11__insert_initial_catalog.sql` carica le 120 carte di `catalogo-finale.csv` (ENG-42); Spell e Hidden sono Rare e non contano nel `max_per_deck`. Immagini segnaposto e testi in italiano finché i DSG non danno quelli definitivi.
-- Con il profilo `dev` (attivo da solo con `./gradlew bootRun`) `db/dev/R__dev_seed.sql` aggiunge `admin`, `alice` e `bob` (password di sviluppo `Reversky2026`) con collezioni complete, un mazzo valido ciascuno e l'amicizia tra alice e bob. Dettagli in [docs/database](docs/database/database.md#dati-di-prova-solo-sviluppo).
+- Con il profilo `dev` (attivo da solo con `./gradlew bootRun`) `db/dev/R__dev_seed.sql` aggiunge `admin`, `alice` e `bob` (password di sviluppo `Reversky2026`); assegna tutte le carte attive e tre mazzi validi a ogni account nel database dev e crea l'amicizia tra alice e bob. Dettagli in [docs/database](docs/database/database.md#dati-di-prova-solo-sviluppo).
 
 Mazzi (`deck/`, API-26–29):
 
