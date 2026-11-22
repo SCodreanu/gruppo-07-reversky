@@ -1,0 +1,7 @@
+{
+  "detail" : "Invalid factions for a CREATURE card: card 301",
+  "instance" : "/api/v1/simulations",
+  "status" : 400,
+  "title" : "Invalid simulation input",
+  "code" : "INVALID_CARD_FACTIONS"
+}

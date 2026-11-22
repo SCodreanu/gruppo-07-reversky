@@ -131,7 +131,19 @@ La cartella [`examples/`](../../examples/README.md) contiene richieste JSON con 
 Un solo test parametrico (`@ParameterizedTest` + `@CsvFileSource`) le invia tutte al controller e controlla risultato, motivo di fine, round, punti vita e codice d'errore.
 Il test è `SimulationExamplesTest`; come funziona e quali esempi sono ancora saltati è nella [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#6-test-di-accettazione-con-gli-esempi).
 
-Servono a due cose: dimostrano che regole e contratto REST funzionano insieme, e sono gli stessi file che l'API può usare per il proprio test di contratto.
+Servono a due cose: dimostrano che regole e contratto REST funzionano insieme, e sono gli stessi file che l'API usa per il proprio test di contratto.
+
+## Test di contratto con l'API (`ENG-24`)
+
+Le richieste di `examples/` e le **fotografie** delle risposte in [`examples/responses/`](../../examples/responses) sono il contratto tra l'engine e l'`EngineClient` dell'API (deciso il 22 novembre):
+
+- `SimulationContractTest` manda ogni richiesta di `examples/`, anche quelle di errore, e controlla che la risposta sia **uguale** alla sua fotografia (stesso nome di file), log compreso. Il confronto è tra alberi JSON: ordine dei campi e spazi non contano.
+- Il test di contratto dell'API (`reversky-api`, `EngineContractTest`) legge gli stessi file: le richieste devono passare identiche dal suo `SimulationRequest`, e le fotografie devono essere lette dal suo `EngineClient` senza campi sconosciuti (tranne il `log`, salvato così com'è).
+- Così una modifica al contratto fa fallire un test da una delle due parti: una risposta diversa qui, un campo che l'API non conosce o non manda di là.
+- Quando una risposta cambia **di proposito** (una regola, un evento nuovo del log), il test fallisce e scrive la risposta vera in `build/contract/actual/<file>.json`: si controlla e la si copia a mano in `examples/responses/`. Una fotografia non cambia mai da sola. Poi si avvisa il team, perché anche l'API va riprovata.
+- Un esempio nuovo in `examples/` ha bisogno della sua fotografia: il primo `gradlew test` fallisce e la scrive in `build/contract/actual/`.
+
+`examples/` è un input del task `test` (`build.gradle`): una modifica a richieste, CSV o fotografie rilancia i test anche se il codice non è cambiato.
 
 ## Test di bilanciamento (`ENG-28`)
 

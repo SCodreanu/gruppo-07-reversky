@@ -1,0 +1,141 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 1,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 27,
+    "creaturesDefeated" : 0
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131",
+      "attack" : 8,
+      "defense" : 6
+    },
+    "message" : "Challenger plays SCP-131 (ATK 8, DEF 6)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Eternal Cup",
+      "attack" : 4,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Eternal Cup (ATK 4, DEF 5)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "SCP-131",
+      "baseAttack" : 8,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "SCP-131 attacks with 8 (8 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Eternal Cup",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Eternal Cup attacks with 4 (4 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "SCP-131",
+      "target" : "Eternal Cup",
+      "amount" : 8,
+      "targetDefense" : -3
+    },
+    "message" : "SCP-131 deals 8 damage to Eternal Cup (DEF −3)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Eternal Cup",
+      "target" : "SCP-131",
+      "amount" : 4,
+      "targetDefense" : 2
+    },
+    "message" : "Eternal Cup deals 4 damage to SCP-131 (DEF 2)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Eternal Cup"
+    },
+    "message" : "Eternal Cup is destroyed"
+  }, {
+    "sequence" : 10,
+    "round" : 1,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 3,
+      "lifePoints" : 27
+    },
+    "message" : "Opponent loses 3 life points (27 left)"
+  }, {
+    "sequence" : 11,
+    "round" : 1,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Challenger wins (no creatures left)"
+  } ]
+}

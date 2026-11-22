@@ -1,0 +1,11 @@
+{
+  "detail" : "One or more fields are invalid",
+  "instance" : "/api/v1/simulations",
+  "status" : 400,
+  "title" : "Invalid simulation input",
+  "code" : "VALIDATION_FAILED",
+  "errors" : [ {
+    "field" : "rules.maxRounds",
+    "message" : "Max rounds must be at least 1"
+  } ]
+}
