@@ -199,6 +199,21 @@ public class CollectionService {
 	}
 
 	/**
+	 * Copie possedute di quelle carte, senza togliere quelle riservate (docs/scambi, "Proposta"): per controllare che
+	 * l'altro partecipante possieda le carte richieste senza rivelare le sue offerte aperte.
+	 *
+	 * @return copie per id di carta; una carta non posseduta manca dalla mappa (cioè 0)
+	 */
+	@Transactional(readOnly = true)
+	public Map<Integer, Integer> getOwnedCopies(Integer userId, Collection<Integer> cardIds) {
+		if (cardIds.isEmpty()) {
+			return Map.of();
+		}
+		return collectionCardRepository.findByIdUserIdAndIdCardIdIn(userId, cardIds).stream()
+			.collect(Collectors.toMap(CollectionCard::getCardId, CollectionCard::getQuantity));
+	}
+
+	/**
 	 * Quali di quelle carte l'utente possiede già (per {@code isNew} dell'apertura dei pacchetti).
 	 */
 	@Transactional(readOnly = true)

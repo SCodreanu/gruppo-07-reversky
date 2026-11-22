@@ -122,6 +122,21 @@ public class Trade implements Persistable<UUID> {
 		this.updatedAt = now;
 	}
 
+	/**
+	 * Dopo una controproposta tocca all'altro (docs/scambi, "Controproposta"): con lo stato passa anche la riserva
+	 * delle copie, che vale solo per chi ha fatto l'offerta in corso.
+	 *
+	 * @throws IllegalStateException se lo scambio è chiuso (errore del chiamante: il service lo controlla prima)
+	 */
+	public void passTurn(Instant now) {
+		this.status = switch (status) {
+			case WAITING_RECIPIENT -> TradeStatus.WAITING_REQUESTER;
+			case WAITING_REQUESTER -> TradeStatus.WAITING_RECIPIENT;
+			default -> throw new IllegalStateException("Trade " + id + " is already " + status);
+		};
+		this.updatedAt = now;
+	}
+
 	/** Le offerte attuali, di entrambi i lati, in sola lettura. */
 	public List<TradeOffer> getOffers() {
 		return Collections.unmodifiableList(offers);

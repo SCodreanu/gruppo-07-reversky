@@ -174,6 +174,26 @@ Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), 
 - `Trade.replaceOffers(giverId, given, otherGiven)` è l'unico modo di cambiarle: aggiorna la quantità delle righe che restano, elimina quelle tolte e aggiunge le nuove, mai svuotando e reinserendo. Un `giverId` che non partecipa o una quantità minore di 1 sono `IllegalArgumentException` (errore del chiamante: la richiesta li controlla prima).
 - `Trade.offeredBy(userId)`: le copie per carta che quel partecipante cede nell'offerta attuale.
 
+### Proposta e controproposta (API-33, #103)
+
+- `POST /trades` (`TradeRequest`: `recipientId`, `give`, `receive`) risponde `201` con lo scambio; `POST /trades/{id}/counter` (`TradeCounterRequest`: `give`, `receive`, dal punto di vista di chi controproponde) risponde `200`.
+- Forma della richiesta (`400 VALIDATION_FAILED`): `give` e `receive` obbligatori (anche vuoti), `cardId` e `quantity` obbligatori, `quantity` ≥ 1, nessuna carta ripetuta nello stesso lato.
+- Controlli della proposta, in quest'ordine:
+
+| Caso | Status | `code` |
+|---|---|---|
+| destinatario uguale a me | `422` | `TRADE_SELF` |
+| destinatario inesistente o disattivato (nessun obbligo di amicizia) | `404` | `USER_NOT_FOUND` |
+| nessuna carta in nessuno dei due lati | `422` | `TRADE_EMPTY` |
+| la stessa carta in `give` e in `receive` | `422` | `TRADE_SAME_CARD_BOTH_SIDES` |
+| una carta che non esiste (le carte disattivate e le varianti si possono scambiare) | `422` | `TRADE_CARD_NOT_FOUND` |
+| con la mia riga `inventories` bloccata: meno copie **disponibili** di quelle che do | `422` | `TRADE_NOT_ENOUGH_COPIES` |
+| il destinatario possiede meno copie di quelle che chiedo (si guardano solo le possedute, e il messaggio non dice quante) | `422` | `TRADE_NOT_OWNED` |
+
+- La controproposta blocca prima lo scambio e controlla partecipante (`404 TRADE_NOT_FOUND`), scambio aperto (`409 TRADE_CLOSED`) e mio turno (`409 TRADE_NOT_YOUR_TURN`), poi fa gli stessi controlli della proposta dal terzo in poi verso l'altro partecipante. Sostituisce le offerte con `Trade.replaceOffers` e passa il turno (`Trade.passTurn`): con il turno passa la riserva. Questo scambio non riserva niente a chi controproponde, perché la riserva è di chi ha fatto l'offerta in corso.
+- Le risposte hanno `give` e `receive` dal punto di vista di chi guarda: `[{ card, quantity }]` con la carta completa di `GET /collection`, per nome; le offerte di una pagina intera si leggono con una query (`TradeOfferRepository.findAllByIdTradeIdIn`).
+- `reservedQuantity` di `GET /collection` e le copie disponibili usate dai mazzi (`DECK_NOT_OWNED`) leggono già queste righe (`CollectionCardRepository.countReserved`): un mazzo che usa copie riservate risulta non valido finché lo scambio è aperto.
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.
