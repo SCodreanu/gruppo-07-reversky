@@ -104,15 +104,21 @@ L'engine controlla con `SimulationContractTest` che le fotografie siano le sue r
 ## Cosa deve essere coperto
 
 Obbligatorio:
-- [ ] ogni regola di `DeckValidator`, compreso `min(deck_limit, copy_limit)`;
+- [ ] ogni regola di `DeckValidator`, compreso `min(deck_limit, copy_limit)`; da controllare regola per regola in un task a parte (deciso il 22 novembre con `API-58`);
 - [x] acquisto pacchetto: crediti scalati, crediti insufficienti, saldo mai negativo, limite di acquisto, pacchetto gratuito (`PackPurchaseControllerIT`, `InventoryServiceIT`, il flusso in `PackFlowIT` e l'errore a metà in `PackFlowRollbackIT`);
-- [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, ripiego degli slot senza carte, nessun pacchetto da aprire;
+- [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, ripiego degli slot senza carte, nessun pacchetto da aprire; il filtro dei tag arriva con `API-21` (`acistar0`), il resto si controlla insieme a `DeckValidator`;
 - [x] scambi: tutti gli stati e i turni, controproposte, copie riservate, copie non più disponibili, **totale delle carte invariato** (`TradeProposalControllerIT`, `TradeControllerIT`, `TradeAcceptIT`, e il flusso completo in `TradeFlowIT`);
 - [x] amicizie: richiesta inversa, richiesta dopo un rifiuto, richieste opposte contemporanee;
 - [ ] sfide: stati dell'invito, mazzo non più valido, engine non disponibile, retry con lo stesso seed, retry sovrapposti che non assegnano due volte Elo e crediti. Le amichevoli sono coperte (`BattleInviteControllerIT`, `BattleControllerIT`, `FriendlyBattleFlowIT`, compresi i retry sovrapposti); restano Elo e crediti, che arrivano con le classificate (`API-45`…`API-50`);
 - [x] autenticazione: rotazione del refresh token, reset password che invalida i refresh token, account disattivato;
-- [ ] backoffice: ogni azione scrive in `audit_logs`;
-- [ ] sicurezza: endpoint protetti senza token → `401`, admin con `USER` → `403`, risorse altrui → `404`.
+- [ ] backoffice: ogni azione scrive in `audit_logs`; arriva con `API-52`, rimandato con il resto del backoffice (14 novembre);
+- [x] sicurezza: endpoint protetti senza token → `401`, admin con `USER` → `403`, risorse altrui → `404` (`API-58`: la matrice di tutti gli endpoint in `common/security/SecurityMatrixIT`, i token scaduti sugli endpoint pubblici in `PublicEndpointTokenIT`, le risorse altrui nei test di ogni endpoint).
+
+### Sicurezza (`API-58` #128)
+
+- `common/security/SecurityMatrixIT`: una riga per ogni endpoint (metodo, percorso, `PUBLIC`/`USER`/`ADMIN`). Senza token un endpoint protetto dà `401 AUTH_REQUIRED`; con un token `USER` `/admin/**` dà `403 ACCESS_DENIED`; chi ha diritto non riceve né `401` né `403` (le richieste usano id inesistenti e corpi vuoti, quindi si fermano a `400` o `404` e non scrivono niente). Un altro test legge gli endpoint da Spring e fallisce se uno non ha la sua riga o se una riga non esiste più.
+- `common/security/PublicEndpointTokenIT`: un token scaduto, non valido o malformato sugli endpoint pubblici si ignora (refresh, login, catalogo, negozio); sugli endpoint protetti resta `401`. I quattro test sugli endpoint pubblici erano rossi prima della correzione.
+- Risorse di altri utenti → `404`, nei test di ogni endpoint: mazzi (lettura, modifica, eliminazione), partite (dettaglio e retry), inviti (accettazione, rifiuto, ritiro), scambi (dettaglio, controproposta, accettazione, rifiuto), richieste di amicizia (accettazione e rifiuto da un terzo), rimozione di chi non è amico.
 
 ### Flussi completi (`API-56` #126, `API-57` #127)
 

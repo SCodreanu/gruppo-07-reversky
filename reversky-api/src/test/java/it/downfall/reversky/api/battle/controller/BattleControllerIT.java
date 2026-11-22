@@ -337,6 +337,22 @@ class BattleControllerIT {
 	}
 
 	@Test
+	@DisplayName("A third user cannot accept someone else's invite: 404, the invite stays pending and no battle is created")
+	void accept_thirdUser_returns404() throws Exception {
+		// Arrange
+		String inviteId = invite();
+
+		// Act + Assert: API-58, una risorsa di altri utenti è 404 (il mazzo passato non conta: si controlla prima l'invito)
+		accept(testUsers.create(), inviteId, opponentDeck)
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("BATTLE_INVITE_NOT_FOUND"));
+		assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM battle_invites WHERE id = ?::uuid", String.class, inviteId))
+			.isEqualTo("PENDING");
+		assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM battles WHERE invite_id = ?::uuid", Integer.class, inviteId))
+			.isZero();
+	}
+
+	@Test
 	@DisplayName("An invalid deck at acceptance returns 422: the invite stays pending and no battle is created")
 	void accept_invalidDeck_keepsInvitePending() throws Exception {
 		// Arrange: una carta del mazzo dell'avversario esce dalla sua collezione

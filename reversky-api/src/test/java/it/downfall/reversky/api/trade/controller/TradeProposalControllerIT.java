@@ -400,6 +400,23 @@ class TradeProposalControllerIT {
 	}
 
 	@Test
+	@DisplayName("A stranger cannot accept someone else's trade: 404 TRADE_NOT_FOUND, nothing moves, it stays open")
+	void accept_stranger_returns404() throws Exception {
+		// Arrange
+		UUID tradeId = proposeOk(requester, recipient.getId(), give(crawlers, 2), give(mothman, 1));
+		User stranger = testUsers.create();
+
+		// Act + Assert: API-58, una risorsa di altri utenti è 404
+		mockMvc.perform(as(stranger, post(BASE_PATH + "/" + tradeId + "/accept")))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("TRADE_NOT_FOUND"));
+		assertThat(testCollections.quantity(recipient, crawlers)).isZero();
+		mockMvc.perform(as(recipient, get(BASE_PATH + "/" + tradeId)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.status").value("WAITING_RECIPIENT"));
+	}
+
+	@Test
 	@DisplayName("Accepting with the other player disabled returns 422 TRADE_USER_DISABLED")
 	void accept_otherDisabled_returns422() throws Exception {
 		UUID tradeId = proposeOk(requester, recipient.getId(), give(crawlers, 1), List.of());
