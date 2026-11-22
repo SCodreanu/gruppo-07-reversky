@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
@@ -116,8 +116,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("A USER cannot replace the matrix, and nothing changes")
 	void replaceAll_userRole_returns403AndKeepsMatrix() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), 2, 1)));
 		List<FactionBonusRequest> before = testFactionBonuses.currentMatrix();
 
@@ -134,8 +134,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("An ADMIN gets the matrix with the faction names")
 	void findAll_adminRole_returnsRowsWithNames() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), -1, 2)));
 
 		// Act + Assert
@@ -156,8 +156,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("An ADMIN replaces the matrix: 200 with the new rows sorted by origin and target")
 	void replaceAll_validRows_returns200Sorted() throws Exception {
 		// Arrange: le fazioni create dopo hanno id più grandi
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		String body = TestFactionBonuses.toJson(List.of(
 			new FactionBonusRequest(b.id(), a.id(), -1, 0),
 			new FactionBonusRequest(a.id(), b.id(), 2, 1)));
@@ -180,8 +180,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("An empty body [] clears the matrix")
 	void replaceAll_emptyList_clearsMatrix() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), 2, 1)));
 
 		// Act + Assert
@@ -197,8 +197,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("A negative DEF bonus returns 400 with the row index in the field")
 	void replaceAll_negativeDef_returns400WithIndexedField() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		String body = TestFactionBonuses.toJson(List.of(
 			new FactionBonusRequest(a.id(), b.id(), 1, 0),
 			new FactionBonusRequest(b.id(), a.id(), 1, -1)));
@@ -214,8 +214,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("A missing field returns 400 with the row index in the field")
 	void replaceAll_missingField_returns400WithIndexedField() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		String body = "[{\"originFactionId\": " + a.id() + ", \"targetFactionId\": " + b.id() + ", \"defBonus\": 0}]";
 
 		// Act + Assert
@@ -241,7 +241,7 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("A faction matched against itself returns 422")
 	void replaceAll_selfMatchup_returns422() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
 
 		// Act + Assert
 		putMatrix(TestFactionBonuses.toJson(List.of(new FactionBonusRequest(a.id(), a.id(), 1, 0))))
@@ -253,7 +253,7 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("An unknown faction returns 422")
 	void replaceAll_unknownFaction_returns422() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
 
 		// Act + Assert
 		putMatrix(TestFactionBonuses.toJson(List.of(new FactionBonusRequest(a.id(), Integer.MAX_VALUE, 1, 0))))
@@ -265,8 +265,8 @@ class AdminFactionBonusControllerIT {
 	@DisplayName("The same pair twice returns 422")
 	void replaceAll_duplicatePair_returns422() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 
 		// Act + Assert
 		putMatrix(TestFactionBonuses.toJson(List.of(

@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
 import it.downfall.reversky.api.common.mail.EmailSender;
@@ -125,8 +125,8 @@ class RuleSetControllerIT {
 	@DisplayName("GET /rules includes the current faction bonuses, without faction names")
 	void findActive_includesFactionBonuses() throws Exception {
 		// Arrange: due fazioni e una coppia di bonus (la matrice di prima torna in tearDown)
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(
 			new FactionBonusRequest(a.id(), b.id(), 2, 1),
 			new FactionBonusRequest(b.id(), a.id(), -1, 0)));

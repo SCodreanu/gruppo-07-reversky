@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.dto.FactionResponse;
 import it.downfall.reversky.api.catalog.entity.Faction;
 import it.downfall.reversky.api.catalog.exception.FactionNameAlreadyUsedException;
@@ -52,7 +53,7 @@ class FactionServiceIT {
 		String name = uniqueName();
 
 		// Act
-		FactionResponse response = factionService.create(new FactionRequest(name, "factions/test.svg", "A test faction"));
+		AdminFactionResponse response = factionService.create(new FactionRequest(name, "factions/test.svg", "A test faction"));
 
 		// Assert
 		assertThat(response.id()).isNotNull();
@@ -66,7 +67,7 @@ class FactionServiceIT {
 	@DisplayName("The description is optional")
 	void create_withoutDescription_savesNullDescription() {
 		// Act
-		FactionResponse response = factionService.create(new FactionRequest(uniqueName(), "factions/test.svg", null));
+		AdminFactionResponse response = factionService.create(new FactionRequest(uniqueName(), "factions/test.svg", null));
 
 		// Assert
 		assertThat(response.description()).isNull();
@@ -88,26 +89,28 @@ class FactionServiceIT {
 	@DisplayName("The list contains every faction, sorted by id")
 	void findAll_afterCreatingTwo_returnsThemInIdOrder() {
 		// Arrange
-		FactionResponse first = factionService.create(request(uniqueName()));
-		FactionResponse second = factionService.create(request(uniqueName()));
+		AdminFactionResponse first = factionService.create(request(uniqueName()));
+		AdminFactionResponse second = factionService.create(request(uniqueName()));
 
 		// Act
 		List<FactionResponse> factions = factionService.findAll();
 
 		// Assert
 		assertThat(factions).isSortedAccordingTo(Comparator.comparing(FactionResponse::id));
-		assertThat(factions.indexOf(first)).isLessThan(factions.indexOf(second));
+		// create restituisce la risposta del backoffice, con i tag: si confrontano gli id
+		List<Integer> ids = factions.stream().map(FactionResponse::id).toList();
+		assertThat(ids.indexOf(first.id())).isLessThan(ids.indexOf(second.id()));
 	}
 
 	@Test
 	@DisplayName("An update changes name, emblem and description, and is saved")
 	void update_existingFaction_changesAllFields() {
 		// Arrange
-		FactionResponse created = factionService.create(request(uniqueName()));
+		AdminFactionResponse created = factionService.create(request(uniqueName()));
 		String newName = uniqueName();
 
 		// Act
-		FactionResponse response = factionService.update(created.id(), new FactionRequest(newName, "factions/new.svg", "New text"));
+		AdminFactionResponse response = factionService.update(created.id(), new FactionRequest(newName, "factions/new.svg", "New text"));
 
 		// Assert
 		assertThat(response.name()).isEqualTo(newName);
@@ -122,10 +125,10 @@ class FactionServiceIT {
 	void update_sameName_keepsTheName() {
 		// Arrange
 		String name = uniqueName();
-		FactionResponse created = factionService.create(request(name));
+		AdminFactionResponse created = factionService.create(request(name));
 
 		// Act
-		FactionResponse response = factionService.update(created.id(), new FactionRequest(name, "factions/other.svg", "Only the text changes"));
+		AdminFactionResponse response = factionService.update(created.id(), new FactionRequest(name, "factions/other.svg", "Only the text changes"));
 
 		// Assert
 		assertThat(response.name()).isEqualTo(name);
@@ -138,7 +141,7 @@ class FactionServiceIT {
 		// Arrange
 		String takenName = uniqueName();
 		factionService.create(request(takenName));
-		FactionResponse other = factionService.create(request(uniqueName()));
+		AdminFactionResponse other = factionService.create(request(uniqueName()));
 
 		// Act + Assert
 		assertThatThrownBy(() -> factionService.update(other.id(), request(takenName)))

@@ -144,7 +144,7 @@ class SecurityMatrixIT {
 			admin(HttpMethod.GET, "/admin/effects"),
 			admin(HttpMethod.GET, "/admin/faction-bonuses"), admin(HttpMethod.PUT, "/admin/faction-bonuses"),
 			admin(HttpMethod.GET, "/admin/factions"), admin(HttpMethod.POST, "/admin/factions"),
-			admin(HttpMethod.PUT, "/admin/factions/{id}"),
+			admin(HttpMethod.PUT, "/admin/factions/{id}"), admin(HttpMethod.PUT, "/admin/factions/{id}/tags"),
 			admin(HttpMethod.GET, "/admin/rarities"), admin(HttpMethod.POST, "/admin/rarities"),
 			admin(HttpMethod.PUT, "/admin/rarities/{id}"),
 			admin(HttpMethod.GET, "/admin/packs"), admin(HttpMethod.POST, "/admin/packs"),

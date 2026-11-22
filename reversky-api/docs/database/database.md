@@ -52,11 +52,11 @@ Dati inseriti con le migrazioni:
 | ruoli `USER` e `ADMIN` | `V2`, insieme alla tabella, perché il codice ne usa i nomi |
 | rule set `1.0` attivo, rarità e fazioni (nessun bonus di fazione finché non si decide D-04) | `V9__insert_reference_data.sql`, task API-15 (#85); valori in [decisioni](../decisioni/decisioni.md) |
 | inventario e riga `SIGNUP` per gli utenti registrati prima di API-17 (su un database vuoto non inserisce niente) | `V10__create_missing_inventories.sql`, task API-17 (#87) |
-| tag delle fazioni | migrazione del task API-13 (#83) |
 | catalogo iniziale: 92 Creature, 12 Spell, 8 Hidden, 4 Terreni e 4 Oggetti da `reversky-engine/docs/bilanciamento/catalogo-finale.csv` (ENG-42) | `V11__insert_initial_catalog.sql`, task API-55 (#125) |
 | pacchetto base attivo: *Base Pack*, 100 crediti **[DA CONFERMARE]**, 3 Common, 2 Uncommon, 2 Rare, bonus Mythic 10%, Legendary 5%, Mutant 2,5% | `V12__insert_base_pack.sql`, task API-63 (#133) |
 | tabella `effects` con i 92 effetti del registro dell'engine e chiave esterna `fk_catalog_cards_effect`: prima struttura nuova dopo la baseline, decisa il 21 novembre | `V13__create_effects.sql`, task API-36 (#106): vedi [Effetti](#effetti-sottotipi-e-tag) |
 | vincolo `chk_catalog_cards_secondary_faction_creature_only`: solo le creature hanno una seconda fazione, come chiede l'engine (deciso il 22 novembre) | `V14__add_secondary_faction_check.sql`, task API-71 (#146) |
+| tag delle quattro fazioni `WOUND`, `INVITATION`, `ARCHIVE`, `DREAM`, collegati per nome alla loro fazione | `V15__insert_faction_tags.sql`, task API-13 (#83) |
 | utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
 
 ### Catalogo iniziale (`V11`)

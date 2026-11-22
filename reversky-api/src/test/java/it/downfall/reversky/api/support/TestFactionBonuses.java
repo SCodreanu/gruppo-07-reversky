@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
 import it.downfall.reversky.api.catalog.dto.FactionRequest;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.service.FactionBonusService;
 import it.downfall.reversky.api.catalog.service.FactionService;
 
@@ -54,7 +54,7 @@ public class TestFactionBonuses {
 	 * Crea una fazione con nome univoco. Le fazioni non si cancellano, quindi i test non contano
 	 * sulle fazioni esistenti e usano solo le proprie.
 	 */
-	public FactionResponse createFaction() {
+	public AdminFactionResponse createFaction() {
 		return factionService.create(new FactionRequest("Faction " + TestUsers.uniqueSuffix(), "factions/test.svg", null));
 	}
 
