@@ -58,7 +58,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-11`, `API-1
 | Issue | Cosa | Di chi |
 |---|---|---|
 | `API-12`, `API-13`, `API-21` (#82, #83, #91) | Tag di carte e fazioni e filtro dei pacchetti per tag | `acistar0` |
-| `API-45`, `API-48`…`API-50` (#115, #118–#120) | Partite classificate: ricompense, abbinamento, partita classificata con l'Elo applicato | `antoninoconsolato-its` |
+| `API-45`, `API-49`, `API-50` (#115, #119, #120) | Partite classificate: ricompense in crediti, abbinamento, aggiornamento dell'Elo (`API-48`, il mazzo in coda, è già in `API-47`) | `antoninoconsolato-its` |
 | parte classificata di `API-57` | Test di integrazione di coda, abbinamento, Elo e crediti | segue `API-45`…`API-50` |
 
 ## Piccole cose aperte
