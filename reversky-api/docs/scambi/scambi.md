@@ -156,6 +156,18 @@ Si possono offrire anche carte usate in un mazzo. Finché le copie sono riservat
 
 Un utente non partecipante che chiede uno scambio riceve `404`.
 
+## Comportamento già implementato
+
+Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), destinatario esistente e attivo senza obbligo di amicizia, scambi mostrati dal punto di vista di chi guarda, carte disattivate scambiabili, nessun limite di carte o di scambi aperti, la stessa carta non può stare in entrambi i lati.
+
+### Consultazione e rifiuto (API-31, #101)
+
+- `trade/` con `Trade` (UUID generato dall'API), `TradeStatus`, `TradeRepository`, `TradeService` e `TradeController`.
+- `GET /trades?box=incoming|outgoing`: solo gli scambi **aperti**; `incoming` sono quelli in cui tocca a me, `outgoing` quelli in cui aspetto l'altro. Paginata (`PageResponse`, `page` e `size`), ordine fisso: ultima mossa (`updatedAt`) prima, poi `id`. Un `box` diverso è `400 INVALID_TRADE_BOX`. Gli scambi chiusi si leggono solo con `GET /trades/{id}`.
+- Ogni scambio è dal punto di vista di chi guarda: `id`, `other { id, username }`, `status`, `myTurn` (sempre `false` su uno scambio chiuso), `createdAt`, `updatedAt`.
+- `GET /trades/{id}`: anche chiuso; un non partecipante o uno scambio inesistente sono entrambi `404 TRADE_NOT_FOUND`.
+- `POST /trades/{id}/reject`: chiunque dei due, anche fuori turno (il richiedente così ritira la proposta), risponde `200` con lo scambio `REJECTED`. Blocca la riga dello scambio (`SELECT ... FOR UPDATE`) e poi controlla, in quest'ordine, partecipante (`404`) e scambio aperto (`409 TRADE_CLOSED`).
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.

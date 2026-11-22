@@ -176,6 +176,10 @@ Mazzi (`deck/`, API-26–29):
 - `GET/POST /api/v1/decks`, `GET/PUT/DELETE /api/v1/decks/{id}`, `POST /api/v1/decks/validate`, `GET /api/v1/decks/rules` (`DeckController`); il mazzo di un altro è `404`, nome univoco per utente (`409`), un mazzo in un invito `PENDING` non si elimina (`409`), la modifica toglie il ticket in coda classificata.
 - `DeckValidator` senza database restituisce tutte le violazioni `DECK_*` (composizione del rule set attivo, Hidden per sottotipo, copie con varianti sommate, `max_per_deck`, possesso sulle copie disponibili, carte disattivate); un mazzo non valido è `422 DECK_INVALID` con `violations` e non si salva; `valid` si ricalcola a ogni lettura. Gli inviti si controllano con `PendingInviteService`; la coda classificata resta in SQL nativo finché non esiste (API-47, API-48). Dettagli in [docs/mazzi](docs/mazzi/mazzi.md#comportamento-già-implementato).
 
+Scambi (`trade/`, API-31–34):
+
+- `GET /api/v1/trades?box=incoming|outgoing` (solo aperti, paginata, ultima mossa prima), `GET /api/v1/trades/{id}` e `POST /api/v1/trades/{id}/reject` (`TradeController`), sempre dal punto di vista di chi guarda; un non partecipante riceve `404`. Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
+
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
 Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.
