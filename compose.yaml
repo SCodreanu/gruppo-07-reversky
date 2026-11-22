@@ -1,5 +1,6 @@
-# Reversky — avvio di tutto il backend: database, engine e API.
+# Reversky — avvio di tutto il progetto: database, engine, API e web.
 #   docker compose up --build
+# Web: http://localhost:3000 · Swagger: http://localhost:8080/swagger-ui.html · email: http://localhost:8025
 # I valori si possono cambiare in un file .env (vedi .env.example).
 
 name: reversky
@@ -66,6 +67,33 @@ services:
       - "${API_PORT:-8080}:8080"
     volumes:
       - images:/app/uploads                  # illustrazioni caricate dal backoffice, servite su /images/**
+
+  web:
+    build: ./reversky-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      REVERSKY_API_URL: http://api:8080                        # solo il server Next chiama l'API (BFF)
+      REVERSKY_COOKIE_SECURE: ${WEB_COOKIE_SECURE:-false}      # true solo dietro HTTPS: qui il web è su http
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  # Seed delle illustrazioni delle carte, solo con il profilo dev: carica come admin le immagini di
+  # "docs/Carte definitive" (vedi mappa-carte.csv) sulle carte che non ne hanno ancora una, poi si ferma.
+  seed-images:
+    build: ./scripts/seed-immagini
+    restart: "no"
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      API_URL: http://api:8080
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      FORCE: ${SEED_IMAGES_FORCE:-0}                           # 1 = ricarica anche le carte che hanno già l'immagine
+    volumes:
+      - "./docs/Carte definitive:/carte:ro"
 
 volumes:
   db-data:

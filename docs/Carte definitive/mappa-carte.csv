@@ -1,0 +1,86 @@
+# Illustrazioni delle carte -> carta del catalogo, lette dal servizio seed-images di compose.yaml.
+# file: percorso dentro questa cartella. card_id: id della carta (GET /cards). card_name: controllo, deve
+# coincidere con il nome nel catalogo, altrimenti la riga viene saltata. Le righe con # sono ignorate.
+# Bone_Lantern_Common.png non è usata: per The Bone Lantern vale The_Bone_Lantern_Common.png.
+file,card_id,card_name
+Hidden/Damage/Breaking_point_Hidden.png,111,Breaking Point
+Hidden/Damage/Echo_Strike_Hidden.png,110,Echo Strike
+Hidden/Damage/Hostile_Presence_Hidden.png,109,Hostile Presence
+Hidden/Damage/Static_Interference_Hidden.png,112,Static Interference
+Hidden/Survival/Last_Sanctuary_Hidden.png,105,Last Sanctuary
+Hidden/Survival/Remnants_of_Reality_Hidden.png,107,Remnants of Reality
+Hidden/Survival/Survival_Instinct_Hidden.png,106,Survival Instinct
+Hidden/Survival/Unseen_Exit_Hidden.png,108,Unseen Exit
+Item/Denied_Exit_Badge_Item.png,117,Badge di Uscita Negata
+Item/False_Paths_Compass_Item.png,118,Bussola dei Sentieri Falsi
+Item/Sealed_File_Zero_Item.png,119,Fascicolo Sigillato 0
+Item/Tori_Bell_Item.png,120,Campanello del Torii
+Spell/Burn/Echo_Of_The_Forgotten_Spell.png,104,Eco dei Dimenticati
+Spell/Burn/Endless_Water_Spell.png,100,SCP-109
+Spell/Burn/Reverse_Fusion_Spell.png,103,Fusione del Rovescio
+Spell/Burn/Rift_Call_Spell.png,102,Richiamo della Crepa
+Spell/Danno/Bottomless_Feast_Spell.png,101,SCP-458
+Spell/Danno/Dissolution_Spell.png,95,Dissoluzione
+Spell/Danno/Reverse_Bite_Spell.png,93,Morso del Rovescio
+Spell/Danno/Skin_Fracture_Spell.png,94,Frattura della Pelle
+Spell/Scudo/Anchored_Veil_Spelll.png,96,Velo degli Ancorati
+Spell/Scudo/Emergency_Pill_Spell.png,99,SCP-500
+Spell/Scudo/Rain_Armor_Spell.png,98,Armatura della Pioggia
+Spell/Scudo/Registry_Pact_Spell.png,97,Patto del Registro
+Teoria del sogno/Common/Bride_Of_Bells_Common.png,74,La Sposa delle Campane
+Teoria del sogno/Common/Chōchin_obake_Common.png,69,Chochin-obake
+Teoria del sogno/Common/Kasa_Obake_Common.png,68,Kasa-obake
+Teoria del sogno/Common/Kodama_Common.png,71,Kodama
+Teoria del sogno/Common/Temple_Tanuki_Common.png,72,Tanuki del Tempio
+Teoria del sogno/Common/The_Bone_Lantern_Common.png,73,The Bone Lantern
+Teoria del sogno/Common/Zashiki_warashi_Common.png,70,Zashiki-warashi
+Teoria del sogno/Uncommon/Kappa_Uncommon.png,75,Kappa
+Teoria del sogno/Uncommon/Nurikabe_Uncommon.png,76,Nurikabe
+Teoria dell_invito/Common/Ash_Raven_Common.png,3,Corvo di Cenere
+Teoria dell_invito/Common/Coal_Crawler_Common.png,6,The Coal Crawler
+Teoria dell_invito/Common/Limping_Scarecrow_Common.png,5,Spaventapasseri Zoppo
+Teoria dell_invito/Common/Mine_Moths_Common.png,7,Le Falene della Miniera
+Teoria dell_invito/Common/Shadowless_Hound_Common.png,4,Cane Senz'Ombra
+Teoria dell_invito/Common/Squonk_Common.png,1,Squonk
+Teoria dell_invito/Common/Will_Of_The_Wisp_Common.png,2,Fuoco fatuo
+Teoria dell_invito/Legendary/Queen_Of_Lost_Paths_Legendary.png,22,La Regina dei Sentieri Perduti
+Teoria dell_invito/Legendary/Wendigo_Legendary.png,21,Wendigo
+Teoria dell_invito/Mythic/Bigfoot_Mythic.png,19,Bigfoot
+Teoria dell_invito/Mythic/Mothman_Mythic.png,18,Mothman
+Teoria dell_invito/Mythic/Thorned_Matriarch_Mythic.png,20,The Thorned Matriarch
+Teoria dell_invito/Rare/Bell_Witch_Rare.png,15,Bell Witch
+Teoria dell_invito/Rare/Blodless_Hound_Rare.png,17,The Bloodless Hound
+Teoria dell_invito/Rare/Spearfinger_Rare.png,14,Spearfinger
+Teoria dell_invito/Rare/The_Preacher_Rare.png,16,Il Predicatore sotto la Pioggia
+Teoria dell_invito/Uncommon/Footprint_Collector_Uncommon.png,13,Il Raccoglitore di Orme
+Teoria dell_invito/Uncommon/Hidebehind_Uncommon.png,9,Hidebehind
+Teoria dell_invito/Uncommon/Nameless_Caller_Uncommon.png,12,The Nameless Caller
+Teoria dell_invito/Uncommon/Silent_Shepherd_Uncommon.png,10,Il Pastore Muto
+Teoria dell_invito/Uncommon/Wampus_Cat_Uncommon.png,8,Wampus Cat
+Teoria dell_invito/Uncommon/White_Stag_Uncommon.png,11,Cervo Bianco
+Teoria della Ferita/Common/Buttonless_Elevator_Common.png,51,L'Ascensore Senza Pulsanti
+Teoria della Ferita/Common/Carpet_Seeker_Common.png,49,Cercatore di Moquette
+Teoria della Ferita/Common/Ceiling_Dweller_Common.png,52,L'Inquilino del Soffitto
+Teoria della Ferita/Common/Crawlers_Common.png,47,Crawlers
+Teoria della Ferita/Common/Dullers_Common.png,46,Dullers
+Teoria della Ferita/Common/Faceling_Common.png,48,Faceling
+Teoria della Ferita/Common/Yellow_Hum_Common.png,50,Ronzio Giallo
+Teoria della Ferita/Legendary/Hollow_Wyrm_Legendary.png,67,The Hollow Wyrm
+Teoria della Ferita/Legendary/Smiler_Legendary.png,66,Smiler
+Teoria della Ferita/Mythic/Deathmoths_Mythic.png,64,Deathmoths
+Teoria della Ferita/Mythic/Hounds_Mythic.png,63,Hounds
+Teoria della Ferita/Mythic/The_Caretaker_Mythic.png,65,Il Custode delle Porte Incrociate
+Teoria della Ferita/Rare/Building_Director_Rare.png,61,Il Direttore dell'Edificio
+Teoria della Ferita/Rare/Doppelganger_Rare.png,60,Il Doppio di Servizio
+Teoria della Ferita/Rare/Room_Zero_Operator_Rare.png,62,L'Operatore della Stanza 0
+Teoria della Ferita/Rare/Skin_Stealers_Rare.png,59,Skin-Stealers
+Teoria della Ferita/Uncommon/Faded_Name_Tag_Uncommon.png,55,Cartellino Sbiadito
+Teoria della Ferita/Uncommon/Gnawing Witness_Uncommon.png,57,The Gnawing Witness
+Teoria della Ferita/Uncommon/Howlers_Uncommon.png,53,Howlers
+Teoria della Ferita/Uncommon/Living_Waiting_Room.png,56,Sala d'Attesa Vivente
+Teoria della Ferita/Uncommon/The_Exit_Attendant_Uncommon.png,58,L'Addetto alle Uscite
+Teoria della Ferita/Uncommon/Wretches_Uncommon.png,54,Wretches
+Terreno/Devouring_Abyss_Dream_Terrain.png,116,Devouring Abyss
+Terreno/Echo_Rift_Wound_Terrain.png,113,Echo Rift
+Terreno/Hollow_Clearing_Invitation_Terrain.png,114,Hollow Clearing
+Terreno/Watching_Rift_Archive_Terrain.png,115,Watching Rift
