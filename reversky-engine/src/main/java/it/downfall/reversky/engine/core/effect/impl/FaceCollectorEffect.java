@@ -28,6 +28,10 @@ public final class FaceCollectorEffect implements CreatureEffect {
 	private static final int FIRST_ROUND = 2;
 	private static final int SECOND_ROUND = 1;
 
+	/** Crea l'effetto. */
+	public FaceCollectorEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

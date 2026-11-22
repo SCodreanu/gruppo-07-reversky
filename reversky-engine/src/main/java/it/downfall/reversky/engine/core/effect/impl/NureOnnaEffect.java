@@ -26,6 +26,10 @@ public final class NureOnnaEffect implements CreatureEffect {
 	/** Ultima avversaria contro cui l'effetto si è attivato. */
 	private CreatureInPlay lastVictim;
 
+	/** Crea l'effetto. */
+	public NureOnnaEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

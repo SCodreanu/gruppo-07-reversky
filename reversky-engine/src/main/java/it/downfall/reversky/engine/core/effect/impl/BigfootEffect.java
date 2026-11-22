@@ -28,6 +28,10 @@ public final class BigfootEffect implements CreatureEffect {
 	private static final int ATTACK_VS_COMMON = 2;
 	private static final int PREVENTED_VS_RARE = 2;
 
+	/** Crea l'effetto. */
+	public BigfootEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

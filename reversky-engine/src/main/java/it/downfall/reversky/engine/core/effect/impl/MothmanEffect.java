@@ -20,6 +20,10 @@ public final class MothmanEffect implements CreatureEffect {
 
 	private static final int DAMAGE = 3;
 
+	/** Crea l'effetto. */
+	public MothmanEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

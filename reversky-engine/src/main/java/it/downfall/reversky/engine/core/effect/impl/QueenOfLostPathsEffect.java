@@ -31,6 +31,10 @@ public final class QueenOfLostPathsEffect implements CreatureEffect {
 	private static final int MIN_CREATURES = 2;
 	private static final int DAMAGE = 2;
 
+	/** Crea l'effetto. */
+	public QueenOfLostPathsEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

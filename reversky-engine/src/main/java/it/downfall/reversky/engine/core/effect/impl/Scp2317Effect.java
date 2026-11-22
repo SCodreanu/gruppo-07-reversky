@@ -26,6 +26,10 @@ public final class Scp2317Effect implements CreatureEffect {
 	private static final int DAMAGE = 4;
 	private static final int NEXT_CREATURE_ATTACK = 1;
 
+	/** Crea l'effetto. */
+	public Scp2317Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

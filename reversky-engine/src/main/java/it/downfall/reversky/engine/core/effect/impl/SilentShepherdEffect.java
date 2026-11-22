@@ -23,6 +23,10 @@ public final class SilentShepherdEffect implements CreatureEffect {
 
 	private static final int NEXT_CREATURE_SHIELD = 2;
 
+	/** Crea l'effetto. */
+	public SilentShepherdEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

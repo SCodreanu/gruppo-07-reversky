@@ -22,6 +22,10 @@ public final class DeathmothsEffect implements CreatureEffect {
 	private static final int PENALTY = -2;
 	private static final int SEAL = 2;
 
+	/** Crea l'effetto. */
+	public DeathmothsEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

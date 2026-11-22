@@ -87,43 +87,60 @@ void hidebehind_preventsTwoDamageOnFirstAttackOfEachOpponent() {
 ## Cosa deve essere coperto (obbligatorio)
 
 ### Regolamento base
-- [ ] attacco simultaneo: entrambe le DEF diminuiscono nello stesso round;
-- [ ] DEF ≤ 0 → morte; DEF = 1 → vive;
-- [ ] nessuna muore → nuovo round con le stesse creature e la DEF ridotta;
-- [ ] muoiono entrambe → nessun danno ai giocatori;
-- [ ] muore una sola → il proprietario perde esattamente la DEF negativa; DEF finale 0 → nessun danno;
-- [ ] la creatura sopravvissuta resta in campo con la DEF residua;
-- [ ] tutte le condizioni di fine partita e il loro ordine;
-- [ ] due creature con ATK 0 → `ROUND_LIMIT`, nessun loop infinito.
+- [x] attacco simultaneo: entrambe le DEF diminuiscono nello stesso round;
+- [x] DEF ≤ 0 → morte; DEF = 1 → vive;
+- [x] nessuna muore → nuovo round con le stesse creature e la DEF ridotta;
+- [x] muoiono entrambe → nessun danno ai giocatori;
+- [x] muore una sola → il proprietario perde esattamente la DEF negativa; DEF finale 0 → nessun danno;
+- [x] la creatura sopravvissuta resta in campo con la DEF residua;
+- [x] tutte le condizioni di fine partita e il loro ordine;
+- [x] due creature con ATK 0 → `ROUND_LIMIT`, nessun loop infinito.
 
 ### Fazioni
-- [ ] coppia con riga in `factionBonuses` → bonus ATK e DEF della riga; senza riga → 0;
-- [ ] bonus DEF applicato una sola volta per scontro;
-- [ ] malus −1: l'attacco effettivo non scende sotto 0;
-- [ ] carta con due fazioni: somma di tutte le coppie, in attacco e in difesa (esempi `11` e `12`);
-- [ ] bonus non validi nella richiesta (fazione contro se stessa, `defBonus` negativo) → `400`; `atkBonus` negativo accettato;
-- [ ] `secondaryFactionId` uguale a `factionId` → `400 INVALID_CARD_FACTIONS`.
+- [x] coppia con riga in `factionBonuses` → bonus ATK e DEF della riga; senza riga → 0;
+- [x] bonus DEF applicato una sola volta per scontro;
+- [x] malus −1: l'attacco effettivo non scende sotto 0;
+- [x] carta con due fazioni: somma di tutte le coppie, in attacco e in difesa (esempi `11` e `12`);
+- [x] bonus non validi nella richiesta (fazione contro se stessa, `defBonus` negativo) → `400`; `atkBonus` negativo accettato;
+- [x] `secondaryFactionId` uguale a `factionId` → `400 INVALID_CARD_FACTIONS`.
 
 ### Carte speciali
-- [ ] Spell pescata: effetto applicato subito, carta scartata, si continua a pescare;
-- [ ] Hidden pescata: messa coperta; senza condizione si attiva all'inizio del prossimo scontro del proprietario, con una condizione quando la condizione si verifica (D-15);
-- [ ] una sola Hidden attiva per giocatore: la seconda aspetta in fila e diventa attiva dal prossimo scontro dopo che la prima si scarta, anche se annullata (`ENG-41`);
-- [ ] Terreno pescato: dà il bonus alle creature della sua fazione di entrambi i giocatori; un secondo Terreno, di chiunque, lo sostituisce e i suoi bonus si tolgono (D-17, D-19);
-- [ ] Oggetto pescato: resta accanto al mazzo, scatta una volta sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma (D-47, `ENG-33`);
-- [ ] DEF temporanea: assorbe i danni per prima; alla scadenza su una creatura danneggiata la creatura non muore (D-35).
+- [x] Spell pescata: effetto applicato subito, carta scartata, si continua a pescare;
+- [x] Hidden pescata: messa coperta; senza condizione si attiva all'inizio del prossimo scontro del proprietario, con una condizione quando la condizione si verifica (D-15);
+- [x] una sola Hidden attiva per giocatore: la seconda aspetta in fila e diventa attiva dal prossimo scontro dopo che la prima si scarta, anche se annullata (`ENG-41`);
+- [x] Terreno pescato: dà il bonus alle creature della sua fazione di entrambi i giocatori; un secondo Terreno, di chiunque, lo sostituisce e i suoi bonus si tolgono (D-17, D-19);
+- [x] Oggetto pescato: resta accanto al mazzo, scatta una volta sulla prima creatura del proprietario che ne soddisfa la condizione, poi si consuma (D-47, `ENG-33`);
+- [x] DEF temporanea: assorbe i danni per prima; alla scadenza su una creatura danneggiata la creatura non muore (D-35).
 
 ### Determinismo
-- [ ] stesso seed → stesso `MatchResult`, log compreso;
-- [ ] seed diverso → ordine delle carte diverso.
+- [x] stesso seed → stesso `MatchResult`, log compreso;
+- [x] seed diverso → ordine delle carte diverso.
 
 ### Effetti
 - [ ] ogni effetto: si attiva quando deve, non si attiva quando non deve, non agisce se annullato.
 
+Ogni effetto ha i suoi test in `core/effect/impl`; il controllo carta per carta di questi tre casi non è ancora stato fatto, per questo la casella resta vuota.
+
 ### Web
-- [ ] richiesta valida → `200` con la struttura attesa;
-- [ ] `effectCode` sconosciuto → `400`;
-- [ ] mazzo senza creature → `400`.
-- [ ] tutti gli esempi di `examples/expected-results.csv` danno il risultato atteso (`SimulationExamplesTest`).
+- [x] richiesta valida → `200` con la struttura attesa;
+- [x] `effectCode` sconosciuto → `400`;
+- [x] mazzo senza creature → `400`.
+- [x] tutti gli esempi di `examples/expected-results.csv` danno il risultato atteso (`SimulationExamplesTest`).
+
+## Casi limite (`ENG-29`)
+
+Il 22 novembre si sono confrontati i casi limite di [regole-base](../regole-base/regole-base.md), delle [decisioni aperte](../decisioni-aperte/decisioni-aperte.md) (D-06, D-15) e di questo documento con i test esistenti. Un caso nascondeva un bug; gli altri erano già giusti e ora un test li fissa.
+
+| Caso | Test | Cosa controlla |
+|---|---|---|
+| **Bug:** un giocatore a 0 punti vita o meno pescava ancora, e la sua Spell `DAMAGE` poteva portare a 0 anche l'altro (vittoria diventata `DRAW`, `BOTH_LIFE_POINTS_ZERO`) | `MatchSimulatorTest`, tre test `ENG-29` (rossi prima della correzione) | la partita finisce prima della pescata del perdente: dopo un round, sia per lo sfidante sia per l'avversario, e durante la pescata dello sfidante, prima di quella dell'avversario |
+| Controllo dei soli punti vita | `EndConditionCheckerTest` | `checkLifePoints` guarda le condizioni 1 e 2, non le creature né il limite di round |
+| Pescata dopo l'ultimo round | `MatchSimulatorTest` | chi ha perso la creatura pesca ancora; la sua Spell cambia i punti vita che decidono `ROUND_LIMIT` (deciso il 22 novembre) |
+| Morte simultanea all'ultimo round, con creature nei mazzi | `MatchSimulatorTest` | nessun danno, entrambi pescano, poi `ROUND_LIMIT` |
+| ATK negativo per un malus, con bonus di fazione positivo | `RoundResolverTest` | −4 + 2 = −2 → attacco 0; l'ATK della creatura resta −4 |
+| Hidden attiva annullata dal Campanello del Torii, con una Hidden in fila | `ItemServiceTest` | la prima in fila prende il posto ed è attiva dallo scontro dopo (D-15) |
+
+Casi controllati che avevano già un test: DEF 0 in ingresso (`400 INVALID_STATS`) e in partita (muore senza danno al giocatore), mazzo con sole carte non creatura (D-06), mazzo finito con l'avversario ancora in campo (esempio 01), due ATK 0 (esempio 06), Hidden annullata dal Fascicolo Sigillato 0 con una Hidden in fila. Una Hidden **distrutta** senza attivarsi non ha un test perché nessuna carta lo fa: l'unico modo in cui una Hidden lascia la zona è `PlayerState.discardHidden`, che dà il posto alla prima in fila; un effetto futuro che distrugge una Hidden deve passare da lì.
 
 ## Test di accettazione con gli esempi
 

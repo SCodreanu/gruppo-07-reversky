@@ -22,6 +22,10 @@ public final class RoomZeroOperatorEffect implements CreatureEffect {
 	/** Codice dell'effetto ({@code catalog_cards.effect_code}). */
 	public static final String CODE = "ROOM_ZERO_OPERATOR";
 
+	/** Crea l'effetto. */
+	public RoomZeroOperatorEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;
