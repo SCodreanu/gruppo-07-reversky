@@ -61,8 +61,12 @@ services:
       REVERSKY_SECURITY_JWTSECRET: ${JWT_SECRET:-dev-only-secret-change-me-at-least-32-chars}  # reversky.security.jwt-secret
       SPRING_MAIL_HOST: mailpit                                # spring.mail.host
       SPRING_MAIL_PORT: 1025                                   # spring.mail.port
+      IMAGES_DIR: /app/uploads                                 # reversky.storage.images-dir (API-14)
     ports:
       - "${API_PORT:-8080}:8080"
+    volumes:
+      - images:/app/uploads                  # illustrazioni caricate dal backoffice, servite su /images/**
 
 volumes:
   db-data:
+  images:

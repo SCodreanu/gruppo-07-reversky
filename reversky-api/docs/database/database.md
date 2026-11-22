@@ -65,7 +65,7 @@ Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engin
 
 - Rarità per `sorting_order` e fazioni per nome, come le inserisce `V9`. Spell e Hidden non hanno rarità nel CSV: sono **Rare** (deciso il 21 novembre) e non contano nel `max_per_deck` (vedi [mazzi](../mazzi/mazzi.md#bilanciamento-richiesto-dal-brief)).
 - Nomi ed `effect_description` come nel CSV, in italiano: la traduzione arriva nell'ultima settimana. Ogni `effect_code` esiste nell'engine, anche quelli delle creature.
-- **[DA CONFERMARE]** `image_path` segnaposto `cards/<nome-della-carta>.webp` finché non ci sono le illustrazioni. `copy_limit` e `flavor_text` vuoti, nessun tag proprio (API-12).
+- **[DA CONFERMARE]** `image_path` segnaposto `cards/<nome-della-carta>.webp` finché non ci sono le illustrazioni, che si caricano con `POST /admin/cards/{id}/image` (API-14, vedi [backoffice](../backoffice/backoffice.md#illustrazioni-comportamento-già-implementato-api-14-84)). `copy_limit` e `flavor_text` vuoti, nessun tag proprio (API-12).
 - I due Mutant (Invitation/Dream e Wound/Archive) hanno la seconda fazione.
 
 ### Dati di prova (solo sviluppo)

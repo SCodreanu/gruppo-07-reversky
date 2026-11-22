@@ -132,6 +132,8 @@ Consigliato: test di concorrenza sugli spostamenti di carte e crediti (due accet
 
 ## Dati di test
 
+Le immagini caricate dai test (API-14) vanno in `build/test-images`: il task `test` di `build.gradle` imposta `reversky.storage.images-dir`, così non toccano la cartella `uploads` di `bootRun`. `AdminCardImageControllerIT` prova gli endpoint, `ImageStorageIT` i file con le transazioni vere (file nuovo tolto se la transazione fallisce, vecchio tolto solo dopo il commit).
+
 Classi di supporto in `src/test/java/.../support/` (`TestCards`, `TestDecks`, `TestUsers`, `TestPacks`) per creare dati di prova in una riga. Non duplicare la costruzione degli oggetti in ogni test.
 
 `TestUsers` esiste già: crea utenti sul database dei test (`create()` per un `USER`, `createAdmin()` per un `ADMIN`, poi `disable`, `markEmailVerified`, `delete`) e contiene la password comune `TestUsers.PASSWORD`. Per chiamare un endpoint protetto basta `jwtService.createAccessToken(testUsers.createAdmin())`, senza passare dal login (esempio in `AdminFactionControllerIT`). È un `@TestComponent`, quindi si aggiunge al test insieme al container:

@@ -130,6 +130,15 @@ public class CatalogCard {
 	}
 
 	/**
+	 * Nuova illustrazione (POST /admin/cards/{id}/image, API-14): è propria della carta, anche per una variante.
+	 *
+	 * @param imagePath percorso relativo restituito da {@code ImageStorage}
+	 */
+	public void changeImage(String imagePath) {
+		this.imagePath = imagePath;
+	}
+
+	/**
 	 * Campi di gioco: rarità, tipo, sottotipo, effetto (codice e testo), statistiche e limite di copie.
 	 * Le fazioni cambiano a parte, con {@link #changeFactions(Faction, Faction)}.
 	 * Su una variante non si chiama direttamente: si usa {@link #copyRulesFrom(CatalogCard)}.
