@@ -152,7 +152,7 @@ Amicizie (`friendship/`):
 
 Collezione (`collection/`):
 
-- `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo finché non esistono `trade/` e `deck/`. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
+- `CollectionService.addCards` e `removeCards`, gli unici che scrivono su `collection_cards`, dentro la transazione del chiamante; `GET /api/v1/collection` (filtri come `GET /cards`, `sort` su name, rarity, type o quantity, con copie riservate e mazzi che usano la carta), `GET /api/v1/collection/summary` e `GET /api/v1/users/{id}/collection` con le copie disponibili (`CollectionController`). Copie riservate e mazzi si leggono con SQL nativo in `CollectionCardRepository`: `TradeService` e `DeckService` usano `CollectionService`, quindi il contrario creerebbe un ciclo di bean. `getOwnedCopies` (copie possedute, senza riserve) serve agli scambi. Dettagli in [docs/collezione](docs/collezione/collezione.md#comportamento-già-implementato-task-api-23-93).
 
 Sfide amichevoli (`battle/`, API-35, 37–44):
 
@@ -175,6 +175,12 @@ Mazzi (`deck/`, API-26–29):
 
 - `GET/POST /api/v1/decks`, `GET/PUT/DELETE /api/v1/decks/{id}`, `POST /api/v1/decks/validate`, `GET /api/v1/decks/rules` (`DeckController`); il mazzo di un altro è `404`, nome univoco per utente (`409`), un mazzo in un invito `PENDING` non si elimina (`409`), la modifica toglie il ticket in coda classificata.
 - `DeckValidator` senza database restituisce tutte le violazioni `DECK_*` (composizione del rule set attivo, Hidden per sottotipo, copie con varianti sommate, `max_per_deck`, possesso sulle copie disponibili, carte disattivate); un mazzo non valido è `422 DECK_INVALID` con `violations` e non si salva; `valid` si ricalcola a ogni lettura. Gli inviti si controllano con `PendingInviteService`; la coda classificata resta in SQL nativo finché non esiste (API-47, API-48). Dettagli in [docs/mazzi](docs/mazzi/mazzi.md#comportamento-già-implementato).
+
+Scambi (`trade/`, API-31–34):
+
+- `GET /api/v1/trades?box=incoming|outgoing` (solo aperti, paginata, ultima mossa prima), `GET /api/v1/trades/{id}` e `POST /api/v1/trades/{id}/reject` (`TradeController`), sempre dal punto di vista di chi guarda (`give`, `receive`, `other`, `myTurn`); un non partecipante riceve `404`.
+- `POST /api/v1/trades` e `POST /api/v1/trades/{id}/counter`: le copie offerte restano in collezione ma sono riservate (solo per chi ha fatto l'offerta in corso) finché lo scambio è aperto; chi propone blocca la sua riga `inventories` prima di contare le copie disponibili. Le offerte si aggiornano al loro posto (`Trade.replaceOffers`).
+- `POST /api/v1/trades/{id}/accept` in una sola transazione: blocca lo scambio, poi le righe `inventories` di entrambi in ordine di `user_id`, controlla le copie disponibili di chi accetta e sposta le carte con `CollectionService`; l'altro disattivato è `422 TRADE_USER_DISABLED`. Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 
