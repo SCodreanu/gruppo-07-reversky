@@ -1,0 +1,26 @@
+﻿Meta title (SEO): Reversky, il TCG horror online | Regolamento
+Meta description (SEO): Scopri le regole di Reversky, il gioco di carte collezionabili horror 100% digitale. Costruisci il mazzo da 30 carte, sfida altri giocatori e lascia che i mostri facciano il resto.
+Regolamento di Reversky
+Reversky è un gioco di carte collezionabili horror, interamente digitale. Due giocatori si sfidano con mazzi costruiti in anticipo, schierando mostri nati dalle anomalie che la pioggia al contrario ha aperto nel mondo. Vince chi porta a zero i punti vita dell’avversario.
+Non si giocano le carte a mano: una volta accettata la sfida, la partita viene simulata automaticamente dal server. Il tuo compito è costruire un mazzo capace di vincere da solo.
+Costruire il mazzo
+Ogni mazzo contiene esattamente 30 carte:
+* 20 Creature
+* 8 Spell o Hidden
+* 1 Oggetto
+* 1 Terreno
+Le carte
+* Creature: combattono con ATK e DEF.
+* Spell: effetto immediato.
+* Hidden: effetto nascosto, scatta a una condizione.
+* Oggetto: bonus generale fino a fine partita.
+* Terreno: modifica il campo per tutta la partita.
+Teorie
+Ogni creatura appartiene a una delle quattro Teorie: Ferita, Invito, Archivio, Sogno. Si battono in cerchio (Invito > Archivio > Ferita > Sogno > Invito): +2 ATK contro la Teoria battuta, -1 ATK contro quella che ti batte.
+Combattimento
+Le creature si scontrano insieme e il danno subito riduce in modo permanente la DEF. A DEF zero o meno la creatura muore.
+* Muore una sola creatura: la vincitrice colpisce l’avversario (ATK meno DEF residua della sconfitta).
+* Muoiono entrambe: nessun danno ai giocatori.
+* Sopravvivono entrambe: nuovo round.
+Bustine e scambi
+Ogni bustina contiene 7 carte, con rarità dalla Common alla Mutant (circa 1 su 40). Puoi scambiare carte con altri giocatori, e lo storico delle sfide resta sempre consultabile.
