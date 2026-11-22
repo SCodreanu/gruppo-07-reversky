@@ -153,7 +153,7 @@ Implementazione (`ENG-33`, `ItemService`):
 - **Bussola dei Sentieri Falsi:** all'inizio del prossimo scontro della creatura del proprietario, dopo il Terreno; lo scudo arriva all'inizio di ognuno dei primi tre round e dura quel round;
 - **Fascicolo Sigillato 0:** annulla tutta la prima Spell `DAMAGE` o Hidden `DAMAGE` avversaria che colpirebbe la creatura del proprietario, anche una Spell `DAMAGE` rimasta in attesa quando raggiunge la creatura all'inizio dello scontro (deciso il 17 novembre), oppure la prima attivazione di un effetto di creatura avversaria che colpirebbe la creatura del proprietario (danno o malus): l'attivazione perde la parte che la colpisce, il resto avviene (es. SCP-2317 dà comunque +1 ATK alla prossima creatura del suo proprietario; deciso il 18 novembre);
 - **Campanello del Torii:** annulla la prima Hidden avversaria nel momento in cui si attiverebbe, prima del Fascicolo;
-- valgono i testi del catalogo: le riprogettazioni di Fascicolo e Campanello proposte in D-25 non sono ancora decise.
+- valgono i testi del catalogo: le riprogettazioni di Fascicolo e Campanello proposte in D-25 non sono decise, e il 22 novembre le modifiche agli effetti sono state sospese fino alla fine.
 
 ### Carte condivise
 

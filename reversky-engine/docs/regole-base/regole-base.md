@@ -20,7 +20,7 @@ Tutto ciò che **non** è una costante del regolamento si modifica dal **backoff
 
 | Parametro | Dove sta | Valore del rule set `1.0` | Stato |
 |---|---|---|---|
-| Punti vita iniziali | `rule_sets.starting_life_points` | 30 | **[DA CONFERMARE] D-01** |
+| Punti vita iniziali | `rule_sets.starting_life_points` | 30 | deciso (D-01, 22 novembre); si cambia dal backoffice |
 | Limite di round totali | `rule_sets.max_rounds` | 75 | deciso (D-02, 9 novembre); si cambia dal backoffice |
 | Bonus e malus di fazione | tabella `faction_bonuses` | +2 / −1 ATK | vedi [fazioni](../fazioni/fazioni.md) |
 
