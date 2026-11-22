@@ -105,7 +105,7 @@ L'engine controlla con `SimulationContractTest` che le fotografie siano le sue r
 
 Obbligatorio:
 - [ ] ogni regola di `DeckValidator`, compreso `min(deck_limit, copy_limit)`;
-- [ ] acquisto pacchetto: crediti scalati, crediti insufficienti, saldo mai negativo, limite di acquisto, pacchetto gratuito;
+- [x] acquisto pacchetto: crediti scalati, crediti insufficienti, saldo mai negativo, limite di acquisto, pacchetto gratuito (`PackPurchaseControllerIT`, `InventoryServiceIT`, il flusso in `PackFlowIT` e l'errore a metà in `PackFlowRollbackIT`);
 - [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, ripiego degli slot senza carte, nessun pacchetto da aprire;
 - [x] scambi: tutti gli stati e i turni, controproposte, copie riservate, copie non più disponibili, **totale delle carte invariato** (`TradeProposalControllerIT`, `TradeControllerIT`, `TradeAcceptIT`, e il flusso completo in `TradeFlowIT`);
 - [x] amicizie: richiesta inversa, richiesta dopo un rifiuto, richieste opposte contemporanee;
@@ -114,17 +114,19 @@ Obbligatorio:
 - [ ] backoffice: ogni azione scrive in `audit_logs`;
 - [ ] sicurezza: endpoint protetti senza token → `401`, admin con `USER` → `403`, risorse altrui → `404`.
 
-### Flussi completi (`API-57`, #127)
+### Flussi completi (`API-56` #126, `API-57` #127)
 
-Due classi `XxxIT` nella cartella della funzionalità (non in `controller/`, perché un flusso attraversa controller, service e database) ripetono via HTTP, con un JWT per ogni utente, i percorsi che farà il frontend. I casi di errore restano nei test dei singoli endpoint.
+Classi `XxxIT` nella cartella della funzionalità (non in `controller/`, perché un flusso attraversa controller, service e database) ripetono via HTTP, con un JWT per ogni utente, i percorsi che farà il frontend. I casi di errore restano nei test dei singoli endpoint.
 
 | Classe | Flusso | Cosa controlla |
 |---|---|---|
 | `trade/TradeFlowIT` | proposta, due controproposte, accettazione; poi le copie ricevute regalate a un terzo | a ogni passo le copie riservate sono solo quelle dell'offerta in corso (lette da `GET /collection`); si sposta l'ultima offerta; il totale di ogni carta nel sistema non cambia; lo scambio chiuso non è in nessuna casella |
 | `battle/FriendlyBattleFlowIT` | richiesta di amicizia e accettazione via HTTP, invito, accettazione, dettaglio e storico dei due giocatori | esito opposto per i due, nessun invito in attesa, crediti, movimenti di `credit_transactions` e carte possedute invariati, nessuna riga in `player_ratings`, colonne di rating della partita nulle |
 | `battle/FriendlyBattleFlowIT` | due retry nello stesso momento su una partita senza risultato | le due chiamate all'engine finto si aspettano con un `CountDownLatch`, quindi sono davvero sovrapposte, e rispondono con risultati **diversi**: la partita resta con il primo risultato salvato e entrambe le risposte mostrano quello. Togliendo il controllo di `BattleService.save` sulla partita già completata il test fallisce (provato il 22 novembre) |
+| `pack/PackFlowIT` | registrazione e login via HTTP, crediti di benvenuto, acquisto di due *Base Pack* (quello vero di `V12`, cercato in `GET /packs`), due aperture, collezione | a ogni passo il saldo dell'API, `inventories.credits` e la somma di `credit_transactions` coincidono; righe `SIGNUP` e `PACK_PURCHASE`; ogni carta delle aperture è nella collezione; due righe in `pack_openings`; aprire non costa crediti; una terza apertura è `422 NO_PACK_TO_OPEN` |
+| `pack/PackFlowRollbackIT` | acquisto e apertura che falliscono **dopo** la prima scrittura, con `@MockitoSpyBean` su `InventoryService` e `CollectionService` | dopo il `500` crediti, righe di `credit_transactions`, pacchetti, collezione e `pack_openings` sono quelli di prima, e lo stesso pacchetto poi si apre. Togliendo `@Transactional` da `PackService.purchase` il test fallisce (provato il 22 novembre). Gli spy cambiano la configurazione, quindi la classe ha un contesto Spring suo; stub e verifiche si fanno sullo spy dietro al proxy (`AopTestUtils.getUltimateTargetObject`) |
 
-`FriendlyBattleFlowIT` ha la stessa configurazione di `BattleControllerIT` (mock di `EmailSender` ed `EngineClient`) e `TradeFlowIT` quella di `TradeProposalControllerIT`, così Spring riusa i contesti già avviati.
+`FriendlyBattleFlowIT` ha la stessa configurazione di `BattleControllerIT` (mock di `EmailSender` ed `EngineClient`), `TradeFlowIT` e `PackFlowIT` quella dei test degli endpoint (mock di `EmailSender`), così Spring riusa i contesti già avviati.
 
 Consigliato: test di concorrenza sugli spostamenti di carte e crediti (due accettazioni incrociate in parallelo, uno scambio mentre si apre un pacchetto, un pareggio in classificata mentre si accetta uno scambio).
 
