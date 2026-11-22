@@ -1,5 +1,6 @@
 package it.downfall.reversky.api.catalog.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -15,8 +16,8 @@ import it.downfall.reversky.api.catalog.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Tag del catalogo dal backoffice (docs/backoffice, API-07). Collegare i tag a carte, fazioni e pacchetti non è qui:
- * arriva con API-12, API-13 e API-21.
+ * Tag del catalogo dal backoffice (docs/backoffice, API-07). I collegamenti a fazioni e carte sono in
+ * {@code FactionService} e {@code CatalogCardService} (API-13, API-12); i pacchetti leggono i tag da qui (API-21).
  */
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,15 @@ public class TagService {
 			.stream()
 			.map(TagResponse::from)
 			.toList();
+	}
+
+	/**
+	 * I tag con quegli id, per le altre funzionalità (pacchetti). Gli id che non esistono mancano dalla lista, senza
+	 * errore: decide chi chiama.
+	 */
+	@Transactional(readOnly = true)
+	public List<Tag> getTagsByIds(Collection<Integer> ids) {
+		return tagRepository.findAllById(ids);
 	}
 
 	/**

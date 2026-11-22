@@ -199,7 +199,7 @@ class PackPurchaseControllerIT {
 	// Pacchetto attivo con uno slot Common (il catalogo V11 ne ha)
 	private Integer activePack(int cost, Integer limit) {
 		PackRequest request = new PackRequest(TestCards.uniqueName("Pack"), cost, limit, "packs/test.webp",
-			List.of(new PackRequest.PackSlotRequest(testCards.common().getId(), 1)), List.of());
+			List.of(new PackRequest.PackSlotRequest(testCards.common().getId(), 1)), List.of(), null);
 		Integer id = packAdminService.create(request).id();
 		packAdminService.activate(id);
 		return id;

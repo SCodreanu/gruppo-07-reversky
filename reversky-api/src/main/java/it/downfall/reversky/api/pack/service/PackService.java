@@ -69,8 +69,11 @@ public class PackService {
 			return List.of();
 		}
 
-		CardPool pool = new CardPool(catalogCardService.getActiveOriginals());
-		return packs.stream().map(pack -> toShopResponse(pack, pool, remainingPurchases(userId, pack))).toList();
+		// Le carte si leggono una volta; ogni pacchetto le filtra con i suoi tag (API-21)
+		List<CatalogCard> cards = catalogCardService.getActiveForPacks();
+		return packs.stream()
+			.map(pack -> toShopResponse(pack, new CardPool(cards, pack.getTagNames()), remainingPurchases(userId, pack)))
+			.toList();
 	}
 
 	/**
@@ -116,7 +119,8 @@ public class PackService {
 		int remaining = inventoryService.takePack(userId, packId);
 		Pack pack = packRepository.findById(packId).orElseThrow(() -> new PackNotFoundException(packId));
 
-		List<CatalogCard> cards = new PackDrawer(random).draw(pack, new CardPool(catalogCardService.getActiveOriginals()));
+		List<CatalogCard> cards = new PackDrawer(random).draw(pack,
+			new CardPool(catalogCardService.getActiveForPacks(), pack.getTagNames()));
 		List<Integer> cardIds = cards.stream().map(CatalogCard::getId).toList();
 		Set<Integer> owned = new HashSet<>(collectionService.getOwnedCardIds(userId, cardIds));
 

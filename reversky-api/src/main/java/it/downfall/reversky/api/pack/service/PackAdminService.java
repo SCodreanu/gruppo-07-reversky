@@ -1,8 +1,10 @@
 package it.downfall.reversky.api.pack.service;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,8 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.downfall.reversky.api.catalog.entity.Rarity;
+import it.downfall.reversky.api.catalog.entity.Tag;
 import it.downfall.reversky.api.catalog.service.CatalogCardService;
 import it.downfall.reversky.api.catalog.service.RarityService;
+import it.downfall.reversky.api.catalog.service.TagService;
 import it.downfall.reversky.api.pack.dto.AdminPackResponse;
 import it.downfall.reversky.api.pack.dto.PackRequest;
 import it.downfall.reversky.api.pack.dto.PackRequest.PackBonusRequest;
@@ -21,6 +25,7 @@ import it.downfall.reversky.api.pack.dto.PackRequest.PackSlotRequest;
 import it.downfall.reversky.api.pack.entity.Pack;
 import it.downfall.reversky.api.pack.entity.PackRarityRule;
 import it.downfall.reversky.api.pack.exception.InvalidPackRarityException;
+import it.downfall.reversky.api.pack.exception.InvalidPackTagException;
 import it.downfall.reversky.api.pack.exception.PackNameAlreadyUsedException;
 import it.downfall.reversky.api.pack.exception.PackNotFillableException;
 import it.downfall.reversky.api.pack.exception.PackNotFoundException;
@@ -32,8 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Pacchetti dal backoffice (docs/backoffice, "Pacchetti"): tipi di pacchetto con slot base e bonus.
  * <p>
- * Un pacchetto nasce disattivato. Si attiva solo se ogni slot base trova almeno una carta, anche con il ripiego; un
- * pacchetto attivo resta riempibile anche dopo una modifica. Senza audit finché non arriva API-52.
+ * Un pacchetto nasce disattivato. Si attiva solo se ogni slot base trova almeno una carta con i suoi tag, anche con il
+ * ripiego; un pacchetto attivo resta riempibile anche dopo una modifica, tag compresi (API-21). Senza audit finché non
+ * arriva API-52.
  */
 @Slf4j
 @Service
@@ -43,6 +49,7 @@ public class PackAdminService {
 	private final PackRepository packRepository;
 	private final RarityService rarityService;
 	private final CatalogCardService catalogCardService;
+	private final TagService tagService;
 
 	/**
 	 * Tutti i pacchetti, anche disattivati, in ordine di id (GET /api/v1/admin/packs).
@@ -58,6 +65,7 @@ public class PackAdminService {
 	 * @throws PackNameAlreadyUsedException se il nome è già usato
 	 * @throws InvalidPackRarityException   se uno slot o un bonus indica una rarità che non esiste
 	 * @throws PackRulesViolatedException   se un bonus non è più raro di tutti gli slot base
+	 * @throws InvalidPackTagException      se uno dei tag non esiste
 	 */
 	@Transactional
 	public AdminPackResponse create(PackRequest request) {
@@ -79,7 +87,8 @@ public class PackAdminService {
 	 * @throws PackNameAlreadyUsedException se il nome è di un altro pacchetto
 	 * @throws InvalidPackRarityException   se uno slot o un bonus indica una rarità che non esiste
 	 * @throws PackRulesViolatedException   se un bonus non è più raro di tutti gli slot base
-	 * @throws PackNotFillableException     se il pacchetto è attivo e uno slot non troverebbe nessuna carta
+	 * @throws InvalidPackTagException      se uno dei tag non esiste
+	 * @throws PackNotFillableException     se il pacchetto è attivo e uno slot non troverebbe nessuna carta con i suoi tag
 	 */
 	@Transactional
 	public AdminPackResponse update(Integer id, PackRequest request) {
@@ -128,9 +137,10 @@ public class PackAdminService {
 		return packRepository.findById(id).orElseThrow(() -> new PackNotFoundException(id));
 	}
 
-	// Prima i riferimenti (le rarità esistono), poi le regole tra slot e bonus
+	// Prima i riferimenti (le rarità e i tag esistono), poi le regole tra slot e bonus
 	private void applyRules(Pack pack, PackRequest request) {
 		Map<Integer, Rarity> rarities = loadRarities(request);
+		List<Tag> tags = loadTags(request);
 
 		Map<Rarity, Integer> slots = new LinkedHashMap<>();
 		request.slots().forEach(slot -> slots.put(rarities.get(slot.rarityId()), slot.quantity()));
@@ -140,6 +150,18 @@ public class PackAdminService {
 		requireBonusesAboveSlots(slots, bonuses);
 		pack.replaceSlots(slots);
 		pack.replaceBonuses(bonuses);
+		pack.replaceTags(tags);
+	}
+
+	// tagIds mancante = nessun tag; un id ripetuto conta una volta
+	private List<Tag> loadTags(PackRequest request) {
+		Set<Integer> ids = new LinkedHashSet<>(request.tagIds() == null ? List.of() : request.tagIds());
+		List<Tag> tags = tagService.getTagsByIds(ids);
+		if (tags.size() != ids.size()) {
+			Set<Integer> found = tags.stream().map(Tag::getId).collect(Collectors.toSet());
+			throw new InvalidPackTagException(ids.stream().filter(id -> !found.contains(id)).toList());
+		}
+		return tags;
 	}
 
 	private Map<Integer, Rarity> loadRarities(PackRequest request) {
@@ -172,7 +194,7 @@ public class PackAdminService {
 	}
 
 	private void requireFillable(Pack pack) {
-		CardPool pool = new CardPool(catalogCardService.getActiveOriginals());
+		CardPool pool = new CardPool(catalogCardService.getActiveForPacks(), pack.getTagNames());
 		pack.getSlots().stream()
 			.map(PackRarityRule::getRarity)
 			.filter(rarity -> pool.candidatesFor(rarity).isEmpty())

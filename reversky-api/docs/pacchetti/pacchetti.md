@@ -190,7 +190,7 @@ Risposta dell'apertura:
 - `POST /api/v1/inventory/packs/{packId}/open` (`pack/controller/PackOpeningController`, `PackService.open`), in una transazione: `InventoryService.takePack` blocca l'inventario e toglie il pacchetto (a 0 elimina la riga), `PackDrawer` estrae le carte da `CardPool`, `CollectionService.addCards` le aggiunge e `pack_openings` salva gli id nell'ordine degli slot. Un pacchetto disattivato dopo l'acquisto si apre lo stesso.
 - Casualità: bean `RandomGenerator` (`common/config/RandomConfig`, `SecureRandom`); `PackDrawer` e `CardPool` non usano il database e i test li provano con un seed fisso, comprese 100.000 aperture per le frequenze dei bonus.
 - Risposta: `{ packId, remainingPacks, cards: [{ card: <carta completa del catalogo>, isNew }] }` (deciso il 21 novembre, al posto della carta ridotta dell'esempio sopra). `isNew` è vero solo se l'utente non possedeva la carta, e solo per la prima copia uscita nel pacchetto.
-- Finché non c'è API-21 i `pack_tags` non si leggono: ogni pacchetto pesca tra tutte le carte attive e originali.
+- Il filtro dei tag (API-21) è quello di "Filtro delle carte" sopra: `CardPool` riceve tutte le carte attive, varianti comprese, con i tag propri e delle fazioni (una query sola, `CatalogCardService.getActiveForPacks`), e i nomi dei tag del pacchetto. Senza tag escono solo le originali; con i tag una carta con uno dei tag tra i propri o tra quelli di una delle sue fazioni; una variante solo con i propri; Spell e Hidden solo con i propri. Vale per l'apertura, per i bonus mostrati da `GET /packs` (calcolati per ogni pacchetto con i suoi tag) e per il controllo del backoffice sugli slot. Test: `CardPoolTagsTest` e `PackTagsIT`.
 
 | Caso | Status | `code` |
 |---|---|---|

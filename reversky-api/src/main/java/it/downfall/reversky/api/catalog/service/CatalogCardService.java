@@ -126,12 +126,13 @@ public class CatalogCardService {
 	}
 
 	/**
-	 * Le carte attive e originali, con rarità e fazioni già caricate: tra queste si pescano le carte dei pacchetti
-	 * (docs/pacchetti). Le varianti escono solo dai pacchetti con i loro tag, che arrivano con API-21.
+	 * Le carte attive, varianti comprese, con rarità, fazioni e tag già caricati: tra queste si pescano le carte dei
+	 * pacchetti (docs/pacchetti). Il filtro dei tag lo applica {@code CardPool}: le varianti escono solo dai pacchetti
+	 * con uno dei loro tag propri (API-21).
 	 */
 	@Transactional(readOnly = true)
-	public List<CatalogCard> getActiveOriginals() {
-		return catalogCardRepository.findAllByIsActiveTrueAndVariantOfIsNullOrderByIdAsc();
+	public List<CatalogCard> getActiveForPacks() {
+		return catalogCardRepository.findAllByIsActiveTrueOrderByIdAsc();
 	}
 
 	/**

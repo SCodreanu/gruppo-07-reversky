@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
@@ -15,11 +16,12 @@ import jakarta.validation.constraints.Size;
 
 /**
  * Creazione o modifica di un pacchetto dal backoffice (POST /api/v1/admin/packs, PUT /api/v1/admin/packs/{id},
- * docs/backoffice). La modifica sostituisce tutto, slot e bonus compresi.
+ * docs/backoffice). La modifica sostituisce tutto, slot, bonus e tag compresi.
  *
  * @param purchaseLimit massimo di pacchetti per utente; vuoto = nessun limite, obbligatorio per un pacchetto gratuito
  * @param slots         slot base, almeno uno: il numero di carte è la somma delle quantità
  * @param bonuses       probabilità delle carte bonus, anche nessuna
+ * @param tagIds        tag del pacchetto (API-21); mancante o vuoto = nessun tag, un id ripetuto conta una volta
  */
 public record PackRequest(
 
@@ -46,7 +48,12 @@ public record PackRequest(
 	List<@NotNull(message = "Slot is required") @Valid PackSlotRequest> slots,
 
 	@NotNull(message = "Bonuses are required, even if empty")
-	List<@NotNull(message = "Bonus is required") @Valid PackBonusRequest> bonuses
+	List<@NotNull(message = "Bonus is required") @Valid PackBonusRequest> bonuses,
+
+	@ArraySchema(schema = @Schema(example = "4"), arraySchema = @Schema(description = "Tags of the pack (ids from "
+		+ "GET /admin/tags): only cards with at least one of them drop. Missing or empty = no tags, every active "
+		+ "original card can drop"))
+	List<@NotNull(message = "Tag id must not be null") Integer> tagIds
 ) {
 
 	// Hibernate Validator legge i metodi "is..." come proprietà: gli errori arrivano su questi nomi di campo

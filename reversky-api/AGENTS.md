@@ -168,7 +168,7 @@ Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
 
 - backoffice `GET/POST/PUT /api/v1/admin/packs`, `/activate`, `/deactivate` con slot e bonus nella stessa richiesta; un pacchetto si attiva solo se ogni slot trova carte (anche con il ripiego);
 - `GET /api/v1/packs` pubblico (con il token anche `remainingPurchases`), `POST /api/v1/packs/{id}/purchase`, `POST /api/v1/inventory/packs/{packId}/open`; `GET /inventory` elenca i pacchetti da aprire;
-- estrazione in `PackDrawer`/`CardPool` senza database, casualità dal bean `RandomGenerator`; `pack_tags` ignorati finché non c'è API-21;
+- estrazione in `PackDrawer`/`CardPool` senza database, casualità dal bean `RandomGenerator`; filtro dei tag (API-21): `tagIds` facoltativo in `POST/PUT /admin/packs` (inesistente `422 PACK_TAG_INVALID`), senza tag solo originali, con i tag le carte con uno dei tag propri o di una delle loro fazioni, le varianti solo con i propri, Spell e Hidden solo con i propri; un pacchetto attivo deve riempire ogni slot con i suoi tag (`422 PACK_NOT_FILLABLE`);
 - `V12__insert_base_pack.sql` mette in vendita il *Base Pack*. Dettagli in [docs/pacchetti](docs/pacchetti/pacchetti.md#comportamento-già-implementato) e [docs/backoffice](docs/backoffice/backoffice.md#pacchetti-comportamento-già-implementato-api-18-88-api-19-89-api-20-90).
 
 Catalogo iniziale e dati di prova (API-55, API-25):

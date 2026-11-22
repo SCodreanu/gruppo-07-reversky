@@ -40,9 +40,12 @@ public interface CatalogCardRepository extends JpaRepository<CatalogCard, Intege
 	@EntityGraph(attributePaths = {"rarity", "faction", "secondaryFaction", "variantOf", "variantOf.rarity"})
 	public List<CatalogCard> findAllByIdIn(Collection<Integer> ids);
 
-	/** Le carte attive e originali con rarità e fazioni: tra queste si pescano le carte dei pacchetti. */
-	@EntityGraph(attributePaths = {"rarity", "faction", "secondaryFaction"})
-	public List<CatalogCard> findAllByIsActiveTrueAndVariantOfIsNullOrderByIdAsc();
+	/**
+	 * Le carte attive, varianti comprese, con rarità, fazioni, tag propri e tag delle fazioni: tra queste si pescano le
+	 * carte dei pacchetti, con il filtro dei tag (API-21).
+	 */
+	@EntityGraph(attributePaths = {"rarity", "tags", "faction", "faction.tags", "secondaryFaction", "secondaryFaction.tags"})
+	public List<CatalogCard> findAllByIsActiveTrueOrderByIdAsc();
 
 	// L'originale ha almeno una variante? Allora non può diventare a sua volta variante
 	public boolean existsByVariantOf(CatalogCard original);

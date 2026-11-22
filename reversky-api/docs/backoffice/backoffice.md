@@ -164,7 +164,7 @@ Le classi stanno in `catalog/` (`Tag`, `TagRepository`, `TagService`, `TagReques
 - `POST /admin/tags` con `{ name }` crea un tag e risponde `201`; `PUT /admin/tags/{id}` lo rinomina (ridargli il suo nome va bene). Carte, fazioni e pacchetti collegati restano collegati, perché `card_tags`, `faction_tags` e `pack_tags` usano l'id.
 - Il nome si controlla **così com'è** (deciso il 22 novembre): maiuscole, cifre e trattino basso (`^[A-Z0-9_]+$`, come `chk_tags_name_format`), al massimo 100 caratteri. Minuscole, spazi o altri caratteri sono `400`, senza toglierne gli spazi né renderlo maiuscolo: il backoffice lo manda già nel formato giusto.
 - Un nome già usato è `409 TAG_NAME_TAKEN`, anche con due richieste contemporanee (il vincolo `uq_tags_name` diventa lo stesso `409`, come i nomi dei mazzi); un tag inesistente è `404 TAG_NOT_FOUND`.
-- Non c'è un `DELETE` né un elenco pubblico. I tag delle fazioni (`API-13`) e delle carte (`API-12`) ci sono, sotto; i tag dei pacchetti e il filtro dei pacchetti per tag arrivano con `API-21`.
+- Non c'è un `DELETE` né un elenco pubblico. I tag delle fazioni (`API-13`) e delle carte (`API-12`) ci sono, sotto; quelli dei pacchetti (`API-21`) sono in "Pacchetti".
 
 ### Tag delle fazioni: comportamento già implementato (API-13, #83)
 
@@ -241,9 +241,9 @@ Controlli:
 
 ### Pacchetti: comportamento già implementato (API-18 #88, API-19 #89, API-20 #90)
 
-`admin/controller/AdminPackController` e `pack/service/PackAdminService`. `POST` e `PUT /admin/packs` ricevono tutto in una richiesta (deciso il 21 novembre): `name`, `cost`, `purchaseLimit`, `imagePath`, `slots` `[{ rarityId, quantity }]` (almeno uno) e `bonuses` `[{ rarityId, probabilityUnits }]` (anche vuota). `PUT` sostituisce tutto, aggiornando le righe di slot e bonus esistenti invece di svuotare e reinserire. Le risposte riportano `active`, `cardCount` (somma degli slot), slot e bonus dalla rarità più comune, con `percentage` per ogni bonus. Senza audit e senza tag (API-21).
+`admin/controller/AdminPackController` e `pack/service/PackAdminService`. `POST` e `PUT /admin/packs` ricevono tutto in una richiesta (deciso il 21 novembre): `name`, `cost`, `purchaseLimit`, `imagePath`, `slots` `[{ rarityId, quantity }]` (almeno uno) e `bonuses` `[{ rarityId, probabilityUnits }]` (anche vuota), più `tagIds` facoltativo (API-21): mancante o vuoto vuol dire nessun tag, un id ripetuto conta una volta, un tag inesistente è `422 PACK_TAG_INVALID`. `PUT` sostituisce tutto, aggiornando le righe di slot e bonus esistenti invece di svuotare e reinserire. Le risposte riportano `active`, `cardCount` (somma degli slot), slot e bonus dalla rarità più comune, con `percentage` per ogni bonus, e `tags` `[{ id, name }]` in ordine di nome. Senza audit.
 
-- Un pacchetto nasce disattivato; `POST /{id}/activate` controlla che ogni slot base trovi almeno una carta attiva e originale, anche con il ripiego (`pack/service/CardPool`); un `PUT` su un pacchetto attivo fa lo stesso controllo.
+- Un pacchetto nasce disattivato; `POST /{id}/activate` controlla che ogni slot base trovi almeno una carta che può uscire **con i tag del pacchetto**, anche con il ripiego (`pack/service/CardPool`, regole in [pacchetti](../pacchetti/pacchetti.md#filtro-delle-carte--pack_tags)); un `PUT` su un pacchetto attivo fa lo stesso controllo, quindi un tag che svuota uno slot è `422 PACK_NOT_FILLABLE` e il pacchetto resta com'era.
 - `GET /api/v1/packs` (pubblico) elenca i pacchetti attivi con costo, limite, slot e solo i bonus di rarità che hanno carte.
 
 | Caso | Status | `code` |
@@ -253,7 +253,8 @@ Controlli:
 | nome già usato | `409` | `PACK_NAME_ALREADY_USED` |
 | rarità inesistente in uno slot o in un bonus | `422` | `PACK_RARITY_INVALID` |
 | bonus non più raro di tutti gli slot base | `422` | `PACK_RULES_VIOLATED` |
-| slot base che non trova nessuna carta, neanche con il ripiego (attivazione o modifica di un pacchetto attivo) | `422` | `PACK_NOT_FILLABLE` |
+| tag inesistente in `tagIds` (API-21) | `422` | `PACK_TAG_INVALID` |
+| slot base che non trova nessuna carta con i tag del pacchetto, neanche con il ripiego (attivazione o modifica di un pacchetto attivo) | `422` | `PACK_NOT_FILLABLE` |
 
 ## Utenti
 
