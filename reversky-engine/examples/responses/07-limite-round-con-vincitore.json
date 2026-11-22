@@ -1,0 +1,4814 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "ROUND_LIMIT",
+  "totalRounds" : 75,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 29,
+    "creaturesDefeated" : 0
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Shadowless Dog",
+      "attack" : 3,
+      "defense" : 1000
+    },
+    "message" : "Challenger plays Shadowless Dog (ATK 3, DEF 1000)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Limping Scarecrow",
+      "attack" : 0,
+      "defense" : 200
+    },
+    "message" : "Opponent plays Limping Scarecrow (ATK 0, DEF 200)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 197
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 197)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 9,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 10,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 11,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 12,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 194
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 194)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 14,
+    "round" : 3,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 3
+    },
+    "message" : "Round 3"
+  }, {
+    "sequence" : 15,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 16,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 17,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 191
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 191)"
+  }, {
+    "sequence" : 18,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 19,
+    "round" : 4,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 4
+    },
+    "message" : "Round 4"
+  }, {
+    "sequence" : 20,
+    "round" : 4,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 21,
+    "round" : 4,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 22,
+    "round" : 4,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 188
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 188)"
+  }, {
+    "sequence" : 23,
+    "round" : 4,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 24,
+    "round" : 5,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 5
+    },
+    "message" : "Round 5"
+  }, {
+    "sequence" : 25,
+    "round" : 5,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 26,
+    "round" : 5,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 27,
+    "round" : 5,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 185
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 185)"
+  }, {
+    "sequence" : 28,
+    "round" : 5,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 29,
+    "round" : 6,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 6
+    },
+    "message" : "Round 6"
+  }, {
+    "sequence" : 30,
+    "round" : 6,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 31,
+    "round" : 6,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 32,
+    "round" : 6,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 182
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 182)"
+  }, {
+    "sequence" : 33,
+    "round" : 6,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 34,
+    "round" : 7,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 7
+    },
+    "message" : "Round 7"
+  }, {
+    "sequence" : 35,
+    "round" : 7,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 36,
+    "round" : 7,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 37,
+    "round" : 7,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 179
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 179)"
+  }, {
+    "sequence" : 38,
+    "round" : 7,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 39,
+    "round" : 8,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 8
+    },
+    "message" : "Round 8"
+  }, {
+    "sequence" : 40,
+    "round" : 8,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 41,
+    "round" : 8,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 42,
+    "round" : 8,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 176
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 176)"
+  }, {
+    "sequence" : 43,
+    "round" : 8,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 44,
+    "round" : 9,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 9
+    },
+    "message" : "Round 9"
+  }, {
+    "sequence" : 45,
+    "round" : 9,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 46,
+    "round" : 9,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 47,
+    "round" : 9,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 173
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 173)"
+  }, {
+    "sequence" : 48,
+    "round" : 9,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 49,
+    "round" : 10,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 10
+    },
+    "message" : "Round 10"
+  }, {
+    "sequence" : 50,
+    "round" : 10,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 51,
+    "round" : 10,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 52,
+    "round" : 10,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 170
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 170)"
+  }, {
+    "sequence" : 53,
+    "round" : 10,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 54,
+    "round" : 11,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 11
+    },
+    "message" : "Round 11"
+  }, {
+    "sequence" : 55,
+    "round" : 11,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 56,
+    "round" : 11,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 57,
+    "round" : 11,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 167
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 167)"
+  }, {
+    "sequence" : 58,
+    "round" : 11,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 59,
+    "round" : 12,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 12
+    },
+    "message" : "Round 12"
+  }, {
+    "sequence" : 60,
+    "round" : 12,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 61,
+    "round" : 12,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 62,
+    "round" : 12,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 164
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 164)"
+  }, {
+    "sequence" : 63,
+    "round" : 12,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 64,
+    "round" : 13,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 13
+    },
+    "message" : "Round 13"
+  }, {
+    "sequence" : 65,
+    "round" : 13,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 66,
+    "round" : 13,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 67,
+    "round" : 13,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 161
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 161)"
+  }, {
+    "sequence" : 68,
+    "round" : 13,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 69,
+    "round" : 14,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 14
+    },
+    "message" : "Round 14"
+  }, {
+    "sequence" : 70,
+    "round" : 14,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 71,
+    "round" : 14,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 72,
+    "round" : 14,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 158
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 158)"
+  }, {
+    "sequence" : 73,
+    "round" : 14,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 74,
+    "round" : 15,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 15
+    },
+    "message" : "Round 15"
+  }, {
+    "sequence" : 75,
+    "round" : 15,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 76,
+    "round" : 15,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 77,
+    "round" : 15,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 155
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 155)"
+  }, {
+    "sequence" : 78,
+    "round" : 15,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 79,
+    "round" : 16,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 16
+    },
+    "message" : "Round 16"
+  }, {
+    "sequence" : 80,
+    "round" : 16,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 81,
+    "round" : 16,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 82,
+    "round" : 16,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 152
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 152)"
+  }, {
+    "sequence" : 83,
+    "round" : 16,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 84,
+    "round" : 17,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 17
+    },
+    "message" : "Round 17"
+  }, {
+    "sequence" : 85,
+    "round" : 17,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 86,
+    "round" : 17,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 87,
+    "round" : 17,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 149
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 149)"
+  }, {
+    "sequence" : 88,
+    "round" : 17,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 89,
+    "round" : 18,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 18
+    },
+    "message" : "Round 18"
+  }, {
+    "sequence" : 90,
+    "round" : 18,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 91,
+    "round" : 18,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 92,
+    "round" : 18,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 146
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 146)"
+  }, {
+    "sequence" : 93,
+    "round" : 18,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 94,
+    "round" : 19,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 19
+    },
+    "message" : "Round 19"
+  }, {
+    "sequence" : 95,
+    "round" : 19,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 96,
+    "round" : 19,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 97,
+    "round" : 19,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 143
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 143)"
+  }, {
+    "sequence" : 98,
+    "round" : 19,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 99,
+    "round" : 20,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 20
+    },
+    "message" : "Round 20"
+  }, {
+    "sequence" : 100,
+    "round" : 20,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 101,
+    "round" : 20,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 102,
+    "round" : 20,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 140
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 140)"
+  }, {
+    "sequence" : 103,
+    "round" : 20,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 104,
+    "round" : 21,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 21
+    },
+    "message" : "Round 21"
+  }, {
+    "sequence" : 105,
+    "round" : 21,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 106,
+    "round" : 21,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 107,
+    "round" : 21,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 137
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 137)"
+  }, {
+    "sequence" : 108,
+    "round" : 21,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 109,
+    "round" : 22,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 22
+    },
+    "message" : "Round 22"
+  }, {
+    "sequence" : 110,
+    "round" : 22,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 111,
+    "round" : 22,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 112,
+    "round" : 22,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 134
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 134)"
+  }, {
+    "sequence" : 113,
+    "round" : 22,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 114,
+    "round" : 23,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 23
+    },
+    "message" : "Round 23"
+  }, {
+    "sequence" : 115,
+    "round" : 23,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 116,
+    "round" : 23,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 117,
+    "round" : 23,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 131
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 131)"
+  }, {
+    "sequence" : 118,
+    "round" : 23,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 119,
+    "round" : 24,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 24
+    },
+    "message" : "Round 24"
+  }, {
+    "sequence" : 120,
+    "round" : 24,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 121,
+    "round" : 24,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 122,
+    "round" : 24,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 128
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 128)"
+  }, {
+    "sequence" : 123,
+    "round" : 24,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 124,
+    "round" : 25,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 25
+    },
+    "message" : "Round 25"
+  }, {
+    "sequence" : 125,
+    "round" : 25,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 126,
+    "round" : 25,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 127,
+    "round" : 25,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 125
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 125)"
+  }, {
+    "sequence" : 128,
+    "round" : 25,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 129,
+    "round" : 26,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 26
+    },
+    "message" : "Round 26"
+  }, {
+    "sequence" : 130,
+    "round" : 26,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 131,
+    "round" : 26,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 132,
+    "round" : 26,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 122
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 122)"
+  }, {
+    "sequence" : 133,
+    "round" : 26,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 134,
+    "round" : 27,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 27
+    },
+    "message" : "Round 27"
+  }, {
+    "sequence" : 135,
+    "round" : 27,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 136,
+    "round" : 27,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 137,
+    "round" : 27,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 119
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 119)"
+  }, {
+    "sequence" : 138,
+    "round" : 27,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 139,
+    "round" : 28,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 28
+    },
+    "message" : "Round 28"
+  }, {
+    "sequence" : 140,
+    "round" : 28,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 141,
+    "round" : 28,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 142,
+    "round" : 28,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 116
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 116)"
+  }, {
+    "sequence" : 143,
+    "round" : 28,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 144,
+    "round" : 29,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 29
+    },
+    "message" : "Round 29"
+  }, {
+    "sequence" : 145,
+    "round" : 29,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 146,
+    "round" : 29,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 147,
+    "round" : 29,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 113
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 113)"
+  }, {
+    "sequence" : 148,
+    "round" : 29,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 149,
+    "round" : 30,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 30
+    },
+    "message" : "Round 30"
+  }, {
+    "sequence" : 150,
+    "round" : 30,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 151,
+    "round" : 30,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 152,
+    "round" : 30,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 110
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 110)"
+  }, {
+    "sequence" : 153,
+    "round" : 30,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 154,
+    "round" : 31,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 31
+    },
+    "message" : "Round 31"
+  }, {
+    "sequence" : 155,
+    "round" : 31,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 156,
+    "round" : 31,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 157,
+    "round" : 31,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 107
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 107)"
+  }, {
+    "sequence" : 158,
+    "round" : 31,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 159,
+    "round" : 32,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 32
+    },
+    "message" : "Round 32"
+  }, {
+    "sequence" : 160,
+    "round" : 32,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 161,
+    "round" : 32,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 162,
+    "round" : 32,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 104
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 104)"
+  }, {
+    "sequence" : 163,
+    "round" : 32,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 164,
+    "round" : 33,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 33
+    },
+    "message" : "Round 33"
+  }, {
+    "sequence" : 165,
+    "round" : 33,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 166,
+    "round" : 33,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 167,
+    "round" : 33,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 101
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 101)"
+  }, {
+    "sequence" : 168,
+    "round" : 33,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 169,
+    "round" : 34,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 34
+    },
+    "message" : "Round 34"
+  }, {
+    "sequence" : 170,
+    "round" : 34,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 171,
+    "round" : 34,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 172,
+    "round" : 34,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 98
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 98)"
+  }, {
+    "sequence" : 173,
+    "round" : 34,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 174,
+    "round" : 35,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 35
+    },
+    "message" : "Round 35"
+  }, {
+    "sequence" : 175,
+    "round" : 35,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 176,
+    "round" : 35,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 177,
+    "round" : 35,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 95
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 95)"
+  }, {
+    "sequence" : 178,
+    "round" : 35,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 179,
+    "round" : 36,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 36
+    },
+    "message" : "Round 36"
+  }, {
+    "sequence" : 180,
+    "round" : 36,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 181,
+    "round" : 36,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 182,
+    "round" : 36,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 92
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 92)"
+  }, {
+    "sequence" : 183,
+    "round" : 36,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 184,
+    "round" : 37,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 37
+    },
+    "message" : "Round 37"
+  }, {
+    "sequence" : 185,
+    "round" : 37,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 186,
+    "round" : 37,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 187,
+    "round" : 37,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 89
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 89)"
+  }, {
+    "sequence" : 188,
+    "round" : 37,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 189,
+    "round" : 38,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 38
+    },
+    "message" : "Round 38"
+  }, {
+    "sequence" : 190,
+    "round" : 38,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 191,
+    "round" : 38,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 192,
+    "round" : 38,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 86
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 86)"
+  }, {
+    "sequence" : 193,
+    "round" : 38,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 194,
+    "round" : 39,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 39
+    },
+    "message" : "Round 39"
+  }, {
+    "sequence" : 195,
+    "round" : 39,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 196,
+    "round" : 39,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 197,
+    "round" : 39,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 83
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 83)"
+  }, {
+    "sequence" : 198,
+    "round" : 39,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 199,
+    "round" : 40,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 40
+    },
+    "message" : "Round 40"
+  }, {
+    "sequence" : 200,
+    "round" : 40,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 201,
+    "round" : 40,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 202,
+    "round" : 40,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 80
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 80)"
+  }, {
+    "sequence" : 203,
+    "round" : 40,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 204,
+    "round" : 41,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 41
+    },
+    "message" : "Round 41"
+  }, {
+    "sequence" : 205,
+    "round" : 41,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 206,
+    "round" : 41,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 207,
+    "round" : 41,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 77
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 77)"
+  }, {
+    "sequence" : 208,
+    "round" : 41,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 209,
+    "round" : 42,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 42
+    },
+    "message" : "Round 42"
+  }, {
+    "sequence" : 210,
+    "round" : 42,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 211,
+    "round" : 42,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 212,
+    "round" : 42,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 74
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 74)"
+  }, {
+    "sequence" : 213,
+    "round" : 42,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 214,
+    "round" : 43,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 43
+    },
+    "message" : "Round 43"
+  }, {
+    "sequence" : 215,
+    "round" : 43,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 216,
+    "round" : 43,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 217,
+    "round" : 43,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 71
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 71)"
+  }, {
+    "sequence" : 218,
+    "round" : 43,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 219,
+    "round" : 44,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 44
+    },
+    "message" : "Round 44"
+  }, {
+    "sequence" : 220,
+    "round" : 44,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 221,
+    "round" : 44,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 222,
+    "round" : 44,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 68
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 68)"
+  }, {
+    "sequence" : 223,
+    "round" : 44,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 224,
+    "round" : 45,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 45
+    },
+    "message" : "Round 45"
+  }, {
+    "sequence" : 225,
+    "round" : 45,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 226,
+    "round" : 45,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 227,
+    "round" : 45,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 65
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 65)"
+  }, {
+    "sequence" : 228,
+    "round" : 45,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 229,
+    "round" : 46,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 46
+    },
+    "message" : "Round 46"
+  }, {
+    "sequence" : 230,
+    "round" : 46,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 231,
+    "round" : 46,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 232,
+    "round" : 46,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 62
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 62)"
+  }, {
+    "sequence" : 233,
+    "round" : 46,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 234,
+    "round" : 47,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 47
+    },
+    "message" : "Round 47"
+  }, {
+    "sequence" : 235,
+    "round" : 47,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 236,
+    "round" : 47,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 237,
+    "round" : 47,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 59
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 59)"
+  }, {
+    "sequence" : 238,
+    "round" : 47,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 239,
+    "round" : 48,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 48
+    },
+    "message" : "Round 48"
+  }, {
+    "sequence" : 240,
+    "round" : 48,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 241,
+    "round" : 48,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 242,
+    "round" : 48,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 56
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 56)"
+  }, {
+    "sequence" : 243,
+    "round" : 48,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 244,
+    "round" : 49,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 49
+    },
+    "message" : "Round 49"
+  }, {
+    "sequence" : 245,
+    "round" : 49,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 246,
+    "round" : 49,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 247,
+    "round" : 49,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 53
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 53)"
+  }, {
+    "sequence" : 248,
+    "round" : 49,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 249,
+    "round" : 50,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 50
+    },
+    "message" : "Round 50"
+  }, {
+    "sequence" : 250,
+    "round" : 50,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 251,
+    "round" : 50,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 252,
+    "round" : 50,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 50
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 50)"
+  }, {
+    "sequence" : 253,
+    "round" : 50,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 254,
+    "round" : 51,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 51
+    },
+    "message" : "Round 51"
+  }, {
+    "sequence" : 255,
+    "round" : 51,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 256,
+    "round" : 51,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 257,
+    "round" : 51,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 47
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 47)"
+  }, {
+    "sequence" : 258,
+    "round" : 51,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 259,
+    "round" : 52,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 52
+    },
+    "message" : "Round 52"
+  }, {
+    "sequence" : 260,
+    "round" : 52,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 261,
+    "round" : 52,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 262,
+    "round" : 52,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 44
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 44)"
+  }, {
+    "sequence" : 263,
+    "round" : 52,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 264,
+    "round" : 53,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 53
+    },
+    "message" : "Round 53"
+  }, {
+    "sequence" : 265,
+    "round" : 53,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 266,
+    "round" : 53,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 267,
+    "round" : 53,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 41
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 41)"
+  }, {
+    "sequence" : 268,
+    "round" : 53,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 269,
+    "round" : 54,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 54
+    },
+    "message" : "Round 54"
+  }, {
+    "sequence" : 270,
+    "round" : 54,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 271,
+    "round" : 54,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 272,
+    "round" : 54,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 38
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 38)"
+  }, {
+    "sequence" : 273,
+    "round" : 54,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 274,
+    "round" : 55,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 55
+    },
+    "message" : "Round 55"
+  }, {
+    "sequence" : 275,
+    "round" : 55,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 276,
+    "round" : 55,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 277,
+    "round" : 55,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 35
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 35)"
+  }, {
+    "sequence" : 278,
+    "round" : 55,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 279,
+    "round" : 56,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 56
+    },
+    "message" : "Round 56"
+  }, {
+    "sequence" : 280,
+    "round" : 56,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 281,
+    "round" : 56,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 282,
+    "round" : 56,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 32
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 32)"
+  }, {
+    "sequence" : 283,
+    "round" : 56,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 284,
+    "round" : 57,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 57
+    },
+    "message" : "Round 57"
+  }, {
+    "sequence" : 285,
+    "round" : 57,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 286,
+    "round" : 57,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 287,
+    "round" : 57,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 29
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 29)"
+  }, {
+    "sequence" : 288,
+    "round" : 57,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 289,
+    "round" : 58,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 58
+    },
+    "message" : "Round 58"
+  }, {
+    "sequence" : 290,
+    "round" : 58,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 291,
+    "round" : 58,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 292,
+    "round" : 58,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 26
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 26)"
+  }, {
+    "sequence" : 293,
+    "round" : 58,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 294,
+    "round" : 59,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 59
+    },
+    "message" : "Round 59"
+  }, {
+    "sequence" : 295,
+    "round" : 59,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 296,
+    "round" : 59,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 297,
+    "round" : 59,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 23
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 23)"
+  }, {
+    "sequence" : 298,
+    "round" : 59,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 299,
+    "round" : 60,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 60
+    },
+    "message" : "Round 60"
+  }, {
+    "sequence" : 300,
+    "round" : 60,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 301,
+    "round" : 60,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 302,
+    "round" : 60,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 20
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 20)"
+  }, {
+    "sequence" : 303,
+    "round" : 60,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 304,
+    "round" : 61,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 61
+    },
+    "message" : "Round 61"
+  }, {
+    "sequence" : 305,
+    "round" : 61,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 306,
+    "round" : 61,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 307,
+    "round" : 61,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 17
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 17)"
+  }, {
+    "sequence" : 308,
+    "round" : 61,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 309,
+    "round" : 62,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 62
+    },
+    "message" : "Round 62"
+  }, {
+    "sequence" : 310,
+    "round" : 62,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 311,
+    "round" : 62,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 312,
+    "round" : 62,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 14
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 14)"
+  }, {
+    "sequence" : 313,
+    "round" : 62,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 314,
+    "round" : 63,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 63
+    },
+    "message" : "Round 63"
+  }, {
+    "sequence" : 315,
+    "round" : 63,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 316,
+    "round" : 63,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 317,
+    "round" : 63,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 11
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 11)"
+  }, {
+    "sequence" : 318,
+    "round" : 63,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 319,
+    "round" : 64,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 64
+    },
+    "message" : "Round 64"
+  }, {
+    "sequence" : 320,
+    "round" : 64,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 321,
+    "round" : 64,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 322,
+    "round" : 64,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 8
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 8)"
+  }, {
+    "sequence" : 323,
+    "round" : 64,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 324,
+    "round" : 65,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 65
+    },
+    "message" : "Round 65"
+  }, {
+    "sequence" : 325,
+    "round" : 65,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 326,
+    "round" : 65,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 327,
+    "round" : 65,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 5
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 5)"
+  }, {
+    "sequence" : 328,
+    "round" : 65,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 329,
+    "round" : 66,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 66
+    },
+    "message" : "Round 66"
+  }, {
+    "sequence" : 330,
+    "round" : 66,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 331,
+    "round" : 66,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 332,
+    "round" : 66,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 2
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 2)"
+  }, {
+    "sequence" : 333,
+    "round" : 66,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 334,
+    "round" : 67,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 67
+    },
+    "message" : "Round 67"
+  }, {
+    "sequence" : 335,
+    "round" : 67,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 336,
+    "round" : 67,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 337,
+    "round" : 67,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : -1
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF −1)"
+  }, {
+    "sequence" : 338,
+    "round" : 67,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 339,
+    "round" : 67,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Limping Scarecrow"
+    },
+    "message" : "Limping Scarecrow is destroyed"
+  }, {
+    "sequence" : 340,
+    "round" : 67,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 1,
+      "lifePoints" : 29
+    },
+    "message" : "Opponent loses 1 life points (29 left)"
+  }, {
+    "sequence" : 341,
+    "round" : 67,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Limping Scarecrow",
+      "attack" : 0,
+      "defense" : 200
+    },
+    "message" : "Opponent plays Limping Scarecrow (ATK 0, DEF 200)"
+  }, {
+    "sequence" : 342,
+    "round" : 68,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 68
+    },
+    "message" : "Round 68"
+  }, {
+    "sequence" : 343,
+    "round" : 68,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 344,
+    "round" : 68,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 345,
+    "round" : 68,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 197
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 197)"
+  }, {
+    "sequence" : 346,
+    "round" : 68,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 347,
+    "round" : 69,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 69
+    },
+    "message" : "Round 69"
+  }, {
+    "sequence" : 348,
+    "round" : 69,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 349,
+    "round" : 69,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 350,
+    "round" : 69,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 194
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 194)"
+  }, {
+    "sequence" : 351,
+    "round" : 69,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 352,
+    "round" : 70,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 70
+    },
+    "message" : "Round 70"
+  }, {
+    "sequence" : 353,
+    "round" : 70,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 354,
+    "round" : 70,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 355,
+    "round" : 70,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 191
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 191)"
+  }, {
+    "sequence" : 356,
+    "round" : 70,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 357,
+    "round" : 71,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 71
+    },
+    "message" : "Round 71"
+  }, {
+    "sequence" : 358,
+    "round" : 71,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 359,
+    "round" : 71,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 360,
+    "round" : 71,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 188
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 188)"
+  }, {
+    "sequence" : 361,
+    "round" : 71,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 362,
+    "round" : 72,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 72
+    },
+    "message" : "Round 72"
+  }, {
+    "sequence" : 363,
+    "round" : 72,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 364,
+    "round" : 72,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 365,
+    "round" : 72,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 185
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 185)"
+  }, {
+    "sequence" : 366,
+    "round" : 72,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 367,
+    "round" : 73,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 73
+    },
+    "message" : "Round 73"
+  }, {
+    "sequence" : 368,
+    "round" : 73,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 369,
+    "round" : 73,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 370,
+    "round" : 73,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 182
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 182)"
+  }, {
+    "sequence" : 371,
+    "round" : 73,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 372,
+    "round" : 74,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 74
+    },
+    "message" : "Round 74"
+  }, {
+    "sequence" : 373,
+    "round" : 74,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 374,
+    "round" : 74,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 375,
+    "round" : 74,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 179
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 179)"
+  }, {
+    "sequence" : 376,
+    "round" : 74,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 377,
+    "round" : 75,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 75
+    },
+    "message" : "Round 75"
+  }, {
+    "sequence" : 378,
+    "round" : 75,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Shadowless Dog",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Shadowless Dog attacks with 3 (3 base)"
+  }, {
+    "sequence" : 379,
+    "round" : 75,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Limping Scarecrow",
+      "baseAttack" : 0,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 0
+    },
+    "message" : "Limping Scarecrow attacks with 0 (0 base)"
+  }, {
+    "sequence" : 380,
+    "round" : 75,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Shadowless Dog",
+      "target" : "Limping Scarecrow",
+      "amount" : 3,
+      "targetDefense" : 176
+    },
+    "message" : "Shadowless Dog deals 3 damage to Limping Scarecrow (DEF 176)"
+  }, {
+    "sequence" : 381,
+    "round" : 75,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Limping Scarecrow",
+      "target" : "Shadowless Dog",
+      "amount" : 0,
+      "targetDefense" : 1000
+    },
+    "message" : "Limping Scarecrow deals 0 damage to Shadowless Dog (DEF 1000)"
+  }, {
+    "sequence" : 382,
+    "round" : 75,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "ROUND_LIMIT"
+    },
+    "message" : "Challenger wins (round limit)"
+  } ]
+}

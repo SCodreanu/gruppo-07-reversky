@@ -1,0 +1,7 @@
+{
+  "detail" : "Unknown faction on card 305",
+  "instance" : "/api/v1/simulations",
+  "status" : 400,
+  "title" : "Invalid simulation input",
+  "code" : "UNKNOWN_FACTION"
+}

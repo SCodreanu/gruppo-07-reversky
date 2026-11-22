@@ -1,0 +1,204 @@
+{
+  "result" : "OPPONENT_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 2,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 24,
+    "creaturesDefeated" : 0
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Rootbound Doppelganger",
+      "attack" : 6,
+      "defense" : 10
+    },
+    "message" : "Challenger plays Rootbound Doppelganger (ATK 6, DEF 10)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Kodama",
+      "attack" : 6,
+      "defense" : 11
+    },
+    "message" : "Opponent plays Kodama (ATK 6, DEF 11)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Rootbound Doppelganger",
+      "baseAttack" : 6,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Rootbound Doppelganger attacks with 5 (6 base, −1 faction)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Kodama",
+      "baseAttack" : 6,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "Kodama attacks with 8 (6 base, +2 faction)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Rootbound Doppelganger",
+      "target" : "Kodama",
+      "amount" : 5,
+      "targetDefense" : 6
+    },
+    "message" : "Rootbound Doppelganger deals 5 damage to Kodama (DEF 6)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Kodama",
+      "target" : "Rootbound Doppelganger",
+      "amount" : 8,
+      "targetDefense" : 2
+    },
+    "message" : "Kodama deals 8 damage to Rootbound Doppelganger (DEF 2)"
+  }, {
+    "sequence" : 9,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 10,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Rootbound Doppelganger",
+      "baseAttack" : 6,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Rootbound Doppelganger attacks with 5 (6 base, −1 faction)"
+  }, {
+    "sequence" : 11,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Kodama",
+      "baseAttack" : 6,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "Kodama attacks with 8 (6 base, +2 faction)"
+  }, {
+    "sequence" : 12,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Rootbound Doppelganger",
+      "target" : "Kodama",
+      "amount" : 5,
+      "targetDefense" : 1
+    },
+    "message" : "Rootbound Doppelganger deals 5 damage to Kodama (DEF 1)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Kodama",
+      "target" : "Rootbound Doppelganger",
+      "amount" : 8,
+      "targetDefense" : -6
+    },
+    "message" : "Kodama deals 8 damage to Rootbound Doppelganger (DEF −6)"
+  }, {
+    "sequence" : 14,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Rootbound Doppelganger"
+    },
+    "message" : "Rootbound Doppelganger is destroyed"
+  }, {
+    "sequence" : 15,
+    "round" : 2,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "amount" : 6,
+      "lifePoints" : 24
+    },
+    "message" : "Challenger loses 6 life points (24 left)"
+  }, {
+    "sequence" : 16,
+    "round" : 2,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "OPPONENT_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Opponent wins (no creatures left)"
+  } ]
+}

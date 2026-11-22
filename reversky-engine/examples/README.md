@@ -54,6 +54,8 @@ Tutti i valori sono anche in [`expected-results.csv`](expected-results.csv) (tut
 
 `creaturesDefeated` = creature **avversarie** distrutte da quel giocatore (in una morte simultanea contano per entrambi).
 
+La risposta completa di ogni richiesta, log compreso, è in [`responses/`](responses) con lo stesso nome di file: è il contratto con l'API (`ENG-24`, vedi [docs/test](../docs/test/test.md#test-di-contratto-con-lapi-eng-24)). Le fotografie non si scrivono a mano: le genera `SimulationContractTest`.
+
 ## Come sono stati calcolati
 
 **01** — SCP-131 (ATK 8, DEF 6) contro Eternal Cup (ATK 4, DEF 5), entrambe Archive.
@@ -192,3 +194,4 @@ Oppure apri [`simulazioni.http`](simulazioni.http) in IntelliJ IDEA o in VS Code
 2. Calcola il risultato **a mano** e scrivi i passaggi in questo README.
 3. Aggiungi una riga a `expected-results.csv` (o `expected-results-effects.csv` se usa un effetto).
 4. Se l'esempio usa carte diverse tra loro nello stesso mazzo, il risultato dipende dal seed: scrivi anche l'ordine dopo il mescolamento.
+5. Lancia `gradlew test`: `SimulationContractTest` fallisce e scrive la risposta in `build/contract/actual/`; controllala e copiala in `responses/` con lo stesso nome.
