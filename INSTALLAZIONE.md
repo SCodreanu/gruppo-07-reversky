@@ -69,5 +69,6 @@ Il progetto usa il **Gradle wrapper** (`gradlew` / `gradlew.bat`): Gradle **non*
 | `java -version` mostra una versione diversa da 25 | un'altra Java viene prima nel `PATH`: in *Variabili d'ambiente* sposta in alto la cartella `bin` di Temurin 25, oppure disinstalla le versioni vecchie |
 | `'java' non è riconosciuto come comando` | l'opzione *Add to PATH* non era attiva: reinstalla Temurin attivandola, poi riapri il terminale |
 | Gradle dice *Toolchain … 25 not found* | `JAVA_HOME` non punta al JDK 25: correggilo e riapri terminale e IDE |
+| Con `docker compose up` il login di `alice` o `bob` risponde `401` | i dati di prova si caricano solo con il profilo `dev`: `SPRING_PROFILES_ACTIVE=dev` nel file `.env` (o `$env:SPRING_PROFILES_ACTIVE = "dev"` in PowerShell), poi `docker compose down -v` e `docker compose up --build` |
 
 Quando tutto è installato, torna al [README](README.md#come-avviare-il-backend) per avviare il backend.

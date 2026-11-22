@@ -97,13 +97,14 @@ Senza file `.env` vengono usati i valori di sviluppo di `.env.example`. Il file 
 
 ### Script per Windows
 
-Nella cartella [`scripts/`](scripts) ci sono tre script da lanciare con doppio clic o dal terminale (funzionano da qualsiasi cartella):
+Nella cartella [`scripts/`](scripts) ci sono tre script da lanciare con doppio clic o dal terminale, più uno di prova da PowerShell (funzionano da qualsiasi cartella):
 
 | Script | Cosa avvia | Serve Docker |
 |---|---|---|
 | [`start-backend.bat`](scripts/start-backend.bat) | tutto il backend con Docker Compose (database, engine, API); aggiungi `-d` per avviarlo in background | sì |
 | [`start-api.bat`](scripts/start-api.bat) | solo l'API con Gradle, su `http://localhost:8080` (il database parte da solo) | sì |
 | [`start-engine.bat`](scripts/start-engine.bat) | solo l'engine con Gradle, su `http://localhost:8081` | no |
+| [`prova-sfida.ps1`](scripts/prova-sfida.ps1) | non avvia niente: prova lo stack di Docker Compose già acceso con il profilo `dev` (sfida con carte speciali, engine spento e retry, scambio); da PowerShell con `powershell -ExecutionPolicy Bypass -File scripts\prova-sfida.ps1`, dettagli in [sfide](reversky-api/docs/sfide/sfide.md#prova-sullo-stack-completo) | sì |
 
 Per sviluppare dall'IDE di solito si usano `start-engine.bat` e `start-api.bat` insieme, in due terminali. Non avviare `start-backend.bat` nello stesso momento: userebbe le stesse porte.
 

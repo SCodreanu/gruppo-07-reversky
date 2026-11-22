@@ -72,7 +72,7 @@ Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engin
 
 `db/dev/R__dev_seed.sql` è una migrazione **ripetibile**: Flyway la esegue dopo quelle versionate e di nuovo solo quando il file cambia, e ogni istruzione inserisce soltanto ciò che manca (nessun duplicato, niente sovrascritto). La cartella `db/dev` è nelle `spring.flyway.locations` solo con il profilo `dev` (`application-dev.properties`).
 
-- **Attivazione:** `./gradlew bootRun` usa il profilo `dev` da solo (`build.gradle`); con `SPRING_PROFILES_ACTIVE` impostato vale quello. L'immagine Docker, `java -jar` e i test (tranne `DevSeedIT`, che ha il suo database) non caricano i dati di prova.
+- **Attivazione:** `./gradlew bootRun` usa il profilo `dev` da solo (`build.gradle`); con `SPRING_PROFILES_ACTIVE` impostato vale quello. Il `compose.yaml` della cartella principale passa `SPRING_PROFILES_ACTIVE` all'API (default `default`): `docker compose up --build` carica i dati di prova solo con `SPRING_PROFILES_ACTIVE=dev` nell'ambiente o nel file `.env` (vedi `.env.example` e [sfide](../sfide/sfide.md#prova-sullo-stack-completo)). `java -jar` senza profilo e i test (tranne `DevSeedIT`, che ha il suo database) non li caricano.
 - **Utenti**, tutti con email verificata e password di sviluppo `Reversky2026` (mai usarla altrove):
 
 | Username | Email | Ruolo | Dati |
