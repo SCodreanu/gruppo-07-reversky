@@ -10,7 +10,7 @@ public final class TestRules {
 	/** Versione del rule set di prova, uguale a quella degli esempi. */
 	public static final String VERSION = "1.0";
 
-	/** Punti vita iniziali del rule set {@code 1.0} (D-01, da confermare). */
+	/** Punti vita iniziali del rule set {@code 1.0} (D-01, deciso il 22 novembre). */
 	public static final int STARTING_LIFE_POINTS = 30;
 
 	/** Limite di round totali del rule set {@code 1.0} (D-02). */
