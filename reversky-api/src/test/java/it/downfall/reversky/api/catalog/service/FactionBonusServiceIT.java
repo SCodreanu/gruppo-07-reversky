@@ -24,7 +24,7 @@ import it.downfall.reversky.api.TestcontainersConfiguration;
 import it.downfall.reversky.api.catalog.dto.FactionBonusRequest;
 import it.downfall.reversky.api.catalog.dto.FactionBonusResponse;
 import it.downfall.reversky.api.catalog.dto.FactionBonusSummaryResponse;
-import it.downfall.reversky.api.catalog.dto.FactionResponse;
+import it.downfall.reversky.api.catalog.dto.AdminFactionResponse;
 import it.downfall.reversky.api.catalog.exception.FactionBonusDuplicateException;
 import it.downfall.reversky.api.catalog.exception.FactionBonusFactionNotFoundException;
 import it.downfall.reversky.api.catalog.exception.FactionBonusRulesViolatedException;
@@ -74,9 +74,9 @@ class FactionBonusServiceIT {
 	@DisplayName("A valid matrix is saved and returned with the faction names, sorted by origin and target")
 	void replaceAll_validRows_savesAndReturnsSortedWithNames() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
-		FactionResponse c = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse c = testFactionBonuses.createFaction();
 
 		// Act: righe inviate in disordine
 		List<FactionBonusResponse> response = factionBonusService.replaceAll(List.of(
@@ -96,8 +96,8 @@ class FactionBonusServiceIT {
 	@DisplayName("A negative ATK bonus (malus) is allowed")
 	void replaceAll_negativeAtk_isSaved() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 
 		// Act
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), -1, 0)));
@@ -111,8 +111,8 @@ class FactionBonusServiceIT {
 	@DisplayName("Both directions of the same pair are two different rows")
 	void replaceAll_bothDirections_savesTwoRows() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 
 		// Act
 		factionBonusService.replaceAll(List.of(
@@ -127,9 +127,9 @@ class FactionBonusServiceIT {
 	@DisplayName("The new matrix replaces the old one: pairs missing from the request are deleted")
 	void replaceAll_existingMatrix_replacesIt() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
-		FactionResponse c = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse c = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(
 			new FactionBonusRequest(a.id(), b.id(), 2, 1),
 			new FactionBonusRequest(a.id(), c.id(), 1, 0)));
@@ -146,8 +146,8 @@ class FactionBonusServiceIT {
 	@DisplayName("An empty list clears the matrix")
 	void replaceAll_emptyList_clearsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), 2, 1)));
 
 		// Act
@@ -162,8 +162,8 @@ class FactionBonusServiceIT {
 	@DisplayName("A null list clears the matrix like an empty one")
 	void replaceAll_nullList_clearsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), 2, 1)));
 
 		// Act
@@ -179,8 +179,8 @@ class FactionBonusServiceIT {
 	@DisplayName("A faction matched against itself is rejected and the matrix does not change")
 	void replaceAll_selfMatchup_throwsAndKeepsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		List<FactionBonusRequest> before = givenMatrix(a, b);
 
 		// Act + Assert
@@ -195,8 +195,8 @@ class FactionBonusServiceIT {
 	@DisplayName("A negative DEF bonus is rejected and the matrix does not change")
 	void replaceAll_negativeDef_throwsAndKeepsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		List<FactionBonusRequest> before = givenMatrix(a, b);
 
 		// Act + Assert
@@ -209,8 +209,8 @@ class FactionBonusServiceIT {
 	@DisplayName("An unknown origin faction is rejected and the matrix does not change")
 	void replaceAll_unknownOrigin_throwsAndKeepsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		List<FactionBonusRequest> before = givenMatrix(a, b);
 
 		// Act + Assert
@@ -223,7 +223,7 @@ class FactionBonusServiceIT {
 	@DisplayName("An unknown target faction is rejected")
 	void replaceAll_unknownTarget_throwsFactionNotFound() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
 
 		// Act + Assert
 		assertThatThrownBy(() -> factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), Integer.MAX_VALUE, 1, 0))))
@@ -234,8 +234,8 @@ class FactionBonusServiceIT {
 	@DisplayName("The same pair twice in the request is rejected and the matrix does not change")
 	void replaceAll_duplicatePair_throwsAndKeepsMatrix() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		List<FactionBonusRequest> before = givenMatrix(a, b);
 
 		// Act + Assert
@@ -262,8 +262,8 @@ class FactionBonusServiceIT {
 	@DisplayName("A row with a missing field is rejected without a NullPointerException")
 	void replaceAll_missingField_throwsRulesViolated() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 
 		// Act + Assert
 		assertThatThrownBy(() -> factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), null, 0))))
@@ -276,9 +276,9 @@ class FactionBonusServiceIT {
 	@DisplayName("Two replacements at the same time: the result is exactly one of the two matrices, never a mix")
 	void replaceAll_twoConcurrent_lastOneWinsWithoutMixing() throws Exception {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
-		FactionResponse c = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse c = testFactionBonuses.createFaction();
 		List<FactionBonusRequest> first = List.of(
 			new FactionBonusRequest(a.id(), b.id(), 1, 0),
 			new FactionBonusRequest(a.id(), c.id(), 1, 0));
@@ -316,8 +316,8 @@ class FactionBonusServiceIT {
 	@DisplayName("The summaries for GET /rules have the same rows as the admin list, without names")
 	void findAllSummaries_matchesAdminList() {
 		// Arrange
-		FactionResponse a = testFactionBonuses.createFaction();
-		FactionResponse b = testFactionBonuses.createFaction();
+		AdminFactionResponse a = testFactionBonuses.createFaction();
+		AdminFactionResponse b = testFactionBonuses.createFaction();
 		factionBonusService.replaceAll(List.of(
 			new FactionBonusRequest(a.id(), b.id(), 2, 1),
 			new FactionBonusRequest(b.id(), a.id(), -1, 0)));
@@ -334,7 +334,7 @@ class FactionBonusServiceIT {
 	// --- supporto ---
 
 	/** Imposta una matrice di una riga (A → B) e la restituisce come la legge {@link TestFactionBonuses#currentMatrix()}. */
-	private List<FactionBonusRequest> givenMatrix(FactionResponse a, FactionResponse b) {
+	private List<FactionBonusRequest> givenMatrix(AdminFactionResponse a, AdminFactionResponse b) {
 		factionBonusService.replaceAll(List.of(new FactionBonusRequest(a.id(), b.id(), 2, 1)));
 		return testFactionBonuses.currentMatrix();
 	}

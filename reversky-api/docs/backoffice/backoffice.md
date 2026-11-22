@@ -9,7 +9,7 @@ Tutti gli endpoint sono sotto `/api/v1/admin/**`. Ogni modifica viene registrata
 - Il controllo del ruolo è in `SecurityConfig` (`/api/v1/admin/**` → `hasRole(ADMIN)`): i controller non ripetono `@PreAuthorize`.
 - I controller stanno in `admin/controller/` e usano i service delle funzionalità (vedi [architettura](../architettura/architettura.md)).
 - Già implementato, senza audit (task API-52, #122):
-  - `GET/POST/PUT /admin/factions` (`AdminFactionController`), senza `faction_tags` (task API-13, #83);
+  - `GET/POST/PUT /admin/factions` (`AdminFactionController`), con i tag in `PUT /admin/factions/{id}/tags` (task API-13, #83, vedi "Tag delle fazioni" qui sotto);
   - `GET/POST/PUT /admin/rarities` (`AdminRarityController`): `POST` usa `RarityCreateRequest`, `PUT` usa `RarityUpdateRequest`, che non ha `sortingOrder` (se il client lo invia viene ignorato);
   - carte (task API-08, #78): `GET /admin/cards`, `PUT /admin/cards/{id}`, `POST /admin/cards/{id}/deactivate` e `/activate` (`AdminCardController`, `CatalogCardService`), con la rarità (task API-10, #80) e le fazioni (task API-11, #81); i tag mancano (task #82). `POST /admin/cards` e `POST /admin/cards/{id}/image` con l'illustrazione (API-14, #84). Dettagli in "Comportamento già implementato" e "Illustrazioni" qui sotto.
   - rule set: `GET/POST /admin/rule-sets`, `PUT /admin/rule-sets/{id}`, `POST /admin/rule-sets/{id}/activate` (`AdminRuleSetController`, `ruleset/service/RuleSetService`), e `GET /rules` pubblico (`RuleSetController`). `created_by_id` resta nullo finché il backoffice non registra l'autore. Dettagli in "Regole di gioco" qui sotto.
@@ -125,7 +125,8 @@ Decise il 22 novembre: le immagini stanno in una **cartella** e non nel database
 | Metodo | URL | Tabella |
 |---|---|---|
 | `GET/POST/PUT` | `/admin/rarities` | `rarities` (`deck_limit` ≥ 1, `max_per_deck`, `sorting_order` univoco, scelto alla creazione e poi non più modificabile) |
-| `GET/POST/PUT` | `/admin/factions` | `factions` (`name`, `emblem_path`, `description` facoltativa), `faction_tags` |
+| `GET/POST/PUT` | `/admin/factions` | `factions` (`name`, `emblem_path`, `description` facoltativa) |
+| `PUT` | `/admin/factions/{id}/tags` | `faction_tags`: sostituisce tutti i tag della fazione |
 | `GET/PUT` | `/admin/faction-bonuses` | `faction_bonuses` (`atkBonus` anche negativo per il malus, `defBonus` ≥ 0, mai una fazione contro se stessa) |
 | `GET/POST/PUT` | `/admin/tags` | `tags` |
 
@@ -163,7 +164,15 @@ Le classi stanno in `catalog/` (`Tag`, `TagRepository`, `TagService`, `TagReques
 - `POST /admin/tags` con `{ name }` crea un tag e risponde `201`; `PUT /admin/tags/{id}` lo rinomina (ridargli il suo nome va bene). Carte, fazioni e pacchetti collegati restano collegati, perché `card_tags`, `faction_tags` e `pack_tags` usano l'id.
 - Il nome si controlla **così com'è** (deciso il 22 novembre): maiuscole, cifre e trattino basso (`^[A-Z0-9_]+$`, come `chk_tags_name_format`), al massimo 100 caratteri. Minuscole, spazi o altri caratteri sono `400`, senza toglierne gli spazi né renderlo maiuscolo: il backoffice lo manda già nel formato giusto.
 - Un nome già usato è `409 TAG_NAME_TAKEN`, anche con due richieste contemporanee (il vincolo `uq_tags_name` diventa lo stesso `409`, come i nomi dei mazzi); un tag inesistente è `404 TAG_NOT_FOUND`.
-- Non c'è un `DELETE` né un elenco pubblico. Collegare i tag a carte, fazioni e pacchetti e il filtro dei pacchetti per tag arrivano con `API-12`, `API-13` e `API-21`.
+- Non c'è un `DELETE` né un elenco pubblico. I tag delle fazioni ci sono (`API-13`, sotto); collegare i tag a carte e pacchetti e il filtro dei pacchetti per tag arrivano con `API-12` e `API-21`.
+
+### Tag delle fazioni: comportamento già implementato (API-13, #83)
+
+- `PUT /admin/factions/{id}/tags` con `{ tagIds: [...] }` sostituisce **tutti** i tag della fazione e risponde `200` con la fazione e i suoi tag. `[]` li toglie tutti; un id ripetuto conta una volta. La fazione si blocca prima di cambiare i tag (`SELECT … FOR UPDATE`), così due sostituzioni contemporanee si mettono in fila e vince l'ultima.
+- Un tag che non esiste è `422 FACTION_TAG_INVALID` (con gli id mancanti nel `detail`) e i tag restano quelli di prima; una fazione inesistente è `404 FACTION_NOT_FOUND`; senza `tagIds` o con un id `null` è `400`.
+- Le risposte di `/admin/factions` (`AdminFactionResponse`: `GET`, `POST`, `PUT` e il `PUT` dei tag) hanno `tags: [{ id, name }]` in ordine di nome; `GET /admin/factions` li carica con una sola query. `GET /factions` pubblico resta senza tag (deciso il 22 novembre: servono solo ai filtri del backoffice). Creare o modificare una fazione non tocca i suoi tag.
+- `V15__insert_faction_tags.sql` crea `WOUND`, `INVITATION`, `ARCHIVE` e `DREAM` e li collega alla loro fazione, cercata per nome.
+- I tag di fazione valgono per tutte le carte della fazione, anche della seconda, nei filtri per tag (`API-12` per `GET /cards` e `GET /collection`, `API-21` per i pacchetti); Spell e Hidden non hanno fazione e non li ricevono mai. Il test di questa regola arriva con il filtro di `API-12`.
 
 ## Regole di gioco — `rule_sets`
 
