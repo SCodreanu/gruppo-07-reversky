@@ -103,9 +103,26 @@ public class Battle implements Persistable<UUID> {
 	 */
 	public static Battle friendly(UUID inviteId, Integer challengerId, Integer opponentId, Integer ruleSetId,
 			List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats, Instant createdAt) {
+		return prepared(BattleMode.FRIENDLY, inviteId, challengerId, opponentId, ruleSetId, challengerDeck, opponentDeck,
+			stats, createdAt);
+	}
+
+	/**
+	 * Partita classificata preparata dall'abbinamento di due ticket, senza invito e ancora senza risultato
+	 * ({@code chk_battles_invite_matches_mode}). Lo sfidante è chi era in coda da più tempo.
+	 */
+	public static Battle ranked(Integer challengerId, Integer opponentId, Integer ruleSetId,
+			List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats, Instant createdAt) {
+		return prepared(BattleMode.RANKED, null, challengerId, opponentId, ruleSetId, challengerDeck, opponentDeck,
+			stats, createdAt);
+	}
+
+	private static Battle prepared(BattleMode mode, UUID inviteId, Integer challengerId, Integer opponentId,
+			Integer ruleSetId, List<DeckCardSnapshot> challengerDeck, List<DeckCardSnapshot> opponentDeck, BattleStats stats,
+			Instant createdAt) {
 		Battle battle = new Battle();
 		battle.id = UUID.randomUUID();
-		battle.mode = BattleMode.FRIENDLY;
+		battle.mode = mode;
 		battle.inviteId = inviteId;
 		battle.challengerId = challengerId;
 		battle.opponentId = opponentId;

@@ -18,12 +18,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import it.downfall.reversky.api.TestcontainersConfiguration;
+import it.downfall.reversky.api.battle.service.QueueJoinedEvent;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
@@ -49,6 +52,7 @@ import it.downfall.reversky.api.user.entity.User;
 @Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 @AutoConfigureMockMvc
+@RecordApplicationEvents
 class MatchmakingControllerIT {
 
 	private static final String PATH = "/api/v1/matchmaking/queue";
@@ -88,6 +92,9 @@ class MatchmakingControllerIT {
 
 	@Autowired
 	private FriendshipService friendshipService;
+
+	@Autowired
+	private ApplicationEvents events;
 
 	// Non serve al test: con la stessa configurazione degli altri ControllerIT, Spring riusa il contesto già avviato
 	@MockitoBean
@@ -223,6 +230,17 @@ class MatchmakingControllerIT {
 		// Assert
 		assertThat(tickets(user)).isZero();
 		assertThat(tickets(other)).isEqualTo(1);
+	}
+
+	@Test
+	@DisplayName("Joining publishes one QueueJoinedEvent for the immediate matching attempt; a rejected join publishes none")
+	void join_publishesQueueJoinedEvent() throws Exception {
+		// Act
+		join(user, deck).andExpect(status().isCreated());
+		join(user, deck).andExpect(status().isConflict());
+
+		// Assert: l'evento lo ascolta MatchmakingJob, spento nei test (API-49)
+		assertThat(events.stream(QueueJoinedEvent.class)).containsExactly(new QueueJoinedEvent(user.getId()));
 	}
 
 	@Test

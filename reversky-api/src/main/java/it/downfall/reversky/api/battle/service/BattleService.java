@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -58,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Partite (docs/sfide, API-40, API-41, API-42, API-43): accettazione di un invito con simulazione, dettaglio e
- * storico.
+ * storico; preparazione e simulazione delle classificate abbinate da {@link MatchmakingService} (API-49).
  * <p>
  * L'accettazione è divisa in tre passi, per non tenere aperta una transazione mentre si aspetta l'engine: preparazione
  * (transazione 1), chiamata all'engine (fuori transazione), salvataggio (transazione 2). Per questo le transazioni sono
@@ -152,6 +153,49 @@ public class BattleService {
 		return PageResponse.from(rows.map(row -> toSummary(row, userId, usernames)));
 	}
 
+	/**
+	 * Prepara la partita classificata di due ticket appena abbinati (docs/sfide, "Classificata: matchmaking"), dentro
+	 * la transazione dell'abbinamento: seed dal server, rule set attivo, fazioni e bonus di fazione, fotografia dei due
+	 * mazzi già controllati. La partita nasce senza risultato e senza invito; l'engine si chiama dopo il commit con
+	 * {@link #simulateRanked(Battle)}.
+	 *
+	 * @param challengerId   chi era in coda da più tempo
+	 * @param challengerDeck il suo mazzo, valido adesso
+	 * @param opponentId     l'altro giocatore
+	 * @param opponentDeck   il suo mazzo, valido adesso
+	 * @return la partita salvata, ancora da simulare
+	 */
+	@Transactional(propagation = Propagation.MANDATORY)
+	public Battle prepareRanked(Integer challengerId, Deck challengerDeck, Integer opponentId, Deck opponentDeck) {
+		RuleSet ruleSet = ruleSetService.getActiveRuleSet();
+		Battle battle = Battle.ranked(challengerId, opponentId, ruleSet.getId(), snapshot(challengerDeck),
+			snapshot(opponentDeck), preparedStats(ruleSet), Instant.now(clock));
+		battleRepository.save(battle);
+
+		log.info("Ranked battle {} prepared: user {} (challenger) against user {}", battle.getId(), challengerId,
+			opponentId);
+		return battle;
+	}
+
+	/**
+	 * Fa simulare all'engine una partita classificata appena preparata e salva l'esito, fuori dalla transazione
+	 * dell'abbinamento. Nessuno aspetta la risposta: se l'engine non risponde o rifiuta i dati la partita resta senza
+	 * risultato e uno dei due giocatori la completa con il retry, come le amichevoli.
+	 *
+	 * @param battle partita preparata da {@link #prepareRanked(Integer, Deck, Integer, Deck)}
+	 */
+	public void simulateRanked(Battle battle) {
+		SimulationResponse response;
+		try {
+			response = simulate(battle);
+		} catch (EngineUnavailableException | EngineInputRejectedException e) {
+			// Il motivo è già nel log di simulate: qui si dice solo che la partita aspetta un retry
+			log.info("Ranked battle {} waits for a retry by one of the players", battle.getId());
+			return;
+		}
+		transactionTemplate.executeWithoutResult(status -> complete(battle.getId(), response));
+	}
+
 	// --- passo 1: preparazione ---
 
 	private Battle prepareFriendly(Integer userId, UUID inviteId, Integer deckId) {
@@ -170,17 +214,20 @@ public class BattleService {
 		Deck opponentDeck = deckService.getPlayableDeck(userId, deckId);
 
 		RuleSet ruleSet = ruleSetService.getActiveRuleSet();
-		BattleStats stats = BattleStats.prepared(random.nextLong(),
-			new SimulationRequest.Rules(ruleSet.getVersion(), ruleSet.getStartingLifePoints(), ruleSet.getMaxRounds()),
-			factions(), factionBonuses());
-
 		Battle battle = Battle.friendly(inviteId, invite.getChallengerId(), userId, ruleSet.getId(),
-			snapshot(challengerDeck), snapshot(opponentDeck), stats, Instant.now(clock));
+			snapshot(challengerDeck), snapshot(opponentDeck), preparedStats(ruleSet), Instant.now(clock));
 		battleRepository.save(battle);
 		invite.accept();
 
 		log.info("Invite {} accepted by user {}: battle {} prepared", inviteId, userId, battle.getId());
 		return battle;
+	}
+
+	// Seed dal server, regole del rule set attivo, fazioni e bonus di adesso: tutto ciò che serve al retry
+	private BattleStats preparedStats(RuleSet ruleSet) {
+		return BattleStats.prepared(random.nextLong(),
+			new SimulationRequest.Rules(ruleSet.getVersion(), ruleSet.getStartingLifePoints(), ruleSet.getMaxRounds()),
+			factions(), factionBonuses());
 	}
 
 	private List<SimulationRequest.Faction> factions() {
@@ -215,9 +262,13 @@ public class BattleService {
 	// --- passo 2: engine, fuori transazione ---
 
 	private BattleDetailResponse simulateAndSave(Battle battle, Integer viewerId) {
-		SimulationResponse response;
+		SimulationResponse response = simulate(battle);
+		return transactionTemplate.execute(status -> toDetail(complete(battle.getId(), response), viewerId));
+	}
+
+	private SimulationResponse simulate(Battle battle) {
 		try {
-			response = engineClient.simulate(toRequest(battle));
+			return engineClient.simulate(toRequest(battle));
 		} catch (EngineUnavailableException e) {
 			log.warn("Battle {} prepared but not simulated: the engine is unavailable", battle.getId());
 			throw e.withBattleId(battle.getId());
@@ -226,7 +277,6 @@ public class BattleService {
 			log.error("Battle {} prepared but rejected by the engine", battle.getId());
 			throw e.withBattleId(battle.getId());
 		}
-		return transactionTemplate.execute(status -> save(battle.getId(), response, viewerId));
 	}
 
 	// La richiesta si costruisce solo da ciò che è salvato nella partita: il retry manda esattamente la stessa partita
@@ -252,7 +302,7 @@ public class BattleService {
 	// --- passo 3: salvataggio ---
 
 	// Blocca la partita: se un'altra simulazione l'ha già completata non scrive niente, il risultato sarebbe identico
-	private BattleDetailResponse save(UUID battleId, SimulationResponse response, Integer viewerId) {
+	private Battle complete(UUID battleId, SimulationResponse response) {
 		Battle battle = battleRepository.findByIdForUpdate(battleId)
 			.orElseThrow(() -> new BattleNotFoundException(battleId));
 		if (!battle.isCompleted()) {
@@ -262,7 +312,7 @@ public class BattleService {
 			battle.complete(BattleResult.valueOf(response.result()), stats, response.log());
 			log.info("Battle {} completed: {}", battleId, response.result());
 		}
-		return toDetail(battle, viewerId);
+		return battle;
 	}
 
 	// --- lettura ---

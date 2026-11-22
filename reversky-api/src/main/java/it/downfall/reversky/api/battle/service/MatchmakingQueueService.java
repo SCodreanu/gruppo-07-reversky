@@ -3,6 +3,7 @@ package it.downfall.reversky.api.battle.service;
 import java.time.Clock;
 import java.time.Instant;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Coda classificata (docs/sfide, "Classificata: matchmaking"): entrare, leggere il proprio ticket, uscire.
- * L'abbinamento dei ticket (API-49) e l'aggiornamento dell'Elo (API-50) non sono qui; le regole sul mazzo in coda
- * (API-48) sì.
+ * L'abbinamento dei ticket è in {@link MatchmakingService} (API-49): l'ingresso pubblica solo un
+ * {@link QueueJoinedEvent}, così non dipende dal job. Le regole sul mazzo in coda (API-48) sono qui.
  */
 @Slf4j
 @Service
@@ -32,6 +33,7 @@ public class MatchmakingQueueService {
 	private final RankingService rankingService;
 	private final QueueTicketService queueTicketService;
 	private final Clock clock;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * Entra in coda con un mazzo (POST /api/v1/matchmaking/queue). Il mazzo dev'essere mio e valido adesso; al primo
@@ -52,6 +54,8 @@ public class MatchmakingQueueService {
 		}
 
 		log.info("User {} joined the ranked queue with deck {} at rating {}", userId, request.deckId(), rating);
+		// Dopo il commit MatchmakingJob prova subito ad abbinare il ticket (API-49)
+		eventPublisher.publishEvent(new QueueJoinedEvent(userId));
 		return QueueTicketResponse.from(ticketRepository.findById(userId).orElseThrow(), now);
 	}
 

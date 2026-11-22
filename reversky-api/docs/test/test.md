@@ -17,6 +17,12 @@ Testcontainers avvia un PostgreSQL vero in Docker (configurazione in `Testcontai
 
 I test dei controller caricano tutta l'applicazione invece di usare `@WebMvcTest`: così passano davvero dai filtri di Spring Security, da `GlobalExceptionHandler` e dal database, senza mock dei service. Spring riusa il contesto tra le classi di test con la stessa configurazione (stesse annotazioni e stessi `@MockitoBean`), quindi conviene tenerla uguale: ad esempio tutti i test che usano MockMvc dichiarano `@MockitoBean EmailSender`.
 
+### Configurazione dei test
+
+`src/test/resources/config/application.properties` si **somma** a `src/main/resources/application.properties` (Spring legge anche `classpath:/config/`, con la precedenza) e cambia solo ciò che serve ai test. Non va spostato nella radice di `src/test/resources`: un `application.properties` lì sostituirebbe quello principale invece di sommarsi.
+
+Oggi spegne l'abbinamento della coda classificata (`reversky.matchmaking.enabled=false`, API-49): senza il job ogni 2 secondi e il tentativo dopo ogni ingresso, un test della coda come `MatchmakingControllerIT` non viene abbinato mentre gira. I test dell'abbinamento chiamano `MatchmakingService.matchAll()` da soli (`MatchmakingServiceIT`).
+
 ## Comandi
 
 ```bash
@@ -109,7 +115,7 @@ Obbligatorio:
 - [ ] apertura pacchetto: numero e rarità delle carte, bonus, filtro dei tag, ripiego degli slot senza carte, nessun pacchetto da aprire; il filtro dei tag è coperto da `CardPoolTagsTest` e `PackTagsIT` (`API-21`), il resto si controlla insieme a `DeckValidator`;
 - [x] scambi: tutti gli stati e i turni, controproposte, copie riservate, copie non più disponibili, **totale delle carte invariato** (`TradeProposalControllerIT`, `TradeControllerIT`, `TradeAcceptIT`, e il flusso completo in `TradeFlowIT`);
 - [x] amicizie: richiesta inversa, richiesta dopo un rifiuto, richieste opposte contemporanee;
-- [ ] sfide: stati dell'invito, mazzo non più valido, engine non disponibile, retry con lo stesso seed, retry sovrapposti che non assegnano due volte Elo e crediti. Le amichevoli sono coperte (`BattleInviteControllerIT`, `BattleControllerIT`, `FriendlyBattleFlowIT`, compresi i retry sovrapposti); restano Elo e crediti, che arrivano con le classificate (`API-45`…`API-50`);
+- [ ] sfide: stati dell'invito, mazzo non più valido, engine non disponibile, retry con lo stesso seed, retry sovrapposti che non assegnano due volte Elo e crediti. Le amichevoli sono coperte (`BattleInviteControllerIT`, `BattleControllerIT`, `FriendlyBattleFlowIT`, compresi i retry sovrapposti), e così l'abbinamento delle classificate (`MatchmakingServiceIT`, API-49: sfidante, finestra, mazzo non più valido, anti-boosting, `SKIP LOCKED` e abbinamenti in parallelo); restano Elo e crediti (`API-50`, `API-45`);
 - [x] autenticazione: rotazione del refresh token, reset password che invalida i refresh token, account disattivato;
 - [ ] backoffice: ogni azione scrive in `audit_logs`; arriva con `API-52`, rimandato con il resto del backoffice (14 novembre);
 - [x] sicurezza: endpoint protetti senza token → `401`, admin con `USER` → `403`, risorse altrui → `404` (`API-58`: la matrice di tutti gli endpoint in `common/security/SecurityMatrixIT`, i token scaduti sugli endpoint pubblici in `PublicEndpointTokenIT`, le risorse altrui nei test di ogni endpoint).

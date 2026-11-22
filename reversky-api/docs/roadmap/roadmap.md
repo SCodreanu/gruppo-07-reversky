@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-44`, `API-46`…`API-48`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-44`, `API-46`…`API-49`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -14,11 +14,11 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-44`, `API-4
 | Account | registrazione, login, token, reset password, verifica email, gestione degli utenti dal backoffice (`API-03`) |
 | Catalogo | rule set, rarità, fazioni, bonus di fazione, tag dal backoffice (`API-07`), tag delle fazioni (`API-13`) e delle carte con il filtro `tag` (`API-12`), filtro dei pacchetti per tag (`API-21`), carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`), creazione delle carte con l'illustrazione e immagini servite su `/images/**` (`API-14`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`), test del flusso completo e degli errori a metà acquisto o apertura (`API-56`) |
-| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata), rating Elo con `GET /rankings/me` (`API-46`), coda classificata senza abbinamento (`API-47`) |
+| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata), rating Elo con `GET /rankings/me` (`API-46`), coda classificata (`API-47`) con l'abbinamento ogni 2 secondi e dopo ogni ingresso, `SKIP LOCKED` e anti-boosting (`API-49`) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
 | Sicurezza | matrice degli accessi di tutti gli endpoint controllata da `SecurityMatrixIT`, token scaduti ignorati sugli endpoint pubblici (bug corretto), risorse altrui `404` (`API-58`, [autenticazione](../autenticazione/autenticazione.md#endpoint-pubblici-e-protetti)) |
 
-`./gradlew build` verde con 1046 test (22 novembre, con `API-58`, `API-46`, `API-47`, `API-07`, `API-13`, `API-12` e `API-21`: la matrice conta 262 casi).
+`./gradlew build` verde con 1061 test (22 novembre, con `API-58`, `API-46`, `API-47`, `API-07`, `API-13`, `API-12`, `API-21` e `API-49`: la matrice conta 262 casi).
 
 ## Da fare
 
@@ -27,7 +27,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-44`, `API-4
 | Issue | Cosa | Note |
 |---|---|---|
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
-| `API-49`, `API-50`, `API-45` (#119, #120, #115) | Collegamenti rimasti delle classificate: abbinamento, Elo e crediti | presi il 22 novembre da Antonino, prima di `API-59` |
+| `API-50`, `API-45` (#120, #115) | Collegamenti rimasti delle classificate: Elo e crediti | presi il 22 novembre da Antonino, prima di `API-59`; l'abbinamento (`API-49`) è fatto e una classificata abbinata si completa solo con l'Elo |
 | — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
 ### 30 novembre – 6 dicembre (code freeze)
