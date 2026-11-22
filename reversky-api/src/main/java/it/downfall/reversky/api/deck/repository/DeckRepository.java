@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,10 +34,4 @@ public interface DeckRepository extends JpaRepository<Deck, Integer> {
 			""")
 	public boolean isNameTaken(@Param("userId") Integer userId, @Param("name") String name,
 			@Param("excludedId") Integer excludedId);
-
-	// SQL nativo finché non esiste la coda classificata (API-47, API-48): modificare il mazzo toglie il ticket.
-	// Eliminarlo non serve: il database cancella il ticket con ON DELETE CASCADE.
-	@Modifying
-	@Query(value = "DELETE FROM matchmaking_queue WHERE deck_id = :deckId", nativeQuery = true)
-	public int deleteQueueTicket(@Param("deckId") Integer deckId);
 }

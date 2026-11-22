@@ -132,6 +132,8 @@ class SecurityMatrixIT {
 			user(HttpMethod.DELETE, "/battle-invites/{id}"),
 			user(HttpMethod.GET, "/battles"), user(HttpMethod.GET, "/battles/{id}"),
 			user(HttpMethod.POST, "/battles/{id}/retry"), user(HttpMethod.GET, "/rankings/me"),
+			user(HttpMethod.POST, "/matchmaking/queue"), user(HttpMethod.GET, "/matchmaking/queue"),
+			user(HttpMethod.DELETE, "/matchmaking/queue"),
 			// Backoffice
 			admin(HttpMethod.GET, "/admin/users"), admin(HttpMethod.POST, "/admin/users/{id}/disable"),
 			admin(HttpMethod.POST, "/admin/users/{id}/enable"), admin(HttpMethod.PUT, "/admin/users/{id}/role"),

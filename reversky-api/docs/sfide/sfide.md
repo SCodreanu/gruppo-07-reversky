@@ -138,7 +138,7 @@ Controlli:
 
 Il ticket salva il mazzo scelto e il rating attuale. Si esce dalla coda con `DELETE /api/v1/matchmaking/queue`. Se il mazzo in coda viene modificato o eliminato, il ticket viene rimosso.
 
-Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge l'ultima partita con `GET /api/v1/battles?mode=RANKED&size=1`.
+Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "deckId": 3, "rating": 1013, "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge l'ultima partita con `GET /api/v1/battles?mode=RANKED&size=1`.
 
 Il ticket sparisce anche senza abbinamento (mazzo non più valido, account disattivato). Perciò la partita è quella appena abbinata solo se il suo `createdAt` è successivo al `queuedAt` visto dal client; altrimenti il client avvisa l'utente che è uscito dalla coda.
 
@@ -399,6 +399,14 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 - `battle/entity/PlayerRating` mappa `player_ratings`, con `INITIAL_RATING` = 1000. `recordGame(outcome, delta)` applica una partita: rating, `peak_rating`, `games_played` e il contatore dell'esito, così i controlli della tabella restano veri; un rating sotto 0 è `IllegalArgumentException`. Lo userà la partita classificata (`API-48`…`API-50`, non ancora fatte): oggi nessun codice cambia i rating.
 - `RankingService.createIfMissing(userId)` crea la riga con i valori iniziali (`INSERT … ON CONFLICT DO NOTHING`, quindi due ingressi in coda contemporanei non falliscono): la chiamerà l'ingresso in coda di `API-47`.
 - `GET /api/v1/rankings/me` (`RankingController`), con il token: `{ rating, peakRating, gamesPlayed, wins, losses, draws }`. Chi non ha ancora una riga riceve 1000 e contatori a 0, e la riga **non** si crea (una lettura non scrive). Nessuna classifica né posizione (Q-10).
+
+### Coda classificata (API-47 #117)
+
+- `POST /api/v1/matchmaking/queue` con `{ deckId }` (`MatchmakingController`, `MatchmakingQueueService.join`), in una transazione: il mazzo dev'essere mio e valido adesso (`DeckService.getPlayableDeck`: `404 DECK_NOT_FOUND`, `422 DECK_INVALID` con le violazioni), poi `RankingService.createIfMissing` crea il rating al primo ingresso e il ticket salva il rating attuale e l'ora del `Clock`. Il ticket si inserisce con `INSERT … ON CONFLICT DO NOTHING`: un secondo ingresso, anche con un altro mazzo o nello stesso momento, è `409 ALREADY_IN_QUEUE`. Risponde `201`.
+- `GET /api/v1/matchmaking/queue`: `{ status: "WAITING", deckId, rating, queuedAt, window }`, con la finestra calcolata adesso da `MatchmakingTicket.searchWindow` (`min(100 + 50 × (secondi / 10), 400)`, mai sotto 100 se l'orologio va indietro); senza ticket `404 QUEUE_TICKET_NOT_FOUND`.
+- `DELETE /api/v1/matchmaking/queue`: `204` anche se non ero in coda (il ticket può essere appena stato abbinato o tolto); il rating resta.
+- `QueueTicketService` (dipende solo dal repository, come `PendingInviteService`) toglie il ticket quando il mazzo viene modificato (`DeckService.update`, al posto della query nativa in `DeckRepository`) e quando un admin disattiva l'account (`UserAdminService.disable`). L'eliminazione del mazzo lo toglie con `ON DELETE CASCADE`.
+- Non ci sono ancora l'abbinamento (il job ogni 2 secondi, l'anti-boosting) né la partita classificata: arrivano con `API-48`…`API-50`. Fino ad allora un ticket resta in coda finché l'utente non esce.
 
 ### Integrazione reale con l'engine (API-54 #124)
 
