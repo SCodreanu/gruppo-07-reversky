@@ -91,6 +91,16 @@ when(engineClient.simulate(any())).thenReturn(TestSimulations.challengerWins());
 
 Per l'errore dell'engine: `thenThrow(new EngineUnavailableException(...))`.
 
+### Test di contratto (`ENG-24`)
+
+Il mock non dice se l'API e l'engine parlano lo stesso JSON: lo dice `EngineContractTest` (`battle/client`), deciso il 22 novembre. Senza Spring e senza engine, legge gli stessi file del test dell'engine:
+
+- le richieste di `reversky-engine/examples/` (anche quelle di errore): passano da `SimulationRequest` e da `EngineClient` verso un server HTTP finto del JDK e devono arrivare **identiche** al file;
+- le fotografie delle risposte in `reversky-engine/examples/responses/`, servite con il loro status: `EngineClient` le legge senza perdere campi (riscritta, la risposta è uguale al file; il `log` resta un JSON qualsiasi) e devono dare i valori di `expected-results.csv` ed `expected-results-effects.csv`; le risposte `400` diventano `ENGINE_INPUT_REJECTED`;
+- ogni esempio deve avere la sua fotografia e la sua riga nei CSV.
+
+L'engine controlla con `SimulationContractTest` che le fotografie siano le sue risposte vere. Un campo nuovo o rinominato da una delle due parti fa quindi fallire un test. `reversky-engine/examples` è un input del task `test` (`build.gradle`), così una fotografia cambiata rilancia anche i test dell'API.
+
 ## Cosa deve essere coperto
 
 Obbligatorio:

@@ -339,6 +339,8 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log
 
 ### EngineClient (API-35, #105)
 
+Il JSON scambiato con l'engine è controllato da un test di contratto da entrambe le parti (`ENG-24`, #62): `EngineContractTest` qui e `SimulationContractTest` nell'engine leggono le stesse richieste e fotografie delle risposte di `reversky-engine/examples/` (vedi [test](../test/test.md#test-di-contratto-eng-24)).
+
 - `battle/client/EngineClient` con `RestClient` di Spring (nessuna dipendenza nuova), indirizzo e timeout da `reversky.engine.base-url` (default `http://localhost:8081`, sostituibile con `ENGINE_URL`) e `reversky.engine.timeout` (10 secondi, connessione e risposta).
 - `SimulationRequest` e `SimulationResponse` seguono il contratto di `reversky-engine/docs/api-engine`; il `log` resta un JSON qualsiasi, salvato così com'è.
 - Engine spento, timeout o risposta `5xx` → `EngineUnavailableException`, `503 ENGINE_UNAVAILABLE`; il seed finisce nel log dell'API per riprodurre la partita.

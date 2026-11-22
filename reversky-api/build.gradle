@@ -46,6 +46,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// EngineContractTest legge richieste e fotografie dell'engine (ENG-24): una modifica lì rilancia i test
+	inputs.dir('../reversky-engine/examples').withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // In locale bootRun usa il profilo dev, con i dati di prova di db/dev (API-25); SPRING_PROFILES_ACTIVE lo sostituisce.
