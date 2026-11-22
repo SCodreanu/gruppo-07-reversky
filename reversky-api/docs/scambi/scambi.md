@@ -204,6 +204,10 @@ Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), 
 - In ogni errore la transazione fa rollback: nessuna carta si muove e lo scambio resta com'era. `NOT_ENOUGH_COPIES` di `CollectionService` resta solo come rete di sicurezza.
 - `TradeAcceptIT` controlla il totale delle carte, due scambi incrociati accettati insieme (nessun deadlock, nessuna copia duplicata) e uno scambio accettato mentre un pacchetto aggiunge la stessa carta a chi riceve (nessuna copia persa).
 
+### Notifiche (API-69 #139)
+
+- Ogni mossa avvisa l'altro partecipante nella sua transazione, con `tradeId` e `userId` e `username` di chi ha fatto la mossa: `TRADE_PROPOSED` al destinatario di una proposta, `TRADE_COUNTERED` a chi deve rispondere alla controproposta, `TRADE_ACCEPTED` e `TRADE_REJECTED` all'altra parte (anche quando chi ha proposto ritira fuori turno). Una mossa rifiutata dall'API (fuori turno, scambio chiuso) annulla la transazione e non avvisa nessuno. Dettagli in [notifiche](../notifiche/notifiche.md#scambi-api-69-139).
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.

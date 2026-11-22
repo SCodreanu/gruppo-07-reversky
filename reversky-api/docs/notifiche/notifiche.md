@@ -77,7 +77,7 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 ### Notifiche: entità e consultazione (API-65 #135)
 
 - `notification/entity/Notification` (`type` come `NotificationType` salvato in testo, `payload` `jsonb` come mappa) e `NotificationRepository`, sempre in ordine di id decrescente (indice `idx_notifications_user_id_id`).
-- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. Il collegamento con gli scambi arriva con API-69.
+- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. I collegamenti con amicizie, sfide e scambi sono nelle sezioni qui sotto.
 - `NotificationController`: `GET /notifications` (paginato come le altre liste, il `sort` del client si ignora), `GET /notifications/unread-count`, `POST /notifications/{id}/read` (idempotente, tiene la prima ora di lettura) e `POST /notifications/read-all`.
 - `notification/job/NotificationCleanupJob` ogni notte alle 3:30 elimina le notifiche lette create prima di adesso meno `reversky.notifications.retention` (`NotificationProperties`, 30 giorni in `application.properties`: configurazione tecnica, non una regola di gioco).
 
@@ -111,6 +111,11 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 - `BattleService`, nella transazione di preparazione: `BATTLE_INVITE_ACCEPTED` allo sfidante quando l'avversario accetta (con `battleId`, anche se poi l'engine non risponde), `MATCH_FOUND` ai due giocatori di una classificata appena abbinata. Così il client sa dell'abbinamento anche se il suo ticket è già sparito (Q-17).
 - `BATTLE_COMPLETED` ai due giocatori nella transazione che salva il risultato, con `mode` e l'`outcome` di chi riceve (`WIN`, `LOSS`, `DRAW`). Il salvataggio blocca la partita e non riscrive una partita già completata, quindi la notifica parte una volta sola anche con retry sovrapposti, e mai per una partita rimasta senza risultato (`BattleNotificationIT`, `RankedBattleFlowIT`).
 
+### Scambi (API-69 #139)
+
+- `TradeService` avvisa l'altro partecipante nella transazione di ogni mossa: `TRADE_PROPOSED` (proposta) e `TRADE_COUNTERED` (controproposta) a chi deve rispondere, `TRADE_ACCEPTED` e `TRADE_REJECTED` all'altra parte, anche quando chi ha proposto ritira fuori turno. Il payload ha `tradeId` e `userId` e `username` di chi ha fatto la mossa.
+- Una mossa rifiutata dall'API (fuori turno, scambio già chiuso) annulla la transazione e non avvisa nessuno (`TradeNotificationIT`).
+
 ## Test minimi
 
 - Un utente vede e segna come lette solo le proprie notifiche; quella di un altro → `404` (`NotificationControllerIT`).
@@ -119,4 +124,4 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 - Un evento arriva solo al destinatario, su tutte le sue connessioni; una transazione annullata non invia eventi; `Last-Event-ID` rimanda le perse; un account disattivato perde le connessioni e non ne apre di nuove (`NotificationStreamIT`, `NotificationStreamServiceTest`, API-66).
 - Ogni evento delle amicizie crea una notifica e la invia sul canale; rifiuto, ritiro e rimozione no (`FriendshipNotificationIT`, API-67).
 - Ogni evento delle sfide crea una notifica; `BATTLE_COMPLETED` una volta sola e solo con un risultato (`BattleNotificationIT`, API-68).
-- Ogni evento degli scambi crea una notifica e la invia (API-69).
+- Ogni mossa degli scambi avvisa l'altro partecipante; una mossa rifiutata dall'API no (`TradeNotificationIT`, API-69).

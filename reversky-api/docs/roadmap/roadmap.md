@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-50`, `API-54`…`API-58`, `API-65`…`API-68`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-50`, `API-54`…`API-58`, `API-65`…`API-69`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -14,11 +14,11 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-50`, `API-5
 | Account | registrazione, login, token, reset password, verifica email, gestione degli utenti dal backoffice (`API-03`) |
 | Catalogo | rule set, rarità, fazioni, bonus di fazione, tag dal backoffice (`API-07`), tag delle fazioni (`API-13`) e delle carte con il filtro `tag` (`API-12`), filtro dei pacchetti per tag (`API-21`), carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`), creazione delle carte con l'illustrazione e immagini servite su `/images/**` (`API-14`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`), test del flusso completo e degli errori a metà acquisto o apertura (`API-56`) |
-| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi, amichevoli e classificate con i retry sovrapposti (`API-57`), rating Elo con `GET /rankings/me` (`API-46`), coda classificata (`API-47`) con l'abbinamento ogni 2 secondi e dopo ogni ingresso, `SKIP LOCKED` e anti-boosting (`API-49`), Elo delle classificate applicato una volta sola (`API-50`), crediti di vittoria e pareggio dal rule set della partita (`API-45`), notifiche salvate con lista, contatore, lettura e pulizia notturna (`API-65`), canale SSE con invio dopo il commit e `Last-Event-ID` (`API-66`), notifiche delle amicizie (`API-67`) e delle sfide (`API-68`) |
+| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi, amichevoli e classificate con i retry sovrapposti (`API-57`), rating Elo con `GET /rankings/me` (`API-46`), coda classificata (`API-47`) con l'abbinamento ogni 2 secondi e dopo ogni ingresso, `SKIP LOCKED` e anti-boosting (`API-49`), Elo delle classificate applicato una volta sola (`API-50`), crediti di vittoria e pareggio dal rule set della partita (`API-45`), notifiche salvate con lista, contatore, lettura e pulizia notturna (`API-65`), canale SSE con invio dopo il commit e `Last-Event-ID` (`API-66`), notifiche delle amicizie (`API-67`), delle sfide (`API-68`) e degli scambi (`API-69`), su un canale che il frontend apre con un client `fetch` e l'header `Authorization` ([notifiche](../notifiche/notifiche.md)) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
 | Sicurezza | matrice degli accessi di tutti gli endpoint controllata da `SecurityMatrixIT`, token scaduti ignorati sugli endpoint pubblici (bug corretto), risorse altrui `404` (`API-58`, [autenticazione](../autenticazione/autenticazione.md#endpoint-pubblici-e-protetti)) |
 
-`./gradlew build` verde con 1116 test (22 novembre, con `API-58`, `API-46`, `API-47`, `API-07`, `API-13`, `API-12`, `API-21`, `API-49`, `API-50`, `API-45`, `API-65`…`API-68`: la matrice conta 277 casi).
+`./gradlew build` verde con 1120 test (22 novembre, con `API-58`, `API-46`, `API-47`, `API-07`, `API-13`, `API-12`, `API-21`, `API-49`, `API-50`, `API-45`, `API-65`…`API-69`: la matrice conta 277 casi).
 
 ## Da fare
 
@@ -27,7 +27,6 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-50`, `API-5
 | Issue | Cosa | Note |
 |---|---|---|
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
-| `API-69` (#139) | Notifiche degli scambi | preso il 22 novembre con `API-65`…`API-68` (fatti): una PR con un commit per task; il frontend apre il canale con un client `fetch` e l'header `Authorization` ([notifiche](../notifiche/notifiche.md)) |
 | `API-51`…`API-53` (#121–#123) | Audit e statistiche del backoffice | dopo le notifiche, in una PR a parte (deciso il 22 novembre) |
 | — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
