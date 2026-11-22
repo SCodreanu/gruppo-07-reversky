@@ -65,8 +65,10 @@ public class CollectionController {
 			@Parameter(description = "Only cards of this faction, as first or second faction (id from GET /factions). "
 				+ "Never returns SPELL or HIDDEN cards", example = "2")
 			@RequestParam(required = false) Integer factionId,
+			@Parameter(description = "Only cards with this tag, their own or of one of their factions (tag names from GET /admin/tags, exact). SPELL and HIDDEN cards match only their own tags. An unknown tag returns an empty page", example = "DREAM")
+			@RequestParam(required = false) String tag,
 			@Parameter(hidden = true) Pageable pageable) {
-		CollectionFilter filter = new CollectionFilter(type, name, rarityId, factionId);
+		CollectionFilter filter = new CollectionFilter(type, name, rarityId, factionId, tag);
 		return ResponseEntity.ok(collectionService.findMine(currentUserId(jwt), filter, pageable));
 	}
 
@@ -105,8 +107,10 @@ public class CollectionController {
 			@RequestParam(required = false) Integer rarityId,
 			@Parameter(description = "Only cards of this faction, as first or second faction", example = "2")
 			@RequestParam(required = false) Integer factionId,
+			@Parameter(description = "Only cards with this tag, their own or of one of their factions (tag names from GET /admin/tags, exact). SPELL and HIDDEN cards match only their own tags. An unknown tag returns an empty page", example = "DREAM")
+			@RequestParam(required = false) String tag,
 			@Parameter(hidden = true) Pageable pageable) {
-		CollectionFilter filter = new CollectionFilter(type, name, rarityId, factionId);
+		CollectionFilter filter = new CollectionFilter(type, name, rarityId, factionId, tag);
 		return ResponseEntity.ok(collectionService.findOf(id, filter, pageable));
 	}
 

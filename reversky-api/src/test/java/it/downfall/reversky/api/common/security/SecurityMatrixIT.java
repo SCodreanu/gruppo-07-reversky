@@ -140,6 +140,7 @@ class SecurityMatrixIT {
 			admin(HttpMethod.POST, "/admin/users/{id}/credits"),
 			admin(HttpMethod.GET, "/admin/cards"), admin(HttpMethod.POST, "/admin/cards"),
 			admin(HttpMethod.PUT, "/admin/cards/{id}"), admin(HttpMethod.POST, "/admin/cards/{id}/image"),
+			admin(HttpMethod.PUT, "/admin/cards/{id}/tags"),
 			admin(HttpMethod.POST, "/admin/cards/{id}/deactivate"), admin(HttpMethod.POST, "/admin/cards/{id}/activate"),
 			admin(HttpMethod.GET, "/admin/effects"),
 			admin(HttpMethod.GET, "/admin/faction-bonuses"), admin(HttpMethod.PUT, "/admin/faction-bonuses"),

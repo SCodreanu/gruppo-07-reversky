@@ -6,13 +6,13 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-11`, `API-13`…`API-20`, `API-22`…`API-44`, `API-46`, `API-47`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-20`, `API-22`…`API-44`, `API-46`, `API-47`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
 | Base | infrastruttura comune, Flyway con la baseline `V1`–`V8` e le migrazioni `V9`–`V15`, errori `ProblemDetail`, paginazione, Swagger |
 | Account | registrazione, login, token, reset password, verifica email, gestione degli utenti dal backoffice (`API-03`) |
-| Catalogo | rule set, rarità, fazioni, bonus di fazione, tag dal backoffice (`API-07`) e tag delle fazioni (`API-13`), carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`), creazione delle carte con l'illustrazione e immagini servite su `/images/**` (`API-14`) |
+| Catalogo | rule set, rarità, fazioni, bonus di fazione, tag dal backoffice (`API-07`), tag delle fazioni (`API-13`) e delle carte con il filtro `tag` (`API-12`), carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`), creazione delle carte con l'illustrazione e immagini servite su `/images/**` (`API-14`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`), test del flusso completo e degli errori a metà acquisto o apertura (`API-56`) |
 | Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata), rating Elo con `GET /rankings/me` (`API-46`), coda classificata senza abbinamento (`API-47`) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
@@ -27,7 +27,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-11`, `API-1
 | Issue | Cosa | Note |
 |---|---|---|
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
-| `API-12`, `API-21` (#82, #91), poi `API-49`, `API-50`, `API-45` (#119, #120, #115) | Collegamenti rimasti: tag delle carte e filtro dei pacchetti, poi abbinamento, Elo e crediti delle classificate | presi il 22 novembre da acistar0 e Antonino, prima di `API-59`; ordine dei tag `API-13` → `API-12` → `API-21` |
+| `API-21` (#91), poi `API-49`, `API-50`, `API-45` (#119, #120, #115) | Collegamenti rimasti: filtro dei pacchetti per tag, poi abbinamento, Elo e crediti delle classificate | presi il 22 novembre da acistar0 e Antonino, prima di `API-59` |
 | — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
 ### 30 novembre – 6 dicembre (code freeze)

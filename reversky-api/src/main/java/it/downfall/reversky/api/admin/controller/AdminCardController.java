@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.downfall.reversky.api.catalog.dto.CardTagsRequest;
 import it.downfall.reversky.api.catalog.dto.CatalogCardResponse;
 import it.downfall.reversky.api.catalog.dto.CatalogCardUpdateRequest;
 import it.downfall.reversky.api.catalog.entity.CardType;
@@ -60,8 +61,8 @@ public class AdminCardController {
 	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
 	@ApiResponse(responseCode = "403", description = "Not an admin")
 	@GetMapping
-	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "Only cards of this rarity (id from GET /admin/rarities). An unknown id returns an empty page", example = "3") @RequestParam(required = false) Integer rarityId, @Parameter(description = "Only cards of this faction, as first or second faction (id from GET /factions). Never returns SPELL or HIDDEN cards. An unknown id returns an empty page", example = "2") @RequestParam(required = false) Integer factionId, @Parameter(description = "true = only active cards, false = only deactivated cards, empty = all") @RequestParam(required = false) Boolean active, @Parameter(hidden = true) Pageable pageable) {
-		return ResponseEntity.ok(catalogCardService.findAll(type, name, rarityId, factionId, active, pageable));
+	public ResponseEntity<PageResponse<CatalogCardResponse>> findAll(@Parameter(description = "Only cards of this type") @RequestParam(required = false) CardType type, @Parameter(description = "Only cards whose name contains this text, ignoring case", example = "wend") @RequestParam(required = false) String name, @Parameter(description = "Only cards of this rarity (id from GET /admin/rarities). An unknown id returns an empty page", example = "3") @RequestParam(required = false) Integer rarityId, @Parameter(description = "Only cards of this faction, as first or second faction (id from GET /factions). Never returns SPELL or HIDDEN cards. An unknown id returns an empty page", example = "2") @RequestParam(required = false) Integer factionId, @Parameter(description = "Only cards with this tag, their own or of one of their factions (tag names from GET /admin/tags, exact). SPELL and HIDDEN cards match only their own tags. An unknown tag returns an empty page", example = "DREAM") @RequestParam(required = false) String tag, @Parameter(description = "true = only active cards, false = only deactivated cards, empty = all") @RequestParam(required = false) Boolean active, @Parameter(hidden = true) Pageable pageable) {
+		return ResponseEntity.ok(catalogCardService.findAll(type, name, rarityId, factionId, tag, active, pageable));
 	}
 
 	@Operation(summary = "Create a card with its illustration", description = "multipart/form-data with two parts: 'card', "
@@ -129,5 +130,20 @@ public class AdminCardController {
 	@PostMapping("/{id}/activate")
 	public ResponseEntity<CatalogCardResponse> activate(@PathVariable Integer id) {
 		return ResponseEntity.ok(catalogCardService.activate(id));
+	}
+
+	@Operation(summary = "Replace the tags of a card", description = "Sets exactly these tags as the card's own tags; an "
+		+ "empty list removes them all and a repeated id counts once. Variants keep their own tags: only own tags let a "
+		+ "variant drop from a tagged pack. The card also matches the tags of its factions in the tag filter.")
+	@ApiResponse(responseCode = "200", description = "Tags replaced, card returned with its own tags")
+	@ApiResponse(responseCode = "400", description = "Missing tag list or a null id")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "403", description = "Not an admin")
+	@ApiResponse(responseCode = "404", description = "Card not found")
+	@ApiResponse(responseCode = "422", description = "A tag does not exist (CARD_TAG_INVALID): nothing changes")
+	@PutMapping("/{id}/tags")
+	public ResponseEntity<CatalogCardResponse> replaceTags(@PathVariable Integer id,
+			@Valid @RequestBody CardTagsRequest request) {
+		return ResponseEntity.ok(catalogCardService.replaceTags(id, request));
 	}
 }
