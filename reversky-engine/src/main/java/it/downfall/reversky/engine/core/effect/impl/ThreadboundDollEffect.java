@@ -19,6 +19,10 @@ public final class ThreadboundDollEffect implements CreatureEffect {
 
 	private static final int DAMAGE = 4;
 
+	/** Crea l'effetto. */
+	public ThreadboundDollEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -21,6 +21,10 @@ public final class BuildingDirectorEffect implements CreatureEffect {
 	private static final int PERCENT = 40;
 	private static final int MAX_DAMAGE = 4;
 
+	/** Crea l'effetto. */
+	public BuildingDirectorEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -31,6 +31,10 @@ public final class BakuEffect implements CreatureEffect {
 	private boolean ready;
 	private CreatureInPlay lastFed;
 
+	/** Crea l'effetto. */
+	public BakuEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

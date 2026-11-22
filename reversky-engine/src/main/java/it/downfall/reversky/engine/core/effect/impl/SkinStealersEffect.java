@@ -20,6 +20,10 @@ public final class SkinStealersEffect implements CreatureEffect {
 
 	private static final int MAX_DEFENSE = 4;
 
+	/** Crea l'effetto. */
+	public SkinStealersEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

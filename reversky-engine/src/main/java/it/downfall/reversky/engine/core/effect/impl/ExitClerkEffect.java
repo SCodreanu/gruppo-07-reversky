@@ -24,6 +24,10 @@ public final class ExitClerkEffect implements CreatureEffect {
 	private static final int SEAL = 2;
 	private static final int NO_BONUS_PENALTY = -1;
 
+	/** Crea l'effetto. */
+	public ExitClerkEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

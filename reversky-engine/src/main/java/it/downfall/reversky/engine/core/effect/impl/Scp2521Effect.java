@@ -27,6 +27,10 @@ public final class Scp2521Effect implements CreatureEffect {
 	/** {@code rarityOrder} di Rare. */
 	private static final int RARE_ORDER = 3;
 
+	/** Crea l'effetto. */
+	public Scp2521Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

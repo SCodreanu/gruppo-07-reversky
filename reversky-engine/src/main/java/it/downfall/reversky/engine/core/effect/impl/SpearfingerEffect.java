@@ -19,6 +19,10 @@ public final class SpearfingerEffect implements CreatureEffect {
 
 	private static final int ATTACK_BONUS = 2;
 
+	/** Crea l'effetto. */
+	public SpearfingerEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

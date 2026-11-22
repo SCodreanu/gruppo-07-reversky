@@ -22,6 +22,10 @@ public final class YukiOnnaEffect implements CreatureEffect {
 	/** Codice dell'effetto ({@code catalog_cards.effect_code}). */
 	public static final String CODE = "YUKI_ONNA";
 
+	/** Crea l'effetto. */
+	public YukiOnnaEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

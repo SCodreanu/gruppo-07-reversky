@@ -25,6 +25,10 @@ public final class CrossedDoorsKeeperEffect implements CreatureEffect {
 
 	private static final int ATTACK_BONUS = 2;
 
+	/** Crea l'effetto. */
+	public CrossedDoorsKeeperEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

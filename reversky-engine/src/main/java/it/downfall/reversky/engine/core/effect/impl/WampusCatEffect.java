@@ -18,6 +18,10 @@ public final class WampusCatEffect implements CreatureEffect {
 
 	private static final int PENALTY = 1;
 
+	/** Crea l'effetto. */
+	public WampusCatEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

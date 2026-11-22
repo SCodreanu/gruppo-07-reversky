@@ -25,6 +25,10 @@ public final class ThornedMatriarchEffect implements CreatureEffect {
 	private static final int SACRIFICE = 2;
 	private static final int DAMAGE = 6;
 
+	/** Crea l'effetto. */
+	public ThornedMatriarchEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

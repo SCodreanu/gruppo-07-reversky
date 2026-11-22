@@ -8,6 +8,10 @@ public final class NopperaBoEffect extends FadingAttackPenaltyEffect {
 	/** Codice dell'effetto ({@code catalog_cards.effect_code}). */
 	public static final String CODE = "NOPPERA_BO";
 
+	/** Crea l'effetto. */
+	public NopperaBoEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

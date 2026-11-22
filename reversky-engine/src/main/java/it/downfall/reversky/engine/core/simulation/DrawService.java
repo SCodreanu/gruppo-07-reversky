@@ -19,8 +19,9 @@ import it.downfall.reversky.engine.core.model.SetHidden;
  * <ul>
  * <li>Spell: l'effetto si risolve e la carta si scarta (D-10). Una Spell {@code DAMAGE} può uccidere la creatura
  * avversaria: le morti si controllano subito dopo (D-08).</li>
- * <li>Hidden: si mette coperta nella zona Hidden e si attiverà all'inizio del prossimo scontro del proprietario; una
- * Hidden della pescata iniziale salta il primo scontro (D-15).</li>
+ * <li>Hidden: si mette coperta nella zona Hidden. Senza condizione si attiva all'inizio del prossimo scontro del
+ * proprietario, con una condizione quando la condizione si verifica; una Hidden della pescata iniziale salta il primo
+ * scontro (D-15). Se il giocatore ha già una Hidden attiva, la nuova aspetta in fila (ENG-41).</li>
  * <li>Terreno: entra in gioco e sostituisce quello già in gioco (D-19); il suo bonus va subito alle creature in
  * campo della sua fazione (D-17).</li>
  * <li>Oggetto: resta accanto al mazzo finché scatta, poi si consuma (D-47).</li>

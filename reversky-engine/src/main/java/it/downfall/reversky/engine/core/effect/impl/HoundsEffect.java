@@ -21,6 +21,10 @@ public final class HoundsEffect implements CreatureEffect {
 
 	private static final int ATTACK_BONUS = 4;
 
+	/** Crea l'effetto. */
+	public HoundsEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

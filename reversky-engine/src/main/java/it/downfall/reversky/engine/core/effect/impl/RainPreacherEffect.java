@@ -24,6 +24,10 @@ public final class RainPreacherEffect implements CreatureEffect {
 
 	private static final int PENALTY = -2;
 
+	/** Crea l'effetto. */
+	public RainPreacherEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -24,6 +24,10 @@ public final class WretchesEffect implements CreatureEffect {
 
 	private boolean used;
 
+	/** Crea l'effetto. */
+	public WretchesEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

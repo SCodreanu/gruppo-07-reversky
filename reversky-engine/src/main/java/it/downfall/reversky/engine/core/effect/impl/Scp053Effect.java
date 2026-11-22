@@ -22,6 +22,10 @@ public final class Scp053Effect implements CreatureEffect {
 	private static final int DAMAGE = 3;
 	private static final int ENEMY_ATTACK_BONUS = 2;
 
+	/** Crea l'effetto. */
+	public Scp053Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

@@ -20,6 +20,10 @@ public final class KappaEffect implements CreatureEffect {
 
 	private static final int ATTACK_BONUS = 3;
 
+	/** Crea l'effetto. */
+	public KappaEffect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

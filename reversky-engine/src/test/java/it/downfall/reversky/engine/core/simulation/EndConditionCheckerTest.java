@@ -45,6 +45,28 @@ class EndConditionCheckerTest {
 	}
 
 	@Test
+	@DisplayName("ENG-29: checkLifePoints guarda solo i punti vita, non le creature né il limite di round")
+	void checkLifePoints_onlyConditionsOneAndTwo() {
+		// Arrange: campi e mazzi vuoti e limite di round raggiunto, ma punti vita sopra 0
+		MatchState noCreatures = TestStates.withDecks(List.of(), List.of());
+		for (int round = 0; round < MAX_ROUNDS; round++) {
+			noCreatures.startNextRound();
+		}
+		MatchState opponentDown = TestStates.withDecks(List.of(), List.of());
+		opponentDown.opponent().loseLifePoints(30);
+		MatchState bothDown = TestStates.withDecks(List.of(), List.of());
+		bothDown.challenger().loseLifePoints(31);
+		bothDown.opponent().loseLifePoints(30);
+
+		// Act + Assert
+		assertThat(checker.checkLifePoints(noCreatures)).isEmpty();
+		assertThat(checker.checkLifePoints(opponentDown))
+				.contains(new MatchEnd(BattleResult.CHALLENGER_WIN, EndReason.LIFE_POINTS_ZERO));
+		assertThat(checker.checkLifePoints(bothDown))
+				.contains(new MatchEnd(BattleResult.DRAW, EndReason.BOTH_LIFE_POINTS_ZERO));
+	}
+
+	@Test
 	@DisplayName("1. Entrambi a 0 PV o meno (0 e −4) → DRAW, BOTH_LIFE_POINTS_ZERO")
 	void check_bothLifePointsZero_draw() {
 		// Arrange

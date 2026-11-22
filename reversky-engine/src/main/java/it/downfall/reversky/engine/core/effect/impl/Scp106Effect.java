@@ -23,6 +23,10 @@ public final class Scp106Effect implements CreatureEffect {
 
 	private int attacksReflected;
 
+	/** Crea l'effetto. */
+	public Scp106Effect() {
+	}
+
 	@Override
 	public String code() {
 		return CODE;

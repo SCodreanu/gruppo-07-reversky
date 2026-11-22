@@ -237,6 +237,107 @@ class MatchSimulatorTest {
 	}
 
 	@Test
+	@DisplayName("ENG-29: l'avversario a 0 PV dopo il round non pesca più, la sua Spell non porta a 0 lo sfidante")
+	void simulate_opponentAtZeroAfterRound_endsBeforeHisDraw() {
+		// Arrange: come il test D-06 (seed 1: Eternal Cup, poi Skin Fracture) ma con 3 PV. Round 1: Eternal Cup
+		// 5 − 8 = −3, l'avversario va a 0. Se pescasse, Skin Fracture ucciderebbe SCP-131 (2 − 5 = −3) e anche lo
+		// sfidante andrebbe a 0
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
+		SimulationInput input = withRules(3, TestRules.MAX_ROUNDS, 1L,
+				List.of(creature(301, "SCP-131", ARCHIVE, 8, 6)),
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), fracture));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert: regole-base, "Danno al giocatore che porta i punti vita sotto zero → la partita finisce subito"
+		assertResult(result, BattleResult.CHALLENGER_WIN, EndReason.LIFE_POINTS_ZERO, 1, 3, 0, 1, 0);
+		assertThat(result.log()).extracting(MatchEvent::type).endsWith(EventType.CREATURE_DIED,
+				EventType.PLAYER_DAMAGED, EventType.MATCH_ENDED);
+	}
+
+	@Test
+	@DisplayName("ENG-29: lo sfidante a 0 PV dopo il round non pesca più, la sua Spell non porta a 0 l'avversario")
+	void simulate_challengerAtZeroAfterRound_endsBeforeHisDraw() {
+		// Arrange: con il seed 1 lo sfidante pesca Eternal Cup, poi Skin Fracture. Round 1: Eternal Cup 5 − 8 = −3,
+		// lo sfidante va a 0. Se pescasse, Skin Fracture ucciderebbe SCP-131 (2 − 5 = −3) e anche l'avversario
+		// andrebbe a 0
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
+		SimulationInput input = withRules(3, TestRules.MAX_ROUNDS, 1L,
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), fracture),
+				List.of(creature(301, "SCP-131", ARCHIVE, 8, 6)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert
+		assertResult(result, BattleResult.OPPONENT_WIN, EndReason.LIFE_POINTS_ZERO, 1, 0, 3, 0, 1);
+		assertThat(result.log()).extracting(MatchEvent::type).endsWith(EventType.CREATURE_DIED,
+				EventType.PLAYER_DAMAGED, EventType.MATCH_ENDED);
+	}
+
+	@Test
+	@DisplayName("ENG-29: la Spell dello sfidante porta l'avversario a 0 PV mentre pesca: l'avversario non pesca più")
+	void simulate_opponentAtZeroDuringChallengerDraw_endsBeforeOpponentDraw() {
+		// Arrange: con il seed 14 i mazzi restano nell'ordine dato, 3 PV a testa. Round 1: Crawler 8 − 8 = 0 muore
+		// senza danno al giocatore, SCP-131 6 − 4 = 2. Lo sfidante pesca Skin Fracture (SCP-131 2 − 5 = −3,
+		// l'avversario va a 0) e poi Faceling. Se l'avversario pescasse, la sua Skin Fracture ucciderebbe Faceling
+		// (2 − 5 = −3) e anche lo sfidante andrebbe a 0
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
+		SimulationInput input = withRules(3, TestRules.MAX_ROUNDS, 14L,
+				List.of(creature(4, "Crawler", ARCHIVE, 4, 8), fracture, creature(103, "Faceling", ARCHIVE, 4, 2)),
+				List.of(creature(301, "SCP-131", ARCHIVE, 8, 6), fracture, creature(306, "Mothling", ARCHIVE, 3, 4)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert: Faceling entra (la pescata dello sfidante finisce), poi la partita finisce senza la pescata
+		// dell'avversario
+		assertResult(result, BattleResult.CHALLENGER_WIN, EndReason.LIFE_POINTS_ZERO, 1, 3, 0, 1, 1);
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.CREATURE_ENTERED)
+				.extracting(event -> event.data().get("card"))
+				.containsExactly("Crawler", "SCP-131", "Faceling");
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.SPELL_RESOLVED).hasSize(1);
+	}
+
+	@Test
+	@DisplayName("ENG-29: dopo l'ultimo round chi ha perso la creatura pesca ancora e la sua Spell sposta i PV")
+	void simulate_drawAfterLastRound_stillResolvesBeforeRoundLimit() {
+		// Arrange: limite di 1 round; con il seed 7 i mazzi restano nell'ordine dato. Round 1: Eternal Cup 5 − 8 = −3
+		// (avversario 27). L'avversario pesca Skin Fracture (SCP-131 2 − 5 = −3, sfidante 27), poi Mothling
+		CardDefinition fracture = TestCards.spell(94, "Skin Fracture", CardSubtype.DAMAGE, "SKIN_FRACTURE");
+		SimulationInput input = withRules(30, 1, 7L,
+				List.of(creature(301, "SCP-131", ARCHIVE, 8, 6), creature(103, "Faceling", ARCHIVE, 4, 2)),
+				List.of(creature(305, "Eternal Cup", ARCHIVE, 4, 5), fracture,
+						creature(306, "Mothling", ARCHIVE, 3, 4)));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert: deciso per ENG-29, la pescata dopo l'ultimo round si risolve come dopo ogni altro round (D-06);
+		// senza la Spell sarebbe CHALLENGER_WIN 30–27
+		assertResult(result, BattleResult.DRAW, EndReason.ROUND_LIMIT, 1, 27, 27, 1, 1);
+		assertThat(result.log()).extracting(MatchEvent::type).endsWith(EventType.CREATURE_ENTERED,
+				EventType.MATCH_ENDED);
+	}
+
+	@Test
+	@DisplayName("ENG-29: morte simultanea all'ultimo round con creature nei mazzi: si pesca, poi ROUND_LIMIT")
+	void simulate_simultaneousDeathInLastRound_roundLimit() {
+		// Arrange: limite di 1 round, quattro creature 5/5 (l'ordine non conta). Round 1: muoiono entrambe
+		CardDefinition crawler = creature(4, "Crawler", ARCHIVE, 5, 5);
+		CardDefinition mothling = creature(306, "Mothling", ARCHIVE, 5, 5);
+		SimulationInput input = withRules(30, 1, 1L, List.of(crawler, crawler), List.of(mothling, mothling));
+
+		// Act
+		MatchResult result = simulator.simulate(input);
+
+		// Assert: nessun danno ai giocatori, entrambi pescano, poi il limite con PV pari
+		assertResult(result, BattleResult.DRAW, EndReason.ROUND_LIMIT, 1, 30, 30, 1, 1);
+		assertThat(result.log()).filteredOn(event -> event.type() == EventType.CREATURE_ENTERED).hasSize(4);
+	}
+
+	@Test
 	@DisplayName("D-15: una Hidden della pescata iniziale salta il primo scontro e si attiva nel secondo")
 	void simulate_hiddenInInitialDraw_triggersInSecondCombat() {
 		// Arrange: con il seed 3 lo sfidante pesca Last Sanctuary prima di SCP-131, l'avversario Eternal Cup prima
@@ -365,6 +466,14 @@ class MatchSimulatorTest {
 				creature(411, "Noppera-bo", DREAM, 6, 6),
 				creature(213, "White Stag", INVITATION, 4, 8));
 		return TestInputs.of(seed, challenger, opponent);
+	}
+
+	/** Input standard con punti vita iniziali e limite di round scelti dal test. */
+	private static SimulationInput withRules(int lifePoints, int maxRounds, long seed,
+			List<CardDefinition> challengerDeck, List<CardDefinition> opponentDeck) {
+		return new SimulationInput(seed, TestRules.of(lifePoints, maxRounds), TestFactions.all(),
+				TestFactions.standardBonuses(), new PlayerInput(TestInputs.CHALLENGER_USER_ID, challengerDeck),
+				new PlayerInput(TestInputs.OPPONENT_USER_ID, opponentDeck));
 	}
 
 	private static CardDefinition rootbound() {
