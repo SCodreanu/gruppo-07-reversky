@@ -7,6 +7,8 @@ Base URL in sviluppo: `http://localhost:8081`
 
 Richieste pronte per ogni caso, con il risultato atteso: [`examples/`](../../examples/README.md). Come lanciarle: [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#3-chiamare-lengine).
 
+Il contratto è controllato da un test da entrambe le parti (`ENG-24`): le risposte di tutti gli esempi sono fotografate in [`examples/responses/`](../../examples/responses), e l'API le legge con il suo `EngineClient`. Cambiare un campo, un codice d'errore o un evento del log fa fallire `SimulationContractTest` qui; va aggiornata la fotografia e riprovata l'API ([docs/test](../test/test.md#test-di-contratto-con-lapi-eng-24)).
+
 ## `POST /api/v1/simulations`
 
 Simula una partita completa.

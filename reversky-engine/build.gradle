@@ -37,6 +37,8 @@ tasks.named('test') {
 	useJUnitPlatform {
 		excludeTags 'balance', 'effects'
 	}
+	// I test leggono examples/ (richieste, CSV e fotografie delle risposte, ENG-24): una modifica lì li rilancia
+	inputs.dir('examples').withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 tasks.register('balanceTest', Test) {
