@@ -83,6 +83,18 @@ public class RuleSetService {
 	}
 
 	/**
+	 * L'entità di una versione qualsiasi, anche non più attiva: le ricompense di una partita classificata si leggono
+	 * dal rule set con cui è stata preparata ({@code battles.rule_set_id}, docs/crediti, API-45).
+	 *
+	 * @throws RuleSetNotFoundException se il rule set non esiste
+	 */
+	@Transactional(readOnly = true)
+	public RuleSet getRuleSet(Integer id) {
+		return ruleSetRepository.findById(id)
+			.orElseThrow(() -> new RuleSetNotFoundException());
+	}
+
+	/**
 	 * Crea una nuova versione, disattivata.
 	 *
 	 * @param createdById admin che la crea; per ora sempre nullo (il backoffice non registra ancora l'autore)

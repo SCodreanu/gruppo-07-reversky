@@ -47,6 +47,7 @@ import it.downfall.reversky.api.battle.client.SimulationResponse;
 import it.downfall.reversky.api.battle.client.SimulationResponse.PlayerResult;
 import it.downfall.reversky.api.battle.exception.EngineUnavailableException;
 import it.downfall.reversky.api.battle.service.MatchmakingService;
+import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.repository.CatalogCardRepository;
 import it.downfall.reversky.api.catalog.repository.FactionRepository;
 import it.downfall.reversky.api.catalog.repository.RarityRepository;
@@ -55,18 +56,22 @@ import it.downfall.reversky.api.common.mail.EmailSender;
 import it.downfall.reversky.api.common.security.JwtService;
 import it.downfall.reversky.api.deck.service.DeckService;
 import it.downfall.reversky.api.friendship.service.FriendshipService;
+import it.downfall.reversky.api.ruleset.dto.RuleSetRequest;
+import it.downfall.reversky.api.ruleset.repository.RuleSetRepository;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import it.downfall.reversky.api.support.TestBattles;
 import it.downfall.reversky.api.support.TestCards;
 import it.downfall.reversky.api.support.TestCollections;
 import it.downfall.reversky.api.support.TestDecks;
 import it.downfall.reversky.api.support.TestFriends;
+import it.downfall.reversky.api.support.TestRuleSets;
 import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 
 /**
  * Flusso completo della partita classificata con il database vero (parte classificata di API-57): ingresso in coda
- * via HTTP, abbinamento, Elo (API-50), dettaglio, storico e {@code GET /rankings/me} dei due giocatori, retry.
+ * via HTTP, abbinamento, Elo (API-50) e crediti (API-45), dettaglio, storico, {@code GET /rankings/me} e
+ * {@code GET /inventory} dei due giocatori, retry, cambio del rule set e pareggio durante uno scambio.
  * L'abbinamento si chiama direttamente con {@link MatchmakingService}, perché nei test il job è spento; l'engine è un
  * mock. Gli altri casi dell'abbinamento sono in {@code MatchmakingServiceIT}. La configurazione è quella di
  * {@code BattleControllerIT}, così Spring riusa lo stesso contesto.
@@ -115,21 +120,26 @@ class RankedBattleFlowIT {
 	@Autowired
 	private MatchmakingService matchmakingService;
 
+	@Autowired
+	private RuleSetRepository ruleSetRepository;
+
 	@MockitoBean
 	private EmailSender emailSender;
 
 	@MockitoBean
 	private EngineClient engineClient;
 
+	private TestCards testCards;
+	private TestCollections testCollections;
 	private TestBattles testBattles;
 	private User challenger;
 	private User opponent;
 
 	@BeforeEach
 	void setUp() {
-		TestCards testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
-		TestDecks testDecks = new TestDecks(testCards,
-			new TestCollections(collectionService, transactionTemplate, jdbcTemplate), ruleSetService);
+		testCards = new TestCards(catalogCardRepository, rarityRepository, factionRepository);
+		testCollections = new TestCollections(collectionService, transactionTemplate, jdbcTemplate);
+		TestDecks testDecks = new TestDecks(testCards, testCollections, ruleSetService);
 		testBattles = new TestBattles(testDecks, deckService, new TestFriends(friendshipService, jdbcTemplate));
 		// I ticket lasciati da altre classi di test verrebbero abbinati anche loro
 		jdbcTemplate.update("DELETE FROM matchmaking_queue");
@@ -147,6 +157,9 @@ class RankedBattleFlowIT {
 		// Arrange: due giocatori nuovi (1000, K = 40); chi entra prima è lo sfidante
 		joinQueue(challenger);
 		joinQueue(opponent);
+		int challengerCredits = credits(challenger);
+		int opponentCredits = credits(opponent);
+		int winReward = ruleSetService.getActiveRuleSet().getWinReward();
 
 		// Act
 		assertThat(matchmakingService.matchAll()).isEqualTo(1);
@@ -172,6 +185,12 @@ class RankedBattleFlowIT {
 		assertRanking(challenger, 1020, 1020, 1, 1, 0, 0);
 		assertRanking(opponent, 980, 1000, 1, 0, 1, 0);
 
+		// Solo chi vince riceve i crediti di vittoria del rule set, con la sua riga BATTLE_WIN
+		assertThat(credits(challenger)).isEqualTo(challengerCredits + winReward);
+		assertThat(credits(opponent)).isEqualTo(opponentCredits);
+		assertThat(rewards(challenger)).containsExactly("BATTLE_WIN:" + winReward);
+		assertThat(rewards(opponent)).isEmpty();
+
 		// Nessuno dei due è più in coda
 		mockMvc.perform(as(challenger, get("/api/v1/matchmaking/queue"))).andExpect(status().isNotFound());
 		mockMvc.perform(as(opponent, get("/api/v1/matchmaking/queue"))).andExpect(status().isNotFound());
@@ -188,6 +207,9 @@ class RankedBattleFlowIT {
 		joinQueue(challenger);
 		joinQueue(opponent);
 		doAnswer(call -> draw(call.getArgument(0))).when(engineClient).simulate(any());
+		int challengerCredits = credits(challenger);
+		int opponentCredits = credits(opponent);
+		int drawReward = ruleSetService.getActiveRuleSet().getDrawReward();
 
 		// Act
 		assertThat(matchmakingService.matchAll()).isEqualTo(1);
@@ -199,6 +221,12 @@ class RankedBattleFlowIT {
 		assertRanking(challenger, 1097, 1150, 13, 6, 4, 3);
 		assertRanking(opponent, 1006, 1006, 4, 1, 1, 2);
 		assertThat(ratingColumns(battleId)).containsExactly(1100, -3, 1000, 6);
+
+		// Il pareggio dà i crediti di pareggio a entrambi
+		assertThat(credits(challenger)).isEqualTo(challengerCredits + drawReward);
+		assertThat(credits(opponent)).isEqualTo(opponentCredits + drawReward);
+		assertThat(rewards(challenger)).containsExactly("BATTLE_DRAW:" + drawReward);
+		assertThat(rewards(opponent)).containsExactly("BATTLE_DRAW:" + drawReward);
 	}
 
 	@Test
@@ -216,6 +244,10 @@ class RankedBattleFlowIT {
 			.andExpect(jsonPath("$.ratingDelta").isEmpty());
 		assertRanking(challenger, 1000, 1000, 0, 0, 0, 0);
 		assertThat(ratingColumns(battleId)).containsOnlyNulls();
+		// Senza risultato nessun credito
+		assertThat(rewards(challenger)).isEmpty();
+		assertThat(rewards(opponent)).isEmpty();
+		int winReward = ruleSetService.getActiveRuleSet().getWinReward();
 
 		// Nel frattempo il rating dello sfidante cambia: conta quello del salvataggio, non quello del ticket
 		jdbcTemplate.update("UPDATE player_ratings SET rating = 1050, peak_rating = 1050 WHERE user_id = ?",
@@ -238,10 +270,12 @@ class RankedBattleFlowIT {
 		assertRanking(challenger, 1067, 1067, 1, 1, 0, 0);
 		assertRanking(opponent, 983, 1000, 1, 0, 1, 0);
 		assertThat(ratingColumns(battleId)).containsExactly(1050, 17, 1000, -17);
+		assertThat(rewards(challenger)).containsExactly("BATTLE_WIN:" + winReward);
+		assertThat(rewards(opponent)).isEmpty();
 	}
 
 	@Test
-	@DisplayName("Two overlapping retries of a ranked battle both reach the engine, but the Elo is applied once")
+	@DisplayName("Two overlapping retries of a ranked battle both reach the engine, but Elo and credits are given once")
 	void rankedRetry_overlapping_appliesEloOnce() throws Exception {
 		// Arrange: una classificata rimasta senza risultato
 		joinQueue(challenger);
@@ -290,6 +324,105 @@ class RankedBattleFlowIT {
 		assertThat(rating(challenger)).isEqualTo(1000 + challengerDelta);
 		assertThat(rating(opponent)).isEqualTo(1000 + opponentDelta);
 		assertThat(ratingColumns(battleId)).containsExactly(1000, challengerDelta, 1000, opponentDelta);
+
+		// Una sola ricompensa, a chi ha vinto il risultato salvato
+		int winReward = ruleSetService.getActiveRuleSet().getWinReward();
+		User winner = challengerDelta > 0 ? challenger : opponent;
+		User loser = challengerDelta > 0 ? opponent : challenger;
+		assertThat(rewards(winner)).containsExactly("BATTLE_WIN:" + winReward);
+		assertThat(rewards(loser)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("A retry after a new rule set is activated pays the win reward of the battle's own rule set")
+	void rankedRetry_newRuleSetActive_paysFromBattleRuleSet() throws Exception {
+		// Arrange: una classificata senza risultato, poi il backoffice attiva un rule set con altre ricompense
+		TestRuleSets testRuleSets = new TestRuleSets(ruleSetService, ruleSetRepository, jdbcTemplate, testUsers);
+		testRuleSets.rememberActive();
+		try {
+			joinQueue(challenger);
+			joinQueue(opponent);
+			doThrow(new EngineUnavailableException("The game engine is not available")).when(engineClient).simulate(any());
+			matchmakingService.matchAll();
+			String battleId = lastRankedBattle(challenger);
+			int battleWinReward = ruleSetService.getActiveRuleSet().getWinReward();
+			RuleSetRequest base = TestRuleSets.request(TestRuleSets.uniqueVersion());
+			RuleSetRequest richer = new RuleSetRequest(base.version(), base.startingLifePoints(), base.maxRounds(),
+				base.deckSize(), base.deckCreatures(), base.deckSpells(), base.deckHidden(), base.deckItems(),
+				base.deckTerrains(), base.maxHiddenSurvival(), base.maxHiddenDamage(), base.signupBonus(),
+				battleWinReward + 70, base.drawReward() + 40);
+			ruleSetService.activate(ruleSetService.create(richer, null).id());
+			reset(engineClient);
+			when(engineClient.simulate(any())).thenAnswer(call -> challengerWins(call.getArgument(0)));
+			int challengerCredits = credits(challenger);
+
+			// Act
+			mockMvc.perform(as(challenger, post("/api/v1/battles/" + battleId + "/retry")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.completed").value(true));
+
+			// Assert
+			assertThat(credits(challenger)).isEqualTo(challengerCredits + battleWinReward);
+			assertThat(rewards(challenger)).containsExactly("BATTLE_WIN:" + battleWinReward);
+		} finally {
+			testRuleSets.restoreActive();
+		}
+	}
+
+	@Test
+	@DisplayName("A ranked draw saved while the same two players accept a trade: no deadlock, credits and cards right")
+	void rankedDraw_duringTradeAccept_noDeadlock() throws Exception {
+		// Arrange: una classificata senza risultato e uno scambio aperto tra i due, con una carta fuori dai mazzi
+		joinQueue(challenger);
+		joinQueue(opponent);
+		doThrow(new EngineUnavailableException("The game engine is not available")).when(engineClient).simulate(any());
+		matchmakingService.matchAll();
+		String battleId = lastRankedBattle(challenger);
+		CatalogCard extra = testCards.createCreature();
+		testCollections.give(challenger, extra, 1);
+		String tradeId = JsonPath.read(mockMvc.perform(as(challenger, post("/api/v1/trades"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"recipientId\": " + opponent.getId() + ", \"give\": [{\"cardId\": " + extra.getId()
+					+ ", \"quantity\": 1}], \"receive\": []}"))
+			.andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString(), "$.id");
+		int challengerCredits = credits(challenger);
+		int opponentCredits = credits(opponent);
+		int drawReward = ruleSetService.getActiveRuleSet().getDrawReward();
+
+		// Il pareggio esce dall'engine nello stesso momento in cui parte l'accettazione dello scambio
+		CountDownLatch go = new CountDownLatch(1);
+		reset(engineClient);
+		when(engineClient.simulate(any())).thenAnswer(call -> {
+			await(go);
+			return draw(call.getArgument(0));
+		});
+
+		// Act
+		MockHttpServletResponse retried;
+		MockHttpServletResponse accepted;
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		try {
+			Future<MockHttpServletResponse> retry = executor.submit(() -> retry(challenger, battleId));
+			Future<MockHttpServletResponse> accept = executor.submit(() -> {
+				await(go);
+				return mockMvc.perform(as(opponent, post("/api/v1/trades/" + tradeId + "/accept")))
+					.andReturn().getResponse();
+			});
+			go.countDown();
+			retried = retry.get(30, TimeUnit.SECONDS);
+			accepted = accept.get(30, TimeUnit.SECONDS);
+		} finally {
+			executor.shutdownNow();
+		}
+
+		// Assert
+		assertThat(retried.getStatus()).isEqualTo(200);
+		assertThat(accepted.getStatus()).isEqualTo(200);
+		assertThat(credits(challenger)).isEqualTo(challengerCredits + drawReward);
+		assertThat(credits(opponent)).isEqualTo(opponentCredits + drawReward);
+		assertThat(testCollections.quantity(challenger, extra)).isZero();
+		assertThat(testCollections.quantity(opponent, extra)).isEqualTo(1);
 	}
 
 	// --- supporto ---
@@ -338,6 +471,31 @@ class RankedBattleFlowIT {
 		return Arrays.asList((Integer) row.get("challenger_rating_before"),
 			(Integer) row.get("challenger_rating_delta"), (Integer) row.get("opponent_rating_before"),
 			(Integer) row.get("opponent_rating_delta"));
+	}
+
+	// Il saldo come lo vede il giocatore
+	private int credits(User user) throws Exception {
+		return JsonPath.read(mockMvc.perform(as(user, get("/api/v1/inventory")))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString(), "$.credits");
+	}
+
+	// Le righe di credit_transactions delle partite, come "motivo:importo"
+	private List<String> rewards(User user) {
+		return jdbcTemplate.queryForList("SELECT reason::text || ':' || amount FROM credit_transactions "
+			+ "WHERE user_id = ? AND reason::text IN ('BATTLE_WIN', 'BATTLE_DRAW') ORDER BY id", String.class,
+			user.getId());
+	}
+
+	private static void await(CountDownLatch latch) {
+		try {
+			if (!latch.await(30, TimeUnit.SECONDS)) {
+				throw new IllegalStateException("Latch not released in time");
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException(e);
+		}
 	}
 
 	private int rating(User user) {

@@ -109,6 +109,13 @@ public Inventory spendCredits(Integer userId, int amount, CreditReason reason) {
 | utente senza inventario | `404` | `INVENTORY_NOT_FOUND` |
 | registrazione senza rule set attivo | `404` | `NO_ACTIVE_RULE_SET` |
 
+### Crediti delle classificate (API-45 #115)
+
+- Il salvataggio di una partita `RANKED` (`BattleService`, la transazione che scrive il risultato e l'Elo) chiama `InventoryService.addCredits`: `win_reward` a chi vince con `BATTLE_WIN`, oppure `draw_reward` a entrambi con `BATTLE_DRAW`. Con un pareggio prima `lockInventories` blocca i due inventari in ordine di `user_id`, come uno scambio.
+- I valori vengono dal rule set della partita (`battles.rule_set_id`, letto con `RuleSetService.getRuleSet`), non dal rule set attivo: un retry dopo l'attivazione di una nuova versione paga come alla preparazione.
+- Ogni partita paga una volta sola, anche con due retry sovrapposti, perché il salvataggio blocca la partita e non riscrive una partita già completata. Engine non disponibile = partita senza risultato e nessun credito; le amichevoli non arrivano mai qui.
+- Provato in `RankedBattleFlowIT`: vittoria, pareggio, retry, retry sovrapposti, nuovo rule set attivo e pareggio durante l'accettazione di uno scambio tra gli stessi giocatori (dettagli in [sfide](../sfide/sfide.md#crediti-delle-classificate-api-45-115)).
+
 ## Preparazione alla fase 2
 
 Non si sviluppa niente di pagamento. Il **tasso di conversione crediti/euro** è definito dai DSG nel modello economico (serve per le proiezioni a 12, 24 e 48 mesi) e, quando servirà, starà nel rule set (backoffice) come gli altri valori economici, senza logica collegata.

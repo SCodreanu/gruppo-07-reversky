@@ -52,6 +52,8 @@ import it.downfall.reversky.api.deck.entity.Deck;
 import it.downfall.reversky.api.deck.exception.InvalidDeckException;
 import it.downfall.reversky.api.deck.service.DeckService;
 import it.downfall.reversky.api.friendship.service.FriendshipService;
+import it.downfall.reversky.api.inventory.entity.CreditReason;
+import it.downfall.reversky.api.inventory.service.InventoryService;
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import it.downfall.reversky.api.user.service.UserService;
@@ -60,7 +62,9 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Partite (docs/sfide, API-40, API-41, API-42, API-43): accettazione di un invito con simulazione, dettaglio e
- * storico; preparazione e simulazione delle classificate abbinate da {@link MatchmakingService} (API-49).
+ * storico; preparazione e simulazione delle classificate abbinate da {@link MatchmakingService} (API-49). Il
+ * salvataggio di una classificata applica anche l'Elo (API-50) e i crediti di vittoria o pareggio (API-45), nella
+ * stessa transazione del risultato.
  * <p>
  * L'accettazione è divisa in tre passi, per non tenere aperta una transazione mentre si aspetta l'engine: preparazione
  * (transazione 1), chiamata all'engine (fuori transazione), salvataggio (transazione 2). Per questo le transazioni sono
@@ -83,6 +87,7 @@ public class BattleService {
 	private final FactionBonusService factionBonusService;
 	private final UserService userService;
 	private final RankingService rankingService;
+	private final InventoryService inventoryService;
 	private final EngineClient engineClient;
 	private final RandomGenerator random;
 	private final Clock clock;
@@ -304,7 +309,7 @@ public class BattleService {
 	// --- passo 3: salvataggio ---
 
 	// Blocca la partita: se un'altra simulazione l'ha già completata non scrive niente, il risultato sarebbe identico.
-	// Così anche l'Elo di una classificata si applica una volta sola, con retry sovrapposti compresi.
+	// Così Elo e crediti di una classificata si assegnano una volta sola, con retry sovrapposti compresi.
 	private Battle complete(UUID battleId, SimulationResponse response) {
 		Battle battle = battleRepository.findByIdForUpdate(battleId)
 			.orElseThrow(() -> new BattleNotFoundException(battleId));
@@ -316,6 +321,7 @@ public class BattleService {
 			battle.complete(result, stats, response.log());
 			if (battle.getMode() == BattleMode.RANKED) {
 				applyElo(battle, result);
+				awardCredits(battle, result);
 			}
 			log.info("Battle {} completed: {}", battleId, response.result());
 		}
@@ -330,6 +336,26 @@ public class BattleService {
 		log.info("Ranked battle {} rated: user {} {} ({}), user {} {} ({})", battle.getId(), battle.getChallengerId(),
 			changes.challengerBefore(), signed(changes.challengerDelta()), battle.getOpponentId(),
 			changes.opponentBefore(), signed(changes.opponentDelta()));
+	}
+
+	// API-45: ricompense dal rule set della partita, non da quello attivo, così un retry paga con le regole della
+	// preparazione. Le amichevoli non arrivano qui: non danno crediti (docs/crediti)
+	private void awardCredits(Battle battle, BattleResult result) {
+		RuleSet ruleSet = ruleSetService.getRuleSet(battle.getRuleSetId());
+		switch (result) {
+			case CHALLENGER_WIN -> inventoryService.addCredits(battle.getChallengerId(), ruleSet.getWinReward(),
+				CreditReason.BATTLE_WIN);
+			case OPPONENT_WIN -> inventoryService.addCredits(battle.getOpponentId(), ruleSet.getWinReward(),
+				CreditReason.BATTLE_WIN);
+			case DRAW -> {
+				// Due inventari nella stessa transazione: si bloccano insieme, user_id minore per primo, come negli
+				// scambi, così un pareggio e uno scambio tra gli stessi giocatori non vanno in deadlock
+				inventoryService.lockInventories(List.of(battle.getChallengerId(), battle.getOpponentId()));
+				inventoryService.addCredits(battle.getChallengerId(), ruleSet.getDrawReward(), CreditReason.BATTLE_DRAW);
+				inventoryService.addCredits(battle.getOpponentId(), ruleSet.getDrawReward(), CreditReason.BATTLE_DRAW);
+			}
+		}
+		log.info("Ranked battle {} rewarded from rule set {}: {}", battle.getId(), ruleSet.getVersion(), result);
 	}
 
 	private static String signed(int delta) {

@@ -430,6 +430,13 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 - L'Elo si applica **una volta sola** anche con retry sovrapposti: il salvataggio blocca prima la partita e non scrive niente se è già completata, quindi il secondo salvataggio non arriva mai ai rating. Un giocatore abbinato ha sempre la riga del rating (si crea all'ingresso in coda); se mancasse è un errore di programmazione (`IllegalStateException`), non un rating nuovo.
 - `GET /battles/{id}` (e le risposte di accettazione e retry) hanno anche `ratingBefore` e `ratingDelta` di chi guarda: null per le amichevoli e finché la classificata non è completata. Lo storico aveva già `ratingDelta`, letto dalla stessa riga.
 
+### Crediti delle classificate (API-45 #115)
+
+- Nella stessa transazione di salvataggio, dopo l'Elo e solo per le `RANKED`: vittoria → `win_reward` a chi vince con la riga `BATTLE_WIN`; pareggio → `draw_reward` a entrambi con `BATTLE_DRAW`, dopo aver bloccato i due inventari con `InventoryService.lockInventories` (`user_id` minore per primo). I crediti passano da `InventoryService.addCredits`, come ogni movimento (vedi [crediti](../crediti/crediti.md#crediti-delle-classificate-api-45-115)).
+- Le ricompense si leggono dal rule set **della partita** (`RuleSetService.getRuleSet(battle.ruleSetId)`), non da quello attivo: un retry dopo l'attivazione di un nuovo rule set paga con le regole della preparazione.
+- Una volta sola, anche con retry sovrapposti: lo stesso blocco della partita che protegge l'Elo. Niente crediti se l'engine non risponde (la partita resta senza risultato) e mai per le amichevoli.
+- Ordine dei blocchi nel salvataggio: partita, poi `player_ratings`, poi `inventories`. L'accettazione di uno scambio blocca lo scambio e poi gli stessi `inventories` nello stesso ordine, quindi un pareggio e uno scambio tra gli stessi giocatori si mettono in fila senza deadlock (`RankedBattleFlowIT`).
+
 ### Integrazione reale con l'engine (API-54 #124)
 
 Provata il 22 novembre sullo stack completo di Docker Compose (`compose.yaml` nella cartella principale: database, Mailpit, engine e API), con la copia di `reversky-engine` di `backend_api` uguale a quella di `backend_engine` (#212, #213). Il JSON scambiato resta controllato in automatico dal test di contratto (ENG-24); questa prova mostra che le due applicazioni vere si parlano.
