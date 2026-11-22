@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-14`…`API-20`, `API-22`…`API-44`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-14`…`API-20`, `API-22`…`API-44`, `API-46`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -14,11 +14,11 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Account | registrazione, login, token, reset password, verifica email, gestione degli utenti dal backoffice (`API-03`) |
 | Catalogo | rule set, rarità, fazioni, bonus di fazione, carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`), creazione delle carte con l'illustrazione e immagini servite su `/images/**` (`API-14`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`), test del flusso completo e degli errori a metà acquisto o apertura (`API-56`) |
-| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata) |
+| Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata), rating Elo con `GET /rankings/me` (`API-46`) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
 | Sicurezza | matrice degli accessi di tutti gli endpoint controllata da `SecurityMatrixIT`, token scaduti ignorati sugli endpoint pubblici (bug corretto), risorse altrui `404` (`API-58`, [autenticazione](../autenticazione/autenticazione.md#endpoint-pubblici-e-protetti)) |
 
-`./gradlew build` verde con 959 test (22 novembre, con `API-58`: la matrice conta 235 casi).
+`./gradlew build` verde con 975 test (22 novembre, con `API-58` e `API-46`: la matrice conta 238 casi).
 
 ## Da fare
 
@@ -27,6 +27,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Issue | Cosa | Note |
 |---|---|---|
 | — | Integrazione con il frontend su un branch separato (dal 23 novembre) | non mescolare il codice del frontend in `backend_api` |
+| `API-47` (#117), `API-07` (#77) | Coda di matchmaking, poi i tag | presi il 22 novembre da Antonino e acistar0, dopo `API-46` |
 | — | Chiedere ai DSG D-04 (bonus di fazione) | serve a `ENG-30` e ad `API-64`; D-01 è deciso il 22 novembre (30 punti vita, già nel rule set `1.0`) |
 
 ### 30 novembre – 6 dicembre (code freeze)
@@ -58,7 +59,7 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Issue | Cosa | Di chi |
 |---|---|---|
 | `API-07`, `API-12`, `API-13`, `API-21` (#77, #82, #83, #91) | Tag e filtro dei pacchetti per tag | `acistar0` |
-| `API-45`…`API-50` (#115–#120) | Partite classificate: ricompense, rating Elo, coda di matchmaking | `antoninoconsolato-its` |
+| `API-45`, `API-48`…`API-50` (#115, #118–#120) | Partite classificate: ricompense, abbinamento, partita classificata con l'Elo applicato | `antoninoconsolato-its` |
 | parte classificata di `API-57` | Test di integrazione di coda, abbinamento, Elo e crediti | segue `API-45`…`API-50` |
 
 ## Piccole cose aperte
