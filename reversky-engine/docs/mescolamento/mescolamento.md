@@ -48,7 +48,7 @@ Se un effetto ha bisogno di casualità (es. "sceglie una carta a caso"), usa lo 
 @Test
 @DisplayName("Stesso input e stesso seed producono la stessa identica partita")
 void simulate_sameSeed_sameResult() {
-	SimulationInput input = TestInputs.randomDecks(12345L);
+	SimulationInput input = TestInputs.of(12345L, TestDecks.full(WOUND), TestDecks.full(DREAM));
 
 	MatchResult first = simulator.simulate(input);
 	MatchResult second = simulator.simulate(input);
@@ -58,3 +58,4 @@ void simulate_sameSeed_sameResult() {
 ```
 
 E il controllo opposto: seed diversi → (quasi sempre) ordine diverso delle carte.
+Entrambi sono in `MatchSimulatorTest`; il secondo usa l'esempio 08 con seed 42 e 43 (PV finali 30–27 e 27–23).

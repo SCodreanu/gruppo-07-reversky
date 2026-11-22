@@ -1,6 +1,6 @@
 {
   "seed": 1,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factions": [
     { "id": 1, "name": "Theory of the Wound" },
     { "id": 2, "name": "Theory of the Invitation" },
@@ -20,7 +20,7 @@
   "challenger": {
     "userId": 7,
     "deck": [
-      { "cardId": 70, "name": "Veil of the Anchored", "type": "SPELL", "rarity": "Uncommon", "rarityOrder": 2, "factionId": 3, "secondaryFactionId": null, "atk": null, "def": null, "subtype": "SHIELD", "effectCode": "VEIL_OF_ANCHORED" }
+      { "cardId": 70, "name": "Veil of the Anchored", "type": "SPELL", "rarity": "Uncommon", "rarityOrder": 2, "factionId": null, "secondaryFactionId": null, "atk": null, "def": null, "subtype": "SHIELD", "effectCode": "VEIL_OF_ANCHORED" }
     ]
   },
   "opponent": {

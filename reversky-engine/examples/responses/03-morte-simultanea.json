@@ -1,0 +1,243 @@
+{
+  "result" : "DRAW",
+  "endReason" : "BOTH_DECKS_EMPTY",
+  "totalRounds" : 2,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 2
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 2
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Dullers",
+      "attack" : 5,
+      "defense" : 5
+    },
+    "message" : "Challenger plays Dullers (ATK 5, DEF 5)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling",
+      "attack" : 5,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Faceling (ATK 5, DEF 5)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Dullers",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Dullers attacks with 5 (5 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Faceling attacks with 5 (5 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Dullers",
+      "target" : "Faceling",
+      "amount" : 5,
+      "targetDefense" : 0
+    },
+    "message" : "Dullers deals 5 damage to Faceling (DEF 0)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "Dullers",
+      "amount" : 5,
+      "targetDefense" : 0
+    },
+    "message" : "Faceling deals 5 damage to Dullers (DEF 0)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Dullers"
+    },
+    "message" : "Dullers is destroyed"
+  }, {
+    "sequence" : 10,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling"
+    },
+    "message" : "Faceling is destroyed"
+  }, {
+    "sequence" : 11,
+    "round" : 1,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Dullers",
+      "attack" : 5,
+      "defense" : 5
+    },
+    "message" : "Challenger plays Dullers (ATK 5, DEF 5)"
+  }, {
+    "sequence" : 12,
+    "round" : 1,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling",
+      "attack" : 5,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Faceling (ATK 5, DEF 5)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 14,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Dullers",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Dullers attacks with 5 (5 base)"
+  }, {
+    "sequence" : 15,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Faceling attacks with 5 (5 base)"
+  }, {
+    "sequence" : 16,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Dullers",
+      "target" : "Faceling",
+      "amount" : 5,
+      "targetDefense" : 0
+    },
+    "message" : "Dullers deals 5 damage to Faceling (DEF 0)"
+  }, {
+    "sequence" : 17,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "Dullers",
+      "amount" : 5,
+      "targetDefense" : 0
+    },
+    "message" : "Faceling deals 5 damage to Dullers (DEF 0)"
+  }, {
+    "sequence" : 18,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Dullers"
+    },
+    "message" : "Dullers is destroyed"
+  }, {
+    "sequence" : 19,
+    "round" : 2,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Faceling"
+    },
+    "message" : "Faceling is destroyed"
+  }, {
+    "sequence" : 20,
+    "round" : 2,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "DRAW",
+      "endReason" : "BOTH_DECKS_EMPTY"
+    },
+    "message" : "Draw (both decks empty)"
+  } ]
+}

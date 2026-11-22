@@ -107,7 +107,7 @@ Controller  →  Service  →  Repository  →  Database
 - DTO come **`record`** Java.
 - Non restituire mai `null` per una lista: restituisci una lista vuota.
 - Per "potrebbe non esserci" usa `Optional` nei repository, poi nel service trasformalo in eccezione.
-- Niente "numeri magici": i valori del regolamento stanno nel database (rule set attivo, rarità, `faction_bonus`) e si modificano dal backoffice; in `application.properties` solo la configurazione tecnica.
+- Niente "numeri magici": i valori del regolamento stanno nel database (rule set attivo, rarità, `faction_bonuses`) e si modificano dal backoffice; in `application.properties` solo la configurazione tecnica.
 
 ```java
 // SÌ
@@ -153,7 +153,7 @@ public record CreateDeckRequest(
 - Relazioni `@ManyToOne(fetch = FetchType.LAZY)` di default.
 - Enum PostgreSQL: `@Enumerated(EnumType.STRING)` + `@JdbcTypeCode(SqlTypes.NAMED_ENUM)`.
 - Colonne `jsonb`: `@JdbcTypeCode(SqlTypes.JSON)`.
-- Date `timestamp` in `LocalDateTime`, sempre in UTC.
+- Date `timestamptz` in `Instant`, sempre in UTC.
 - Le tabelle vengono create **solo da Flyway**: `spring.jpa.hibernate.ddl-auto=validate`.
 
 Esempi completi in [docs/database](docs/database/database.md).

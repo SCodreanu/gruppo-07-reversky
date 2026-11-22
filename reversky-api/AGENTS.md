@@ -50,7 +50,7 @@ Swagger UI, una volta configurato springdoc: `http://localhost:8080/swagger-ui.h
 
 ## Struttura del codice
 
-Organizzazione **per funzionalità** (package-by-feature), non per tipo di classe:
+Organizzazione **per funzionalità** (package-by-feature), e dentro ogni funzionalità un sotto-package per livello:
 
 ```
 src/main/java/it/downfall/reversky/api/
@@ -68,7 +68,7 @@ src/main/java/it/downfall/reversky/api/
 └── common/        errori, sicurezza, configurazione condivisa
 ```
 
-Dentro ogni package: `XxxController`, `XxxService`, `XxxRepository`, entità JPA, `dto/`.
+Dentro ogni funzionalità: `controller/`, `service/`, `repository/`, `entity/`, `dto/`, `exception/` e, se servono task schedulati, `job/`. Si crea solo il sotto-package che serve; `common/` resta diviso per argomento. I test usano gli stessi package delle classi che testano. Dettagli ed esempio in [docs/architettura](docs/architettura/architettura.md).
 
 ## Documentazione per funzionalità
 
@@ -101,7 +101,7 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 5. **Il server ricontrolla sempre tutto**: possesso delle carte, vincoli del mazzo, saldo, turno negli scambi. La validazione del frontend è solo una comodità.
 6. **Lo schema cambia solo tramite migrazioni Flyway nuove.** Non modificare mai una migrazione già committata.
 7. **Niente acquisto di crediti con denaro reale**: è fuori dal perimetro della fase 1.
-8. **Valori del regolamento** (punti vita, limite di round, prezzi, ricompense, limiti del mazzo…) stanno nel database e si modificano dal **backoffice** (`rule_sets`, `rarities`, `faction_bonus`, `packs`), mai nel codice né in `application.properties`. Nei documenti sono segnati con **[DA CONFERMARE]**.
+8. **Valori del regolamento** (punti vita, limite di round, prezzi, ricompense, limiti del mazzo…) stanno nel database e si modificano dal **backoffice** (`rule_sets`, `rarities`, `faction_bonuses`, `packs`), mai nel codice né in `application.properties`. Nei documenti sono segnati con **[DA CONFERMARE]**.
 
 ## Come lavorare
 
@@ -114,4 +114,24 @@ Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirem
 
 ## Stato attuale
 
-Il progetto è lo scheletro generato da Spring Initializr: esiste solo `ReverskyApiApplication`. I documenti in `docs/` descrivono come **deve** essere costruito il backend.
+L'autenticazione è completa e testata (`auth/`, `user/`, `common/`, migrazioni `V1` e `V2`):
+
+- registrazione, login, rinnovo con rotazione, logout, reset della password, verifica e reinvio della verifica email;
+- `GET /api/v1/users/me`;
+- pulizia giornaliera dei token scaduti (`TokenCleanupJob`);
+- errori in formato ProblemDetail, Swagger con il pulsante Authorize;
+- test di integrazione su PostgreSQL vero (`AuthServiceIT`, `AuthControllerIT`, `TokenCleanupJobIT`, `UserControllerIT`).
+
+Manca ancora la parte legata ai crediti: l'inventario alla registrazione e i crediti in `/users/me` (TODO nel codice), che arriveranno con `inventory/`.
+
+Catalogo (`catalog/`):
+
+- fazioni: `GET /api/v1/factions` pubblico e `GET/POST/PUT /api/v1/admin/factions` (`admin/controller/AdminFactionController`);
+- rarità: `GET /api/v1/rarities` pubblico, ordinato per `sorting_order`, e `GET/POST/PUT /api/v1/admin/rarities` (`admin/controller/AdminRarityController`). Le rarità non hanno massimi di ATK e DEF (tolti con la baseline);
+- carte, senza tag: `GET /api/v1/cards` pubblico e paginato con filtri `type`, `name` e `rarityId`, `GET /api/v1/cards/{id}`, e `GET/PUT /api/v1/admin/cards`, `POST /api/v1/admin/cards/{id}/deactivate` e `/activate` (`admin/controller/AdminCardController`). Le varianti ricevono le modifiche dell'originale. `POST /admin/cards` arriva con API-14.
+- rarità delle carte (task #80): `rarity_id` obbligatorio; Spell e Hidden solo Common o Uncommon, Terreni e Oggetti solo Rare, riconosciute da `sorting_order` 1, 2, 3 e mai dal nome.
+- fazioni delle carte: l'entità `CatalogCard` ha `faction` e `secondaryFaction` e `CardType` ha `ITEM`, come la baseline. `PUT /admin/cards` non riceve ancora le fazioni (#81): una Spell o una Hidden non può diventare Creatura, Terreno o Oggetto (`422`), mentre una carta che diventa Spell o Hidden perde le fazioni.
+
+Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+
+Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.

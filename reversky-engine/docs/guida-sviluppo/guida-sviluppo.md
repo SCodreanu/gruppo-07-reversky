@@ -11,9 +11,9 @@ Ogni passo ha un risultato atteso: se non lo ottieni, fermati e guarda [Problemi
 |---|---|---|
 | 1 | `java -version` | `openjdk version "25…"` e `Temurin` (installazione: [INSTALLAZIONE.md](../../../INSTALLAZIONE.md)) |
 | 2 | `gradlew.bat test` | `BUILD SUCCESSFUL`. La prima volta scarica Gradle e le dipendenze (qualche minuto) |
-| 3 | apri `build\reports\tests\test\index.html` | report dei test: per ora 1 test (`contextLoads`), 100% |
+| 3 | apri `build\reports\tests\test\index.html` | report dei test: nessun fallimento; alcuni test sono *saltati* in attesa degli effetti (vedi [§6](#6-test-di-accettazione-con-gli-esempi)) |
 | 4 | `..\scripts\start-engine.bat` | nel log: `Tomcat started on port 8081` e `Started ReverskyEngineApplication` |
-| 5 | in un altro terminale: `curl -i http://localhost:8081/` | `HTTP/1.1 404`: il server risponde, ma gli endpoint non esistono ancora |
+| 5 | in un altro terminale: `curl -i -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\01-base-esempio-regolamento.json` | `HTTP/1.1 200` e un JSON con `"result":"CHALLENGER_WIN"` |
 | 6 | `Ctrl+C` nel terminale dell'engine | l'engine si ferma |
 
 Quando i 6 passi funzionano sei pronto per la prima issue della [roadmap](../roadmap/roadmap.md).
@@ -30,7 +30,15 @@ Quando i 6 passi funzionano sei pronto per la prima issue della [roadmap](../roa
 La porta è **8081** (`server.port` in `application.properties`). L'API usa la 8080: si possono avviare insieme.
 
 Con Docker l'engine **non** è raggiungibile dal PC (`expose`, non `ports`): solo l'API lo vede. Per provarlo con curl o Swagger
-scommenta le due righe `ports` del servizio `engine` in `compose.yaml` (non committare la modifica).
+scommenta le due righe `ports` del servizio `engine` in `compose.yaml` (non committare la modifica), oppure avvia un container
+usa e getta con la sola immagine dell'engine, senza toccare `compose.yaml` (dalla cartella principale):
+
+```bat
+docker build -t reversky-engine reversky-engine
+docker run --rm --name reversky-engine -p 8081:8081 reversky-engine
+```
+
+`--rm` cancella il container quando lo fermi (`Ctrl+C` o `docker stop reversky-engine`); l'immagine si toglie con `docker rmi reversky-engine`.
 
 Con *devtools* attivo, quando ricompili dall'IDE l'engine si riavvia da solo.
 
@@ -42,9 +50,6 @@ ognuna con il risultato atteso.
 ```bat
 :: Simulare una partita (cmd)
 curl -s -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\08-partita-completa-seed-42.json
-
-:: Effetti implementati (le regole non stanno nell'engine: arrivano nella richiesta)
-curl -s http://localhost:8081/api/v1/effects
 ```
 
 ```powershell
@@ -57,7 +62,8 @@ $r.log | Format-Table round, type, side, message
 
 Con IntelliJ o VS Code (*REST Client*) apri [`examples/simulazioni.http`](../../examples/simulazioni.http) e lancia le richieste con ▶.
 
-Quando c'è springdoc (issue `ENG-15`): Swagger UI su `http://localhost:8081/swagger-ui.html`.
+Swagger UI su `http://localhost:8081/swagger-ui.html` (springdoc, D-41), il documento OpenAPI su `http://localhost:8081/v3/api-docs`.
+In *Try it out* scegli l'esempio `basic` (esempio 01) o `full` (esempio 08, seed 42) e premi *Execute*: la risposta compare sotto, nella tabella *Server response*, dopo il riquadro *Curl*.
 
 ## 4. Lanciare i test
 
@@ -70,7 +76,7 @@ Quando c'è springdoc (issue `ENG-15`): Swagger UI su `http://localhost:8081/swa
 | Rilanciare anche se nulla è cambiato | `gradlew.bat cleanTest test` |
 | Rilanciare a ogni salvataggio | `gradlew.bat test --continuous` |
 | Compilazione + test (prima della PR) | `gradlew.bat build` |
-| Test di bilanciamento (lenti) | `gradlew.bat balanceTest` — dopo `ENG-28`, vedi sotto |
+| Test di bilanciamento (lenti) | `gradlew.bat balanceTest` e `gradlew.bat effectTest`, vedi sotto |
 
 Dall'IDE: clic sulla freccia verde accanto alla classe o al metodo di test. Per il debug: *Debug* invece di *Run*.
 
@@ -97,25 +103,29 @@ class FactionMatrixTest {
 	private static final int WOUND = 1;   // Theory of the Wound
 	private static final int DREAM = 4;   // Theory of the Dream
 
+	// La matrice lavora su liste di fazioni, una o due per carta (docs/fazioni, "Carte con due fazioni")
+	private static final List<Integer> ONLY_WOUND = List.of(WOUND);
+	private static final List<Integer> ONLY_DREAM = List.of(DREAM);
+
 	private final FactionMatrix matrix = new FactionMatrix(List.of(
 			new FactionBonus(WOUND, DREAM, 2, 0)));
 
 	@Test
 	@DisplayName("Una coppia con una riga di bonus restituisce il bonus della riga")
 	void atkBonus_pairWithRow_returnsRowBonus() {
-		assertThat(matrix.atkBonus(WOUND, DREAM)).isEqualTo(2);
+		assertThat(matrix.atkBonus(ONLY_WOUND, ONLY_DREAM)).isEqualTo(2);
 	}
 
 	@Test
 	@DisplayName("La direzione opposta, senza riga, non ha bonus")
 	void atkBonus_reversePairWithoutRow_returnsZero() {
-		assertThat(matrix.atkBonus(DREAM, WOUND)).isZero();
+		assertThat(matrix.atkBonus(ONLY_DREAM, ONLY_WOUND)).isZero();
 	}
 
 	@Test
 	@DisplayName("Una fazione contro se stessa non ha bonus")
 	void atkBonus_sameFaction_returnsZero() {
-		assertThat(matrix.atkBonus(DREAM, DREAM)).isZero();
+		assertThat(matrix.atkBonus(ONLY_DREAM, ONLY_DREAM)).isZero();
 	}
 }
 ```
@@ -129,70 +139,34 @@ Ricetta per ogni regola:
 
 ## 6. Test di accettazione con gli esempi
 
-Quando esiste il controller (`ENG-12`), gli esempi di `examples/` diventano un unico test parametrico: una riga di CSV = un test.
+Gli esempi di `examples/` sono un unico test parametrico, [`SimulationExamplesTest`](../../src/test/java/it/downfall/reversky/engine/web/SimulationExamplesTest.java): una riga di CSV = un test, inviata al controller con MockMvc.
 Se una regola cambia, si aggiorna il CSV, non il codice del test.
 
-```java
-@WebMvcTest(SimulationController.class)
-@Import(EngineConfiguration.class)
-class SimulationExamplesTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-
-	@ParameterizedTest(name = "{0}")
-	@CsvFileSource(files = "examples/expected-results.csv", numLinesToSkip = 1)
-	@DisplayName("Ogni esempio di examples/ dà il risultato calcolato a mano")
-	void example_matchesExpectedResult(String file, int status, String result, String endReason,
-			Integer totalRounds, Integer challengerLifePoints, Integer opponentLifePoints,
-			Integer challengerDefeated, Integer opponentDefeated, String code) throws Exception {
-		String body = Files.readString(Path.of("examples", file));
-
-		ResultActions response = mockMvc.perform(post("/api/v1/simulations")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(body))
-				.andExpect(status().is(status));
-
-		if (status == 200) {
-			response.andExpect(jsonPath("$.result").value(result))
-					.andExpect(jsonPath("$.endReason").value(endReason))
-					.andExpect(jsonPath("$.totalRounds").value(totalRounds))
-					.andExpect(jsonPath("$.challenger.finalLifePoints").value(challengerLifePoints))
-					.andExpect(jsonPath("$.opponent.finalLifePoints").value(opponentLifePoints))
-					.andExpect(jsonPath("$.challenger.creaturesDefeated").value(challengerDefeated))
-					.andExpect(jsonPath("$.opponent.creaturesDefeated").value(opponentDefeated));
-		} else {
-			response.andExpect(jsonPath("$.code").value(code));
-		}
-	}
-}
-```
-
-- Gli `import` li aggiunge l'IDE. In Spring Boot 4 `@WebMvcTest` è nel package `org.springframework.boot.webmvc.test.autoconfigure`.
+- Un metodo legge `examples/expected-results.csv`, un altro `examples/expected-results-effects.csv` (esempi con effetti).
+- Con `200` controlla risultato, motivo di fine, round, punti vita e creature sconfitte; con `400` controlla `code`.
 - Il percorso `examples/...` è relativo alla cartella `reversky-engine`, che è la cartella di lavoro dei test con Gradle e con IntelliJ.
-- Quando `HIDEBEHIND` è implementato, aggiungi un secondo metodo uguale che legge `expected-results-effects.csv`.
+- `@WebMvcTest` non carica i `@Component`: il test importa `EngineConfiguration` e `SimulationMapper`.
+- Da `ENG-23` non si salta più nessun esempio: il 90 dà `UNKNOWN_EFFECT` anche su una creatura e il 09 usa `HIDEBEHIND`.
 
 ### Test di bilanciamento separati
 
-Proposta per `ENG-28` (da confermare con chi gestisce `build.gradle`): i test con `@Tag("balance")` non partono con `test`, ma con un task a parte.
+Dal 20 novembre (`ENG-28`) i test con `@Tag("balance")` non partono con `test` né con `build`, ma con il task `balanceTest` di `build.gradle`:
 
-```groovy
-tasks.named('test') {
-	useJUnitPlatform {
-		excludeTags 'balance'
-	}
-}
-
-tasks.register('balanceTest', Test) {
-	description = 'Simulazioni di bilanciamento (lente, si lanciano a mano)'
-	group = 'verification'
-	testClassesDirs = sourceSets.test.output.classesDirs
-	classpath = sourceSets.test.runtimeClasspath
-	useJUnitPlatform {
-		includeTags 'balance'
-	}
-}
+```bash
+gradlew.bat balanceTest    # alcuni minuti; scrive docs/bilanciamento/report-bilanciamento.md e report-carte.csv
+gradlew.bat balanceTest -PbalanceGrid=forme   # forme del bonus di D-04: report-forme-bonus.md e il suo CSV
+gradlew.bat balanceTest -PbalanceGrid=pv30    # tre bonus a 30 PV (ENG-42): report-30pv.md e il suo CSV
 ```
+
+Il task si rilancia sempre (non è mai "up to date") e mostra l'avanzamento per configurazione. Come sono fatti mazzi, seed, configurazioni e avvisi: [test](../test/test.md#test-di-bilanciamento-eng-28).
+
+Dal 21 novembre (`ENG-42`) anche i test con `@Tag("effects")` sono separati, con il task `effectTest`:
+
+```bash
+gradlew.bat effectTest     # valore di ogni effetto a partite appaiate: report-effetti.md e report-effetti-carte.csv
+```
+
+Come si misura e come si giudica un effetto: [test](../test/test.md#valore-degli-effetti-eng-42-fase-2).
 
 ## 7. Problemi comuni
 
@@ -202,7 +176,7 @@ tasks.register('balanceTest', Test) {
 | `Port 8081 was already in use` | c'è già un engine acceso (un altro terminale o Docker): `docker compose down` o chiudi l'altro terminale |
 | I test passano in IntelliJ ma non con Gradle (o viceversa) | *Settings → Build Tools → Gradle → Run tests using: Gradle* |
 | `NoSuchFileException: examples\…` nel test | la cartella di lavoro non è `reversky-engine`: in IntelliJ, *Run configuration → Working directory* = `$MODULE_WORKING_DIR$` |
-| `400` con `UNKNOWN_EFFECT` su una carta valida | l'effetto non è ancora registrato in `EffectRegistry.withAllEffects()` |
+| `400` con `UNKNOWN_EFFECT` su una carta valida | l'effetto non è ancora registrato in `EffectRegistry.withAllEffects()`, oppure il codice è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Nei test si può usare `TestEffects.stubsFor(...)` |
 | Il test con seed fisso è cambiato dopo una modifica | hai aggiunto una chiamata a `random`: è normale se voluto, vedi [mescolamento](../mescolamento/mescolamento.md) |
 | La partita in un test non finisce mai | manca il controllo del limite di round: esempio `06-stallo-limite-round` |
 

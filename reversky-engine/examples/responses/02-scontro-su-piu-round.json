@@ -1,0 +1,267 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 3,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 28,
+    "creaturesDefeated" : 0
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Archive Puppet",
+      "attack" : 3,
+      "defense" : 10
+    },
+    "message" : "Challenger plays Archive Puppet (ATK 3, DEF 10)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "SCP-999",
+      "attack" : 2,
+      "defense" : 7
+    },
+    "message" : "Opponent plays SCP-999 (ATK 2, DEF 7)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Archive Puppet attacks with 3 (3 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "SCP-999",
+      "baseAttack" : 2,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 2
+    },
+    "message" : "SCP-999 attacks with 2 (2 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "SCP-999",
+      "amount" : 3,
+      "targetDefense" : 4
+    },
+    "message" : "Archive Puppet deals 3 damage to SCP-999 (DEF 4)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "SCP-999",
+      "target" : "Archive Puppet",
+      "amount" : 2,
+      "targetDefense" : 8
+    },
+    "message" : "SCP-999 deals 2 damage to Archive Puppet (DEF 8)"
+  }, {
+    "sequence" : 9,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 10,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Archive Puppet attacks with 3 (3 base)"
+  }, {
+    "sequence" : 11,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "SCP-999",
+      "baseAttack" : 2,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 2
+    },
+    "message" : "SCP-999 attacks with 2 (2 base)"
+  }, {
+    "sequence" : 12,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "SCP-999",
+      "amount" : 3,
+      "targetDefense" : 1
+    },
+    "message" : "Archive Puppet deals 3 damage to SCP-999 (DEF 1)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "SCP-999",
+      "target" : "Archive Puppet",
+      "amount" : 2,
+      "targetDefense" : 6
+    },
+    "message" : "SCP-999 deals 2 damage to Archive Puppet (DEF 6)"
+  }, {
+    "sequence" : 14,
+    "round" : 3,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 3
+    },
+    "message" : "Round 3"
+  }, {
+    "sequence" : 15,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Archive Puppet attacks with 3 (3 base)"
+  }, {
+    "sequence" : 16,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "SCP-999",
+      "baseAttack" : 2,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 2
+    },
+    "message" : "SCP-999 attacks with 2 (2 base)"
+  }, {
+    "sequence" : 17,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "SCP-999",
+      "amount" : 3,
+      "targetDefense" : -2
+    },
+    "message" : "Archive Puppet deals 3 damage to SCP-999 (DEF −2)"
+  }, {
+    "sequence" : 18,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "SCP-999",
+      "target" : "Archive Puppet",
+      "amount" : 2,
+      "targetDefense" : 4
+    },
+    "message" : "SCP-999 deals 2 damage to Archive Puppet (DEF 4)"
+  }, {
+    "sequence" : 19,
+    "round" : 3,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "SCP-999"
+    },
+    "message" : "SCP-999 is destroyed"
+  }, {
+    "sequence" : 20,
+    "round" : 3,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 2,
+      "lifePoints" : 28
+    },
+    "message" : "Opponent loses 2 life points (28 left)"
+  }, {
+    "sequence" : 21,
+    "round" : 3,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Challenger wins (no creatures left)"
+  } ]
+}

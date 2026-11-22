@@ -1,0 +1,375 @@
+package it.downfall.reversky.engine.core.model;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Stato di un giocatore durante la partita: punti vita, mazzo da pescare, creatura in campo, modificatori in attesa
+ * della prossima creatura, zona Hidden (una Hidden attiva, le altre in fila, e gli incroci dell'Operatore della
+ * Stanza 0), Oggetto accanto al mazzo e creature avversarie sconfitte.
+ */
+public final class PlayerState {
+
+	private final Side side;
+	private final int userId;
+	private final Deque<CardDefinition> deck;
+	private int lifePoints;
+	private CreatureInPlay creature;
+	/** Modificatori in attesa (D-34): la posizione 0 è per la prossima creatura, la 1 per quella dopo, e così via. */
+	private final List<List<PendingModifier>> pendingModifiers = new ArrayList<>();
+	/** Zona Hidden (D-15): la Hidden coperta attiva; al massimo una (ENG-41, deciso il 20 novembre). */
+	private final List<SetHidden> hiddenZone = new ArrayList<>();
+	/** Hidden pescate mentre un'altra era attiva (ENG-41): aspettano in fila, nell'ordine di pescata. */
+	private final Deque<CardDefinition> waitingHidden = new ArrayDeque<>();
+	/**
+	 * Incroci in attesa sulla zona Hidden (L'Operatore della Stanza 0, ENG-39): per ognuno, la prossima Hidden che si
+	 * attiva da questa zona lavora per l'avversario. Il nome è quello della carta che l'ha messo, per il log.
+	 */
+	private final Deque<String> crossings = new ArrayDeque<>();
+	/** Oggetti accanto al mazzo non ancora consumati (D-47), nell'ordine in cui sono stati pescati. */
+	private final List<CardDefinition> items = new ArrayList<>();
+	private int creaturesDefeated;
+
+	/**
+	 * Crea lo stato iniziale.
+	 *
+	 * @param side       lato del giocatore
+	 * @param userId     id dell'utente, restituito nel risultato
+	 * @param lifePoints punti vita iniziali
+	 * @param deck       mazzo già mescolato, nell'ordine di pescata
+	 */
+	public PlayerState(Side side, int userId, int lifePoints, List<CardDefinition> deck) {
+		this.side = side;
+		this.userId = userId;
+		this.lifePoints = lifePoints;
+		this.deck = new ArrayDeque<>(deck);
+	}
+
+	/**
+	 * Lato del giocatore.
+	 *
+	 * @return il lato
+	 */
+	public Side side() {
+		return side;
+	}
+
+	/**
+	 * Id dell'utente.
+	 *
+	 * @return l'id ricevuto nella richiesta
+	 */
+	public int userId() {
+		return userId;
+	}
+
+	/**
+	 * Punti vita attuali.
+	 *
+	 * @return i punti vita; possono essere negativi (D-43)
+	 */
+	public int lifePoints() {
+		return lifePoints;
+	}
+
+	/**
+	 * Perde punti vita.
+	 *
+	 * @param amount punti persi, almeno 0
+	 * @throws IllegalArgumentException se {@code amount} è negativo
+	 */
+	public void loseLifePoints(int amount) {
+		if (amount < 0) {
+			throw new IllegalArgumentException("Punti vita persi negativi: " + amount);
+		}
+		lifePoints -= amount;
+	}
+
+	/**
+	 * Carte ancora da pescare, nell'ordine di pescata.
+	 *
+	 * @return copia non modificabile
+	 */
+	public List<CardDefinition> deck() {
+		return List.copyOf(deck);
+	}
+
+	/**
+	 * Pesca la prima carta del mazzo.
+	 *
+	 * @return la carta, o vuoto se il mazzo è finito
+	 */
+	public Optional<CardDefinition> drawCard() {
+		return Optional.ofNullable(deck.pollFirst());
+	}
+
+	/**
+	 * Guarda la prima carta del mazzo senza pescarla (Spell {@code BURN}, D-13).
+	 *
+	 * @return la carta, o vuoto se il mazzo è finito
+	 */
+	public Optional<CardDefinition> peekCard() {
+		return Optional.ofNullable(deck.peekFirst());
+	}
+
+	/**
+	 * Manda una carta in fondo al mazzo (La Regina dei Sentieri Perduti, ENG-39): le altre restano nel loro ordine.
+	 *
+	 * @param index posizione della carta nel mazzo, da 0 (la prossima da pescare)
+	 * @return la nuova posizione della carta, da 1: il numero di carte del mazzo
+	 * @throws IndexOutOfBoundsException se nel mazzo non c'è quella posizione
+	 */
+	public int moveToBottom(int index) {
+		List<CardDefinition> cards = new ArrayList<>(deck);
+		CardDefinition card = cards.remove(index);
+		cards.add(card);
+		deck.clear();
+		deck.addAll(cards);
+		return cards.size();
+	}
+
+	/**
+	 * Indica se nel mazzo resta almeno una creatura.
+	 *
+	 * @return {@code true} se si può ancora pescare una creatura
+	 */
+	public boolean hasCreatureInDeck() {
+		return deck.stream().anyMatch(card -> card.type() == CardType.CREATURE);
+	}
+
+	/**
+	 * Indica se il giocatore ha ancora creature da schierare: in campo o nel mazzo (docs/regole-base, condizioni 3
+	 * e 4 di fine partita).
+	 *
+	 * @return {@code true} se ha una creatura in campo o nel mazzo
+	 */
+	public boolean hasCreatures() {
+		return hasCreature() || hasCreatureInDeck();
+	}
+
+	/**
+	 * Creatura in campo.
+	 *
+	 * @return la creatura, o vuoto se il campo è libero
+	 */
+	public Optional<CreatureInPlay> creature() {
+		return Optional.ofNullable(creature);
+	}
+
+	/**
+	 * Indica se il giocatore ha una creatura in campo.
+	 *
+	 * @return {@code true} se il campo è occupato
+	 */
+	public boolean hasCreature() {
+		return creature != null;
+	}
+
+	/**
+	 * Mette una creatura in campo.
+	 *
+	 * @param newCreature creatura di questo giocatore
+	 * @throws IllegalStateException se c'è già una creatura in campo o la creatura è dell'altro giocatore
+	 */
+	public void placeCreature(CreatureInPlay newCreature) {
+		if (creature != null) {
+			throw new IllegalStateException(side + " ha già una creatura in campo: " + creature.name());
+		}
+		if (newCreature.side() != side) {
+			throw new IllegalStateException("La creatura " + newCreature.name() + " è di " + newCreature.side());
+		}
+		creature = newCreature;
+	}
+
+	/**
+	 * Toglie la creatura dal campo (è morta).
+	 *
+	 * @throws IllegalStateException se il campo è già libero
+	 */
+	public void removeCreature() {
+		if (creature == null) {
+			throw new IllegalStateException(side + " non ha una creatura in campo");
+		}
+		creature = null;
+	}
+
+	/**
+	 * Aggiunge un modificatore in attesa per la prossima creatura che entra in campo. Si somma a quelli già in attesa
+	 * (D-34).
+	 *
+	 * @param modifier modificatore in attesa
+	 */
+	public void addPendingModifier(PendingModifier modifier) {
+		addPendingModifier(0, modifier);
+	}
+
+	/**
+	 * Aggiunge un modificatore in attesa per una delle prossime creature (es. SCP-458: la prossima e quella dopo).
+	 *
+	 * @param position 0 per la prossima creatura, 1 per quella dopo, e così via
+	 * @param modifier modificatore in attesa
+	 * @throws IllegalArgumentException se {@code position} è negativa
+	 */
+	public void addPendingModifier(int position, PendingModifier modifier) {
+		if (position < 0) {
+			throw new IllegalArgumentException("Posizione negativa: " + position);
+		}
+		while (pendingModifiers.size() <= position) {
+			pendingModifiers.add(new ArrayList<>());
+		}
+		pendingModifiers.get(position).add(modifier);
+	}
+
+	/**
+	 * Modificatori in attesa della prossima creatura, nell'ordine in cui sono arrivati.
+	 *
+	 * @return copia non modificabile; vuota se non ce ne sono
+	 */
+	public List<PendingModifier> pendingModifiers() {
+		return pendingModifiers.isEmpty() ? List.of() : List.copyOf(pendingModifiers.getFirst());
+	}
+
+	/**
+	 * Toglie i modificatori in attesa della prossima creatura, che sta per riceverli: quelli per la creatura dopo
+	 * diventano quelli della prossima.
+	 *
+	 * @return i modificatori, nell'ordine in cui sono arrivati; vuota se non ce ne sono
+	 */
+	public List<PendingModifier> takePendingModifiers() {
+		return pendingModifiers.isEmpty() ? List.of() : List.copyOf(pendingModifiers.removeFirst());
+	}
+
+	/**
+	 * Mette una Hidden coperta (D-15). Un giocatore ha una sola Hidden attiva alla volta (ENG-41, regola dei DSG del
+	 * 20 novembre): se ce n'è già una, la nuova aspetta in fila e il suo scontro di partenza non conta, perché si
+	 * ricalcola quando diventa attiva.
+	 *
+	 * @param hidden la Hidden e lo scontro da cui può attivarsi
+	 * @return {@code true} se è diventata la Hidden attiva, {@code false} se aspetta in fila
+	 */
+	public boolean setHidden(SetHidden hidden) {
+		if (hiddenZone.isEmpty()) {
+			hiddenZone.add(hidden);
+			return true;
+		}
+		waitingHidden.addLast(hidden.card());
+		return false;
+	}
+
+	/**
+	 * Hidden attiva: è l'unica che può attivarsi e di cui si controlla la condizione (ENG-41).
+	 *
+	 * @return copia non modificabile, vuota o con una sola Hidden
+	 */
+	public List<SetHidden> hiddenZone() {
+		return List.copyOf(hiddenZone);
+	}
+
+	/**
+	 * Hidden in fila dietro quella attiva (ENG-41): non si attivano e non controllano la condizione.
+	 *
+	 * @return copia non modificabile, nell'ordine di pescata; vuota se non ce ne sono
+	 */
+	public List<CardDefinition> waitingHidden() {
+		return List.copyOf(waitingHidden);
+	}
+
+	/**
+	 * Scarta la Hidden attiva, che si è attivata o è stata annullata (D-15). La prima Hidden in fila diventa attiva e
+	 * può attivarsi dal prossimo scontro, come una Hidden appena pescata: due Hidden dello stesso giocatore non si
+	 * attivano mai nello stesso scontro (ENG-41).
+	 *
+	 * @param hidden     la Hidden da togliere
+	 * @param nextCombat numero del prossimo scontro, da cui può attivarsi la Hidden che era in fila
+	 * @throws IllegalStateException se non è la Hidden attiva
+	 */
+	public void discardHidden(SetHidden hidden, int nextCombat) {
+		if (!hiddenZone.remove(hidden)) {
+			throw new IllegalStateException(side + " non ha la Hidden " + hidden.card().name());
+		}
+		if (!waitingHidden.isEmpty()) {
+			hiddenZone.add(new SetHidden(waitingHidden.removeFirst(), nextCombat));
+		}
+	}
+
+	/**
+	 * Incrocia la prossima Hidden di questa zona (L'Operatore della Stanza 0, ENG-39, deciso il 19 novembre): la
+	 * prossima che si attiva, in qualunque momento e di qualunque tipo, lavora per l'avversario. Gli incroci si
+	 * sommano: due Operatori incrociano le prossime due.
+	 *
+	 * @param source nome della carta che incrocia, per il log
+	 */
+	public void crossNextHidden(String source) {
+		crossings.addLast(source);
+	}
+
+	/**
+	 * Incroci in attesa sulla zona Hidden, nell'ordine in cui sono arrivati.
+	 *
+	 * @return copia non modificabile, con i nomi delle carte che li hanno messi
+	 */
+	public List<String> pendingCrossings() {
+		return List.copyOf(crossings);
+	}
+
+	/**
+	 * Usa il primo incrocio in attesa: la Hidden che si sta attivando lavora per l'avversario.
+	 *
+	 * @return il nome della carta che l'ha messo, o vuoto se non ce ne sono
+	 */
+	public Optional<String> takeCrossing() {
+		return Optional.ofNullable(crossings.pollFirst());
+	}
+
+	/**
+	 * Oggetti accanto al mazzo, in attesa di scattare (D-47). Un mazzo ne ha uno (lo controlla l'API), ma l'engine non
+	 * ne perde nessuno se ne arrivano di più.
+	 *
+	 * @return copia non modificabile, nell'ordine di pescata; vuota se non ce ne sono o si sono consumati
+	 */
+	public List<CardDefinition> items() {
+		return List.copyOf(items);
+	}
+
+	/**
+	 * Mette un Oggetto accanto al mazzo. Non si può distruggere né scartare: esce solo quando si consuma (D-47).
+	 *
+	 * @param newItem carta di tipo {@code ITEM}
+	 * @throws IllegalArgumentException se la carta non è un Oggetto
+	 */
+	public void placeItem(CardDefinition newItem) {
+		if (newItem.type() != CardType.ITEM) {
+			throw new IllegalArgumentException("Non è un Oggetto: carta " + newItem.cardId());
+		}
+		items.add(newItem);
+	}
+
+	/**
+	 * Un Oggetto ha applicato il suo effetto e si consuma (D-47).
+	 *
+	 * @param item l'Oggetto
+	 * @throws IllegalStateException se l'Oggetto non è accanto al mazzo
+	 */
+	public void consumeItem(CardDefinition item) {
+		if (!items.remove(item)) {
+			throw new IllegalStateException(side + " non ha l'Oggetto " + item.name());
+		}
+	}
+
+	/**
+	 * Creature avversarie morte mentre affrontavano questo giocatore (D-42).
+	 *
+	 * @return il conteggio
+	 */
+	public int creaturesDefeated() {
+		return creaturesDefeated;
+	}
+
+	/** Conta una creatura avversaria morta mentre affrontava questo giocatore, per qualunque causa (D-42). */
+	public void recordDefeatedCreature() {
+		creaturesDefeated++;
+	}
+}

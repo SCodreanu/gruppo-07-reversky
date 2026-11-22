@@ -1,0 +1,141 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "LIFE_POINTS_ZERO",
+  "totalRounds" : 1,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 1
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : -5,
+    "creaturesDefeated" : 0
+  },
+  "seed" : 1,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Archive Puppet",
+      "attack" : 40,
+      "defense" : 50
+    },
+    "message" : "Challenger plays Archive Puppet (ATK 40, DEF 50)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Eternal Cup",
+      "attack" : 1,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Eternal Cup (ATK 1, DEF 5)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Archive Puppet",
+      "baseAttack" : 40,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 40
+    },
+    "message" : "Archive Puppet attacks with 40 (40 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Eternal Cup",
+      "baseAttack" : 1,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 1
+    },
+    "message" : "Eternal Cup attacks with 1 (1 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Archive Puppet",
+      "target" : "Eternal Cup",
+      "amount" : 40,
+      "targetDefense" : -35
+    },
+    "message" : "Archive Puppet deals 40 damage to Eternal Cup (DEF −35)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Eternal Cup",
+      "target" : "Archive Puppet",
+      "amount" : 1,
+      "targetDefense" : 49
+    },
+    "message" : "Eternal Cup deals 1 damage to Archive Puppet (DEF 49)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Eternal Cup"
+    },
+    "message" : "Eternal Cup is destroyed"
+  }, {
+    "sequence" : 10,
+    "round" : 1,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 35,
+      "lifePoints" : -5
+    },
+    "message" : "Opponent loses 35 life points (−5 left)"
+  }, {
+    "sequence" : 11,
+    "round" : 1,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "LIFE_POINTS_ZERO"
+    },
+    "message" : "Challenger wins (life points zero)"
+  } ]
+}

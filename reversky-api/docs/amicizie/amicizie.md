@@ -14,11 +14,10 @@ Tabella: `friendships`, chiave primaria `(requester_id, recipient_id)`.
 |---|---|
 | `PENDING` | richiesta inviata, in attesa |
 | `ACCEPTED` | sono amici |
-| `REJECTED` | richiesta rifiutata |
 
 ```
 PENDING ──accept (destinatario)──▶ ACCEPTED ──rimozione──▶ riga eliminata
-   └────reject (destinatario)──▶ REJECTED
+   └────reject (destinatario)──▶ riga eliminata
 ```
 
 ## Regole
@@ -26,10 +25,11 @@ PENDING ──accept (destinatario)──▶ ACCEPTED ──rimozione──▶ r
 1. Niente amicizia con se stessi (`chk_friendships_no_self_friendship`).
 2. **Richiesta inversa:** se B manda una richiesta ad A mentre esiste già A → B `PENDING`, non si crea una seconda riga: la richiesta di A viene **accettata**.
 3. Se esiste già un'amicizia `ACCEPTED` in una delle due direzioni → `409`.
-4. Dopo un `REJECTED`, il richiedente può riprovare: la riga esistente torna `PENDING` (la chiave primaria impedisce una seconda riga).
-5. Per sapere se A e B sono amici si controllano **entrambe** le direzioni.
-6. Rimuovere un amico elimina la riga e anche gli inviti di sfida `PENDING` tra i due, in entrambe le direzioni.
-7. L'amicizia si controlla sia quando si crea un invito di sfida sia quando lo si accetta.
+4. Rifiutare elimina la riga: si può riprovare con una nuova richiesta, in entrambe le direzioni.
+5. **Una riga per coppia.** Tra due utenti esiste al massimo una riga, in qualunque direzione (`uq_friendships_pair`). Se due richieste opposte partono nello stesso momento, la seconda riceve `409`: ripetendola si applica la regola 2.
+6. Per sapere se A e B sono amici si controllano **entrambe** le direzioni.
+7. Rimuovere un amico elimina la riga e anche gli inviti di sfida `PENDING` tra i due, in entrambe le direzioni.
+8. L'amicizia si controlla sia quando si crea un invito di sfida sia quando lo si accetta.
 
 ```java
 /** Cerca la relazione tra due utenti, in qualunque direzione sia stata creata. */
@@ -57,6 +57,7 @@ Optional<Friendship> findBetween(Integer a, Integer b);
 
 - Richiesta inversa con una già `PENDING` → diventa `ACCEPTED`, una sola riga.
 - Richiesta a se stessi → `400`.
-- Richiesta dopo `REJECTED` → torna `PENDING`.
+- Rifiuto → riga eliminata; una nuova richiesta, in entrambe le direzioni, crea una riga `PENDING`.
+- Due richieste opposte contemporanee → una sola riga, la seconda riceve `409`.
 - Solo il destinatario può accettare o rifiutare.
 - Rimozione di un amico con un invito di sfida `PENDING` → invito eliminato.

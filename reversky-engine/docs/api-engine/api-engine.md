@@ -7,6 +7,8 @@ Base URL in sviluppo: `http://localhost:8081`
 
 Richieste pronte per ogni caso, con il risultato atteso: [`examples/`](../../examples/README.md). Come lanciarle: [guida allo sviluppo](../guida-sviluppo/guida-sviluppo.md#3-chiamare-lengine).
 
+Il contratto è controllato da un test da entrambe le parti (`ENG-24`): le risposte di tutti gli esempi sono fotografate in [`examples/responses/`](../../examples/responses), e l'API le legge con il suo `EngineClient`. Cambiare un campo, un codice d'errore o un evento del log fa fallire `SimulationContractTest` qui; va aggiornata la fotografia e riprovata l'API ([docs/test](../test/test.md#test-di-contratto-con-lapi-eng-24)).
+
 ## `POST /api/v1/simulations`
 
 Simula una partita completa.
@@ -16,7 +18,7 @@ Simula una partita completa.
 ```json
 {
   "seed": 8812734650912,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factions": [
     { "id": 1, "name": "Theory of the Wound" },
     { "id": 2, "name": "Theory of the Invitation" },
@@ -72,15 +74,20 @@ Simula una partita completa.
 | `rules.startingLifePoints` | sì | ≥ 1 |
 | `rules.maxRounds` | sì | ≥ 1, limite di round **totali** della partita |
 | `factions` | sì | dalla tabella `factions` |
-| `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonus` |
+| `factionBonuses` | sì (anche vuota) | dalla tabella `faction_bonuses` |
 | `challenger`, `opponent` | sì | sfidante e avversario |
+| `userId` | sì | id dell'utente nell'API, restituito uguale nel risultato |
 | `deck` | sì | una voce **per ogni copia**, almeno una creatura |
-| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN` (enum `CardType`) |
-| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità |
+| `cardId` | sì | id della carta nel catalogo |
+| `name` | sì | nome della carta, in inglese: è quello che compare nel log |
+| `rarity` | sì | nome della rarità (`rarities.name`) |
+| `type` | sì | `CREATURE`, `SPELL`, `HIDDEN`, `TERRAIN`, `ITEM` (enum `CardType`); un valore che non esiste rende il JSON non valido |
+| `factionId` | Creature, Terreni e Oggetti | fazione della carta; `null` per Spell e Hidden, che sono condivise |
+| `rarityOrder` | sì | `rarities.sorting_order`, serve agli effetti che confrontano le rarità; l'engine si aspetta Common 1, Uncommon 2, Rare 3, Mythic 4, Legendary 5, Mutant 6 (Bigfoot e SCP-3000 usano Rare = 3) |
 | `secondaryFactionId` | no | seconda fazione della carta (`catalog_cards.secondary_faction_id`), diversa da `factionId`; `null` se ne ha una sola. Vedi [fazioni](../fazioni/fazioni.md#carte-con-due-fazioni) |
 | `atk`, `def` | solo creature | come nel catalogo (nulli per le altre carte) |
-| `subtype` | Spell e Hidden | ricavato dai tag: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL` |
-| `effectCode` | no | ricavato dal tag `EFFECT_<CODICE>` (senza il prefisso) |
+| `subtype` | Spell e Hidden | `catalog_cards.subtype`: `DAMAGE`, `SHIELD`, `BURN`, `SURVIVAL`; un valore che non esiste rende il JSON non valido |
+| `effectCode` | Spell, Hidden, Terreni e Oggetti | `catalog_cards.effect_code`; facoltativo per le creature |
 
 ### Risposta `200 OK`
 
@@ -104,9 +111,9 @@ Simula una partita completa.
 |---|---|
 | `result` | `CHALLENGER_WIN`, `OPPONENT_WIN`, `DRAW` (uguali all'enum `BattleResult` del database) |
 | `endReason` | `LIFE_POINTS_ZERO`, `BOTH_LIFE_POINTS_ZERO`, `NO_CREATURES_LEFT`, `BOTH_DECKS_EMPTY`, `ROUND_LIMIT` |
-| `totalRounds` | round risolti; la preparazione (round 0) non conta **[DA CONFERMARE] D-42** |
-| `finalLifePoints` | minimo 0, anche se l'ultimo danno porta sotto zero **[DA CONFERMARE] D-43** |
-| `creaturesDefeated` | creature **avversarie** distrutte da quel giocatore; in una morte simultanea contano per entrambi **[DA CONFERMARE] D-42** |
+| `totalRounds` | round risolti; la preparazione (round 0) non conta (D-42) |
+| `finalLifePoints` | valore vero, **può essere negativo** se l'ultimo danno porta sotto zero (D-43) |
+| `creaturesDefeated` | creature **avversarie** morte mentre affrontavano quel giocatore, per qualunque causa (attacco, effetto, Spell, Hidden); in una morte simultanea contano per entrambi (D-42) |
 | `log` | vedi [log-partita](../log-partita/log-partita.md) |
 
 L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
@@ -115,43 +122,60 @@ L'API salva `log` in `battles.rounds_log` e il resto in `battles.battle_stats`.
 
 | Status | Quando |
 |---|---|
-| `400` | JSON non valido, campo mancante, mazzo senza creature, statistiche negative, fazione sconosciuta, bonus di fazione non valido, `effectCode` sconosciuto |
+| `400` | JSON non valido, campo mancante, mazzo senza creature, statistiche negative, fazione sconosciuta, bonus di fazione non valido, `effectCode` mancante o sconosciuto |
 | `500` | bug nel motore (non dovrebbe mai succedere: va segnalato con il seed per riprodurlo) |
 
 Formato: `ProblemDetail`, come nell'API.
 
-I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore:
+I controlli si fanno in quest'ordine e si restituisce **il primo** che fallisce, così lo stesso input dà sempre lo stesso errore.
+Dentro un controllo si guardano prima le carte dello sfidante e poi quelle dell'avversario, nell'ordine del mazzo ricevuto:
 
 | Ordine | `code` | Quando | Esempio |
 |---|---|---|---|
-| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`) | `95` |
+| 1 | `VALIDATION_FAILED` | JSON non valido, campo obbligatorio mancante, `rules` mancante, con `rulesVersion` vuota o con valori < 1, mazzo vuoto (Bean Validation nello strato `web`); stesso `id` ripetuto in `factions` | `95` |
 | 2 | `UNKNOWN_FACTION` | un `factionId` o `secondaryFactionId` di una carta, o una fazione di un bonus, non è tra le `factions` | `92` |
-| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa o `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) | `93` |
-| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId` | `94` |
+| 3 | `INVALID_FACTION_BONUS` | fazione contro se stessa, `defBonus` negativo (`atkBonus` negativo è ammesso: è il malus) o due righe per la stessa coppia (`originFactionId`, `targetFactionId`) | `93` |
+| 4 | `INVALID_CARD_FACTIONS` | `secondaryFactionId` uguale a `factionId`; Creatura, Terreno od Oggetto senza `factionId`; Terreno od Oggetto con `secondaryFactionId` (solo le creature hanno due fazioni); Spell o Hidden con una fazione | `94` |
 | 5 | `NO_CREATURES_IN_DECK` | un mazzo senza creature | `91` |
-| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 | — |
-| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype` | — |
-| 8 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry` | `90` |
+| 6 | `INVALID_STATS` | creatura senza `atk`/`def`, con ATK < 0 o DEF ≤ 0 (`atk` e `def` sulle altre carte si ignorano) | — |
+| 7 | `MISSING_SUBTYPE` | Spell o Hidden senza `subtype`, o con un `subtype` che non esiste per il tipo (Spell: `DAMAGE`, `SHIELD`, `BURN`; Hidden: `SURVIVAL`, `DAMAGE`) | — |
+| 8 | `MISSING_EFFECT` | Spell, Hidden, Terreno od Oggetto senza `effectCode` o con `effectCode` vuoto | — |
+| 9 | `UNKNOWN_EFFECT` | `effectCode` che non esiste nell'`EffectRegistry`, o che è di un altro tipo di carta (es. il codice di un Terreno su una Spell). Una creatura può non avere `effectCode` (le Common); se ce l'ha, vale la stessa regola (da `ENG-23`) | `90` |
+
+Il formato è quello dell'API (`GlobalExceptionHandler`): `title`, `status`, `detail`, `code` e `instance`. I testi sono **in inglese**, come negli errori dell'API; non arrivano mai ai giocatori.
 
 ```json
 {
-  "title": "Input di simulazione non valido",
+  "title": "Invalid simulation input",
   "status": 400,
-  "detail": "Effetto sconosciuto: 'HIDEBEHND' sulla carta 23",
-  "code": "UNKNOWN_EFFECT"
+  "detail": "Unknown effect VEIL_OF_ANCHORD on card 96",
+  "code": "UNKNOWN_EFFECT",
+  "instance": "/api/v1/simulations"
 }
 ```
 
-## `GET /api/v1/effects`
-
-Elenco dei codici effetto implementati. Il backoffice dell'API lo usa per validare i tag `EFFECT_*` delle carte.
+Gli errori della Bean Validation (controllo 1) hanno anche l'elenco `errors` dei campi non validi, con il percorso del campo e il messaggio del vincolo:
 
 ```json
-[
-  { "code": "HIDEBEHIND", "appliesTo": "CREATURE" },
-  { "code": "VEIL_OF_ANCHORED", "appliesTo": "SPELL" }
-]
+{
+  "title": "Invalid simulation input",
+  "status": 400,
+  "detail": "One or more fields are invalid",
+  "code": "VALIDATION_FAILED",
+  "instance": "/api/v1/simulations",
+  "errors": [ { "field": "challenger.deck[0].name", "message": "Card name is required" } ]
+}
 ```
+
+Un JSON malformato, o con un `type`/`subtype` che non esiste, ha `detail` "Malformed JSON or a value of the wrong type" e nessun `errors`.
+
+Un bug del motore restituisce `500` con `title` "Internal error", `code` `INTERNAL_ERROR` e un `detail` generico: la causa e il **seed** della partita vanno solo nel log tecnico dell'engine (`Simulazione fallita: seed ...`), da cui la partita si riproduce.
+
+## Elenco degli effetti: niente `GET /api/v1/effects`
+
+L'engine espone solo `POST /api/v1/simulations` (deciso il 22 novembre, `API-36`; l'endpoint `GET /api/v1/effects` di `ENG-14` è stato tolto con `ENG-43`).
+L'elenco dei codici effetto validi, con il tipo di carta che può portarli, sta nella tabella `effects` dell'API (migrazione `V13__create_effects.sql`, `API-36`): `catalog_cards` la richiama con una chiave esterna e il backoffice la legge con `GET /api/v1/admin/effects` dell'API.
+La tabella va **tenuta allineata a mano** con `EffectRegistry.withAllEffects()`: chi aggiunge, toglie o rinomina un effetto nell'engine aggiunge una migrazione nell'API. Se i due elenchi non coincidono, una carta con un codice che l'engine non conosce, o registrato per un altro tipo di carta, dà `400 UNKNOWN_EFFECT` in `POST /api/v1/simulations`.
 
 ## Regole della partita: niente `GET /api/v1/rules`
 
@@ -160,5 +184,7 @@ arriva nella richiesta. Per mostrare le regole nel portale si usa l'API (`GET /a
 
 ## Note
 
-- Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. In produzione si aggiunge una chiave condivisa nell'header **[DA CONFERMARE]**.
-- Ogni endpoint va documentato anche in Swagger (springdoc), come nell'API.
+- Il log della partita è in [log-partita](../log-partita/log-partita.md). **18 novembre (`ENG-26`):** `ATTACK_COMPUTED` ha un campo `data` in più, `frozen` (booleano, sempre presente), vero quando l'attacco è congelato (Yuki-onna) e `total` è 0; con `ENG-25` era arrivato `effectBonus`. L'`EngineClient` dell'API salva il log così com'è, ma chi lo legge deve conoscere i campi nuovi.
+
+- Nessuna autenticazione in sviluppo: l'engine non deve essere esposto su internet, solo l'API può raggiungerlo. Se l'engine viene esposto fuori dalla rete privata si aggiunge una chiave condivisa nell'header `X-Engine-Key`, letta da una variabile d'ambiente (D-40).
+- Ogni endpoint è documentato anche in Swagger (springdoc 3.2.0, come nell'API, D-41): `http://localhost:8081/swagger-ui.html`. Un nuovo endpoint ha `@Operation` e un `@ApiResponse` per ogni status, con il media type e lo schema (`ProblemDetail` e `application/problem+json` per gli errori), e `OpenApiDocumentationTest` controlla che compaia. Gli esempi di richiesta di Swagger (`OpenApiExamples`) sono gli esempi 01 e 08 di `examples/`: il test controlla che restino uguali ai file e che diano la partita attesa.

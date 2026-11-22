@@ -1,6 +1,5 @@
-# Database per lo sviluppo locale con ./gradlew bootRun.
-# Spring Boot (spring-boot-docker-compose) lo avvia da solo e si collega in automatico.
-# Per avviare tutto il backend (database + engine + API) usa il compose.yaml nella root del progetto.
+# Database e server email per lo sviluppo locale con ./gradlew bootRun.
+# Spring Boot (spring-boot-docker-compose) li avvia da solo; al database si collega in automatico.
 services:
   postgres:
     image: 'postgres:18'
@@ -10,3 +9,11 @@ services:
       - 'POSTGRES_PASSWORD=reversky'
     ports:
       - '5432'
+
+  # Finto server SMTP: cattura le email inviate dall'API senza spedirle davvero.
+  # Le email si leggono su http://localhost:8025
+  mailpit:
+    image: 'axllent/mailpit:latest'
+    ports:
+      - '1025:1025'          # SMTP: qui l'API invia le email (spring.mail.port)
+      - '8025:8025'          # interfaccia web per leggerle

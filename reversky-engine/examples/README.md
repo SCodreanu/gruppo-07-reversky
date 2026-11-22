@@ -7,7 +7,7 @@ Servono a tre cose:
 2. fare da **test di accettazione** automatici (`SimulationExamplesTest`, vedi [docs/test](../docs/test/test.md));
 3. capire le regole con numeri concreti prima di scrivere il codice.
 
-> **Dati di prova (mock).** Il catalogo delle carte è ancora da definire: nomi, `id` e statistiche qui sono inventati per i test.
+> **Dati di prova (mock).** I nomi vengono dal catalogo di 120 carte (alcuni nella traduzione inglese di lavoro), ma `id` e statistiche sono inventati per i test, e le creature che nel catalogo hanno un effetto qui ne sono prive, tranne Hidebehind nell'esempio 09. Spell, Hidden, Terreno e Oggetto dell'esempio 13 hanno l'effetto vero del catalogo.
 > Alcuni valori (es. DEF 1000 nell'esempio 07) sono fuori dai limiti di rarità apposta: l'engine non valida i limiti, lo fa l'API.
 > Come nel gioco, i nomi sono in inglese.
 
@@ -22,7 +22,7 @@ Fazioni usate in tutti gli esempi (vedi [fazioni](../docs/fazioni/fazioni.md)):
 
 Bonus di fazione (tranne l'esempio 05): **+2 ATK** contro la fazione che si batte, **−1 ATK** contro quella che ti batte.
 Wound batte Dream, Invitation batte Archive, Archive batte Wound, Dream batte Invitation; Wound–Invitation e Archive–Dream sono neutre.
-Regole: il blocco `rules` di ogni richiesta, uguale in tutti gli esempi (rule set `1.0`: 30 punti vita, limite 100 round).
+Regole: il blocco `rules` di ogni richiesta, uguale in tutti gli esempi (rule set `1.0`: 30 punti vita, limite 75 round).
 Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'engine non ha valori predefiniti.
 
 ## Elenco
@@ -34,13 +34,14 @@ Nel gioco vero l'API lo legge dal rule set attivo nel database (backoffice): l'e
 | `03-morte-simultanea` | muoiono entrambe → nessun danno; mazzi finiti | `DRAW`, `BOTH_DECKS_EMPTY`, 2 round, PV 30–30 |
 | `04-bonus-fazione-attacco` | +2 e −1 ATK tra Wound e Dream; DEF finale esattamente 0 → nessun danno | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–30 |
 | `05-bonus-fazione-difesa` | `defBonus` applicato **una volta** a inizio scontro | `DRAW`, `BOTH_DECKS_EMPTY`, 3 round, PV 30–30 |
-| `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 100 round, PV 30–30 |
-| `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 100 round, PV 30–29 |
+| `06-stallo-limite-round` | due creature con ATK 0 → niente loop infinito | `DRAW`, `ROUND_LIMIT`, 75 round, PV 30–30 |
+| `07-limite-round-con-vincitore` | al limite di round vince chi ha più PV | `CHALLENGER_WIN`, `ROUND_LIMIT`, 75 round, PV 30–29 |
 | `08-partita-completa-seed-42` | partita vera da 10 carte: mescolamento con seed, bonus e malus, morti simultanee | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 14 round, PV 30–27 |
-| `09-effetto-hidebehind` | primo effetto (da usare quando `HIDEBEHIND` è implementato) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 29–30 |
-| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–0 |
+| `09-effetto-hidebehind` | primo effetto di creatura (`HIDEBEHIND`) | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `10-punti-vita-a-zero` | PV ≤ 0 finisce subito, e ha la precedenza su `NO_CREATURES_LEFT` | `CHALLENGER_WIN`, `LIFE_POINTS_ZERO`, 1 round, PV 30–(−5) |
 | `11-doppia-fazione-vantaggio` | carta con due fazioni: prende il bonus della seconda fazione | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 1 round, PV 30–28 |
 | `12-doppia-fazione-svantaggio` | carta con due fazioni: subisce anche lo svantaggio della seconda fazione | `OPPONENT_WIN`, `NO_CREATURES_LEFT`, 2 round, PV 24–30 |
+| `13-carte-speciali` | Spell `SHIELD` in attesa, Terreno, Oggetto (Badge), Spell `DAMAGE` alla pescata, Hidden `DAMAGE` nel secondo scontro | `CHALLENGER_WIN`, `NO_CREATURES_LEFT`, 3 round, PV 30–27 |
 | `90-errore-effetto-sconosciuto` | `effectCode` scritto male (`HIDEBEHND`) | `400`, `UNKNOWN_EFFECT` |
 | `91-errore-mazzo-senza-creature` | mazzo con sola Spell | `400`, `NO_CREATURES_IN_DECK` |
 | `92-errore-fazione-sconosciuta` | `factionId` 9 non è tra le fazioni | `400`, `UNKNOWN_FACTION` |
@@ -52,6 +53,8 @@ Tutti i valori sono anche in [`expected-results.csv`](expected-results.csv) (tut
 [`expected-results-effects.csv`](expected-results-effects.csv) (esempi con effetti): sono i file letti dal test automatico.
 
 `creaturesDefeated` = creature **avversarie** distrutte da quel giocatore (in una morte simultanea contano per entrambi).
+
+La risposta completa di ogni richiesta, log compreso, è in [`responses/`](responses) con lo stesso nome di file: è il contratto con l'API (`ENG-24`, vedi [docs/test](../docs/test/test.md#test-di-contratto-con-lapi-eng-24)). Le fotografie non si scrivono a mano: le genera `SimulationContractTest`.
 
 ## Come sono stati calcolati
 
@@ -74,10 +77,10 @@ SCP-1762 (Archive 3/4) parte con DEF 4 + 3 = 7 contro Squonk (Invitation 3/9).
 DEF dopo ogni round: 4/6 → 1/3 → −2/0 → muoiono entrambe al round 3.
 *Controprove:* senza bonus vince l'avversario in 2 round; se il bonus DEF venisse applicato a ogni round SCP-1762 non morirebbe mai.
 
-**06** — Kasa-obake (0/5) contro Zashiki-warashi (0/5), entrambe Dream: nessun danno, si arriva al round 100 a pari PV.
+**06** — Kasa-obake (0/5) contro Zashiki-warashi (0/5), entrambe Dream: nessun danno, si arriva al round 75 a pari PV.
 
 **07** — Shadowless Dog (3/1000) contro 2× Limping Scarecrow (0/200), tutte Invitation.
-Il primo Scarecrow muore al round 67 (200 − 201 = −1 → l'avversario perde 1 PV); il secondo al round 100 ha ancora 101 DEF.
+Il primo Scarecrow muore al round 67 (200 − 201 = −1 → l'avversario perde 1 PV); il secondo entra al round 68 e al round 75 ha ancora 176 DEF.
 Limite raggiunto: 30 contro 29 → vince lo sfidante.
 
 **08** — Mazzi da 10 creature senza effetti, seed `42`. Sfidante: Wound e Archive. Avversario: Invitation e Dream.
@@ -108,31 +111,43 @@ Dopo il round 14 l'avversario non ha più creature, lo sfidante ha ancora Duller
 Con lo stesso file e seed `43` il risultato cambia (PV finali 27–23): utile per il test "seed diverso → partita diversa".
 
 **09** — Hidebehind (Invitation 4/6, `HIDEBEHIND`) contro Faceling (Wound 7/9), fazioni neutre.
-Round 1: l'attacco di Faceling viene schivato (Hidebehind resta a 6), Faceling 9 − 4 = 5.
-Round 2: Hidebehind 6 − 7 = −1 (muore), Faceling 1. Lo sfidante perde 1 PV.
-*Controprova:* senza effetto Hidebehind muore già al round 1.
-Finché `HIDEBEHIND` non è nell'`EffectRegistry` questa richiesta deve dare `400 UNKNOWN_EFFECT`.
+Round 1: Hidebehind previene 2 dei 7 danni di Faceling (6 − 5 = 1), Faceling 9 − 4 = 5.
+Round 2: Hidebehind 1 − 7 = −6 (muore), Faceling 1. Lo sfidante perde 6 PV.
+*Controprova:* senza effetto Hidebehind muore già al round 1 con DEF −1 e lo sfidante perde 1 PV.
+Il caso mostra un effetto collaterale della regola del danno: sopravvivere un round in più con poca DEF può costare **più** punti vita.
+Nel log, al round 1, `Hidebehind: prevents 2 damage from the first attack of Faceling`.
 
 **10** — Archive Puppet (40/50) contro Eternal Cup (1/5), entrambe Archive: Eternal Cup finisce a 5 − 40 = −35, l'avversario perde 35 PV.
 L'avversario è anche senza creature, ma le condizioni si controllano in ordine: vince la 2 (`LIFE_POINTS_ZERO`).
-`finalLifePoints` è 0 e non −5 (proposta D-43); nel log `PLAYER_DAMAGED` riporta comunque 35 danni.
+`finalLifePoints` è −5 (D-43: il risultato riporta il valore vero); nel log `PLAYER_DAMAGED` riporta 35 danni.
 
-**11** — Ashen Fox (Mutant, Dream **e** Invitation, 6/10) contro Archive Puppet (Archive 6/6).
+**11** — Rootbound Doppelganger (Mutant, Dream **e** Invitation, 6/10) contro Archive Puppet (Archive 6/6).
 Si sommano tutte le coppie di fazioni (vedi [fazioni](../docs/fazioni/fazioni.md#carte-con-due-fazioni)):
 
-- Ashen Fox attacca con 6 + (Dream → Archive 0) + (Invitation → Archive **+2**) = 8;
+- Rootbound Doppelganger attacca con 6 + (Dream → Archive 0) + (Invitation → Archive **+2**) = 8;
 - Archive Puppet attacca con 6 + (Archive → Dream 0) + (Archive → Invitation **−1**) = 5.
 
-Round 1: Archive Puppet 6 − 8 = −2 (muore, l'avversario perde 2 PV); Ashen Fox 10 − 5 = 5.
+Round 1: Archive Puppet 6 − 8 = −2 (muore, l'avversario perde 2 PV); Rootbound Doppelganger 10 − 5 = 5.
 *Controprova:* con la sola fazione Dream entrambe attaccano con 6: Archive Puppet finisce a 0 e nessuno perde PV.
 
-**12** — Ashen Fox (Dream e Invitation, 6/10) contro Kodama (Dream 6/11).
+**12** — Rootbound Doppelganger (Dream e Invitation, 6/10) contro Kodama (Dream 6/11).
 
-- Ashen Fox attacca con 6 + (Dream → Dream 0) + (Invitation → Dream **−1**) = 5;
+- Rootbound Doppelganger attacca con 6 + (Dream → Dream 0) + (Invitation → Dream **−1**) = 5;
 - Kodama attacca con 6 + (Dream → Dream 0) + (Dream → Invitation **+2**) = 8.
 
-DEF dopo ogni round: 2/6 → **−6**/1. Ashen Fox muore, lo sfidante perde 6 PV.
+DEF dopo ogni round: 2/6 → **−6**/1. Rootbound Doppelganger muore, lo sfidante perde 6 PV.
 *Controprova:* con la sola fazione Dream nessun bonus: muoiono entrambe al round 2 e finisce `DRAW`.
+
+**13** — Seed `2219`: entrambi pescano nell'ordine del file. Sfidante (Archive): Veil of the Anchored, Watching Rift, SCP-131 8/6, Echo Strike, Archive Puppet 3/10. Avversario (Wound): Badge di Uscita Negata, Faceling 7/9, Skin Fracture, Crawlers 4/5. Archive batte Wound: +2 ATK per lo sfidante, −1 per l'avversario.
+
+- Pescata iniziale: Veil (+5 DEF) resta in attesa della prossima creatura dello sfidante; Watching Rift entra in gioco senza creature da potenziare; SCP-131 entra. L'avversario mette il Badge accanto al mazzo e gioca Faceling.
+- Inizio del primo scontro: SCP-131 riceve Veil (DEF 11), poi il bonus di Watching Rift (+1 ATK: 9/11; dal 21 novembre, `ENG-42`, il Terreno non dà più +1 DEF). Faceling è Wound, niente bonus.
+- Round 1: SCP-131 attacca con 9 + 2 = 11, Faceling con 7 − 1 = 6. Faceling 9 − 11 = −2; SCP-131 perde 6 (prima lo scudo di Veil, 5, poi 1): DEF 5. Il Badge salva Faceling, che resta con 1 DEF.
+- Round 2: Faceling 1 − 11 = −10, SCP-131 5 − 6 = −1: muoiono entrambe, nessun danno ai giocatori.
+- Lo sfidante pesca Echo Strike (coperta, pronta dal secondo scontro) e Archive Puppet. L'avversario pesca Skin Fracture, che colpisce subito Archive Puppet: Watching Rift toglie 1 punto alla prima Spell `DAMAGE` (10 − 4 = 6), poi Crawlers.
+- Inizio del secondo scontro: Archive Puppet riceve Watching Rift (4/6); Echo Strike si attiva su Crawlers (−2 ATK nel primo round, −2 DEF: DEF 3).
+- Round 3: Archive Puppet attacca con 4 + 2 = 6, Crawlers con 4 − 1 − 2 = 1. Crawlers 3 − 6 = **−3** (muore), Archive Puppet perde 1: DEF 5. L'avversario perde **3** PV → 27 e non ha più creature → `CHALLENGER_WIN`, `NO_CREATURES_LEFT`.
+- Creature sconfitte: lo sfidante 2 (Faceling, Crawlers), l'avversario 1 (SCP-131).
 
 ## Log minimo atteso (esempio 01)
 
@@ -179,3 +194,4 @@ Oppure apri [`simulazioni.http`](simulazioni.http) in IntelliJ IDEA o in VS Code
 2. Calcola il risultato **a mano** e scrivi i passaggi in questo README.
 3. Aggiungi una riga a `expected-results.csv` (o `expected-results-effects.csv` se usa un effetto).
 4. Se l'esempio usa carte diverse tra loro nello stesso mazzo, il risultato dipende dal seed: scrivi anche l'ordine dopo il mescolamento.
+5. Lancia `gradlew test`: `SimulationContractTest` fallisce e scrive la risposta in `build/contract/actual/`; controllala e copiala in `responses/` con lo stesso nome.

@@ -17,7 +17,7 @@ Tabelle: `battle_invites`, `battles`, `matchmaking_queue`, `player_ratings`.
 
 ## Regolamento
 
-Esiste **un solo regolamento**: creature con abilità, Spell, Hidden e Terreni fanno tutti parte del gioco standard. Non ci sono varianti di regole da scegliere (decisione concordata con il cliente): `FRIENDLY` e `RANKED` cambiano solo come si trova l'avversario e se il rating si aggiorna, non le regole della partita.
+Esiste **un solo regolamento**: creature con abilità, Spell, Hidden, Terreni e Oggetti fanno tutti parte del gioco standard. Non ci sono varianti di regole da scegliere (decisione concordata con il cliente): `FRIENDLY` e `RANKED` cambiano solo come si trova l'avversario e se il rating si aggiorna, non le regole della partita.
 
 ## Amichevole: invito — `battle_invites`
 
@@ -25,25 +25,18 @@ Esiste **un solo regolamento**: creature con abilità, Spell, Hidden e Terreni f
 |---|---|
 | `PENDING` | in attesa della risposta dell'avversario |
 | `ACCEPTED` | accettato: esiste la partita in `battles` |
-| `REJECTED` | rifiutato dall'avversario |
-| `EXPIRED` | nessuna risposta entro 48 ore |
 
 ```
 PENDING ──accept (B)──▶ ACCEPTED ──▶ battles (1 sola partita per invito)
-   ├──reject (B)──────▶ REJECTED
-   ├──scadenza (48 h)─▶ EXPIRED
+   ├──reject (B)──────▶ riga eliminata
    └──ritiro (A)──────▶ riga eliminata
 ```
 
-Lo sfidante può ritirare un invito ancora `PENDING`: la riga viene eliminata (non c'è uno stato dedicato).
-
-### Scadenza
-
-Ogni invito scade dopo **48 ore** (`expires_at`). Un job `@Scheduled` ogni 15 minuti porta a `EXPIRED` gli inviti `PENDING` scaduti. Anche l'accettazione controlla `expires_at`: un invito scaduto non si accetta (`409`) anche se il job non è ancora passato.
+Gli inviti **non scadono**: restano `PENDING` finché l'avversario non risponde o lo sfidante non li ritira. Le amichevoli non danno crediti né rating, quindi un invito vecchio non ha conseguenze.
 
 ### Mazzo dello sfidante
 
-Finché l'invito è `PENDING`, il mazzo dello sfidante non si può eliminare (`409`, vedi [mazzi](../mazzi/mazzi.md)); si può modificare, tanto viene validato di nuovo all'accettazione. Quando l'invito è chiuso, eliminare il mazzo mette `challenger_deck_id` a `NULL`: la partita conserva comunque la propria fotografia del mazzo.
+Finché l'invito è `PENDING`, il mazzo dello sfidante non si può eliminare (`409`, vedi [mazzi](../mazzi/mazzi.md)): per eliminarlo bisogna prima ritirare l'invito. Si può invece modificare, tanto viene validato di nuovo all'accettazione. Quando l'invito è stato accettato, eliminare il mazzo mette `challenger_deck_id` a `NULL`: la partita conserva comunque la propria fotografia del mazzo.
 
 ### Creazione
 
@@ -57,7 +50,8 @@ Controlli:
 - niente sfide a se stessi (`chk_battle_invites_no_self_challenge`);
 - il mazzo è mio ed è **valido**;
 - l'avversario esiste ed è attivo (`is_enabled`);
-- l'avversario è un **amico** (`friendships` con stato `ACCEPTED`, in una delle due direzioni), altrimenti `403`.
+- l'avversario è un **amico** (`friendships` con stato `ACCEPTED`, in una delle due direzioni), altrimenti `403`;
+- non ho già un invito `PENDING` verso quell'avversario (`uq_battle_invites_pending_pair`), altrimenti `409`. Anche l'avversario può averne uno aperto verso di me: sono due partite diverse.
 
 ## Amichevole: accettazione e simulazione
 
@@ -67,7 +61,7 @@ Il flusso è diviso in **tre passi**, per non tenere aperta una transazione ment
 
 ```
 1) Transazione 1 — preparazione
-   - blocca l'invito, controlla che sia PENDING, non scaduto e che io sia l'avversario
+   - blocca l'invito, controlla che sia PENDING e che io sia l'avversario
    - controlla che i due giocatori siano ancora amici
    - valida di nuovo ENTRAMBI i mazzi (le collezioni possono essere cambiate)
    - genera il seed con SecureRandom
@@ -83,11 +77,14 @@ Il flusso è diviso in **tre passi**, per non tenere aperta una transazione ment
    EngineClient.simulate(request)
 
 3) Transazione 2 — salvataggio
+   - blocca la riga di battles; se result è già valorizzato si ferma (vedi sotto)
    - result, battle_stats completo, rounds_log
-   - crediti di vittoria/pareggio (vedi crediti)
+   - nessun credito: le amichevoli non danno ricompense (vedi crediti)
 ```
 
 Se l'engine non risponde o dà errore, la partita resta con `result = NULL`. `POST /api/v1/battles/{id}/retry` rilancia la simulazione **con lo stesso seed, la stessa fotografia dei mazzi e le stesse regole** (copiate in `battle_stats` alla preparazione, anche se nel frattempo il backoffice le ha cambiate), quindi il risultato non può essere "rigiocato" per ottenerne uno migliore.
+
+Due simulazioni della stessa partita possono sovrapporsi (due retry insieme, o un retry mentre la prima chiamata è ancora in corso). Per questo la transazione 2 blocca la riga di `battles` e, se `result` è già valorizzato, si ferma senza scrivere niente: il risultato sarebbe identico, e così Elo e crediti non si assegnano due volte.
 
 ### Perché la fotografia dei mazzi
 
@@ -96,7 +93,7 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
 ```json
 [
   { "cardId": 4, "name": "Crawlers", "type": "CREATURE", "rarity": "Common",
-    "factionId": 1, "secondaryFactionId": null, "atk": 4, "def": 5, "tags": [], "quantity": 3 }
+    "factionId": 1, "secondaryFactionId": null, "atk": 4, "def": 5, "subtype": null, "effectCode": null, "quantity": 3 }
 ]
 ```
 
@@ -110,7 +107,7 @@ Le statistiche delle carte possono cambiare dal backoffice (bilanciamento). Una 
 ```json
 {
   "seed": 8812734650912,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factionBonuses": [ { "originFactionId": 2, "targetFactionId": 3, "atkBonus": 2, "defBonus": 0 } ],
   "rulesVersion": "1.0",
   "endReason": "LIFE_POINTS_ZERO",
@@ -141,7 +138,9 @@ Controlli:
 
 Il ticket salva il mazzo scelto e il rating attuale. Si esce dalla coda con `DELETE /api/v1/matchmaking/queue`. Se il mazzo in coda viene modificato o eliminato, il ticket viene rimosso.
 
-Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge la partita con `GET /api/v1/battles?mode=RANKED&size=1`.
+Il client controlla lo stato con `GET /api/v1/matchmaking/queue` ogni pochi secondi: `200` con `{ "status": "WAITING", "queuedAt": "…", "window": 250 }` finché è in coda, `404` quando il ticket non esiste più. A quel punto legge l'ultima partita con `GET /api/v1/battles?mode=RANKED&size=1`.
+
+Il ticket sparisce anche senza abbinamento (mazzo non più valido, account disattivato). Perciò la partita è quella appena abbinata solo se il suo `createdAt` è successivo al `queuedAt` visto dal client; altrimenti il client avvisa l'utente che è uscito dalla coda.
 
 ### Abbinamento
 
@@ -190,12 +189,14 @@ Il flusso usa gli stessi tre passi delle amichevoli:
 2) Chiamata HTTP all'engine (fuori transazione)
 
 3) Transazione 2 — salvataggio
+   - blocca la riga di battles; se result è già valorizzato si ferma
    - result, battle_stats completo, rounds_log
    - blocca le due righe di player_ratings (user_id minore per primo, evita deadlock)
    - calcola l'Elo, aggiorna rating, peak_rating e contatori
    - scrive challenger_rating_before / challenger_rating_delta
      e opponent_rating_before / opponent_rating_delta
-   - crediti di vittoria/pareggio (vedi crediti)
+   - crediti di vittoria/pareggio, dal rule set della partita (vedi crediti);
+     con un pareggio blocca le due righe di inventories, user_id minore per primo
 ```
 
 Con `SKIP LOCKED` due esecuzioni del job in parallelo non possono abbinare lo stesso utente: un ticket già bloccato da un'altra transazione viene saltato, non atteso.
@@ -225,7 +226,14 @@ public static int eloDelta(int rating, int opponentRating, double score, int gam
 }
 ```
 
-Esempio: 1000 contro 1100, entrambi oltre le 10 partite, vince chi ha 1000. `E = 0,36`, quindi **+13** per il vincitore e **−13** per l'altro.
+Il sistema è **approvato dal cliente**: si affrontano giocatori con Elo simile, e chi è favorito guadagna meno se vince e perde di più se perde (viceversa per lo sfavorito).
+
+Esempi con 1000 contro 1100, entrambi oltre le 10 partite (`E = 0,36` per chi ha 1000):
+
+| Vince | 1000 | 1100 |
+|---|---|---|
+| lo sfavorito (1000) | **+13** | **−13** |
+| il favorito (1100) | **−7** | **+7** |
 
 ## La chiamata all'engine
 
@@ -260,8 +268,8 @@ public class EngineClient {
 Cosa invia l'API (contratto completo nel modulo engine, `docs/api-engine`):
 - il seed;
 - le regole della partita (`rules`: versione, punti vita iniziali, limite di round) dal rule set attivo;
-- le fazioni e la tabella `faction_bonus` (l'engine non ha database);
-- i due mazzi, **una voce per ogni copia**, con `effectCode` e `subtype` ricavati dai tag (`EFFECT_*`, `DAMAGE`, `SHIELD`, …).
+- le fazioni e la tabella `faction_bonuses` (l'engine non ha database);
+- i due mazzi, **una voce per ogni copia**, con `effectCode` e `subtype` presi da `catalog_cards` (`effect_code`, `subtype`).
 
 L'engine restituisce `CHALLENGER_WIN`, `OPPONENT_WIN` o `DRAW`, gli stessi valori dell'enum `BattleResult`.
 
@@ -280,14 +288,14 @@ L'engine restituisce `CHALLENGER_WIN`, `OPPONENT_WIN` o `DRAW`, gli stessi valor
 | `GET` | `/api/v1/battles` | partite giocate, paginate; filtro opzionale `mode` (`FRIENDLY`, `RANKED`) |
 | `GET` | `/api/v1/battles/{id}` | dettaglio con log round per round |
 | `POST` | `/api/v1/battles/{id}/retry` | rilancia una simulazione non completata |
-| `GET` | `/api/v1/rankings` | classifica per rating, paginata (solo chi ha giocato almeno una classificata) |
-| `GET` | `/api/v1/rankings/me` | il mio rating, le statistiche classificate e la posizione |
+| `GET` | `/api/v1/rankings/me` | il mio rating e le statistiche classificate; non c'è una classifica pubblica né una posizione (Q-10, deciso l'11 novembre) |
 
 Elemento dello storico:
 
 ```json
 {
   "battleId": "0b7e…",
+  "createdAt": "2026-11-04T10:20:00Z",
   "mode": "RANKED",
   "opponent": { "id": 12, "username": "sentinella_valle" },
   "outcome": "WIN",
@@ -303,7 +311,7 @@ Elemento dello storico:
 
 Solo i due giocatori possono vedere il dettaglio di una partita (altrimenti `404`).
 
-Lo storico è ordinato per `battles.created_at`, dalla più recente.
+Lo storico è ordinato per `battles.created_at`, dalla più recente. `rounds_log` e le fotografie dei mazzi possono essere grandi: l'elenco usa una query che legge solo i campi che servono, e `rounds_log` arriva solo dal dettaglio.
 
 ## Test minimi
 
@@ -313,12 +321,16 @@ Lo storico è ordinato per `battles.created_at`, dalla più recente.
 - Retry invia lo stesso seed e gli stessi mazzi (verificare con un `EngineClient` finto).
 - `outcome` corretto per entrambi i giocatori.
 - Invito a un utente che non è amico → `403`, nessun invito creato.
-- Amichevole completata → `player_ratings` invariato, colonne di rating di `battles` nulle.
+- Amichevole completata → `player_ratings` e crediti invariati, colonne di rating di `battles` nulle.
+- Retry di una classificata dopo l'attivazione di un nuovo rule set → crediti dal rule set della partita.
 - Ingresso in coda due volte → `409`.
 - Due abbinamenti in parallelo non usano lo stesso ticket (`SKIP LOCKED`).
 - Mazzo non più valido al momento dell'abbinamento → solo quel ticket viene rimosso, nessuna partita creata.
-- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; pareggio a rating uguale → 0.
+- Elo: 1000 contro 1100 con K = 20, vince 1000 → +13 / −13; vince 1100 → −7 / +7; pareggio a rating uguale → 0.
 - Retry di una classificata non completata → l'Elo viene applicato una sola volta.
-- Invito scaduto → accettazione `409`; il job lo porta a `EXPIRED`.
-- Eliminazione del mazzo di un invito già chiuso → ok, `challenger_deck_id` diventa `NULL`, la partita resta leggibile.
+- Due retry sovrapposti della stessa classificata → Elo e crediti assegnati una sola volta.
+- Pareggio in classificata mentre i due giocatori accettano uno scambio → nessun deadlock, crediti e carte corretti.
+- Secondo invito `PENDING` verso lo stesso avversario → `409`; un invito nella direzione opposta → ok.
+- Rifiuto o ritiro di un invito → riga eliminata.
+- Eliminazione del mazzo di un invito già accettato → ok, `challenger_deck_id` diventa `NULL`, la partita resta leggibile.
 - Due utenti appena affrontati in classificata → non vengono abbinati di nuovo per 10 minuti, anche se sono gli unici in coda.

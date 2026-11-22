@@ -38,11 +38,17 @@ Nessun altro service scrive su `collection_cards` direttamente. Così la regola 
 
 Entrambi i metodi vanno chiamati **dentro** la transazione del chiamante (apertura pacchetto o scambio): non ne aprono una separata.
 
+Il chiamante deve aver già bloccato la riga `inventories` di ogni utente coinvolto, in ordine di id crescente. È un solo blocco per utente: vale per tutte le sue carte e i suoi pacchetti, anche per una carta che non possiede ancora, e dura solo il tempo della transazione.
+
+## Copie riservate
+
+Le copie offerte in uno scambio aperto restano qui, ma non si possono offrire altrove né usare in un mazzo (vedi [scambi](../scambi/scambi.md#copie-riservate)).
+
 ## Le carte nei mazzi restano nella collezione
 
 Mettere una carta in un mazzo **non** la toglie dalla collezione: il mazzo è solo un elenco che fa riferimento a carte possedute. Una carta può stare in più mazzi contemporaneamente.
 
-Conseguenza: se l'utente scambia una carta usata in un mazzo, quel mazzo può diventare non valido (vedi [mazzi](../mazzi/mazzi.md)).
+Conseguenza: se l'utente offre o scambia una carta usata in un mazzo, quel mazzo può diventare non valido (vedi [mazzi](../mazzi/mazzi.md)).
 
 ## Endpoint
 
@@ -53,7 +59,7 @@ Conseguenza: se l'utente scambia una carta usata in un mazzo, quel mazzo può di
 | `factionId` | `3` | solo una fazione (anche come seconda fazione) |
 | `rarityId` | `4` | solo una rarità |
 | `type` | `CREATURE` | solo un tipo di carta |
-| `tag` | `DREAM` | solo carte con quel tag |
+| `tag` | `DREAM` | solo carte con quel tag, proprio o di una delle loro fazioni (stessa regola dei pacchetti) |
 | `name` | `wend` | ricerca per nome (contiene, senza maiuscole) |
 | `sort` | `rarity,desc` | ordinamento |
 
@@ -70,18 +76,21 @@ Risposta (un elemento):
     "rarity": { "id": 5, "name": "Legendary" },
     "atk": 18,
     "def": 17,
-    "tags": ["EFFECT_WENDIGO"],
+    "subtype": null,
+    "effectCode": "WENDIGO",
+    "tags": [],
     "effectDescription": "At the end of each round, the opposing creature loses 1 DEF...",
     "flavorText": "Hunger and frost that consume everything.",
     "imagePath": "/images/cards/wendigo.webp"
   },
   "quantity": 1,
+  "reservedQuantity": 0,
   "usedInDecks": 2
 }
 ```
 
 Altri endpoint:
-- `GET /api/v1/collection/summary` → carte uniche possedute sul totale del catalogo, per rarità (barra di completamento);
+- `GET /api/v1/collection/summary` → carte uniche possedute sul totale del catalogo, per rarità (barra di completamento). Le varianti **non** contano nel totale: conta solo la carta originale, e possedere una variante vale come possedere la sua originale (Q-08, deciso l'11 novembre);
 - `GET /api/v1/users/{id}/collection` → carte di un altro utente (solo carte e quantità), per preparare uno scambio.
 
 ## Test minimi

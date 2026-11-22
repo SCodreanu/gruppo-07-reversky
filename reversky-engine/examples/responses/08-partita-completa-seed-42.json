@@ -1,0 +1,1330 @@
+{
+  "result" : "CHALLENGER_WIN",
+  "endReason" : "NO_CREATURES_LEFT",
+  "totalRounds" : 14,
+  "challenger" : {
+    "userId" : 7,
+    "finalLifePoints" : 30,
+    "creaturesDefeated" : 10
+  },
+  "opponent" : {
+    "userId" : 12,
+    "finalLifePoints" : 27,
+    "creaturesDefeated" : 9
+  },
+  "seed" : 42,
+  "rulesVersion" : "1.0",
+  "log" : [ {
+    "sequence" : 1,
+    "round" : 0,
+    "type" : "MATCH_STARTED",
+    "side" : null,
+    "data" : {
+      "startingLifePoints" : 30
+    },
+    "message" : "Match started — 30 life points each"
+  }, {
+    "sequence" : 2,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Yellow Hum",
+      "attack" : 6,
+      "defense" : 3
+    },
+    "message" : "Challenger plays Yellow Hum (ATK 6, DEF 3)"
+  }, {
+    "sequence" : 3,
+    "round" : 0,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Wampus Cat",
+      "attack" : 7,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Wampus Cat (ATK 7, DEF 5)"
+  }, {
+    "sequence" : 4,
+    "round" : 1,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 1
+    },
+    "message" : "Round 1"
+  }, {
+    "sequence" : 5,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Yellow Hum",
+      "baseAttack" : 6,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Yellow Hum attacks with 6 (6 base)"
+  }, {
+    "sequence" : 6,
+    "round" : 1,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Wampus Cat",
+      "baseAttack" : 7,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 7
+    },
+    "message" : "Wampus Cat attacks with 7 (7 base)"
+  }, {
+    "sequence" : 7,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Yellow Hum",
+      "target" : "Wampus Cat",
+      "amount" : 6,
+      "targetDefense" : -1
+    },
+    "message" : "Yellow Hum deals 6 damage to Wampus Cat (DEF −1)"
+  }, {
+    "sequence" : 8,
+    "round" : 1,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Wampus Cat",
+      "target" : "Yellow Hum",
+      "amount" : 7,
+      "targetDefense" : -4
+    },
+    "message" : "Wampus Cat deals 7 damage to Yellow Hum (DEF −4)"
+  }, {
+    "sequence" : 9,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Yellow Hum"
+    },
+    "message" : "Yellow Hum is destroyed"
+  }, {
+    "sequence" : 10,
+    "round" : 1,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Wampus Cat"
+    },
+    "message" : "Wampus Cat is destroyed"
+  }, {
+    "sequence" : 11,
+    "round" : 1,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Eternal Cup",
+      "attack" : 4,
+      "defense" : 5
+    },
+    "message" : "Challenger plays Eternal Cup (ATK 4, DEF 5)"
+  }, {
+    "sequence" : 12,
+    "round" : 1,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Kodama",
+      "attack" : 4,
+      "defense" : 6
+    },
+    "message" : "Opponent plays Kodama (ATK 4, DEF 6)"
+  }, {
+    "sequence" : 13,
+    "round" : 2,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 2
+    },
+    "message" : "Round 2"
+  }, {
+    "sequence" : 14,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Eternal Cup",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Eternal Cup attacks with 4 (4 base)"
+  }, {
+    "sequence" : 15,
+    "round" : 2,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Kodama",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Kodama attacks with 4 (4 base)"
+  }, {
+    "sequence" : 16,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Eternal Cup",
+      "target" : "Kodama",
+      "amount" : 4,
+      "targetDefense" : 2
+    },
+    "message" : "Eternal Cup deals 4 damage to Kodama (DEF 2)"
+  }, {
+    "sequence" : 17,
+    "round" : 2,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Kodama",
+      "target" : "Eternal Cup",
+      "amount" : 4,
+      "targetDefense" : 1
+    },
+    "message" : "Kodama deals 4 damage to Eternal Cup (DEF 1)"
+  }, {
+    "sequence" : 18,
+    "round" : 3,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 3
+    },
+    "message" : "Round 3"
+  }, {
+    "sequence" : 19,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Eternal Cup",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Eternal Cup attacks with 4 (4 base)"
+  }, {
+    "sequence" : 20,
+    "round" : 3,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Kodama",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Kodama attacks with 4 (4 base)"
+  }, {
+    "sequence" : 21,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Eternal Cup",
+      "target" : "Kodama",
+      "amount" : 4,
+      "targetDefense" : -2
+    },
+    "message" : "Eternal Cup deals 4 damage to Kodama (DEF −2)"
+  }, {
+    "sequence" : 22,
+    "round" : 3,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Kodama",
+      "target" : "Eternal Cup",
+      "amount" : 4,
+      "targetDefense" : -3
+    },
+    "message" : "Kodama deals 4 damage to Eternal Cup (DEF −3)"
+  }, {
+    "sequence" : 23,
+    "round" : 3,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Eternal Cup"
+    },
+    "message" : "Eternal Cup is destroyed"
+  }, {
+    "sequence" : 24,
+    "round" : 3,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Kodama"
+    },
+    "message" : "Kodama is destroyed"
+  }, {
+    "sequence" : 25,
+    "round" : 3,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Crawlers",
+      "attack" : 4,
+      "defense" : 5
+    },
+    "message" : "Challenger plays Crawlers (ATK 4, DEF 5)"
+  }, {
+    "sequence" : 26,
+    "round" : 3,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Kasa-obake",
+      "attack" : 5,
+      "defense" : 5
+    },
+    "message" : "Opponent plays Kasa-obake (ATK 5, DEF 5)"
+  }, {
+    "sequence" : 27,
+    "round" : 4,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 4
+    },
+    "message" : "Round 4"
+  }, {
+    "sequence" : 28,
+    "round" : 4,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Crawlers",
+      "baseAttack" : 4,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Crawlers attacks with 6 (4 base, +2 faction)"
+  }, {
+    "sequence" : 29,
+    "round" : 4,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Kasa-obake",
+      "baseAttack" : 5,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Kasa-obake attacks with 4 (5 base, −1 faction)"
+  }, {
+    "sequence" : 30,
+    "round" : 4,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Crawlers",
+      "target" : "Kasa-obake",
+      "amount" : 6,
+      "targetDefense" : -1
+    },
+    "message" : "Crawlers deals 6 damage to Kasa-obake (DEF −1)"
+  }, {
+    "sequence" : 31,
+    "round" : 4,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Kasa-obake",
+      "target" : "Crawlers",
+      "amount" : 4,
+      "targetDefense" : 1
+    },
+    "message" : "Kasa-obake deals 4 damage to Crawlers (DEF 1)"
+  }, {
+    "sequence" : 32,
+    "round" : 4,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Kasa-obake"
+    },
+    "message" : "Kasa-obake is destroyed"
+  }, {
+    "sequence" : 33,
+    "round" : 4,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 1,
+      "lifePoints" : 29
+    },
+    "message" : "Opponent loses 1 life points (29 left)"
+  }, {
+    "sequence" : 34,
+    "round" : 4,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Noppera-bo",
+      "attack" : 6,
+      "defense" : 6
+    },
+    "message" : "Opponent plays Noppera-bo (ATK 6, DEF 6)"
+  }, {
+    "sequence" : 35,
+    "round" : 5,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 5
+    },
+    "message" : "Round 5"
+  }, {
+    "sequence" : 36,
+    "round" : 5,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Crawlers",
+      "baseAttack" : 4,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Crawlers attacks with 6 (4 base, +2 faction)"
+  }, {
+    "sequence" : 37,
+    "round" : 5,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Noppera-bo",
+      "baseAttack" : 6,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Noppera-bo attacks with 5 (6 base, −1 faction)"
+  }, {
+    "sequence" : 38,
+    "round" : 5,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Crawlers",
+      "target" : "Noppera-bo",
+      "amount" : 6,
+      "targetDefense" : 0
+    },
+    "message" : "Crawlers deals 6 damage to Noppera-bo (DEF 0)"
+  }, {
+    "sequence" : 39,
+    "round" : 5,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Noppera-bo",
+      "target" : "Crawlers",
+      "amount" : 5,
+      "targetDefense" : -4
+    },
+    "message" : "Noppera-bo deals 5 damage to Crawlers (DEF −4)"
+  }, {
+    "sequence" : 40,
+    "round" : 5,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Crawlers"
+    },
+    "message" : "Crawlers is destroyed"
+  }, {
+    "sequence" : 41,
+    "round" : 5,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Noppera-bo"
+    },
+    "message" : "Noppera-bo is destroyed"
+  }, {
+    "sequence" : 42,
+    "round" : 5,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Crawlers",
+      "attack" : 4,
+      "defense" : 5
+    },
+    "message" : "Challenger plays Crawlers (ATK 4, DEF 5)"
+  }, {
+    "sequence" : 43,
+    "round" : 5,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Ash Raven",
+      "attack" : 5,
+      "defense" : 4
+    },
+    "message" : "Opponent plays Ash Raven (ATK 5, DEF 4)"
+  }, {
+    "sequence" : 44,
+    "round" : 6,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 6
+    },
+    "message" : "Round 6"
+  }, {
+    "sequence" : 45,
+    "round" : 6,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Crawlers",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "Crawlers attacks with 4 (4 base)"
+  }, {
+    "sequence" : 46,
+    "round" : 6,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Ash Raven",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Ash Raven attacks with 5 (5 base)"
+  }, {
+    "sequence" : 47,
+    "round" : 6,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Crawlers",
+      "target" : "Ash Raven",
+      "amount" : 4,
+      "targetDefense" : 0
+    },
+    "message" : "Crawlers deals 4 damage to Ash Raven (DEF 0)"
+  }, {
+    "sequence" : 48,
+    "round" : 6,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Ash Raven",
+      "target" : "Crawlers",
+      "amount" : 5,
+      "targetDefense" : 0
+    },
+    "message" : "Ash Raven deals 5 damage to Crawlers (DEF 0)"
+  }, {
+    "sequence" : 49,
+    "round" : 6,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Crawlers"
+    },
+    "message" : "Crawlers is destroyed"
+  }, {
+    "sequence" : 50,
+    "round" : 6,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Ash Raven"
+    },
+    "message" : "Ash Raven is destroyed"
+  }, {
+    "sequence" : 51,
+    "round" : 6,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Wretches",
+      "attack" : 6,
+      "defense" : 6
+    },
+    "message" : "Challenger plays Wretches (ATK 6, DEF 6)"
+  }, {
+    "sequence" : 52,
+    "round" : 6,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Temple Tanuki",
+      "attack" : 3,
+      "defense" : 6
+    },
+    "message" : "Opponent plays Temple Tanuki (ATK 3, DEF 6)"
+  }, {
+    "sequence" : 53,
+    "round" : 7,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 7
+    },
+    "message" : "Round 7"
+  }, {
+    "sequence" : 54,
+    "round" : 7,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Wretches",
+      "baseAttack" : 6,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "Wretches attacks with 8 (6 base, +2 faction)"
+  }, {
+    "sequence" : 55,
+    "round" : 7,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Temple Tanuki",
+      "baseAttack" : 3,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 2
+    },
+    "message" : "Temple Tanuki attacks with 2 (3 base, −1 faction)"
+  }, {
+    "sequence" : 56,
+    "round" : 7,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Wretches",
+      "target" : "Temple Tanuki",
+      "amount" : 8,
+      "targetDefense" : -2
+    },
+    "message" : "Wretches deals 8 damage to Temple Tanuki (DEF −2)"
+  }, {
+    "sequence" : 57,
+    "round" : 7,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Temple Tanuki",
+      "target" : "Wretches",
+      "amount" : 2,
+      "targetDefense" : 4
+    },
+    "message" : "Temple Tanuki deals 2 damage to Wretches (DEF 4)"
+  }, {
+    "sequence" : 58,
+    "round" : 7,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Temple Tanuki"
+    },
+    "message" : "Temple Tanuki is destroyed"
+  }, {
+    "sequence" : 59,
+    "round" : 7,
+    "type" : "PLAYER_DAMAGED",
+    "side" : "OPPONENT",
+    "data" : {
+      "amount" : 2,
+      "lifePoints" : 27
+    },
+    "message" : "Opponent loses 2 life points (27 left)"
+  }, {
+    "sequence" : 60,
+    "round" : 7,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Squonk",
+      "attack" : 3,
+      "defense" : 7
+    },
+    "message" : "Opponent plays Squonk (ATK 3, DEF 7)"
+  }, {
+    "sequence" : 61,
+    "round" : 8,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 8
+    },
+    "message" : "Round 8"
+  }, {
+    "sequence" : 62,
+    "round" : 8,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Wretches",
+      "baseAttack" : 6,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Wretches attacks with 6 (6 base)"
+  }, {
+    "sequence" : 63,
+    "round" : 8,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Squonk",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Squonk attacks with 3 (3 base)"
+  }, {
+    "sequence" : 64,
+    "round" : 8,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Wretches",
+      "target" : "Squonk",
+      "amount" : 6,
+      "targetDefense" : 1
+    },
+    "message" : "Wretches deals 6 damage to Squonk (DEF 1)"
+  }, {
+    "sequence" : 65,
+    "round" : 8,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Squonk",
+      "target" : "Wretches",
+      "amount" : 3,
+      "targetDefense" : 1
+    },
+    "message" : "Squonk deals 3 damage to Wretches (DEF 1)"
+  }, {
+    "sequence" : 66,
+    "round" : 9,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 9
+    },
+    "message" : "Round 9"
+  }, {
+    "sequence" : 67,
+    "round" : 9,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Wretches",
+      "baseAttack" : 6,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Wretches attacks with 6 (6 base)"
+  }, {
+    "sequence" : 68,
+    "round" : 9,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Squonk",
+      "baseAttack" : 3,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 3
+    },
+    "message" : "Squonk attacks with 3 (3 base)"
+  }, {
+    "sequence" : 69,
+    "round" : 9,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Wretches",
+      "target" : "Squonk",
+      "amount" : 6,
+      "targetDefense" : -5
+    },
+    "message" : "Wretches deals 6 damage to Squonk (DEF −5)"
+  }, {
+    "sequence" : 70,
+    "round" : 9,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Squonk",
+      "target" : "Wretches",
+      "amount" : 3,
+      "targetDefense" : -2
+    },
+    "message" : "Squonk deals 3 damage to Wretches (DEF −2)"
+  }, {
+    "sequence" : 71,
+    "round" : 9,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Wretches"
+    },
+    "message" : "Wretches is destroyed"
+  }, {
+    "sequence" : 72,
+    "round" : 9,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Squonk"
+    },
+    "message" : "Squonk is destroyed"
+  }, {
+    "sequence" : 73,
+    "round" : 9,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Faded Tag",
+      "attack" : 5,
+      "defense" : 7
+    },
+    "message" : "Challenger plays Faded Tag (ATK 5, DEF 7)"
+  }, {
+    "sequence" : 74,
+    "round" : 9,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "White Stag",
+      "attack" : 4,
+      "defense" : 8
+    },
+    "message" : "Opponent plays White Stag (ATK 4, DEF 8)"
+  }, {
+    "sequence" : 75,
+    "round" : 10,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 10
+    },
+    "message" : "Round 10"
+  }, {
+    "sequence" : 76,
+    "round" : 10,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Faded Tag",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Faded Tag attacks with 5 (5 base)"
+  }, {
+    "sequence" : 77,
+    "round" : 10,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "White Stag",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "White Stag attacks with 4 (4 base)"
+  }, {
+    "sequence" : 78,
+    "round" : 10,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Faded Tag",
+      "target" : "White Stag",
+      "amount" : 5,
+      "targetDefense" : 3
+    },
+    "message" : "Faded Tag deals 5 damage to White Stag (DEF 3)"
+  }, {
+    "sequence" : 79,
+    "round" : 10,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "White Stag",
+      "target" : "Faded Tag",
+      "amount" : 4,
+      "targetDefense" : 3
+    },
+    "message" : "White Stag deals 4 damage to Faded Tag (DEF 3)"
+  }, {
+    "sequence" : 80,
+    "round" : 11,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 11
+    },
+    "message" : "Round 11"
+  }, {
+    "sequence" : 81,
+    "round" : 11,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Faded Tag",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Faded Tag attacks with 5 (5 base)"
+  }, {
+    "sequence" : 82,
+    "round" : 11,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "White Stag",
+      "baseAttack" : 4,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 4
+    },
+    "message" : "White Stag attacks with 4 (4 base)"
+  }, {
+    "sequence" : 83,
+    "round" : 11,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Faded Tag",
+      "target" : "White Stag",
+      "amount" : 5,
+      "targetDefense" : -2
+    },
+    "message" : "Faded Tag deals 5 damage to White Stag (DEF −2)"
+  }, {
+    "sequence" : 84,
+    "round" : 11,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "White Stag",
+      "target" : "Faded Tag",
+      "amount" : 4,
+      "targetDefense" : -1
+    },
+    "message" : "White Stag deals 4 damage to Faded Tag (DEF −1)"
+  }, {
+    "sequence" : 85,
+    "round" : 11,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Faded Tag"
+    },
+    "message" : "Faded Tag is destroyed"
+  }, {
+    "sequence" : 86,
+    "round" : 11,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "White Stag"
+    },
+    "message" : "White Stag is destroyed"
+  }, {
+    "sequence" : 87,
+    "round" : 11,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-049",
+      "attack" : 7,
+      "defense" : 5
+    },
+    "message" : "Challenger plays SCP-049 (ATK 7, DEF 5)"
+  }, {
+    "sequence" : 88,
+    "round" : 11,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Ash Raven",
+      "attack" : 5,
+      "defense" : 4
+    },
+    "message" : "Opponent plays Ash Raven (ATK 5, DEF 4)"
+  }, {
+    "sequence" : 89,
+    "round" : 12,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 12
+    },
+    "message" : "Round 12"
+  }, {
+    "sequence" : 90,
+    "round" : 12,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "SCP-049",
+      "baseAttack" : 7,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "SCP-049 attacks with 6 (7 base, −1 faction)"
+  }, {
+    "sequence" : 91,
+    "round" : 12,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Ash Raven",
+      "baseAttack" : 5,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 7
+    },
+    "message" : "Ash Raven attacks with 7 (5 base, +2 faction)"
+  }, {
+    "sequence" : 92,
+    "round" : 12,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "SCP-049",
+      "target" : "Ash Raven",
+      "amount" : 6,
+      "targetDefense" : -2
+    },
+    "message" : "SCP-049 deals 6 damage to Ash Raven (DEF −2)"
+  }, {
+    "sequence" : 93,
+    "round" : 12,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Ash Raven",
+      "target" : "SCP-049",
+      "amount" : 7,
+      "targetDefense" : -2
+    },
+    "message" : "Ash Raven deals 7 damage to SCP-049 (DEF −2)"
+  }, {
+    "sequence" : 94,
+    "round" : 12,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-049"
+    },
+    "message" : "SCP-049 is destroyed"
+  }, {
+    "sequence" : 95,
+    "round" : 12,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Ash Raven"
+    },
+    "message" : "Ash Raven is destroyed"
+  }, {
+    "sequence" : 96,
+    "round" : 12,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131",
+      "attack" : 2,
+      "defense" : 8
+    },
+    "message" : "Challenger plays SCP-131 (ATK 2, DEF 8)"
+  }, {
+    "sequence" : 97,
+    "round" : 12,
+    "type" : "CREATURE_ENTERED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Will-o'-the-Wisp",
+      "attack" : 6,
+      "defense" : 3
+    },
+    "message" : "Opponent plays Will-o'-the-Wisp (ATK 6, DEF 3)"
+  }, {
+    "sequence" : 98,
+    "round" : 13,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 13
+    },
+    "message" : "Round 13"
+  }, {
+    "sequence" : 99,
+    "round" : 13,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "SCP-131",
+      "baseAttack" : 2,
+      "factionBonus" : -1,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 1
+    },
+    "message" : "SCP-131 attacks with 1 (2 base, −1 faction)"
+  }, {
+    "sequence" : 100,
+    "round" : 13,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Will-o'-the-Wisp",
+      "baseAttack" : 6,
+      "factionBonus" : 2,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 8
+    },
+    "message" : "Will-o'-the-Wisp attacks with 8 (6 base, +2 faction)"
+  }, {
+    "sequence" : 101,
+    "round" : 13,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "SCP-131",
+      "target" : "Will-o'-the-Wisp",
+      "amount" : 1,
+      "targetDefense" : 2
+    },
+    "message" : "SCP-131 deals 1 damage to Will-o'-the-Wisp (DEF 2)"
+  }, {
+    "sequence" : 102,
+    "round" : 13,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Will-o'-the-Wisp",
+      "target" : "SCP-131",
+      "amount" : 8,
+      "targetDefense" : 0
+    },
+    "message" : "Will-o'-the-Wisp deals 8 damage to SCP-131 (DEF 0)"
+  }, {
+    "sequence" : 103,
+    "round" : 13,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "SCP-131"
+    },
+    "message" : "SCP-131 is destroyed"
+  }, {
+    "sequence" : 104,
+    "round" : 13,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Faceling",
+      "attack" : 5,
+      "defense" : 4
+    },
+    "message" : "Challenger plays Faceling (ATK 5, DEF 4)"
+  }, {
+    "sequence" : 105,
+    "round" : 14,
+    "type" : "ROUND_STARTED",
+    "side" : null,
+    "data" : {
+      "round" : 14
+    },
+    "message" : "Round 14"
+  }, {
+    "sequence" : 106,
+    "round" : 14,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "attacker" : "Faceling",
+      "baseAttack" : 5,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 5
+    },
+    "message" : "Faceling attacks with 5 (5 base)"
+  }, {
+    "sequence" : 107,
+    "round" : 14,
+    "type" : "ATTACK_COMPUTED",
+    "side" : "OPPONENT",
+    "data" : {
+      "attacker" : "Will-o'-the-Wisp",
+      "baseAttack" : 6,
+      "factionBonus" : 0,
+      "modifiers" : 0,
+      "effectBonus" : 0,
+      "frozen" : false,
+      "total" : 6
+    },
+    "message" : "Will-o'-the-Wisp attacks with 6 (6 base)"
+  }, {
+    "sequence" : 108,
+    "round" : 14,
+    "type" : "DAMAGE_DEALT",
+    "side" : "CHALLENGER",
+    "data" : {
+      "source" : "Faceling",
+      "target" : "Will-o'-the-Wisp",
+      "amount" : 5,
+      "targetDefense" : -3
+    },
+    "message" : "Faceling deals 5 damage to Will-o'-the-Wisp (DEF −3)"
+  }, {
+    "sequence" : 109,
+    "round" : 14,
+    "type" : "DAMAGE_DEALT",
+    "side" : "OPPONENT",
+    "data" : {
+      "source" : "Will-o'-the-Wisp",
+      "target" : "Faceling",
+      "amount" : 6,
+      "targetDefense" : -2
+    },
+    "message" : "Will-o'-the-Wisp deals 6 damage to Faceling (DEF −2)"
+  }, {
+    "sequence" : 110,
+    "round" : 14,
+    "type" : "CREATURE_DIED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Faceling"
+    },
+    "message" : "Faceling is destroyed"
+  }, {
+    "sequence" : 111,
+    "round" : 14,
+    "type" : "CREATURE_DIED",
+    "side" : "OPPONENT",
+    "data" : {
+      "card" : "Will-o'-the-Wisp"
+    },
+    "message" : "Will-o'-the-Wisp is destroyed"
+  }, {
+    "sequence" : 112,
+    "round" : 14,
+    "type" : "CREATURE_ENTERED",
+    "side" : "CHALLENGER",
+    "data" : {
+      "card" : "Dullers",
+      "attack" : 3,
+      "defense" : 6
+    },
+    "message" : "Challenger plays Dullers (ATK 3, DEF 6)"
+  }, {
+    "sequence" : 113,
+    "round" : 14,
+    "type" : "MATCH_ENDED",
+    "side" : null,
+    "data" : {
+      "result" : "CHALLENGER_WIN",
+      "endReason" : "NO_CREATURES_LEFT"
+    },
+    "message" : "Challenger wins (no creatures left)"
+  } ]
+}

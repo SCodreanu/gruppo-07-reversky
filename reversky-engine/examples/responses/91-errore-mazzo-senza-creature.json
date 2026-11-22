@@ -1,0 +1,7 @@
+{
+  "detail" : "Deck without creatures: challenger",
+  "instance" : "/api/v1/simulations",
+  "status" : 400,
+  "title" : "Invalid simulation input",
+  "code" : "NO_CREATURES_IN_DECK"
+}

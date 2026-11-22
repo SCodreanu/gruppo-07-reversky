@@ -1,0 +1,136 @@
+package it.downfall.reversky.engine.core.effect.impl;
+
+import java.util.List;
+import java.util.Optional;
+
+import it.downfall.reversky.engine.core.effect.CreatureContext;
+import it.downfall.reversky.engine.core.effect.Penalties;
+import it.downfall.reversky.engine.core.log.MatchLog;
+import it.downfall.reversky.engine.core.model.CreatureInPlay;
+import it.downfall.reversky.engine.core.model.ModifierDuration;
+import it.downfall.reversky.engine.core.model.ModifierSource;
+import it.downfall.reversky.engine.core.model.StatModifier;
+
+/**
+ * Azioni ripetute dagli effetti delle creature, con il testo del log in inglese. Ogni azione restituisce la sua parte
+ * di messaggio; l'effetto le unisce in un solo {@code EFFECT_TRIGGERED} con {@link #log(CreatureContext, List)}.
+ */
+final class EffectActions {
+
+	private EffectActions() {
+	}
+
+	/**
+	 * Danno da effetto (D-08): perdita permanente di DEF, gli scudi assorbono per primi. La causa della ferita è la
+	 * creatura che porta l'effetto; il Terreno in gioco può ridurre la penalità ({@link Penalties}). Le morti le
+	 * controlla il motore.
+	 *
+	 * @param ctx    contesto dell'effetto
+	 * @param target creatura colpita
+	 * @param amount danno, almeno 0
+	 * @return la parte di messaggio
+	 */
+	static String damage(CreatureContext ctx, CreatureInPlay target, int amount) {
+		int dealt = Penalties.defense(ctx.state(), target, amount, ctx.self().side(), ctx.self());
+		return "deals " + dealt + " damage to " + target.name() + " (DEF " + MatchLog.number(target.defense()) + ")";
+	}
+
+	/**
+	 * Modificatore di ATK con origine {@code EFFECT} (D-35).
+	 *
+	 * @param target   creatura che lo riceve
+	 * @param cause    creatura che lo causa
+	 * @param amount   ATK da sommare, negativo per un malus
+	 * @param duration durata
+	 * @param when     quando vale, per il log (es. "while in play"), o vuoto
+	 * @return la parte di messaggio
+	 */
+	static String attack(CreatureInPlay target, CreatureInPlay cause, int amount, ModifierDuration duration,
+			String when) {
+		target.addModifier(StatModifier.attack(ModifierSource.EFFECT, cause.side(), amount, duration));
+		String self = target == cause ? "" : target.name() + " ";
+		String suffix = when.isEmpty() ? "" : " " + when;
+		return self + MatchLog.signed(amount) + " ATK" + suffix + " (ATK " + MatchLog.number(target.attack()) + ")";
+	}
+
+	/**
+	 * Sigillo dei bonus ATK con origine {@code EFFECT} (ENG-35, D-35): i bonus ATK del bersaglio, anche quelli dopo,
+	 * contano {@code amount} punti in meno.
+	 *
+	 * @param target   creatura sigillata
+	 * @param cause    creatura che la sigilla
+	 * @param amount   punti sigillati, almeno 1
+	 * @param duration durata
+	 * @return la parte di messaggio
+	 */
+	static String seal(CreatureInPlay target, CreatureInPlay cause, int amount, ModifierDuration duration) {
+		target.addModifier(StatModifier.sealAttack(ModifierSource.EFFECT, cause.side(), amount, duration));
+		return "seals " + amount + " points of " + target.name() + "'s ATK bonuses (ATK "
+				+ MatchLog.number(target.attack()) + ")";
+	}
+
+	/**
+	 * DEF permanente in più (es. Il Raccoglitore di Orme): resta finché la creatura è in campo e i danni la consumano.
+	 *
+	 * @param target creatura che la riceve
+	 * @param amount DEF in più, almeno 0
+	 * @return la parte di messaggio
+	 */
+	static String defense(CreatureInPlay target, int amount) {
+		target.addDefense(amount);
+		return MatchLog.signed(amount) + " DEF (DEF " + MatchLog.number(target.defense()) + ")";
+	}
+
+	/**
+	 * Recupero di DEF (ENG-34): fino alla DEF all'entrata, niente per una creatura morta
+	 * ({@link CreatureInPlay#heal(int)}).
+	 *
+	 * @param target creatura che recupera
+	 * @param amount DEF da recuperare, almeno 0
+	 * @param reason perché recupera, per il log (es. " after defeating B"), o vuoto
+	 * @return la parte di messaggio, o vuoto se non ha recuperato niente
+	 */
+	static Optional<String> heal(CreatureInPlay target, int amount, String reason) {
+		int healed = target.heal(amount);
+		if (healed == 0) {
+			return Optional.empty();
+		}
+		return Optional.of("recovers " + healed + " DEF" + reason + " (DEF " + MatchLog.number(target.defense()) + ")");
+	}
+
+	/**
+	 * Indica se la carta di una creatura ha un effetto (ENG-38, deciso il 19 novembre): conta il codice della carta,
+	 * anche se l'effetto è annullato (Il Predicatore sotto la Pioggia, SCP-2521, Kitsune, Il Custode delle Porte
+	 * Incrociate).
+	 *
+	 * @param creature la creatura
+	 * @return {@code true} se la carta ha un codice d'effetto
+	 */
+	static boolean hasEffect(CreatureInPlay creature) {
+		String code = creature.card().effectCode();
+		return code != null && !code.isBlank();
+	}
+
+	/**
+	 * Parte di messaggio di un annullamento finché la creatura resta in campo (ENG-38); l'annullamento lo fa chi
+	 * chiama, con {@link CreatureInPlay#cancelEffect}.
+	 *
+	 * @param target creatura il cui effetto è annullato
+	 * @return la parte di messaggio
+	 */
+	static String cancel(CreatureInPlay target) {
+		return "cancels " + target.name() + "'s effect while it stays in play";
+	}
+
+	/**
+	 * Registra le parti in un solo evento, se ce ne sono.
+	 *
+	 * @param ctx   contesto dell'effetto
+	 * @param parts parti di messaggio, nell'ordine in cui sono avvenute
+	 */
+	static void log(CreatureContext ctx, List<String> parts) {
+		if (!parts.isEmpty()) {
+			ctx.log().effectTriggered(ctx.self().side(), ctx.self().name(), String.join(", ", parts));
+		}
+	}
+}

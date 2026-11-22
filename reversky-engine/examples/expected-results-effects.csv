@@ -1,2 +1,2 @@
 file,status,result,endReason,totalRounds,challengerLifePoints,opponentLifePoints,challengerDefeated,opponentDefeated,code
-09-effetto-hidebehind.json,200,OPPONENT_WIN,NO_CREATURES_LEFT,2,29,30,0,1,
+09-effetto-hidebehind.json,200,OPPONENT_WIN,NO_CREATURES_LEFT,2,24,30,0,1,

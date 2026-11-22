@@ -1,6 +1,6 @@
 {
   "seed": 1,
-  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 100 },
+  "rules": { "rulesVersion": "1.0", "startingLifePoints": 30, "maxRounds": 75 },
   "factions": [
     { "id": 1, "name": "Theory of the Wound" },
     { "id": 2, "name": "Theory of the Invitation" },
@@ -20,7 +20,7 @@
   "challenger": {
     "userId": 7,
     "deck": [
-      { "cardId": 601, "name": "Ashen Fox", "type": "CREATURE", "rarity": "Mutant", "rarityOrder": 6, "factionId": 4, "secondaryFactionId": 2, "atk": 6, "def": 10, "subtype": null, "effectCode": null }
+      { "cardId": 601, "name": "Rootbound Doppelganger", "type": "CREATURE", "rarity": "Mutant", "rarityOrder": 6, "factionId": 4, "secondaryFactionId": 2, "atk": 6, "def": 10, "subtype": null, "effectCode": null }
     ]
   },
   "opponent": {

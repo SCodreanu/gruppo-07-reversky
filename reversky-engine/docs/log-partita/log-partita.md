@@ -35,22 +35,30 @@ In JSON:
 
 ## Tipi di evento
 
-| `type` | Quando | `data` principale |
-|---|---|---|
-| `MATCH_STARTED` | inizio | punti vita iniziali |
-| `CARD_DRAWN` | un giocatore pesca | carta |
-| `CREATURE_ENTERED` | una creatura entra in campo | carta, ATK, DEF |
-| `SPELL_RESOLVED` | una Spell viene risolta e scartata | carta, effetto, bersaglio |
-| `HIDDEN_SET` | una Hidden viene messa coperta | — (la carta resta nascosta nel messaggio) |
-| `HIDDEN_TRIGGERED` | una Hidden si attiva | carta, effetto |
-| `TERRAIN_PLACED` | un Terreno entra in gioco | carta |
-| `ROUND_STARTED` | inizio di un round | numero round |
-| `ATTACK_COMPUTED` | calcolo dell'attacco | ATK base, bonus ATK di fazione, modificatori, totale |
-| `DAMAGE_DEALT` | una creatura colpisce l'altra | sorgente, bersaglio, danni, DEF rimasta |
-| `EFFECT_TRIGGERED` | un'abilità agisce | creatura, descrizione |
-| `CREATURE_DIED` | una creatura muore | carta |
-| `PLAYER_DAMAGED` | un giocatore perde punti vita | danni, punti vita rimasti |
-| `MATCH_ENDED` | fine | vincitore, `endReason` |
+| `type` | Quando | Chiavi di `data` | Esempio di `message` |
+|---|---|---|---|
+| `MATCH_STARTED` | inizio | `startingLifePoints` | `Match started — 30 life points each` |
+| `CARD_DRAWN` | un giocatore pesca una Spell, un Terreno o un Oggetto (per le creature basta `CREATURE_ENTERED`, D-07; per una Hidden c'è solo `HIDDEN_SET`, che non la nomina) | `card`, `cardType` | `Challenger draws Veil of the Anchored (SPELL)` |
+| `CREATURE_ENTERED` | una creatura entra in campo | `card`, `attack`, `defense` | `Challenger plays Crawlers (ATK 4, DEF 5)` |
+| `SPELL_RESOLVED` | una Spell viene risolta e scartata | `card`, `effect` (es. `−3 ATK`, `+2 ATK, +1 DEF`, `no effect`), `target` (nullo se si applica alla prossima creatura) | `Skin Fracture resolves on Kappa` |
+| `BURN_REVEALED` | una Spell `BURN` rivela la prossima carta del mazzo (D-13); subito dopo c'è il suo `SPELL_RESOLVED` con il bonus dato | `card`, `revealed` (nullo a mazzo vuoto), `bonusApplied` | `Call of the Rift reveals Kappa` |
+| `HIDDEN_SET` | una Hidden viene messa coperta; se il giocatore ne ha già una attiva, la nuova aspetta in fila (`ENG-41`) e cambia solo il messaggio | nessuna: la carta resta nascosta | `Challenger sets a Hidden card`; in fila: `Challenger sets a Hidden card behind the other one` |
+| `HIDDEN_TRIGGERED` | una Hidden si attiva, all'inizio dello scontro o alla sua condizione; il lato è quello del proprietario effettivo: una Hidden incrociata dall'Operatore della Stanza 0 ha il lato dell'Operatore, e prima c'è un `EFFECT_TRIGGERED` dell'Operatore (`ENG-39`) | `card`, `effect` (es. `+5 DEF to Kappa this combat`, `−5 ATK in the first round to Crawlers`, `DEF of Kappa to 0`) | `Last Sanctuary triggers` |
+| `TERRAIN_PLACED` | un Terreno entra in gioco (e sostituisce quello già in gioco, D-19) | `card`, `replaced` (nullo se non c'era un Terreno) | `Echo Rift enters play, replacing Watching Rift` |
+| `TERRAIN_REMOVED` | un effetto toglie il Terreno in gioco (The Null Witness) o lo inghiotte (The Hollow Wyrm, anche appena pescato) | `card`, `cause` | `Echo Rift is removed by The Null Witness` |
+| `DECK_REORDERED` | un effetto sposta una carta nel mazzo di un giocatore (La Regina dei Sentieri Perduti) | `source`, `card`, `position` (da 1) | `La Regina dei Sentieri Perduti moves Kappa to position 3` |
+| `ITEM_PLACED` | un Oggetto entra in gioco | `card` | `Challenger places Campanello del Torii` |
+| `ITEM_CONSUMED` | un Oggetto applica il suo effetto e si consuma (D-47); se annulla una Spell o una Hidden, subito dopo c'è il suo `SPELL_RESOLVED` o `HIDDEN_TRIGGERED` con `effect` `cancelled` | `card`, `effect` (es. `stays at 1 DEF`, `cancels Skin Fracture`), `creature` | `Campanello del Torii is used on Kappa` |
+| `ROUND_STARTED` | inizio di un round | `round` | `Round 1` |
+| `ATTACK_COMPUTED` | calcolo dell'attacco | `attacker`, `baseAttack`, `factionBonus`, `modifiers`, `effectBonus`, `frozen` (attacco congelato da Yuki-onna: `total` è 0, deciso il 18 novembre), `total` | `Crawlers attacks with 6 (4 base, +2 faction)`, `Kappa attacks with 0 (6 base, frozen)` |
+| `DAMAGE_DEALT` | una creatura colpisce l'altra | `source`, `target`, `amount`, `targetDefense` | `Crawlers deals 6 damage to Kappa (DEF 1)` |
+| `EFFECT_TRIGGERED` | un'abilità agisce; anche il bonus DEF di fazione a inizio scontro, se maggiore di 0, ogni modificatore in attesa che raggiunge la creatura (D-34) e il bonus di un Terreno ricevuto o perso | `card`, `description` | `Kappa: +3 ATK in the first round`, `Kappa: +5 DEF from Veil of the Anchored (ATK 6, DEF 12)`, `Kappa: loses the Watching Rift bonus (ATK 6, DEF 7)` |
+| `CREATURE_DIED` | una creatura muore | `card` | `Crawlers is destroyed` |
+| `PLAYER_DAMAGED` | un giocatore perde punti vita | `amount`, `lifePoints` | `Challenger loses 3 life points (27 left)` |
+| `MATCH_ENDED` | fine | `result`, `endReason` | `Challenger wins (no creatures left)` |
+
+I valori di `data` non hanno testo: le carte sono indicate per nome, gli enum con il loro nome (`"SPELL"`, `"CHALLENGER_WIN"`).
+Nei messaggi le parti a 0 di `ATTACK_COMPUTED` non compaiono, e i numeri negativi usano il segno meno tipografico (−).
 
 ## Esempio di sequenza
 
@@ -58,10 +66,10 @@ In JSON:
 #1  round 0  MATCH_STARTED     Match started — 30 life points each
 #2  round 0  CREATURE_ENTERED  Challenger plays Crawlers (ATK 4, DEF 5)
 #3  round 0  CREATURE_ENTERED  Opponent plays Kappa (ATK 6, DEF 7)
-#4  round 0  EFFECT_TRIGGERED  Kappa: Water Strength, +3 ATK for 2 rounds
+#4  round 0  EFFECT_TRIGGERED  Kappa: +3 ATK in the first round
 #5  round 1  ROUND_STARTED     Round 1
 #6  round 1  ATTACK_COMPUTED   Crawlers attacks with 6 (4 base, +2 faction)
-#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 effect)
+#7  round 1  ATTACK_COMPUTED   Kappa attacks with 8 (6 base, −1 faction, +3 modifiers)
 #8  round 1  DAMAGE_DEALT      Crawlers deals 6 damage to Kappa (DEF 1)
 #9  round 1  DAMAGE_DEALT      Kappa deals 8 damage to Crawlers (DEF −3)
 #10 round 1  CREATURE_DIED     Crawlers is destroyed
