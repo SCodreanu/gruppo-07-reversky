@@ -46,4 +46,27 @@ curl -s -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: appli
 
 Tutti i 92 effetti del catalogo sono registrati (fino a `ENG-40`, con i numeri di `ENG-42`): l'esempio 09 (Hidebehind) mostra una prevenzione nel log. Gli esempi 08 e 13 usano creature senza effetto.
 
-La parte della demo con l'API (una sfida tra `alice` e `bob` dei dati di prova, accettata e simulata dall'engine vero, con il retry a engine spento) si aggiunge qui dopo la prova completa di `API-54`, che è il primo passo dopo questi documenti (vedi la [roadmap dell'API](../../../reversky-api/docs/roadmap/roadmap.md)).
+## Sfida attraverso l'API (`API-54`)
+
+Dopo il motore da solo, la stessa cosa come la vive un utente: `alice` sfida l'amica `bob` dei dati di prova, l'API prepara la partita e la fa simulare all'engine vero, tutti e due nei container di Docker Compose. Durata: circa 5 minuti. I passi, i risultati attesi e l'esito della prova del 22 novembre sono in [sfide](../../../reversky-api/docs/sfide/sfide.md#prova-sullo-stack-completo); script e profilo di sviluppo nel `compose.yaml` sono in `backend_api` da `API-54`.
+
+### Prima del SAL
+
+Dalla cartella principale del repository, in PowerShell:
+
+| # | Cosa | Risultato atteso |
+|---|---|---|
+| 1 | `docker compose -f reversky-api/compose.yaml stop`, se i container di `bootRun` sono accesi | porta `8025` libera per il Mailpit dello stack |
+| 2 | `$env:SPRING_PROFILES_ACTIVE = "dev"`, poi `docker compose down -v` e `docker compose up --build -d` | database nuovo, i quattro container avviati, l'API con `alice`, `bob` e `admin` (password `Reversky2026`) |
+| 3 | `powershell -ExecutionPolicy Bypass -File scripts\prova-sfida.ps1` (prova generale) | `Tutti i controlli superati` |
+
+L'engine dello stack non è esposto sulla porta 8081 dell'host, quindi la prima parte della demo con `scripts\start-engine.bat` non va in conflitto con i container.
+
+### Scaletta
+
+1. **Lo script (1 minuto).** `scripts\prova-sfida.ps1` fa le chiamate che farà il frontend: login, mazzi, invito, accettazione, dettaglio della partita, retry e scambio. Ogni passo stampa `OK` o `ERRORE`.
+2. **Mazzi e partita (2 minuti).** I due mazzi hanno 30 carte: 20 creature, 6 Spell, 2 Hidden, un Terreno e un Oggetto. Bob accetta e l'API risponde con la partita completata: risultato, motivo, round, punti vita e seed scelto dal server. Nel log, lo stesso dell'engine, si vedono `SPELL_RESOLVED`, `HIDDEN_SET`, `TERRAIN_PLACED` e `ITEM_PLACED`; l'esito è opposto per i due giocatori.
+3. **Engine spento (2 minuti).** Lo script ferma il container dell'engine: l'accettazione di un secondo invito risponde `503 ENGINE_UNAVAILABLE` con `battleId` (dopo al massimo 10 secondi) e la partita resta salvata senza risultato. Riacceso l'engine, il retry la completa con lo stesso seed e gli stessi mazzi; un secondo retry restituisce la stessa partita senza richiamare l'engine (nessuna nuova riga `Simulazione completata` in `docker compose logs engine`).
+4. **Scambio (opzionale, 1 minuto).** `alice` propone, `bob` contropropone, `alice` accetta: le copie si spostano e i mazzi restano validi.
+
+Per mostrare il log in Swagger: `http://localhost:8080/swagger-ui.html`, `POST /api/v1/auth/login` con `alice@reversky.dev`, *Authorize* con l'`accessToken`, poi `GET /api/v1/battles` e `GET /api/v1/battles/{id}`. I nomi delle carte nel log sono ancora in italiano finché i DSG non danno quelli inglesi.
