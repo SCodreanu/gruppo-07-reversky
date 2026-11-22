@@ -25,6 +25,8 @@ import it.downfall.reversky.api.catalog.service.CatalogCardService;
 import it.downfall.reversky.api.collection.service.CollectionService;
 import it.downfall.reversky.api.common.dto.PageResponse;
 import it.downfall.reversky.api.inventory.service.InventoryService;
+import it.downfall.reversky.api.notification.entity.NotificationType;
+import it.downfall.reversky.api.notification.service.NotificationService;
 import it.downfall.reversky.api.trade.dto.TradeCardRequest;
 import it.downfall.reversky.api.trade.dto.TradeCardResponse;
 import it.downfall.reversky.api.trade.dto.TradeCounterRequest;
@@ -63,6 +65,9 @@ import lombok.extern.slf4j.Slf4j;
  * finché lo scambio è aperto, e solo per chi ha fatto l'offerta in corso. Chi propone o controproponde blocca la sua
  * riga {@code inventories} prima di contare le copie disponibili, così due proposte contemporanee sulle stesse copie
  * non passano entrambe.
+ * <p>
+ * Ogni mossa avvisa l'altro partecipante nella sua transazione (API-69, docs/notifiche): {@code TRADE_PROPOSED} e
+ * {@code TRADE_COUNTERED} a chi deve rispondere, {@code TRADE_ACCEPTED} e {@code TRADE_REJECTED} all'altra parte.
  */
 @Slf4j
 @Service
@@ -86,6 +91,7 @@ public class TradeService {
 	private final CatalogCardService catalogCardService;
 	private final CollectionService collectionService;
 	private final InventoryService inventoryService;
+	private final NotificationService notificationService;
 	private final Clock clock;
 
 	/**
@@ -119,6 +125,7 @@ public class TradeService {
 		Trade trade = new Trade(userId, recipientId, Instant.now(clock));
 		trade.replaceOffers(userId, sides.give(), sides.receive());
 		tradeRepository.save(trade);
+		notifyOther(trade, userId, NotificationType.TRADE_PROPOSED);
 		log.info("User {} proposed trade {} to user {}", userId, trade.getId(), recipientId);
 		return toResponse(trade, userId);
 	}
@@ -153,6 +160,7 @@ public class TradeService {
 
 		trade.replaceOffers(userId, sides.give(), sides.receive());
 		trade.passTurn(Instant.now(clock));
+		notifyOther(trade, userId, NotificationType.TRADE_COUNTERED);
 		log.info("User {} countered trade {}", userId, tradeId);
 		return toResponse(trade, userId);
 	}
@@ -192,6 +200,7 @@ public class TradeService {
 		move(userId, otherId, myCards);
 		move(otherId, userId, otherCards);
 		trade.accept(Instant.now(clock));
+		notifyOther(trade, userId, NotificationType.TRADE_ACCEPTED);
 		log.info("Trade {} accepted by user {}", tradeId, userId);
 		return toResponse(trade, userId);
 	}
@@ -239,8 +248,17 @@ public class TradeService {
 	public TradeResponse reject(Integer userId, UUID tradeId) {
 		Trade trade = lockOpenTrade(userId, tradeId);
 		trade.reject(Instant.now(clock));
+		notifyOther(trade, userId, NotificationType.TRADE_REJECTED);
 		log.info("Trade {} rejected by user {}", tradeId, userId);
 		return toResponse(trade, userId);
+	}
+
+	// --- notifiche ---
+
+	// API-69: all'altro partecipante, con id e username di chi ha fatto la mossa, nella transazione della mossa
+	private void notifyOther(Trade trade, Integer actorId, NotificationType type) {
+		notificationService.notify(trade.otherThan(actorId), type, Map.of("tradeId", trade.getId(), "userId", actorId,
+			"username", userService.getById(actorId).getUsername()));
 	}
 
 	// --- controlli ---

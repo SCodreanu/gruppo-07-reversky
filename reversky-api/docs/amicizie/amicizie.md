@@ -76,6 +76,7 @@ Package `friendship/`: `FriendshipController`, `FriendshipService`, `FriendshipR
 - `DELETE /friends/{userId}` elimina la riga in qualunque stato e direzione: rimuove un amico, ritira una richiesta inviata e, per il destinatario, equivale a un rifiuto. Nella stessa transazione elimina gli inviti di sfida `PENDING` tra i due, in entrambe le direzioni (regola 7), con `PendingInviteService.deletePendingBetween` di `battle/` (un solo `DELETE` sull'entità `BattleInvite`); gli inviti `ACCEPTED` restano.
 - Concorrenza: `Friendship` implementa `Persistable`, quindi il salvataggio di una richiesta nuova è sempre un `INSERT`. Due richieste uguali nello stesso momento si fermano sulla chiave primaria, due opposte su `uq_friendships_pair`: in entrambi i casi la seconda riceve `409` e resta una sola riga (regola 5).
 - La regola 8 (amicizia controllata negli inviti di sfida) spetta alla task delle sfide.
+- Notifiche (API-67, vedi [notifiche](../notifiche/notifiche.md)): una richiesta nuova crea `FRIEND_REQUEST_RECEIVED` per il destinatario, l'accettazione (anche con la richiesta inversa della regola 2) `FRIEND_REQUEST_ACCEPTED` per chi aveva mandato la richiesta, entrambe con `userId` e `username` di chi ha fatto l'azione e nella stessa transazione. Rifiuto, ritiro, rimozione e una richiesta che finisce in `409` non creano notifiche.
 
 | Caso | Status | `code` |
 |---|---|---|

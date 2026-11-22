@@ -28,6 +28,8 @@ import it.downfall.reversky.api.deck.exception.DeckNotFoundException;
 import it.downfall.reversky.api.deck.exception.InvalidDeckException;
 import it.downfall.reversky.api.deck.service.DeckService;
 import it.downfall.reversky.api.friendship.service.FriendshipService;
+import it.downfall.reversky.api.notification.entity.NotificationType;
+import it.downfall.reversky.api.notification.service.NotificationService;
 import it.downfall.reversky.api.user.entity.User;
 import it.downfall.reversky.api.user.exception.UserNotFoundException;
 import it.downfall.reversky.api.user.service.UserService;
@@ -36,7 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Inviti alle sfide amichevoli (docs/sfide, "Amichevole: invito", API-37, API-38, API-39): creazione, liste, rifiuto e
- * ritiro. L'accettazione, che crea la partita, è in {@link BattleService}.
+ * ritiro. L'accettazione, che crea la partita, è in {@link BattleService}. Un invito nuovo crea la notifica
+ * {@code BATTLE_INVITE_RECEIVED} per l'avversario (API-68); rifiuto e ritiro no.
  */
 @Slf4j
 @Service
@@ -50,6 +53,7 @@ public class BattleInviteService {
 	private final UserService userService;
 	private final FriendshipService friendshipService;
 	private final DeckService deckService;
+	private final NotificationService notificationService;
 	private final Clock clock;
 
 	/**
@@ -84,6 +88,10 @@ public class BattleInviteService {
 			// Due inviti contemporanei verso lo stesso avversario: il secondo trova uq_battle_invites_pending_pair
 			throw new InviteAlreadyPendingException();
 		}
+
+		// API-68: l'avversario lo sa subito, con id e username di chi lo sfida
+		notificationService.notify(opponentId, NotificationType.BATTLE_INVITE_RECEIVED, Map.of("inviteId", invite.getId(),
+			"userId", userId, "username", userService.getById(userId).getUsername()));
 
 		log.info("User {} challenged user {} (invite {})", userId, opponentId, invite.getId());
 		return toResponses(List.of(invite), userId).get(0);

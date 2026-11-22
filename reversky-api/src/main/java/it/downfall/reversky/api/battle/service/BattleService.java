@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,8 @@ import it.downfall.reversky.api.deck.service.DeckService;
 import it.downfall.reversky.api.friendship.service.FriendshipService;
 import it.downfall.reversky.api.inventory.entity.CreditReason;
 import it.downfall.reversky.api.inventory.service.InventoryService;
+import it.downfall.reversky.api.notification.entity.NotificationType;
+import it.downfall.reversky.api.notification.service.NotificationService;
 import it.downfall.reversky.api.ruleset.entity.RuleSet;
 import it.downfall.reversky.api.ruleset.service.RuleSetService;
 import it.downfall.reversky.api.user.service.UserService;
@@ -64,7 +67,9 @@ import lombok.extern.slf4j.Slf4j;
  * Partite (docs/sfide, API-40, API-41, API-42, API-43): accettazione di un invito con simulazione, dettaglio e
  * storico; preparazione e simulazione delle classificate abbinate da {@link MatchmakingService} (API-49). Il
  * salvataggio di una classificata applica anche l'Elo (API-50) e i crediti di vittoria o pareggio (API-45), nella
- * stessa transazione del risultato.
+ * stessa transazione del risultato. Le notifiche delle partite (API-68) nascono nelle stesse transazioni:
+ * {@code BATTLE_INVITE_ACCEPTED} alla preparazione di un'amichevole, {@code MATCH_FOUND} a quella di una classificata,
+ * {@code BATTLE_COMPLETED} al salvataggio del risultato.
  * <p>
  * L'accettazione è divisa in tre passi, per non tenere aperta una transazione mentre si aspetta l'engine: preparazione
  * (transazione 1), chiamata all'engine (fuori transazione), salvataggio (transazione 2). Per questo le transazioni sono
@@ -88,6 +93,7 @@ public class BattleService {
 	private final UserService userService;
 	private final RankingService rankingService;
 	private final InventoryService inventoryService;
+	private final NotificationService notificationService;
 	private final EngineClient engineClient;
 	private final RandomGenerator random;
 	private final Clock clock;
@@ -178,6 +184,8 @@ public class BattleService {
 		Battle battle = Battle.ranked(challengerId, opponentId, ruleSet.getId(), snapshot(challengerDeck),
 			snapshot(opponentDeck), preparedStats(ruleSet), Instant.now(clock));
 		battleRepository.save(battle);
+		// API-68: i due giocatori sanno subito di essere stati abbinati, anche se il loro ticket è già sparito
+		notifyBothPlayers(battle, NotificationType.MATCH_FOUND);
 
 		log.info("Ranked battle {} prepared: user {} (challenger) against user {}", battle.getId(), challengerId,
 			opponentId);
@@ -225,6 +233,10 @@ public class BattleService {
 			snapshot(challengerDeck), snapshot(opponentDeck), preparedStats(ruleSet), Instant.now(clock));
 		battleRepository.save(battle);
 		invite.accept();
+		// API-68: lo sfidante sa che l'invito è stato accettato e quale partita guardare
+		notificationService.notify(invite.getChallengerId(), NotificationType.BATTLE_INVITE_ACCEPTED, Map.of(
+			"inviteId", inviteId, "battleId", battle.getId(), "userId", userId,
+			"username", userService.getById(userId).getUsername()));
 
 		log.info("Invite {} accepted by user {}: battle {} prepared", inviteId, userId, battle.getId());
 		return battle;
@@ -323,6 +335,8 @@ public class BattleService {
 				applyElo(battle, result);
 				awardCredits(battle, result);
 			}
+			// API-68: solo qui, quindi una volta sola e mai per una partita rimasta senza risultato
+			notifyBothPlayers(battle, NotificationType.BATTLE_COMPLETED);
 			log.info("Battle {} completed: {}", battleId, response.result());
 		}
 		return battle;
@@ -356,6 +370,24 @@ public class BattleService {
 			}
 		}
 		log.info("Ranked battle {} rewarded from rule set {}: {}", battle.getId(), ruleSet.getVersion(), result);
+	}
+
+	// Una notifica per giocatore, con id e username dell'altro; BATTLE_COMPLETED anche con modalità ed esito di chi riceve
+	private void notifyBothPlayers(Battle battle, NotificationType type) {
+		Map<Integer, String> usernames = userService.getUsernames(Set.of(battle.getChallengerId(), battle.getOpponentId()));
+		for (boolean asChallenger : new boolean[] {true, false}) {
+			Integer recipientId = asChallenger ? battle.getChallengerId() : battle.getOpponentId();
+			Integer otherId = otherPlayer(battle.getChallengerId(), battle.getOpponentId(), recipientId);
+			Map<String, Object> payload = new HashMap<>();
+			payload.put("battleId", battle.getId());
+			payload.put("userId", otherId);
+			payload.put("username", usernames.get(otherId));
+			if (type == NotificationType.BATTLE_COMPLETED) {
+				payload.put("mode", battle.getMode());
+				payload.put("outcome", BattleOutcome.of(battle.getResult(), asChallenger));
+			}
+			notificationService.notify(recipientId, type, payload);
+		}
 	}
 
 	private static String signed(int delta) {

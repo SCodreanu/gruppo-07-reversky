@@ -16,6 +16,7 @@ Gestisce tutto ciò che **non** è la simulazione della partita, ed è l'unico m
 - amicizie;
 - scambi tra utenti (con controproposte);
 - sfide e storico partite;
+- notifiche degli utenti, salvate e inviate in tempo reale con SSE;
 - backoffice (catalogo, pacchetti, utenti) con registro di audit.
 
 La partita **non** viene calcolata qui: viene delegata al modulo `reversky-engine`, chiamato via HTTP da un service dedicato (vedi [docs/sfide](docs/sfide/sfide.md)).
@@ -65,6 +66,7 @@ src/main/java/it/downfall/reversky/api/
 ├── friendship/    amicizie
 ├── trade/         scambi e controproposte
 ├── battle/        inviti, partite, storico, client verso l'engine
+├── notification/  notifiche degli utenti e canale SSE
 ├── admin/         endpoint di backoffice e audit
 └── common/        errori, sicurezza, configurazione condivisa
 ```
@@ -88,6 +90,7 @@ Prima di toccare una funzionalità, leggi il documento corrispondente:
 | Amicizie | [docs/amicizie](docs/amicizie/amicizie.md) |
 | Scambi | [docs/scambi](docs/scambi/scambi.md) |
 | Sfide e storico | [docs/sfide](docs/sfide/sfide.md) |
+| Notifiche e canale SSE | [docs/notifiche](docs/notifiche/notifiche.md) |
 | Backoffice e audit | [docs/backoffice](docs/backoffice/backoffice.md) |
 | Strategia di test | [docs/test](docs/test/test.md) |
 | Stato del lavoro e piano fino alla consegna | [docs/roadmap](docs/roadmap/roadmap.md) |
@@ -164,6 +167,10 @@ Sfide amichevoli (`battle/`, API-35, 37–44):
 - rating Elo (API-46): `Elo.eloDelta` e `Elo.score` (funzioni pure), `PlayerRating` con `recordGame`, usato dall'aggiornamento dell'Elo (API-50), `RankingService.createIfMissing` per l'ingresso in coda e `GET /api/v1/rankings/me` (`RankingController`), che senza una riga restituisce 1000 e contatori a 0 senza scrivere. Nessuna classifica (Q-10).
 - coda classificata (API-47): `POST/GET/DELETE /api/v1/matchmaking/queue` (`MatchmakingController`, `MatchmakingQueueService`). Si entra con un mio mazzo valido (`getPlayableDeck`), al primo ingresso si crea il rating, un secondo ingresso è `409 ALREADY_IN_QUEUE`; il ticket `{ status, deckId, rating, queuedAt, window }` dà la finestra di ricerca di adesso (`MatchmakingTicket.searchWindow`), senza ticket `GET` è `404 QUEUE_TICKET_NOT_FOUND`, `DELETE` è sempre `204`. `QueueTicketService` toglie il ticket quando il mazzo cambia o l'account viene disattivato.
 - abbinamento (API-49): `MatchmakingService.matchAll()` prova ogni ticket dal più vecchio, uno per transazione, con `FOR UPDATE SKIP LOCKED` sul ticket e sull'avversario (rating più vicino nella finestra, poi il più vecchio, anti-boosting di 10 minuti); un mazzo non più valido toglie solo il suo ticket (`getPlayableDeck` ha `noRollbackFor`); la partita `RANKED` si prepara con `BattleService.prepareRanked` e l'engine si chiama dopo il commit (`simulateRanked`). `battle/job/MatchmakingJob` lo fa partire ogni 2 secondi e dopo ogni ingresso in coda (`QueueJoinedEvent`); `reversky.matchmaking.enabled=false` lo spegne, come fanno i test (`src/test/resources/config/application.properties`). Il risultato di una classificata si salva con l'Elo (API-50): `RankingService.recordRankedGame` blocca le due righe di `player_ratings` (id minore per primo), calcola con `Elo.eloDelta` sui valori di adesso e applica `recordGame`, e `Battle.recordRatings` scrive le quattro colonne di rating nella stessa transazione, una volta sola anche con retry sovrapposti; `GET /battles/{id}` ha `ratingBefore` e `ratingDelta` di chi guarda. Nella stessa transazione arrivano i crediti (API-45): `win_reward` a chi vince (`BATTLE_WIN`) o `draw_reward` a entrambi (`BATTLE_DRAW`, dopo `lockInventories`), dal rule set della partita (`RuleSetService.getRuleSet(battle.ruleSetId)`), con `InventoryService`.
+
+Notifiche (`notification/`, API-65…69):
+
+- `NotificationService.notify(userId, type, payload)` salva la notifica dentro la transazione del chiamante (`Propagation.MANDATORY`), con un `payload` di soli id e username; `GET /api/v1/notifications` (paginato, dalla più recente, `?unread=true`), `GET /api/v1/notifications/unread-count`, `POST /api/v1/notifications/{id}/read` e `/read-all` (`NotificationController`), solo per le proprie (`404 NOTIFICATION_NOT_FOUND`). `NotificationCleanupJob` elimina ogni notte le lette più vecchie di `reversky.notifications.retention` (30 giorni). Canale SSE `GET /api/v1/notifications/stream` (`NotificationStreamService`, connessioni in memoria per utente): invio dopo il commit (`NotificationCreatedEvent` + `@TransactionalEventListener`), timeout alla scadenza dell'access token, `Last-Event-ID` con al massimo 100 notifiche perse, `: ping` ogni 30 secondi (`NotificationHeartbeatJob`), connessioni chiuse alla disattivazione dell'account (`UserDisabledEvent`) e `403 AUTH_ACCOUNT_DISABLED` all'apertura per un account disattivato. Il frontend lo apre con un client `fetch` e l'header `Authorization`. Le amicizie notificano richiesta ricevuta e accettata (`FRIEND_REQUEST_RECEIVED`, `FRIEND_REQUEST_ACCEPTED`, API-67); le sfide `BATTLE_INVITE_RECEIVED`, `BATTLE_INVITE_ACCEPTED`, `MATCH_FOUND` e `BATTLE_COMPLETED` (una volta sola, solo con un risultato, API-68); gli scambi `TRADE_PROPOSED` e `TRADE_COUNTERED` a chi deve rispondere, `TRADE_ACCEPTED` e `TRADE_REJECTED` all'altra parte (API-69). Dettagli in [docs/notifiche](docs/notifiche/notifiche.md#comportamento-già-implementato).
 
 Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
 

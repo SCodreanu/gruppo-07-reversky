@@ -430,6 +430,11 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 - L'Elo si applica **una volta sola** anche con retry sovrapposti: il salvataggio blocca prima la partita e non scrive niente se è già completata, quindi il secondo salvataggio non arriva mai ai rating. Un giocatore abbinato ha sempre la riga del rating (si crea all'ingresso in coda); se mancasse è un errore di programmazione (`IllegalStateException`), non un rating nuovo.
 - `GET /battles/{id}` (e le risposte di accettazione e retry) hanno anche `ratingBefore` e `ratingDelta` di chi guarda: null per le amichevoli e finché la classificata non è completata. Lo storico aveva già `ratingDelta`, letto dalla stessa riga.
 
+### Notifiche delle sfide (API-68 #138)
+
+- Invito nuovo → `BATTLE_INVITE_RECEIVED` all'avversario; accettazione → `BATTLE_INVITE_ACCEPTED` allo sfidante; abbinamento in classificata → `MATCH_FOUND` a entrambi; risultato salvato (anche dal retry) → `BATTLE_COMPLETED` a entrambi, con il proprio esito. Ogni notifica nasce nella transazione del passo che la causa e parte sul canale SSE dopo il commit (vedi [notifiche](../notifiche/notifiche.md#sfide-api-68-138)).
+- Con `MATCH_FOUND` il client non deve più confrontare `createdAt` e `queuedAt` per capire se il ticket è sparito per un abbinamento (Q-17); il confronto resta valido per chi non usa il canale.
+
 ### Crediti delle classificate (API-45 #115)
 
 - Nella stessa transazione di salvataggio, dopo l'Elo e solo per le `RANKED`: vittoria → `win_reward` a chi vince con la riga `BATTLE_WIN`; pareggio → `draw_reward` a entrambi con `BATTLE_DRAW`, dopo aver bloccato i due inventari con `InventoryService.lockInventories` (`user_id` minore per primo). I crediti passano da `InventoryService.addCredits`, come ogni movimento (vedi [crediti](../crediti/crediti.md#crediti-delle-classificate-api-45-115)).
