@@ -148,7 +148,7 @@ Regole di gioco (`ruleset/`):
 
 Amicizie (`friendship/`):
 
-- `GET /api/v1/friends`, `GET /api/v1/friends/requests?box=incoming|outgoing`, `POST /api/v1/friends/requests`, `POST /api/v1/friends/requests/{requesterId}/accept` e `/reject`, `DELETE /api/v1/friends/{userId}` (`FriendshipController`). La richiesta inversa accetta quella esistente; rimuovere un amico elimina anche gli inviti di sfida `PENDING` tra i due (query nativa finché non esiste `battle/`). Dettagli ed errori in [docs/amicizie](docs/amicizie/amicizie.md#comportamento-già-implementato).
+- `GET /api/v1/friends`, `GET /api/v1/friends/requests?box=incoming|outgoing`, `POST /api/v1/friends/requests`, `POST /api/v1/friends/requests/{requesterId}/accept` e `/reject`, `DELETE /api/v1/friends/{userId}` (`FriendshipController`). La richiesta inversa accetta quella esistente; rimuovere un amico elimina anche gli inviti di sfida `PENDING` tra i due (`battle/service/PendingInviteService`). Dettagli ed errori in [docs/amicizie](docs/amicizie/amicizie.md#comportamento-già-implementato).
 
 Collezione (`collection/`):
 
@@ -174,7 +174,7 @@ Catalogo iniziale e dati di prova (API-55, API-25):
 Mazzi (`deck/`, API-26–29):
 
 - `GET/POST /api/v1/decks`, `GET/PUT/DELETE /api/v1/decks/{id}`, `POST /api/v1/decks/validate`, `GET /api/v1/decks/rules` (`DeckController`); il mazzo di un altro è `404`, nome univoco per utente (`409`), un mazzo in un invito `PENDING` non si elimina (`409`), la modifica toglie il ticket in coda classificata.
-- `DeckValidator` senza database restituisce tutte le violazioni `DECK_*` (composizione del rule set attivo, Hidden per sottotipo, copie con varianti sommate, `max_per_deck`, possesso sulle copie disponibili, carte disattivate); un mazzo non valido è `422 DECK_INVALID` con `violations` e non si salva; `valid` si ricalcola a ogni lettura. Inviti e coda con SQL nativo finché non esiste `battle/`. Dettagli in [docs/mazzi](docs/mazzi/mazzi.md#comportamento-già-implementato).
+- `DeckValidator` senza database restituisce tutte le violazioni `DECK_*` (composizione del rule set attivo, Hidden per sottotipo, copie con varianti sommate, `max_per_deck`, possesso sulle copie disponibili, carte disattivate); un mazzo non valido è `422 DECK_INVALID` con `violations` e non si salva; `valid` si ricalcola a ogni lettura. Gli inviti si controllano con `PendingInviteService`; la coda classificata resta in SQL nativo finché non esiste (API-47, API-48). Dettagli in [docs/mazzi](docs/mazzi/mazzi.md#comportamento-già-implementato).
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 

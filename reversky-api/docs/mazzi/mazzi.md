@@ -161,7 +161,7 @@ Un test per **ogni** regola, sia nel caso valido sia al limite:
 
 - Package `deck/`: entità `Deck`, `DeckService`, `DeckController`. Ogni metodo riceve l'utente dal token e cerca il mazzo per id **e** utente, quindi il mazzo di un altro è `404 DECK_NOT_FOUND`.
 - `GET /decks` in ordine di nome, poi di id. Il nome si salva senza spazi all'inizio e alla fine; un nome già usato da un altro mazzo dello stesso utente è `409 DECK_NAME_ALREADY_USED`, anche con due richieste contemporanee (il vincolo `uq_decks_user_id_name` viene tradotto nello stesso errore).
-- `PUT /decks/{id}` toglie il ticket in coda classificata; `DELETE /decks/{id}` risponde `204`, e il ticket si cancella da solo (`ON DELETE CASCADE`). Un mazzo usato da un invito `PENDING` è `409 DECK_IN_USE`. Inviti e coda si leggono con SQL nativo in `DeckRepository` finché non esiste `battle/`.
+- `PUT /decks/{id}` toglie il ticket in coda classificata; `DELETE /decks/{id}` risponde `204`, e il ticket si cancella da solo (`ON DELETE CASCADE`). Un mazzo usato da un invito `PENDING` è `409 DECK_IN_USE`. L'invito si controlla con `PendingInviteService.isDeckInPendingInvite` di `battle/`; il ticket in coda resta in SQL nativo in `DeckRepository` finché non esiste la coda classificata (API-47, API-48).
 
 ### Contenuto del mazzo (API-27, #97)
 

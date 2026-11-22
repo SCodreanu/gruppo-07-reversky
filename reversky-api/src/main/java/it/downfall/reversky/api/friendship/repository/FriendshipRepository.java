@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -66,18 +65,4 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Friendsh
 	List<Friendship> findSentWithStatus(
 		@Param("status") FriendshipStatus status,
 		@Param("userId") Integer userId);
-
-	/**
-	 * Elimina gli inviti di sfida PENDING tra due utenti, in entrambe le direzioni
-	 * (docs/amicizie, regola 7). Query nativa finché non esiste l'entità BattleInvite
-	 * (arriverà con la task sfide, che la sostituirà con un metodo del proprio service).
-	 */
-	@Modifying
-	@Query(value = """
-		DELETE FROM battle_invites
-		WHERE status = 'PENDING'
-		  AND ((challenger_id = :a AND opponent_id = :b)
-		    OR (challenger_id = :b AND opponent_id = :a))
-		""", nativeQuery = true)
-	int deletePendingBattleInvitesBetween(@Param("a") Integer a, @Param("b") Integer b);
 }

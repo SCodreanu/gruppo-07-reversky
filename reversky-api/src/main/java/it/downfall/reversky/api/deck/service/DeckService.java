@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.battle.service.PendingInviteService;
 import it.downfall.reversky.api.catalog.entity.CatalogCard;
 import it.downfall.reversky.api.catalog.service.CatalogCardService;
 import it.downfall.reversky.api.catalog.service.RarityService;
@@ -56,6 +57,7 @@ public class DeckService {
 	private final RuleSetService ruleSetService;
 	private final DeckValidator deckValidator;
 	private final CollectionService collectionService;
+	private final PendingInviteService pendingInviteService;
 
 	/**
 	 * I miei mazzi, in ordine di nome, con {@code valid} ricalcolato (GET /api/v1/decks).
@@ -177,7 +179,7 @@ public class DeckService {
 	@Transactional
 	public void delete(Integer userId, Integer deckId) {
 		Deck deck = getOwnDeck(userId, deckId);
-		if (deckRepository.isUsedByPendingInvite(deckId)) {
+		if (pendingInviteService.isDeckInPendingInvite(deckId)) {
 			throw new DeckInUseException(deckId);
 		}
 

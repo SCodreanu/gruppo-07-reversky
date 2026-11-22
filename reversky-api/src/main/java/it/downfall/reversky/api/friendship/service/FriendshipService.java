@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.downfall.reversky.api.battle.service.PendingInviteService;
 import it.downfall.reversky.api.friendship.dto.FriendRequestResponse;
 import it.downfall.reversky.api.friendship.dto.FriendResponse;
 import it.downfall.reversky.api.friendship.entity.Friendship;
@@ -33,6 +34,7 @@ public class FriendshipService {
 
 	private final FriendshipRepository friendshipRepository;
 	private final UserService userService;
+	private final PendingInviteService pendingInviteService;
 
 	// --- letture ---
 
@@ -175,7 +177,7 @@ public class FriendshipService {
 			.orElseThrow(() -> new FriendshipNotFoundException());
 
 		friendshipRepository.delete(existing);
-		friendshipRepository.deletePendingBattleInvitesBetween(currentUserId, targetUserId);
+		pendingInviteService.deletePendingBetween(currentUserId, targetUserId);
 	}
 
 	// --- supporto ---
