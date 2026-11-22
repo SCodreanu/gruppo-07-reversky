@@ -155,6 +155,16 @@ Chi chiama `FactionBonusService.replaceAll` senza passare dal controller riceve 
 
 `sorting_order` non si modifica perché arriva all'engine come `rarityOrder` e alcuni effetti lo confrontano con soglie scritte nel codice (es. SCP-3000: `rarityOrder ≥ 3`). Una nuova rarità può usare solo un numero libero.
 
+### Tag: comportamento già implementato (API-07, #77)
+
+Le classi stanno in `catalog/` (`Tag`, `TagRepository`, `TagService`, `TagRequest`, `TagResponse`, `TagNotFoundException`, `TagNameAlreadyUsedException`); il controller è `admin/controller/AdminTagController`.
+
+- `GET /admin/tags` restituisce tutti i tag (`{ id, name }`) in ordine di nome.
+- `POST /admin/tags` con `{ name }` crea un tag e risponde `201`; `PUT /admin/tags/{id}` lo rinomina (ridargli il suo nome va bene). Carte, fazioni e pacchetti collegati restano collegati, perché `card_tags`, `faction_tags` e `pack_tags` usano l'id.
+- Il nome si controlla **così com'è** (deciso il 22 novembre): maiuscole, cifre e trattino basso (`^[A-Z0-9_]+$`, come `chk_tags_name_format`), al massimo 100 caratteri. Minuscole, spazi o altri caratteri sono `400`, senza toglierne gli spazi né renderlo maiuscolo: il backoffice lo manda già nel formato giusto.
+- Un nome già usato è `409 TAG_NAME_TAKEN`, anche con due richieste contemporanee (il vincolo `uq_tags_name` diventa lo stesso `409`, come i nomi dei mazzi); un tag inesistente è `404 TAG_NOT_FOUND`.
+- Non c'è un `DELETE` né un elenco pubblico. Collegare i tag a carte, fazioni e pacchetti e il filtro dei pacchetti per tag arrivano con `API-12`, `API-13` e `API-21`.
+
 ## Regole di gioco — `rule_sets`
 
 Regola del progetto: **tutto ciò che non è una costante del regolamento si modifica da qui**, non dal codice né da `application.properties`.
