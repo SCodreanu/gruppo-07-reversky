@@ -90,6 +90,7 @@ Prima di toccare una funzionalità, leggi il documento corrispondente:
 | Sfide e storico | [docs/sfide](docs/sfide/sfide.md) |
 | Backoffice e audit | [docs/backoffice](docs/backoffice/backoffice.md) |
 | Strategia di test | [docs/test](docs/test/test.md) |
+| Stato del lavoro e piano fino alla consegna | [docs/roadmap](docs/roadmap/roadmap.md) |
 
 Le regole di scrittura del codice sono in [CodingRequirements.md](CodingRequirements.md).
 
@@ -182,6 +183,6 @@ Scambi (`trade/`, API-31–34):
 - `POST /api/v1/trades` e `POST /api/v1/trades/{id}/counter`: le copie offerte restano in collezione ma sono riservate (solo per chi ha fatto l'offerta in corso) finché lo scambio è aperto; chi propone blocca la sua riga `inventories` prima di contare le copie disponibili. Le offerte si aggiornano al loro posto (`Trade.replaceOffers`).
 - `POST /api/v1/trades/{id}/accept` in una sola transazione: blocca lo scambio, poi le righe `inventories` di entrambi in ordine di `user_id`, controlla le copie disponibili di chi accetta e sposta le carte con `CollectionService`; l'altro disattivato è `422 TRADE_USER_DISABLED`. Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
 
-Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
+Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite. Cosa manca e in che ordine è nella [roadmap](docs/roadmap/roadmap.md).
 
 Lo schema confermato è in [schema.dbml](docs/database/schema.dbml). La **baseline** `V1`–`V8` crea tutte le tabelle in una volta (task API-70, #141) e sostituisce le vecchie migrazioni scritte una per task: da qui lo schema è bloccato, gli altri task scrivono solo Java e un cambiamento di struttura richiede una migrazione nuova decisa insieme (vedi [database](docs/database/database.md#schema-bloccato-baseline)). Chi aveva già un database locale deve cancellarne il volume.
