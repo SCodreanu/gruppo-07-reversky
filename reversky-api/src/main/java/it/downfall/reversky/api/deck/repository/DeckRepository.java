@@ -36,11 +36,6 @@ public interface DeckRepository extends JpaRepository<Deck, Integer> {
 	public boolean isNameTaken(@Param("userId") Integer userId, @Param("name") String name,
 			@Param("excludedId") Integer excludedId);
 
-	// SQL nativo finché non esiste battle/ (API-37, API-39): poi passerà a un metodo del suo service
-	@Query(value = "SELECT EXISTS (SELECT 1 FROM battle_invites WHERE challenger_deck_id = :deckId AND status = 'PENDING')",
-			nativeQuery = true)
-	public boolean isUsedByPendingInvite(@Param("deckId") Integer deckId);
-
 	// SQL nativo finché non esiste la coda classificata (API-47, API-48): modificare il mazzo toglie il ticket.
 	// Eliminarlo non serve: il database cancella il ticket con ON DELETE CASCADE.
 	@Modifying

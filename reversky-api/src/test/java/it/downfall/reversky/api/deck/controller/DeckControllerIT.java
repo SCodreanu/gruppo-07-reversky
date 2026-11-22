@@ -228,7 +228,8 @@ class DeckControllerIT {
 	@Test
 	@DisplayName("A deck used by a pending challenge cannot be deleted; an accepted one can")
 	void delete_deckInPendingInvite_returns409() throws Exception {
-		// Arrange: inviti scritti con SQL finché non esiste battle/
+		// Arrange: invito scritto con SQL, così il test non dipende dal flusso degli inviti (il controllo passa da
+		// PendingInviteService)
 		User challenger = testUsers.create();
 		User opponent = testUsers.create();
 		Integer deckId = createdId(challenger, "Challenge");
