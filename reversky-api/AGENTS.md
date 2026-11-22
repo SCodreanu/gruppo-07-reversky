@@ -156,7 +156,7 @@ Collezione (`collection/`):
 
 Sfide amichevoli (`battle/`, API-35, 37–44):
 
-- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`, dati rifiutati dall'engine (`4xx`) = `500 ENGINE_INPUT_REJECTED` (API-71);
+- `EngineClient` chiama `POST /api/v1/simulations` dell'engine (`reversky.engine.base-url`, default `http://localhost:8081`); engine non disponibile = `503 ENGINE_UNAVAILABLE`, dati rifiutati dall'engine (`4xx`) = `500 ENGINE_INPUT_REJECTED` (API-71); il JSON è controllato da `EngineContractTest` con le richieste e le fotografie delle risposte di `reversky-engine/examples/` (ENG-24);
 - inviti tra amici con un mazzo valido (`/api/v1/battle-invites`, `box=incoming|outgoing`, `reject`, ritiro con `DELETE`); `accept` prepara la partita (seed dal server, fotografia dei mazzi, regole in `battle_stats`), fa simulare l'engine fuori transazione e salva l'esito; `GET /api/v1/battles` (storico senza log), `GET /api/v1/battles/{id}` (dettaglio dal punto di vista di chi guarda, con log) e `POST /api/v1/battles/{id}/retry` con la stessa identica partita. Classificate, Elo e crediti delle partite non ci sono ancora. Dettagli in [docs/sfide](docs/sfide/sfide.md#comportamento-già-implementato).
 
 Pacchetti (`pack/`, API-18, 19, 20, 22, 24, 63):
