@@ -179,7 +179,8 @@ Mazzi (`deck/`, API-26–29):
 Scambi (`trade/`, API-31–34):
 
 - `GET /api/v1/trades?box=incoming|outgoing` (solo aperti, paginata, ultima mossa prima), `GET /api/v1/trades/{id}` e `POST /api/v1/trades/{id}/reject` (`TradeController`), sempre dal punto di vista di chi guarda (`give`, `receive`, `other`, `myTurn`); un non partecipante riceve `404`.
-- `POST /api/v1/trades` e `POST /api/v1/trades/{id}/counter`: le copie offerte restano in collezione ma sono riservate (solo per chi ha fatto l'offerta in corso) finché lo scambio è aperto; chi propone blocca la sua riga `inventories` prima di contare le copie disponibili. Le offerte si aggiornano al loro posto (`Trade.replaceOffers`). Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
+- `POST /api/v1/trades` e `POST /api/v1/trades/{id}/counter`: le copie offerte restano in collezione ma sono riservate (solo per chi ha fatto l'offerta in corso) finché lo scambio è aperto; chi propone blocca la sua riga `inventories` prima di contare le copie disponibili. Le offerte si aggiornano al loro posto (`Trade.replaceOffers`).
+- `POST /api/v1/trades/{id}/accept` in una sola transazione: blocca lo scambio, poi le righe `inventories` di entrambi in ordine di `user_id`, controlla le copie disponibili di chi accetta e sposta le carte con `CollectionService`; l'altro disattivato è `422 TRADE_USER_DISABLED`. Dettagli in [docs/scambi](docs/scambi/scambi.md#comportamento-già-implementato).
 
 Le altre funzionalità non sono ancora iniziate: i documenti in `docs/` descrivono come **devono** essere costruite.
 

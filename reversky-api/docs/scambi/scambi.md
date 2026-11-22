@@ -194,6 +194,16 @@ Decisioni del 22 novembre: un solo branch con un commit per task (API-31…34), 
 - Le risposte hanno `give` e `receive` dal punto di vista di chi guarda: `[{ card, quantity }]` con la carta completa di `GET /collection`, per nome; le offerte di una pagina intera si leggono con una query (`TradeOfferRepository.findAllByIdTradeIdIn`).
 - `reservedQuantity` di `GET /collection` e le copie disponibili usate dai mazzi (`DECK_NOT_OWNED`) leggono già queste righe (`CollectionCardRepository.countReserved`): un mazzo che usa copie riservate risulta non valido finché lo scambio è aperto.
 
+### Accettazione atomica (API-34, #104)
+
+- `POST /trades/{id}/accept` (`TradeService.accept`) risponde `200` con lo scambio `ACCEPTED`, in una sola transazione e in quest'ordine:
+  1. blocca lo scambio e controlla partecipante (`404 TRADE_NOT_FOUND`), scambio aperto (`409 TRADE_CLOSED`, anche per una seconda accettazione) e mio turno (`409 TRADE_NOT_YOUR_TURN`); se l'altro è disattivato `422 TRADE_USER_DISABLED`;
+  2. `InventoryService.lockInventories` blocca le righe `inventories` di entrambi in ordine di `user_id`;
+  3. le mie copie **disponibili** di quelle che do devono bastare (`422 TRADE_NOT_ENOUGH_COPIES`); le carte dell'altro sono già riservate dalla sua offerta;
+  4. `CollectionService.removeCards` e `addCards` spostano le carte di ogni lato non vuoto, poi lo scambio diventa `ACCEPTED`.
+- In ogni errore la transazione fa rollback: nessuna carta si muove e lo scambio resta com'era. `NOT_ENOUGH_COPIES` di `CollectionService` resta solo come rete di sicurezza.
+- `TradeAcceptIT` controlla il totale delle carte, due scambi incrociati accettati insieme (nessun deadlock, nessuna copia duplicata) e uno scambio accettato mentre un pacchetto aggiunge la stessa carta a chi riceve (nessuna copia persa).
+
 ## Test minimi
 
 - Scambio accettato: le carte passano correttamente e **il totale delle carte nel sistema non cambia**.

@@ -379,6 +379,37 @@ class TradeProposalControllerIT {
 			.andExpect(jsonPath("$.code").value("TRADE_NOT_ENOUGH_COPIES"));
 	}
 
+	// --- accettazione (API-34; i casi limite e la concorrenza sono in TradeAcceptIT) ---
+
+	@Test
+	@DisplayName("Accepting via HTTP returns 200 ACCEPTED, moves the cards, and a second accept returns 409")
+	void accept_viaHttp_movesCardsOnce() throws Exception {
+		// Arrange
+		UUID tradeId = proposeOk(requester, recipient.getId(), give(crawlers, 2), give(mothman, 1));
+
+		// Act + Assert
+		mockMvc.perform(as(recipient, post(BASE_PATH + "/" + tradeId + "/accept")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.status").value("ACCEPTED"))
+			.andExpect(jsonPath("$.myTurn").value(false));
+		assertThat(testCollections.quantity(recipient, crawlers)).isEqualTo(2);
+		assertThat(testCollections.quantity(requester, mothman)).isEqualTo(1);
+		mockMvc.perform(as(recipient, post(BASE_PATH + "/" + tradeId + "/accept")))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("TRADE_CLOSED"));
+	}
+
+	@Test
+	@DisplayName("Accepting with the other player disabled returns 422 TRADE_USER_DISABLED")
+	void accept_otherDisabled_returns422() throws Exception {
+		UUID tradeId = proposeOk(requester, recipient.getId(), give(crawlers, 1), List.of());
+		testUsers.disable(requester);
+
+		mockMvc.perform(as(recipient, post(BASE_PATH + "/" + tradeId + "/accept")))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("TRADE_USER_DISABLED"));
+	}
+
 	// --- supporto ---
 
 	private String proposeConcurrently(CountDownLatch start, User target) throws InterruptedException {

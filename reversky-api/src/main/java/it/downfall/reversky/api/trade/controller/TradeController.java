@@ -73,6 +73,19 @@ public class TradeController {
 		return ResponseEntity.ok(tradeService.counter(userId(jwt), id, request));
 	}
 
+	@Operation(summary = "Accept a trade", description = "Accepts the current offer of an open trade when it is my "
+		+ "turn: all the cards move in one transaction, or none does. My cards must still be among my available "
+		+ "copies; the other player's are already reserved by their offer.")
+	@ApiResponse(responseCode = "200", description = "Trade accepted, returned with status ACCEPTED")
+	@ApiResponse(responseCode = "401", description = "Missing or invalid access token")
+	@ApiResponse(responseCode = "404", description = "Trade not found or not mine (TRADE_NOT_FOUND)")
+	@ApiResponse(responseCode = "409", description = "Trade already closed, also a second accept (TRADE_CLOSED), or not my turn (TRADE_NOT_YOUR_TURN)")
+	@ApiResponse(responseCode = "422", description = "The other player is disabled (TRADE_USER_DISABLED) or I no longer have enough available copies (TRADE_NOT_ENOUGH_COPIES): nothing moves and the trade stays open")
+	@PostMapping("/{id}/accept")
+	public ResponseEntity<TradeResponse> accept(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+		return ResponseEntity.ok(tradeService.accept(userId(jwt), id));
+	}
+
 	// Pageable nascosto in Swagger: l'ordine è fisso, si documentano solo page e size
 	@Operation(summary = "List my open trades", description = "incoming: open trades where it is my turn to answer; "
 		+ "outgoing: open trades waiting for the other player. Latest move first. Closed trades are read with "

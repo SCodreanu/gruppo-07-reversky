@@ -43,6 +43,7 @@ import it.downfall.reversky.api.trade.exception.TradeNotOwnedException;
 import it.downfall.reversky.api.trade.exception.TradeNotYourTurnException;
 import it.downfall.reversky.api.trade.exception.TradeSameCardBothSidesException;
 import it.downfall.reversky.api.trade.exception.TradeSelfException;
+import it.downfall.reversky.api.trade.exception.TradeUserDisabledException;
 import it.downfall.reversky.api.trade.repository.TradeOfferRepository;
 import it.downfall.reversky.api.trade.repository.TradeRepository;
 import it.downfall.reversky.api.user.entity.User;
@@ -52,7 +53,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Scambi di carte tra utenti (docs/scambi): proposta, controproposta, consultazione e rifiuto.
+ * Scambi di carte tra utenti (docs/scambi): proposta, controproposta, accettazione atomica, consultazione e rifiuto.
  * <p>
  * Ogni azione su uno scambio esistente lo blocca prima ({@code SELECT ... FOR UPDATE}) e poi ne controlla stato e
  * turno: due azioni contemporanee sullo stesso scambio vanno una alla volta. Un non partecipante riceve sempre
@@ -112,7 +113,7 @@ public class TradeService {
 		Sides sides = resolveSides(request.give(), request.receive());
 
 		inventoryService.lockInventories(List.of(userId));
-		checkAvailable(userId, sides.give());
+		checkAvailable(userId, byId(sides.give()));
 		checkOwned(recipientId, sides.receive());
 
 		Trade trade = new Trade(userId, recipientId, Instant.now(clock));
@@ -147,12 +148,51 @@ public class TradeService {
 		Sides sides = resolveSides(request.give(), request.receive());
 
 		inventoryService.lockInventories(List.of(userId));
-		checkAvailable(userId, sides.give());
+		checkAvailable(userId, byId(sides.give()));
 		checkOwned(trade.otherThan(userId), sides.receive());
 
 		trade.replaceOffers(userId, sides.give(), sides.receive());
 		trade.passTurn(Instant.now(clock));
 		log.info("User {} countered trade {}", userId, tradeId);
+		return toResponse(trade, userId);
+	}
+
+	/**
+	 * Accetta lo scambio e sposta le carte, tutto in una transazione (POST /api/v1/trades/{id}/accept, docs/scambi
+	 * "Accettazione"): o si muovono tutte le carte, o nessuna.
+	 * <p>
+	 * 1. Blocca lo scambio, poi controlla partecipante, scambio aperto e mio turno, e che l'altro sia ancora attivo.
+	 * 2. Blocca la riga {@code inventories} di entrambi in ordine di {@code user_id} crescente: due scambi incrociati
+	 * accettati insieme non vanno in deadlock, e un pacchetto aperto nello stesso momento aspetta.
+	 * 3. Controlla le mie copie disponibili di quelle che do; le carte dell'altro sono già riservate dalla sua offerta.
+	 * 4. Sposta le carte con {@link CollectionService} e chiude lo scambio.
+	 *
+	 * @throws TradeNotFoundException        se lo scambio non esiste o non mi riguarda
+	 * @throws TradeClosedException          se lo scambio è già accettato o rifiutato (anche una seconda accettazione)
+	 * @throws TradeNotYourTurnException     se tocca all'altro
+	 * @throws TradeUserDisabledException    se l'altro partecipante è disattivato: lo scambio resta aperto
+	 * @throws TradeNotEnoughCopiesException se di una carta che do ho meno copie disponibili: lo scambio resta aperto
+	 */
+	@Transactional
+	public TradeResponse accept(Integer userId, UUID tradeId) {
+		Trade trade = lockOpenTrade(userId, tradeId);
+		if (!trade.isTurnOf(userId)) {
+			throw new TradeNotYourTurnException();
+		}
+		Integer otherId = trade.otherThan(userId);
+		if (!userService.getById(otherId).isEnabled()) {
+			throw new TradeUserDisabledException();
+		}
+
+		inventoryService.lockInventories(List.of(userId, otherId));
+		Map<Integer, Integer> myCards = trade.offeredBy(userId);
+		Map<Integer, Integer> otherCards = trade.offeredBy(otherId);
+		checkAvailable(userId, myCards);
+
+		move(userId, otherId, myCards);
+		move(otherId, userId, otherCards);
+		trade.accept(Instant.now(clock));
+		log.info("Trade {} accepted by user {}", tradeId, userId);
 		return toResponse(trade, userId);
 	}
 
@@ -261,14 +301,29 @@ public class TradeService {
 	 * Le copie disponibili di chi cede bastano. Chi propone, controproponde o accetta non è mai chi ha fatto l'offerta
 	 * in corso, quindi questo scambio non gli riserva niente: le sue copie qui sono già tutte nelle disponibili.
 	 */
-	private void checkAvailable(Integer giverId, Map<CatalogCard, Integer> given) {
-		Map<Integer, Integer> available = collectionService.getAvailableCopies(giverId, ids(given));
-		given.forEach((card, quantity) -> {
-			int copies = available.getOrDefault(card.getId(), 0);
+	private void checkAvailable(Integer giverId, Map<Integer, Integer> quantitiesByCardId) {
+		Map<Integer, Integer> available = collectionService.getAvailableCopies(giverId, quantitiesByCardId.keySet());
+		quantitiesByCardId.forEach((cardId, quantity) -> {
+			int copies = available.getOrDefault(cardId, 0);
 			if (copies < quantity) {
-				throw new TradeNotEnoughCopiesException(card.getId(), copies, quantity);
+				throw new TradeNotEnoughCopiesException(cardId, copies, quantity);
 			}
 		});
+	}
+
+	// Un lato vuoto (regalo o richiesta) non muove niente: CollectionService non accetta mappe vuote
+	private void move(Integer fromId, Integer toId, Map<Integer, Integer> quantitiesByCardId) {
+		if (quantitiesByCardId.isEmpty()) {
+			return;
+		}
+		collectionService.removeCards(fromId, quantitiesByCardId);
+		collectionService.addCards(toId, quantitiesByCardId);
+	}
+
+	private static Map<Integer, Integer> byId(Map<CatalogCard, Integer> side) {
+		Map<Integer, Integer> quantities = new LinkedHashMap<>();
+		side.forEach((card, quantity) -> quantities.put(card.getId(), quantity));
+		return quantities;
 	}
 
 	// Dell'altro si guardano solo le copie possedute, per non rivelare quelle riservate (docs/scambi)

@@ -116,6 +116,12 @@ public class Trade implements Persistable<UUID> {
 		return requesterId.equals(userId) ? recipientId : requesterId;
 	}
 
+	/** Lo scambio è stato eseguito: le carte si sono già mosse nella stessa transazione. */
+	public void accept(Instant now) {
+		this.status = TradeStatus.ACCEPTED;
+		this.updatedAt = now;
+	}
+
 	/** Chiude lo scambio senza scambiare niente: lo può fare chiunque dei due finché è aperto. */
 	public void reject(Instant now) {
 		this.status = TradeStatus.REJECTED;
