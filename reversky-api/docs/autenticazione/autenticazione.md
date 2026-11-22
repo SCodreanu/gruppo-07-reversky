@@ -190,10 +190,15 @@ Il formato è quello di [api-rest](../api-rest/api-rest.md); il campo `code` val
 | Endpoint | Accesso |
 |---|---|
 | `/auth/**` | pubblico, tranne `/auth/email/resend` (utente autenticato) |
-| `GET /cards/**`, `GET /packs`, `GET /factions`, `GET /rarities` | pubblico (servono anche alle pagine SEO) |
-| Swagger (`/swagger-ui/**`, `/v3/api-docs/**`) | pubblico in sviluppo |
+| `GET /cards/**`, `GET /packs`, `GET /factions`, `GET /rarities`, `GET /rules` | pubblico (servono anche alle pagine SEO); `GET /packs` con un token valido mostra anche `remainingPurchases` |
+| `GET /images/**` | pubblico: illustrazioni delle carte, per i tag `<img>` del frontend (`API-14`) |
+| Swagger (`/swagger-ui/**`, `/v3/api-docs/**`) | pubblico in tutti i profili (serve alla demo e alla verifica di `API-59`) |
 | `/admin/**` | solo `ADMIN` |
 | tutto il resto | utente autenticato |
+
+La matrice di tutti gli endpoint, con l'accesso di ognuno, è controllata da `SecurityMatrixIT` (`API-58`): un endpoint nuovo senza la sua riga fa fallire il test.
+
+**Token scaduto su un endpoint pubblico (`API-58`, deciso il 22 novembre):** sugli endpoint pubblici un access token scaduto, non valido o malformato nell'header `Authorization` si **ignora**, come se non ci fosse; un token valido si usa (es. `GET /packs`). Così il frontend può mandare sempre l'header, anche a `/auth/refresh` e `/auth/login` quando l'access token è già scaduto. Prima Spring Security rispondeva `401 AUTH_REQUIRED` anche lì, e il rinnovo non arrivava mai al controllo del refresh token (bug corretto, `PublicEndpointTokenIT`). Sugli endpoint protetti un token scaduto resta `401`.
 
 ## Configurazione di Spring Security (schema)
 
@@ -204,14 +209,15 @@ http
 	.csrf(csrf -> csrf.disable())                 // API stateless con token
 	.sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
 	.authorizeHttpRequests(auth -> auth
-		.requestMatchers("/api/v1/auth/email/resend").authenticated()   // prima di /auth/**: vince la prima regola che corrisponde
-		.requestMatchers("/api/v1/auth/**").permitAll()
-		.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions", "/api/v1/rarities").permitAll()
+		.requestMatchers(publicPaths()).permitAll()   // la tabella sopra, senza /auth/email/resend
 		.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 		.anyRequest().authenticated())
-	.oauth2ResourceServer(o -> o.jwt(...));       // spring-boot-starter-oauth2-resource-server valida i JWT
+	.oauth2ResourceServer(o -> o
+		.bearerTokenResolver(new PublicPathBearerTokenResolver(publicPaths(), jwtDecoder()))  // ignora i token scaduti sugli endpoint pubblici
+		.jwt(...));                               // spring-boot-starter-oauth2-resource-server valida i JWT
 ```
 
+- `publicPaths()` è un solo elenco usato sia dalle regole di accesso sia da `PublicPathBearerTokenResolver`, così le due liste non possono divergere.
 - Il claim `role` del JWT diventa l'authority `ROLE_USER` / `ROLE_ADMIN`.
 - I `401` e `403` dei filtri di sicurezza vengono inoltrati a `GlobalExceptionHandler`, quindi hanno lo stesso formato ProblemDetail di tutti gli altri errori. Il `401` ha anche l'header `WWW-Authenticate: Bearer`.
 - CORS: le origini del frontend ammesse (es. `http://localhost:3000`) sono in `reversky.security.allowed-origins`.

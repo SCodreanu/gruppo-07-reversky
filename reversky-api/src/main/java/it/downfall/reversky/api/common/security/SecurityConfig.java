@@ -24,6 +24,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -58,17 +63,12 @@ public class SecurityConfig {
 			.cors(cors -> { })
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-				// Il reinvio vale per l'utente del token, quindi senza token risponde 401.
-				.requestMatchers("/api/v1/auth/email/resend").authenticated()
-				.requestMatchers("/api/v1/auth/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/v1/cards/**", "/api/v1/packs", "/api/v1/factions", "/api/v1/rarities", "/api/v1/rules").permitAll()
-				// Illustrazioni caricate dal backoffice (API-14): pubbliche come il catalogo, per i tag <img> del frontend
-				.requestMatchers(HttpMethod.GET, "/images/**").permitAll()
-				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-				.requestMatchers("/error").permitAll()
+				.requestMatchers(publicPaths()).permitAll()
 				.requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN)
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2
+				// API-58: sugli endpoint pubblici un token scaduto o non valido si ignora invece di dare 401
+				.bearerTokenResolver(new PublicPathBearerTokenResolver(publicPaths(), jwtDecoder()))
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
 				.authenticationEntryPoint(entryPoint)
 				.accessDeniedHandler(accessDeniedHandler))
@@ -77,6 +77,29 @@ public class SecurityConfig {
 				.accessDeniedHandler(accessDeniedHandler));
 
 		return http.build();
+	}
+
+	/**
+	 * Endpoint che non richiedono il token (docs/autenticazione, "Endpoint pubblici e protetti"). Li usano sia le
+	 * regole di accesso sia {@link PublicPathBearerTokenResolver}, così le due liste non possono divergere.
+	 */
+	static RequestMatcher publicPaths() {
+		PathPatternRequestMatcher.Builder path = PathPatternRequestMatcher.withDefaults();
+		RequestMatcher open = new OrRequestMatcher(
+			path.matcher("/api/v1/auth/**"),
+			path.matcher(HttpMethod.GET, "/api/v1/cards/**"),
+			path.matcher(HttpMethod.GET, "/api/v1/packs"),
+			path.matcher(HttpMethod.GET, "/api/v1/factions"),
+			path.matcher(HttpMethod.GET, "/api/v1/rarities"),
+			path.matcher(HttpMethod.GET, "/api/v1/rules"),
+			// Illustrazioni caricate dal backoffice (API-14): pubbliche come il catalogo, per i tag <img> del frontend
+			path.matcher(HttpMethod.GET, "/images/**"),
+			path.matcher("/swagger-ui.html"),
+			path.matcher("/swagger-ui/**"),
+			path.matcher("/v3/api-docs/**"),
+			path.matcher("/error"));
+		// Il reinvio della verifica vale per l'utente del token, quindi senza token risponde 401
+		return new AndRequestMatcher(open, new NegatedRequestMatcher(path.matcher("/api/v1/auth/email/resend")));
 	}
 
 	/**

@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-14`…`API-20`, `API-22`…`API-44`, `API-54`…`API-57`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-14`…`API-20`, `API-22`…`API-44`, `API-54`…`API-58`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -16,8 +16,9 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`), test del flusso completo e degli errori a metà acquisto o apertura (`API-56`) |
 | Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`), test dei flussi completi di scambi e amichevoli con i retry sovrapposti (`API-57`, senza la parte classificata) |
 | Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
+| Sicurezza | matrice degli accessi di tutti gli endpoint controllata da `SecurityMatrixIT`, token scaduti ignorati sugli endpoint pubblici (bug corretto), risorse altrui `404` (`API-58`, [autenticazione](../autenticazione/autenticazione.md#endpoint-pubblici-e-protetti)) |
 
-`./gradlew build` verde con 700 test (22 novembre, con `API-56` e `API-57`).
+`./gradlew build` verde con 959 test (22 novembre, con `API-58`: la matrice conta 235 casi).
 
 ## Da fare
 
@@ -32,7 +33,6 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 
 | Issue | Cosa | Note |
 |---|---|---|
-| `API-58` (#128) | Verifica della sicurezza su tutti gli endpoint | ruoli, risorse altrui (`404`), id sempre dal token |
 | `API-59` (#129) | Verifica finale di Swagger | ogni endpoint con le sue risposte |
 | `API-64` (#134) | Valori di gioco nel database (rule set, rarità, bonus di fazione, carte) | con le risposte dei DSG; sono dati del backoffice o migrazioni nuove, mai codice |
 | `ENG-29`, `ENG-30` | Lato engine: casi limite e Javadoc, rule set `1.0` definitivo | nella roadmap dell'engine |
