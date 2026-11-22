@@ -261,7 +261,7 @@ Controlli:
 | Metodo | URL | Descrizione |
 |---|---|---|
 | `GET` | `/admin/users` | ricerca utenti |
-| `POST` | `/admin/users/{id}/disable` | disattiva l'account (`is_enabled = false`), cancella i suoi refresh token e il suo ticket in `matchmaking_queue` |
+| `POST` | `/admin/users/{id}/disable` | disattiva l'account (`is_enabled = false`), cancella i suoi refresh token e il suo ticket in `matchmaking_queue` e chiude le sue connessioni al canale delle notifiche (API-66) |
 | `POST` | `/admin/users/{id}/enable` | riattiva |
 | `PUT` | `/admin/users/{id}/role` | cambia ruolo |
 | `POST` | `/admin/users/{id}/credits` | correzione manuale dei crediti, con motivo obbligatorio: riga `ADMIN_ADJUSTMENT` in `credit_transactions`, motivo in `new_values` di `audit_logs` |

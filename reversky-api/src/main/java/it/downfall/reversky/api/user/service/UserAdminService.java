@@ -2,6 +2,7 @@ package it.downfall.reversky.api.user.service;
 
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +45,7 @@ public class UserAdminService {
 	private final AuthService authService;
 	private final InventoryService inventoryService;
 	private final QueueTicketService queueTicketService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * Utenti filtrati e paginati in ordine di id, con ruolo e saldo (tre query in tutto: utenti, conteggio, saldi).
@@ -67,8 +69,8 @@ public class UserAdminService {
 	}
 
 	/**
-	 * Disattiva un account, chiude tutte le sue sessioni (refresh token cancellati) e lo toglie dalla coda
-	 * classificata (API-47).
+	 * Disattiva un account, chiude tutte le sue sessioni (refresh token cancellati), lo toglie dalla coda
+	 * classificata (API-47) e, dopo il commit, chiude le sue connessioni al canale delle notifiche (API-66).
 	 *
 	 * @param adminId id dell'admin che fa la richiesta, dal token
 	 * @throws AdminSelfActionException se l'admin prova a disattivare se stesso
@@ -85,6 +87,8 @@ public class UserAdminService {
 		authService.revokeAllSessions(userId);
 		// API-47: un account disattivato non resta in coda classificata
 		queueTicketService.removeForUser(userId);
+		// API-66: dopo il commit il canale delle notifiche chiude le sue connessioni aperte
+		eventPublisher.publishEvent(new UserDisabledEvent(userId));
 
 		log.info("User {} disabled by admin {}", userId, adminId);
 		return toResponse(user);

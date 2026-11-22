@@ -77,7 +77,7 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 ### Notifiche: entità e consultazione (API-65 #135)
 
 - `notification/entity/Notification` (`type` come `NotificationType` salvato in testo, `payload` `jsonb` come mappa) e `NotificationRepository`, sempre in ordine di id decrescente (indice `idx_notifications_user_id_id`).
-- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. Per ora non la invia: il canale SSE arriva con API-66, i collegamenti con API-67…69.
+- `NotificationService.notify` con `Propagation.MANDATORY`: salva la notifica nella transazione del chiamante; senza transazione `IllegalTransactionStateException`. I collegamenti con amicizie, sfide e scambi arrivano con API-67…69.
 - `NotificationController`: `GET /notifications` (paginato come le altre liste, il `sort` del client si ignora), `GET /notifications/unread-count`, `POST /notifications/{id}/read` (idempotente, tiene la prima ora di lettura) e `POST /notifications/read-all`.
 - `notification/job/NotificationCleanupJob` ogni notte alle 3:30 elimina le notifiche lette create prima di adesso meno `reversky.notifications.retention` (`NotificationProperties`, 30 giorni in `application.properties`: configurazione tecnica, non una regola di gioco).
 
@@ -85,10 +85,25 @@ data: {"id":42,"type":"TRADE_PROPOSED","payload":{...},"read":false,"createdAt":
 |---|---|---|
 | notifica inesistente o di un altro utente | `404` | `NOTIFICATION_NOT_FOUND` |
 
+### Canale SSE (API-66 #136)
+
+- `GET /api/v1/notifications/stream` (`NotificationController`, `text/event-stream`) apre una connessione con `NotificationStreamService.open`. Le connessioni stanno in memoria, per utente (più schede = più connessioni): con più istanze dell'API ognuna invierebbe solo alle sue, e per la consegna gira un'istanza sola.
+- `notify` pubblica un `NotificationCreatedEvent`; `NotificationStreamService` lo riceve con `@TransactionalEventListener(AFTER_COMMIT)` e lo invia a tutte le connessioni del destinatario: una transazione annullata non invia niente.
+- La connessione ha come timeout il tempo che resta all'access token della richiesta (`jwt.getExpiresAt()`), mai 0, che per Spring vorrebbe dire nessun timeout.
+- `Last-Event-ID` (un numero, altrimenti `400`) rimanda le notifiche create dopo quell'id, al massimo le 100 più recenti, dalla più vecchia. La connessione si registra prima di rimandarle: una notifica nata in quel momento può arrivare due volte, ma non si perde; il client ignora un id già visto.
+- `NotificationHeartbeatJob` manda `: ping` ogni 30 secondi su ogni connessione; un invio che fallisce (`IOException` o connessione già chiusa) toglie la connessione. Timeout, errore e chiusura la tolgono allo stesso modo.
+- Disattivare un account (`UserAdminService.disable`) pubblica `UserDisabledEvent`: dopo il commit si chiudono tutte le sue connessioni. Aprire il canale legge `is_enabled` (una query per connessione): un account disattivato riceve `403 AUTH_ACCOUNT_DISABLED` anche con un access token ancora valido (deciso il 22 novembre; gli altri endpoint restano come prima).
+- Un errore prima di aprire il canale risponde in `ProblemDetail` JSON come gli altri, anche con `Accept: text/event-stream` (provato con il `403` in `NotificationStreamIT`).
+
+| Caso | Status | `code` |
+|---|---|---|
+| account disattivato | `403` | `AUTH_ACCOUNT_DISABLED` |
+| `Last-Event-ID` non numerico | `400` | |
+
 ## Test minimi
 
 - Un utente vede e segna come lette solo le proprie notifiche; quella di un altro → `404` (`NotificationControllerIT`).
 - Una notifica creata in una transazione annullata non resta (`NotificationServiceIT`).
 - La pulizia elimina solo le lette e vecchie (`NotificationServiceIT`, `NotificationCleanupJobTest`).
-- Un evento arriva solo al destinatario, su tutte le sue connessioni; una transazione annullata non invia eventi; un account disattivato perde le connessioni (API-66).
+- Un evento arriva solo al destinatario, su tutte le sue connessioni; una transazione annullata non invia eventi; `Last-Event-ID` rimanda le perse; un account disattivato perde le connessioni e non ne apre di nuove (`NotificationStreamIT`, `NotificationStreamServiceTest`, API-66).
 - Ogni evento di amicizie, sfide e scambi crea una notifica e la invia (API-67…69).

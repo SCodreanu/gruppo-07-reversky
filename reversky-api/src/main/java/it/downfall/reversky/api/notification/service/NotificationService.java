@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,10 +33,12 @@ public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
 	private final Clock clock;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * Crea una notifica per un utente, dentro la transazione del chiamante: se quella transazione viene annullata la
-	 * notifica non resta. Lo usano amicizie, sfide e scambi (API-67, API-68, API-69).
+	 * notifica non resta. Lo usano amicizie, sfide e scambi (API-67, API-68, API-69). Dopo il commit la notifica parte
+	 * anche sul canale SSE ({@link NotificationCreatedEvent}, API-66).
 	 * <p>
 	 * Il {@code payload} contiene solo gli id delle entità coinvolte e id e username dell'altro utente, mai altri dati
 	 * personali (la riga resta nel database finché non viene letta).
@@ -51,7 +54,10 @@ public class NotificationService {
 		Notification notification = notificationRepository.save(
 			new Notification(userId, type, payload, Instant.now(clock)));
 		log.debug("Notification {} {} created for user {}", notification.getId(), type, userId);
-		return NotificationResponse.from(notification);
+		NotificationResponse response = NotificationResponse.from(notification);
+		// NotificationStreamService lo riceve solo dopo il commit: una transazione annullata non invia niente
+		eventPublisher.publishEvent(new NotificationCreatedEvent(userId, response));
+		return response;
 	}
 
 	/**

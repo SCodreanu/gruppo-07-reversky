@@ -1,6 +1,7 @@
 package it.downfall.reversky.api.notification.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -25,6 +26,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
 	Page<Notification> findByUserIdAndReadAtIsNullOrderByIdDesc(Integer userId, Pageable pageable);
 
 	long countByUserIdAndReadAtIsNull(Integer userId);
+
+	/**
+	 * Le 100 notifiche più recenti dell'utente dopo {@code afterId}, dalla più recente: il canale SSE le rimanda alla
+	 * riconnessione con {@code Last-Event-ID} (API-66).
+	 */
+	List<Notification> findTop100ByUserIdAndIdGreaterThanOrderByIdDesc(Integer userId, Integer afterId);
 
 	/** Una notifica solo se è dell'utente: quella di un altro non si distingue da una che non esiste. */
 	Optional<Notification> findByIdAndUserId(Integer id, Integer userId);
