@@ -53,6 +53,7 @@ services:
         condition: service_started
     environment:
       SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}  # dev = dati di prova alice/bob/admin (docs/database)
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-reversky}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-reversky}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reversky}

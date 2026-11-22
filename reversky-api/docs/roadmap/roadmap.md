@@ -6,7 +6,7 @@ Le issue sono sulla board del progetto con l'ID `API-xx` nel titolo.
 
 ## Stato al 22 novembre
 
-Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-15`…`API-20`, `API-22`…`API-44`, `API-55`, `API-62`, `API-63`, `API-70`, `API-71`):
+Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-08`…`API-11`, `API-15`…`API-20`, `API-22`…`API-44`, `API-54`, `API-55`, `API-62`, `API-63`, `API-70`, `API-71`):
 
 | Area | Cosa c'è |
 |---|---|
@@ -15,17 +15,11 @@ Fatto, unito in `backend_api` e con la issue chiusa (`API-01`…`API-06`, `API-0
 | Catalogo | rule set, rarità, fazioni, bonus di fazione, carte con rarità e fazioni, tipo Oggetto, 120 carte di `V11`, effetti validi nella tabella `effects` (`V13`, `API-36`), vincoli allineati all'engine (`V14`, `API-71`) |
 | Economia | inventario e crediti, pacchetti con slot e bonus, acquisto, apertura, pacchetto base (`V12`) |
 | Gioco | collezione con copie riservate, mazzi con `DeckValidator`, amicizie, sfide amichevoli simulate dall'engine con storico e retry, scambi con proposta, controproposta e accettazione atomica (`API-31`…`API-34`) |
-| Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`) |
+| Engine | `EngineClient` (solo `POST /api/v1/simulations`), test di contratto con le fotografie dell'engine (`ENG-24`), dati di prova del profilo `dev` (`API-25`), integrazione reale sullo stack di Docker Compose con sfida, carte speciali, retry a engine spento e scambio (`API-54`, ripetibile con `scripts/prova-sfida.ps1`, vedi [sfide](../sfide/sfide.md#prova-sullo-stack-completo)) |
 
 `./gradlew build` verde con 693 test (22 novembre).
 
 ## Da fare
-
-### Prima del SAL (lunedì 23 novembre)
-
-| Issue | Cosa | Note |
-|---|---|---|
-| `API-54` (#124) | Integrazione reale API ↔ engine: `docker compose up --build`, una sfida tra `alice` e `bob` fino al risultato con Spell, Hidden e Terreni nel log, poi engine spento, `503` e retry dopo il riavvio | è anche la prova generale: se va, la [demo del SAL](../../../reversky-engine/docs/demo-sal/demo-sal.md) aggiunge la parte con l'API |
 
 ### 23–29 novembre
 

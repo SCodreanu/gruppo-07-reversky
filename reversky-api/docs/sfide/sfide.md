@@ -395,11 +395,29 @@ Restano possibili solo dati scritti a mano nel database (es. un nome vuoto) o un
 
 ### Integrazione reale con l'engine (API-54 #124)
 
-Provata a mano il 21 novembre con l'engine di `backend_engine` (commit `1719c94`, ENG-42, 92 effetti) sulla porta 8081 e l'API con il profilo `dev` sulla 8080:
+Provata il 22 novembre sullo stack completo di Docker Compose (`compose.yaml` nella cartella principale: database, Mailpit, engine e API), con la copia di `reversky-engine` di `backend_api` uguale a quella di `backend_engine` (#212, #213). Il JSON scambiato resta controllato in automatico dal test di contratto (ENG-24); questa prova mostra che le due applicazioni vere si parlano.
 
-1. login di `alice` e `bob` (dati di prova, vedi [database](../database/database.md#dati-di-prova-solo-sviluppo)); `alice` sfida `bob` con *Alice Invitation*, `bob` accetta con *Bob Wound*;
-2. risposta `200`: partita completata in 40 round (`NO_CREATURES_LEFT`), 378 eventi nel log da `MATCH_STARTED` a `MATCH_ENDED`, `outcome` `LOSS` per bob e `WIN` nello storico di alice;
-3. con l'engine spento, l'accettazione di un secondo invito risponde `503 ENGINE_UNAVAILABLE` con `battleId` e la partita resta `completed: false`; riacceso l'engine, `POST /battles/{id}/retry` la completa (43 round), e un secondo retry restituisce la stessa partita senza richiamare l'engine;
-4. nello stesso giro: acquisto e apertura del *Base Pack* (7 carte, 100 crediti).
+#### Prova sullo stack completo
 
-Il catalogo di `V11` usa i codici effetto di ENG-42: l'API va usata con l'engine di `backend_engine`, non con la copia più vecchia che c'è in `backend_api`. Il test di contratto automatico resta ENG-24.
+I passi si ripetono con [`scripts/prova-sfida.ps1`](../../../scripts/prova-sfida.ps1), che esegue tutte le chiamate, ferma e riavvia da solo il container dell'engine ed esce con codice `1` se un controllo fallisce. Dalla cartella principale del repository:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "dev"     # dati di prova alice, bob e admin (vedi database)
+docker compose up --build -d
+powershell -ExecutionPolicy Bypass -File scripts\prova-sfida.ps1
+```
+
+Al posto della variabile si può scrivere `SPRING_PROFILES_ACTIVE=dev` nel file `.env` (vedi `.env.example`); senza, l'API parte con il profilo `default` e senza utenti di prova. Per ripartire da zero: `docker compose down -v`. La porta `8025` di Mailpit è la stessa del `compose.yaml` di `reversky-api` usato da `bootRun`: se quei container sono accesi vanno fermati prima (`docker compose -f reversky-api/compose.yaml stop`).
+
+| # | Passo | Risultato atteso |
+|---|---|---|
+| 1 | login di `alice` e `bob` (dati di prova, vedi [database](../database/database.md#dati-di-prova-solo-sviluppo)), `GET /decks` e `GET /decks/{id}` | *Alice Invitation* e *Bob Wound* validi, 30 carte: 20 creature, 6 Spell, 2 Hidden (`SURVIVAL` e `DAMAGE`), 1 Terreno, 1 Oggetto |
+| 2 | `alice` invita `bob` con `POST /battle-invites`, `bob` accetta con `POST /battle-invites/{id}/accept` | `200`, `completed: true`; `GET /battles/{id}` con il log da `MATCH_STARTED` a `MATCH_ENDED`, un `ROUND_STARTED` per round, e le carte speciali: `SPELL_RESOLVED`, `HIDDEN_SET` (e `HIDDEN_TRIGGERED`), `TERRAIN_PLACED`, `ITEM_PLACED` e `ITEM_CONSUMED`; `outcome` opposto per i due giocatori |
+| 3 | `docker compose stop engine`, nuovo invito e accettazione | `503 ENGINE_UNAVAILABLE` con `battleId` (dopo al massimo 10 secondi, il timeout del client); `GET /battles/{battleId}` dà `completed: false` e `result` nullo |
+| 4 | `docker compose start engine`, poi `POST /battles/{battleId}/retry` | `200`, partita completata con lo stesso seed salvato alla preparazione |
+| 5 | secondo `POST /battles/{battleId}/retry` | `200` con la stessa partita; nel log dell'engine (`docker compose logs engine`) non compare una nuova riga `Simulazione completata` |
+| 6 | scambio: `alice` propone con `POST /trades` (1 copia contro 1), `bob` contropropone con `POST /trades/{id}/counter` (1 copia contro 2), `bob` prova ad accettare, poi accetta `alice` | `201` e copia di alice riservata; `200` e riserva passata a bob; `409 TRADE_NOT_YOUR_TURN`; `200 ACCEPTED`, copie spostate (alice −2/+1, bob +2/−1), nessuna copia riservata e mazzi ancora validi |
+
+Esito del 22 novembre, su un volume nuovo: tutti i controlli superati. Partita 1 in 39 round (`LIFE_POINTS_ZERO`, 393 eventi, 12 `SPELL_RESOLVED`, 4 `HIDDEN_SET`, 2 `TERRAIN_PLACED`, 2 `ITEM_PLACED`); partita 2 `503` a engine spento, completata dal retry in 39 round, secondo retry senza nuova chiamata all'engine; scambio accettato. Nessun bug trovato.
+
+Due cose da sapere per la demo: i testi delle carte nel log sono ancora in italiano (nomi inglesi dai DSG nell'ultima settimana); Windows PowerShell 5.1 legge le risposte JSON come Latin-1 e mostra male le lettere accentate con `Invoke-RestMethod`, per questo lo script decodifica le risposte in UTF-8.
