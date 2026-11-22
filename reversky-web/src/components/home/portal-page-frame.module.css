@@ -17,4 +17,5 @@
   .main { padding: 24px 16px 44px; }
   .heading { margin-top: 18px; }
   .footer { padding-inline: 16px; }
+  .footer { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 }

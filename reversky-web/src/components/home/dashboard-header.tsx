@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/brand-mark";
+import { CreditMark } from "@/components/credit-mark";
 import type { UserProfile } from "@/lib/api/contracts";
 import { ProfileAvatar } from "./profile-avatar";
 import styles from "./dashboard-header.module.css";
+
+function readCreditBalance(value: unknown): number | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  const raw = record.credits ?? record.balance ?? record.creditBalance ?? record.currentCredits;
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  return readCreditBalance(record.inventory ?? record.wallet ?? record.data);
+}
 
 export function DashboardHeader({
   user,
@@ -21,8 +30,37 @@ export function DashboardHeader({
   variant?: "dashboard" | "public";
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [creditsLoading, setCreditsLoading] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    function handleCreditUpdate(event: Event) {
+      const updatedCredits = (event as CustomEvent<number>).detail;
+      if (typeof updatedCredits === "number" && Number.isFinite(updatedCredits)) setCredits(updatedCredits);
+    }
+    window.addEventListener("reversky:credits-updated", handleCreditUpdate);
+    async function loadCredits() {
+      try {
+        const response = await fetch("/api/auth/wallet", { cache: "no-store" });
+        const result = response.ok ? await response.json().catch(() => null) : null;
+        if (active) {
+          setCredits(readCreditBalance(result));
+        }
+      } catch {
+        if (active) setCredits(null);
+      } finally {
+        if (active) setCreditsLoading(false);
+      }
+    }
+    void loadCredits();
+    return () => {
+      active = false;
+      window.removeEventListener("reversky:credits-updated", handleCreditUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -60,6 +98,7 @@ export function DashboardHeader({
         ) : (
           <>
             <Link href="/home#overview">Overview</Link>
+            <Link href="/shop">Shop</Link>
             <Link href="/home#sections">Your world</Link>
             <Link href="/guide">Portal guide</Link>
           </>
@@ -71,6 +110,15 @@ export function DashboardHeader({
             Game home <span aria-hidden="true">→</span>
           </Link>
         )}
+        <div
+          aria-label={credits === null ? "Credit balance unavailable" : `${new Intl.NumberFormat("en-US").format(credits)} credits`}
+          className={styles.walletBalance}
+          role="status"
+          title="In-game credits"
+        >
+          <CreditMark className={styles.walletIcon} size={16} />
+          <strong>{creditsLoading ? "···" : credits === null ? "—" : new Intl.NumberFormat("en-US").format(credits)}</strong>
+        </div>
         <div className={styles.accountMenu} ref={menuRef}>
           <button
             ref={triggerRef}

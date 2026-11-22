@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { usePathname, useRouter } from "next/navigation";
 import { Brand } from "@/components/brand-mark";
 import { DashboardHeader } from "@/components/home/dashboard-header";
+import { PortalMobileNav } from "@/components/home/portal-mobile-nav";
 import type { UserProfile } from "@/lib/api/contracts";
 import { getOrCreateProfileAvatar, saveProfileAvatar } from "@/lib/profile-avatar";
 import styles from "./portal-page-frame.module.css";
@@ -130,6 +131,7 @@ export function PortalPageFrame({
           <Brand compact href="/home" />
           <span>Where reality meets legend.</span>
         </footer>
+        <PortalMobileNav />
       </div>
     </PortalProfileContext.Provider>
   );

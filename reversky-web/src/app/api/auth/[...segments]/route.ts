@@ -167,7 +167,57 @@ async function getAuthenticatedProfile(request: NextRequest): Promise<
 }
 
 async function handleGet(request: NextRequest, segments: string[]): Promise<NextResponse> {
-  if (segments.join("/") !== "session") {
+  const route = segments.join("/");
+
+  if (route === "shop") {
+    const auth = await getAuthenticatedProfile(request);
+    if (!auth.ok) {
+      const response = problemResponse(auth.result);
+      if (auth.result.status === 401 || auth.result.status === 403 || auth.result.status === 404) {
+        clearSessionCookies(response);
+      }
+      return response;
+    }
+
+    const [packs, inventory] = await Promise.all([
+      callApi("/packs", undefined, auth.value.accessToken),
+      callApi("/inventory", undefined, auth.value.accessToken),
+    ]);
+    const response = NextResponse.json({
+      packs: packs.ok ? packs.body : [],
+      inventory: inventory.ok ? inventory.body : null,
+      catalogueUnavailable: !packs.ok,
+      inventoryUnavailable: !inventory.ok,
+    });
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    if (auth.value.refreshedTokens) setSessionCookies(response, auth.value.refreshedTokens);
+    return response;
+  }
+
+  if (route === "wallet") {
+    const auth = await getAuthenticatedProfile(request);
+    if (!auth.ok) {
+      const response = problemResponse(auth.result);
+      if (auth.result.status === 401 || auth.result.status === 403 || auth.result.status === 404) {
+        clearSessionCookies(response);
+      }
+      return response;
+    }
+
+    const inventory = await callApi("/inventory", undefined, auth.value.accessToken);
+    if (!inventory.ok) {
+      const response = problemResponse(inventory);
+      if (auth.value.refreshedTokens) setSessionCookies(response, auth.value.refreshedTokens);
+      return response;
+    }
+
+    const response = NextResponse.json(inventory.body);
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    if (auth.value.refreshedTokens) setSessionCookies(response, auth.value.refreshedTokens);
+    return response;
+  }
+
+  if (route !== "session") {
     return NextResponse.json({ code: "NOT_FOUND", message: "Path not found." }, { status: 404 });
   }
 
@@ -198,11 +248,55 @@ async function handlePost(request: NextRequest, segments: string[]): Promise<Nex
     return response;
   }
 
+  const shopOpen = route.match(/^shop\/open\/(\d+)$/);
+  if (shopOpen) {
+    const auth = await getAuthenticatedProfile(request);
+    if (!auth.ok) {
+      const response = problemResponse(auth.result);
+      if (auth.result.status === 401 || auth.result.status === 403 || auth.result.status === 404) {
+        clearSessionCookies(response);
+      }
+      return response;
+    }
+
+    const result = await callApi(`/inventory/packs/${shopOpen[1]}/open`, undefined, auth.value.accessToken, "POST");
+    const response = result.ok
+      ? result.body === null
+        ? new NextResponse(null, { status: 204 })
+        : NextResponse.json(result.body, { status: result.status })
+      : problemResponse(result);
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    if (auth.value.refreshedTokens) setSessionCookies(response, auth.value.refreshedTokens);
+    return response;
+  }
+
   if (!body && route !== "resend-verification") {
     return NextResponse.json(
       { code: "INVALID_JSON", message: "Check the information you entered and try again.", errors: [] },
       { status: 400 },
     );
+  }
+
+  const shopPurchase = route.match(/^shop\/purchase\/(\d+)$/);
+  if (shopPurchase) {
+    const auth = await getAuthenticatedProfile(request);
+    if (!auth.ok) {
+      const response = problemResponse(auth.result);
+      if (auth.result.status === 401 || auth.result.status === 403 || auth.result.status === 404) {
+        clearSessionCookies(response);
+      }
+      return response;
+    }
+
+    const result = await callApi(`/packs/${shopPurchase[1]}/purchase`, body, auth.value.accessToken);
+    const response = result.ok
+      ? result.body === null
+        ? new NextResponse(null, { status: 204 })
+        : NextResponse.json(result.body, { status: result.status })
+      : problemResponse(result);
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    if (auth.value.refreshedTokens) setSessionCookies(response, auth.value.refreshedTokens);
+    return response;
   }
 
   if (route === "login") {

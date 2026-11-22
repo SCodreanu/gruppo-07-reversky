@@ -1,0 +1,31 @@
+.nav { display: none; }
+
+@media (max-width: 640px) {
+  .nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--line-strong);
+    padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
+    background: rgb(15 14 13 / 96%);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav a {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    color: var(--ash);
+    font-size: 8px;
+    line-height: 1.35;
+  }
+
+  .nav a:hover,
+  .nav .active { color: var(--bone); }
+
+  .nav a span { color: var(--bronze); font-size: 15px; line-height: 1.2; }
+}

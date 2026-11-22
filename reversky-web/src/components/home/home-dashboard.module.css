@@ -60,7 +60,6 @@
 .accountStrip .text-link { font-size: 10px; }
 
 .footer { min-height: 60px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding: 10px max(32px, calc((100vw - 1360px) / 2)); color: var(--ash-dim); font-size: 9px; }
-.mobileNav { display: none; }
 .loading, .loadError { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
 .loading p { color: var(--ash); font-size: 12px; }
 .loadingMark { color: var(--bronze); font-size: 24px; animation: pulse 1.4s ease-in-out infinite; }
@@ -102,20 +101,4 @@
   .footer { padding-inline: 15px; }
   .footer > span { max-width: 135px; text-align: right; }
   .footer { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
-  .mobileNav {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--line-strong);
-    padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
-    background: rgb(15 14 13 / 96%);
-    backdrop-filter: blur(12px);
-  }
-  .mobileNav a { display: grid; justify-items: center; gap: 2px; color: var(--ash); font-size: 8px; }
-  .mobileNav a:hover { color: var(--bone); }
-  .mobileNav a span { color: var(--bronze); font-size: 15px; line-height: 1.2; }
 }

@@ -15,6 +15,9 @@
 .nav a:hover { color: var(--bone); }
 .account { display: flex; align-items: center; justify-self: end; gap: 10px; }
 .accountMenu { position: relative; }
+.walletBalance { display: inline-flex; align-items: center; gap: 6px; border-right: 1px solid var(--line); padding: 5px 12px 5px 2px; color: var(--bronze); white-space: nowrap; }
+.walletIcon { width: 16px; height: 16px; flex: 0 0 16px; object-fit: contain; filter: drop-shadow(0 0 4px rgb(166 124 61 / 30%)); }
+.walletBalance strong { color: var(--bone); font-size: 10px; font-weight: 500; }
 .publicAccount { min-width: 0; }
 .homeCta { min-height: 40px; padding-inline: 13px; font-size: 9px; white-space: nowrap; }
 .homeCta span { color: var(--bone-muted); }
@@ -58,6 +61,10 @@
   .header { min-height: 64px; grid-template-columns: 1fr auto; padding-inline: 15px; }
   .nav { display: none; }
   .username { max-width: 110px; }
+  .account { gap: 7px; }
+  .walletBalance { gap: 4px; padding: 4px 8px 4px 0; }
+  .walletBalance strong { font-size: 8px; }
+  .walletIcon { width: 14px; height: 14px; flex-basis: 14px; }
   .publicAccount { gap: 7px; }
   .publicVariant .username { display: none; }
   .publicVariant .trigger { gap: 5px; padding: 4px; }

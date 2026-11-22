@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/brand-mark";
 import { DashboardHeader } from "@/components/home/dashboard-header";
+import { PortalMobileNav } from "@/components/home/portal-mobile-nav";
 import type { UserProfile } from "@/lib/api/contracts";
 import { getOrCreateProfileAvatar } from "@/lib/profile-avatar";
 import styles from "./home-dashboard.module.css";
@@ -202,11 +203,7 @@ export function HomeDashboard({ welcome = false }: { welcome?: boolean }) {
         <Brand compact href="/home" />
         <span>Where reality meets legend.</span>
       </footer>
-      <nav className={styles.mobileNav} aria-label="Mobile navigation">
-        <a href="#overview"><span aria-hidden="true">⌂</span>Home</a>
-        <a href="#sections"><span aria-hidden="true">✦</span>Your world</a>
-        <a href="#account"><span aria-hidden="true">○</span>Profile</a>
-      </nav>
+      <PortalMobileNav />
     </div>
   );
 }
