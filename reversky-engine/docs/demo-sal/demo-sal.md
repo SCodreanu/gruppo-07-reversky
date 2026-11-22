@@ -7,9 +7,9 @@ Durata: circa 10 minuti. Le richieste sono gli esempi di [`examples/`](../../exa
 
 | # | Cosa | Risultato atteso |
 |---|---|---|
-| 1 | `gradlew.bat build` dalla cartella `reversky-engine` | `BUILD SUCCESSFUL`: tutti i test verdi, compresi gli esempi |
+| 1 | `gradlew.bat build` dalla cartella `reversky-engine` | `BUILD SUCCESSFUL`: tutti i test verdi, compresi gli esempi e il test di contratto con l'API (`ENG-24`) |
 | 2 | `scripts\start-engine.bat` (oppure il container usa e getta della [guida](../guida-sviluppo/guida-sviluppo.md#2-avviare-lengine)) | `Started ReverskyEngineApplication` sulla porta 8081 |
-| 3 | apri `http://localhost:8081/swagger-ui.html` | Swagger con `Simulations` ed `Effects` |
+| 3 | apri `http://localhost:8081/swagger-ui.html` | Swagger con la sola sezione `Simulations`: l'engine espone solo `POST /api/v1/simulations` (`ENG-43`) |
 | 4 | prova una volta gli esempi `full` e `special` con *Try it out* | `200`, risultati come nella tabella qui sotto |
 
 ## Scaletta
@@ -44,4 +44,6 @@ Con curl, al posto di Swagger (cmd, dalla cartella `reversky-engine`):
 curl -s -X POST http://localhost:8081/api/v1/simulations -H "Content-Type: application/json" --data-binary @examples\13-carte-speciali.json
 ```
 
-Delle creature ci sono i primi sei effetti (`ENG-23`): l'esempio 09 (Hidebehind) mostra una prevenzione nel log. Gli esempi 08 e 13 usano creature senza effetto.
+Tutti i 92 effetti del catalogo sono registrati (fino a `ENG-40`, con i numeri di `ENG-42`): l'esempio 09 (Hidebehind) mostra una prevenzione nel log. Gli esempi 08 e 13 usano creature senza effetto.
+
+La parte della demo con l'API (una sfida tra `alice` e `bob` dei dati di prova, accettata e simulata dall'engine vero, con il retry a engine spento) si aggiunge qui dopo la prova completa di `API-54`, che è il primo passo dopo questi documenti (vedi la [roadmap dell'API](../../../reversky-api/docs/roadmap/roadmap.md)).

@@ -37,6 +37,13 @@ Un effetto non implementato **non rompe nulla**: non è nella tabella `effects` 
 Spell, Hidden, Terreni e Oggetti hanno sempre un effetto: finché il suo effetto non esiste, la carta non entra nel catalogo. Le creature possono non averne e fino a `ENG-23` non ne hanno.
 Le meccaniche `P1` (Spell, Hidden, Terreni) sono state **approvate dal cliente** il 2 novembre (D-21).
 
+## Stato al 22 novembre
+
+- **Fatto e unito in `backend_engine`:** tutto fino allo Sprint 6, cioè `ENG-01`…`ENG-28` e `ENG-33`…`ENG-41` (tutti i 92 effetti del catalogo registrati), `ENG-42` (ribilanciamento, #189), `ENG-43` (l'engine espone solo `POST /api/v1/simulations`, #199) e `ENG-24` (test di contratto con l'API, #206 per l'engine e #209 per l'API). Le issue corrispondenti sono chiuse.
+- **Da fare:** `ENG-29` (casi limite, bug, Javadoc) nella settimana del code freeze; `ENG-30` (rule set `1.0` definitivo) appena i DSG decidono D-01 (punti vita) e D-04 (bonus di fazione); `ENG-31` e `ENG-32` (README, materiale e partita dimostrativa) nella settimana della consegna.
+- **In attesa dei DSG, da non anticipare:** D-25 (nuovi disegni degli effetti), D-26 e D-27 (budget di Terreni, Hidden e Oggetti), i nomi inglesi delle carte nell'ultima settimana.
+- Il piano dell'API fino alla consegna è nella [roadmap dell'API](../../../reversky-api/docs/roadmap/roadmap.md).
+
 ## Sprint 3 — 2–8 novembre: preparazione
 
 | Issue | Titolo | Chi | Dim. | Dipende da |
