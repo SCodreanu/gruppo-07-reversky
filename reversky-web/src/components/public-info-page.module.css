@@ -1,0 +1,106 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+
+.main {
+  width: min(1360px, calc(100% - 64px));
+  flex: 1;
+  margin: 0 auto;
+  padding-bottom: 72px;
+}
+
+.hero {
+  min-height: 330px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: clamp(32px, 6vw, 80px);
+  background: var(--night-soft);
+}
+
+.hero::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(15 14 13 / 93%), rgb(15 14 13 / 74%) 50%, rgb(15 14 13 / 30%));
+  content: "";
+}
+
+.hero::after {
+  position: absolute;
+  z-index: 2;
+  inset: 16px;
+  border: 1px solid rgb(166 124 61 / 35%);
+  border-radius: 4px;
+  content: "";
+  pointer-events: none;
+}
+
+.banner { position: absolute; z-index: 0; object-fit: cover; object-position: center 54%; }
+.heroCopy { max-width: 760px; position: relative; z-index: 3; }
+.title { margin: 14px 0 12px; font-size: clamp(48px, 7vw, 82px); line-height: 0.98; text-wrap: balance; }
+.summary { max-width: 620px; margin: 0; color: var(--bone-muted); font-size: 13px; line-height: 1.85; }
+.backLink { display: inline-block; margin-top: 22px; color: var(--bone); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.backLink:hover { color: var(--bronze); }
+.content { width: min(900px, 100%); margin: 0 auto; padding-top: 46px; }
+.section { border-bottom: 1px solid var(--line); padding: 28px 0 32px; }
+.section:first-child { padding-top: 0; }
+.section:last-child { border-bottom: 0; }
+.section h2 { margin: 0 0 14px; color: var(--bone); font-size: clamp(25px, 4vw, 34px); line-height: 1.1; }
+.section h3 { margin: 0 0 8px; color: var(--bone); font-size: 13px; font-weight: 500; }
+.section p { margin: 0; color: var(--bone-muted); font-size: 12px; line-height: 1.9; }
+.section p + p { margin-top: 12px; }
+.spacedParagraph { margin-top: 20px !important; }
+.section a { color: var(--bone); text-decoration: underline; text-decoration-color: var(--bronze); text-underline-offset: 3px; }
+.section a:hover { color: var(--bronze); }
+.deckGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.deckItem { border-top: 1px solid var(--line-strong); padding: 12px 8px 4px 0; }
+.deckItem strong { display: block; color: var(--bronze); font-family: var(--font-display); font-size: 30px; font-weight: 400; line-height: 1; }
+.deckItem span { display: block; margin-top: 7px; color: var(--ash); font-size: 9px; line-height: 1.5; }
+.typeGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.typeItem { border: 1px solid var(--line); border-radius: 6px; padding: 16px; background: var(--night-soft); }
+.theoryList { display: grid; gap: 8px; margin-top: 16px; }
+.theoryRow { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); padding: 10px 0; color: var(--bone-muted); font-size: 11px; }
+.theoryRow strong { color: var(--bone); font-weight: 500; }
+.theoryBonus { color: var(--bronze); white-space: nowrap; }
+.combatGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 18px; }
+.combatCard { min-height: 130px; border: 1px solid var(--line); border-radius: 6px; padding: 16px; background: var(--night-soft); }
+.combatCard span { display: block; margin-bottom: 12px; color: var(--bronze); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.combatCard p { font-size: 11px; }
+.loreCallout { border-left: 2px solid var(--red-bright); padding: 4px 0 4px 18px; }
+.loreCallout p { color: var(--bone); font-family: var(--font-display); font-size: clamp(19px, 3vw, 26px); line-height: 1.45; }
+.theoryCards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.theoryCard { min-height: 180px; border: 1px solid var(--line); border-radius: 6px; padding: 19px; background: radial-gradient(ellipse at 88% 12%, rgb(166 124 61 / 9%), transparent 50%), var(--night-soft); }
+.theoryCard span { color: var(--bronze); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+.theoryCard h3 { margin: 20px 0 8px; font-family: var(--font-display); font-size: 22px; font-weight: 400; }
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 22px; margin-top: 34px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 24px; background: radial-gradient(ellipse at 100% 0%, rgb(152 20 24 / 15%), transparent 52%), var(--night-soft); }
+.cta p { max-width: 540px; margin: 0; color: var(--bone-muted); font-size: 12px; }
+.faqItem { border: 1px solid var(--line); border-radius: 6px; margin-bottom: 9px; padding: 15px 17px; background: var(--night-soft); }
+.faqItem:last-child { margin-bottom: 0; }
+.faqItem summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--bone); cursor: pointer; font-family: var(--font-display); font-size: 20px; list-style: none; }
+.faqItem summary::-webkit-details-marker { display: none; }
+.faqItem summary span { color: var(--bronze); font-family: var(--font-ui); font-size: 16px; }
+.faqItem[open] summary span { transform: rotate(45deg); }
+.faqItem p { margin-top: 13px !important; }
+
+@media (max-width: 760px) {
+  .main { width: min(100% - 40px, 620px); padding-bottom: 52px; }
+  .hero { min-height: 300px; padding: 38px; }
+  .content { padding-top: 34px; }
+  .combatGrid { grid-template-columns: 1fr; }
+  .combatCard { min-height: 0; }
+}
+
+@media (max-width: 520px) {
+  .main { width: calc(100% - 20px); }
+  .hero { min-height: 285px; padding: 30px 22px; }
+  .hero::after { inset: 10px; }
+  .title { font-size: 48px; }
+  .summary { font-size: 11px; }
+  .content { padding: 28px 9px 0; }
+  .deckGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .typeGrid, .theoryCards { grid-template-columns: 1fr; }
+  .theoryRow { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .cta { align-items: flex-start; flex-direction: column; padding: 20px; }
+}

@@ -1,0 +1,131 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--night);
+}
+
+.main {
+  width: min(1440px, 100%);
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(400px, 0.8fr);
+  margin: 0 auto;
+  padding: 20px 32px 36px;
+}
+
+.story {
+  min-height: 620px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  padding: 64px clamp(34px, 7vw, 108px);
+  background:
+    linear-gradient(90deg, rgb(15 14 13 / 94%) 0%, rgb(15 14 13 / 80%) 52%, rgb(15 14 13 / 40%) 100%),
+    linear-gradient(0deg, rgb(15 14 13 / 25%), rgb(15 14 13 / 20%)),
+    url("/images/tavolo-gioco.png") 48% center / cover;
+}
+
+.story::before {
+  position: absolute;
+  inset: 20px;
+  border: 1px solid rgb(166 124 61 / 32%);
+  border-radius: 4px 0 0 4px;
+  content: "";
+  pointer-events: none;
+}
+
+.storyCopy,
+.storyFoot {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+}
+
+.storyTitle {
+  max-width: 650px;
+  margin: 20px 0 18px;
+  color: var(--bone);
+  font-size: clamp(42px, 5vw, 66px);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.storyText {
+  max-width: 440px;
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.storyFoot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 74px;
+  color: var(--ash);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.storyFootMark {
+  color: var(--red-bright);
+  font-size: 20px;
+}
+
+.panelWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 0 8px 8px 0;
+  background: var(--night-soft);
+  padding: 40px clamp(30px, 5vw, 72px);
+}
+
+.panel {
+  width: min(100%, 430px);
+}
+
+@media (max-width: 900px) {
+  .main {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 28px;
+  }
+
+  .story {
+    min-height: 250px;
+    border: 1px solid var(--line);
+    border-radius: 8px 8px 0 0;
+    padding: 34px 28px 24px;
+    background-position: center 58%;
+  }
+
+  .story::before { border-radius: 4px 4px 0 0; }
+  .storyTitle { max-width: 520px; margin: 10px 0 8px; font-size: clamp(32px, 7vw, 48px); }
+  .storyText { max-width: 500px; font-size: 12px; }
+  .storyFoot { margin-top: 16px; font-size: 9px; }
+
+  .panelWrap {
+    border-radius: 0 0 8px 8px;
+    padding: 34px 28px 38px;
+  }
+
+}
+
+@media (max-width: 520px) {
+  .main { padding: 8px 10px 22px; }
+  .story { min-height: 220px; padding: 28px 22px 20px; }
+  .story::before { inset: 10px; }
+  .storyTitle { max-width: 360px; font-size: 36px; }
+  .storyText { line-height: 1.7; }
+  .storyFoot { display: none; }
+  .panelWrap { padding: 28px 22px 32px; }
+}

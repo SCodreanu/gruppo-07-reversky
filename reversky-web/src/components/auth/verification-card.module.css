@@ -1,0 +1,2 @@
+.card { display: grid; justify-items: start; gap: 16px; }
+.card > .button { min-width: 190px; }

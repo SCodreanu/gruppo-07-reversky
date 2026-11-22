@@ -1,0 +1,20 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; background: var(--night); }
+.main { width: min(1120px, 100%); flex: 1; margin: 0 auto; padding: 30px 32px 64px; }
+.backLink { color: var(--ash); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+.backLink:hover { color: var(--bone); }
+.heading { margin: 24px 0 28px; }
+.heading h1 { margin: 8px 0 7px; font-size: clamp(36px, 5vw, 54px); line-height: 1.04; }
+.heading > p:last-child { max-width: 700px; margin: 0; color: var(--bone-muted); font-size: 12px; line-height: 1.8; }
+.content { display: grid; gap: 14px; }
+.footer { min-height: 60px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding: 10px max(32px, calc((100vw - 1360px) / 2)); color: var(--ash-dim); font-size: 9px; }
+.state { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
+.state h1 { margin: 0; font-size: 38px; }
+.state p { margin: 0; color: var(--ash); font-size: 12px; }
+.stateMark { color: var(--bronze); font-size: 24px; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.35; transform: scale(0.8); } }
+
+@media (max-width: 640px) {
+  .main { padding: 24px 16px 44px; }
+  .heading { margin-top: 18px; }
+  .footer { padding-inline: 16px; }
+}

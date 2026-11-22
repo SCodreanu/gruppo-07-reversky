@@ -1,0 +1,7 @@
+.heading { display: grid; gap: 4px; margin-bottom: 18px; }
+.title { margin: 7px 0 0; font-size: 34px; line-height: 1.1; }
+.heading p { margin: 0; font-size: 12px; }
+
+@media (max-width: 520px) {
+  .title { font-size: 30px; }
+}

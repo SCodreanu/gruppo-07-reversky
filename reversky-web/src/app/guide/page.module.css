@@ -1,0 +1,28 @@
+.quickStart, .guideCard { border: 1px solid var(--line); border-radius: 8px; background: var(--night-soft); }
+.quickStart { display: grid; grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.3fr); gap: 34px; padding: 24px; }
+.quickStart h2 { margin: 7px 0 0; font-size: clamp(25px, 3vw, 34px); line-height: 1.08; }
+.quickStart ol { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.quickStart li { display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.quickStart li:last-child { border-bottom: 0; padding-bottom: 0; }
+.quickStart li > span { padding-top: 2px; color: var(--bronze); font-size: 9px; letter-spacing: 0.1em; }
+.quickStart li p { margin: 0; color: var(--bone-muted); font-size: 11px; line-height: 1.7; }
+.quickStart li strong { color: var(--bone); font-weight: 500; }
+.guideGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+.guideCard { min-height: 230px; display: flex; flex-direction: column; padding: 20px; background: radial-gradient(ellipse at 100% 0%, rgb(166 124 61 / 7%), transparent 48%), var(--night-soft); }
+.number { color: var(--bronze); font-size: 8px; letter-spacing: 0.12em; }
+.guideCard h2 { margin: 26px 0 8px; font-size: 24px; line-height: 1.08; }
+.guideCard p { margin: 0; color: var(--ash); font-size: 10px; line-height: 1.7; }
+.guideCard a { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 22px; color: var(--bone); font-size: 10px; }
+.guideCard a:hover { color: var(--bronze); }
+.guideCard a span { color: var(--bronze); }
+
+@media (max-width: 760px) {
+  .quickStart { grid-template-columns: 1fr; gap: 18px; }
+  .guideGrid { grid-template-columns: 1fr; }
+  .guideCard { min-height: 190px; }
+}
+
+@media (max-width: 520px) {
+  .quickStart { padding: 18px; }
+  .guideCard { padding: 18px; }
+}
