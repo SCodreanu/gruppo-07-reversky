@@ -1,0 +1,79 @@
+/* Play hub, history, deck choice and result (mockup "Gioca", "Storico partite", "Scegli il mazzo", "Risultato"). */
+
+.column { display: grid; width: min(640px, 100%); gap: 14px; margin: 0 auto; }
+.sectionTitle { margin: 18px 0 2px; font-size: 22px; }
+.sectionTitle:first-child { margin-top: 0; }
+.note { margin: 0; color: var(--ash); font-size: 12px; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 14px 16px;
+  background: var(--night-soft);
+}
+.rowAvatar { width: 46px; height: 46px; flex: none; }
+.rowThumb { position: relative; width: 40px; flex: none; aspect-ratio: 5 / 7; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 4px; }
+.rowThumb img { object-fit: cover; }
+.rowText { display: grid; min-width: 0; flex: 1; gap: 3px; }
+.rowText strong { overflow: hidden; font-family: var(--font-display); font-size: 19px; font-weight: 400; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+.rowText span { color: var(--bone-muted); font-size: 12px; }
+.rowActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.rowActions :global(.button) { min-height: 38px; padding: 0 16px; font-size: 10px; }
+.win { color: #9fe3ac !important; }
+.loss { color: #ff9ea2 !important; }
+
+.links { display: flex; flex-wrap: wrap; gap: 10px; }
+.links :global(.button) { min-height: 40px; font-size: 10px; }
+
+.select { min-height: 40px !important; padding: 8px 10px !important; appearance: auto; }
+.inlineForm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.inlineForm .select { width: auto; min-width: 150px; }
+
+.rating { display: flex; flex-wrap: wrap; gap: 18px; }
+.rating div { display: grid; }
+.rating span { color: var(--ash); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.rating strong { font-size: 20px; font-weight: 500; }
+
+.feedback { margin: 0; border: 1px solid var(--line-strong); border-radius: 4px; padding: 10px 12px; font-size: 12px; }
+.feedbackError { border-color: rgb(240 139 143 / 45%); color: #f3b3b6; }
+.feedbackOk { border-color: rgb(143 199 154 / 45%); color: #b9e8c1; }
+
+.searching { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-muted); font-size: 12px; }
+.searching::before { width: 8px; height: 8px; border-radius: 50%; background: var(--bronze); content: ""; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+/* Result */
+
+.result {
+  display: grid;
+  width: min(820px, 100%);
+  grid-template-columns: 240px minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  margin: 24px auto;
+}
+.resultCard { width: 240px; }
+.resultCard > div { cursor: default; box-shadow: 0 20px 50px rgb(0 0 0 / 60%); }
+.resultBody { display: grid; gap: 12px; }
+.resultBody > p:first-child { margin: 0; color: var(--bone-muted); font-size: 12px; }
+.resultBody h1 { margin: 0; font-size: clamp(34px, 5vw, 50px); line-height: 1.05; }
+.resultBody h2 { margin: 6px 0 0; font-size: 22px; }
+.summary { display: grid; gap: 2px; margin: 0; padding: 0; color: var(--bone-muted); font-size: 12px; line-height: 1.6; list-style: none; }
+.players { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.playerChip { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-strong); border-radius: 4px; padding: 7px 14px 7px 8px; background: var(--night-soft); }
+.playerChip strong { display: block; font-size: 13px; font-weight: 500; }
+.playerChip small { display: block; color: var(--bone-muted); font-size: 12px; }
+.chipAvatar { width: 34px; height: 34px; }
+.ratingChange { display: inline-flex; gap: 8px; color: var(--bone-muted); font-size: 12px; }
+
+@media (max-width: 680px) {
+  .row { flex-wrap: wrap; }
+  .rowActions { width: 100%; justify-content: stretch; }
+  .rowActions :global(.button) { flex: 1; }
+  .result { grid-template-columns: 1fr; gap: 20px; justify-items: center; }
+  .resultCard { width: min(220px, 70%); }
+  .resultBody { width: 100%; }
+}

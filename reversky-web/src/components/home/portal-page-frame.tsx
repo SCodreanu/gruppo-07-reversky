@@ -32,8 +32,9 @@ export function PortalPageFrame({
   children,
 }: {
   eyebrow: string;
-  title: string;
-  description: string;
+  /** Without a title the page has no heading block (the content brings its own, as in the result screen). */
+  title?: string;
+  description?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -119,11 +120,11 @@ export function PortalPageFrame({
         />
         <main className={styles.main}>
           <a className={styles.backLink} href="/home">← Back to your home</a>
-          <header className={styles.heading}>
+          {title && <header className={styles.heading}>
             <p className="eyebrow">{eyebrow}</p>
             <h1 className="display-type">{title}</h1>
-            <p>{description}</p>
-          </header>
+            {description && <p>{description}</p>}
+          </header>}
           <div className={styles.content}>{children}</div>
         </main>
         <footer className={styles.footer}>

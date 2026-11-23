@@ -72,6 +72,12 @@ export function CardArt({
           setState({ url, status: "missing" });
         }}
         onLoad={() => setState({ url, status: "loaded" })}
+        // A cached image can finish before onLoad is attached (e.g. when the card is remounted)
+        ref={(image) => {
+          if (image?.complete && status === "loading") {
+            if (image.naturalWidth > 0) setState({ url, status: "loaded" });
+          }
+        }}
         priority={priority}
         sizes={sizes}
         src={url}

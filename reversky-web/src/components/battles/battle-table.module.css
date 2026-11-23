@@ -1,0 +1,308 @@
+/* Battle table (mockup "Schermate 1920x1080": table, crack, two sides, player chips, bottom bar). */
+
+.stage {
+  /* Sized from the screen height too: both sides, the crack and the bars always fit, as in the mockup */
+  --creature-w: clamp(70px, min(13vw, 15.5dvh), 210px);
+  --small-w: clamp(40px, min(6.4vw, 8.6dvh), 104px);
+  display: grid;
+  height: 100dvh;
+  overflow: hidden;
+  grid-template-rows: auto 1fr auto;
+  background: #0c0b0a;
+  color: var(--bone);
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 18px;
+}
+.crumbs { display: flex; min-width: 0; align-items: center; gap: 10px; color: var(--ash); font-size: 11px; }
+.crumbs a:last-child { overflow: hidden; color: var(--bone-muted); text-overflow: ellipsis; white-space: nowrap; }
+.crumbs a:last-child:hover { color: var(--bone); }
+.crumbs :global(.brand) { width: 46px; }
+.phaseTitle { margin: 0; font-size: clamp(16px, 2vw, 22px); text-align: center; white-space: nowrap; }
+.phaseTitle span { color: var(--ash); }
+.logButton {
+  justify-self: end;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 8px 18px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+}
+.logButton:hover, .logButton[aria-expanded="true"] { border-color: var(--bronze); }
+
+/* Table */
+
+.table {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  grid-template-rows: 1fr auto 1fr;
+  gap: 6px;
+  overflow: hidden;
+  margin: 10px 14px;
+  border: 1px solid rgb(166 124 61 / 35%);
+  border-radius: 6px;
+  padding: clamp(44px, 7dvh, 64px) 24px;
+  background: #120f0d url("/images/tavolo-gioco.png") center / cover no-repeat;
+  box-shadow: inset 0 0 120px rgb(0 0 0 / 65%);
+}
+
+.side { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3vw; }
+.sideTop { align-items: end; }
+.sideBottom { align-items: start; }
+.wing { display: flex; align-items: center; justify-content: space-between; gap: 3vw; }
+.wingLeft { padding-left: 6%; }
+.wingRight { padding-right: 6%; }
+.wingEnd { justify-content: flex-end; }
+.sideBottom .wingRight { justify-content: space-between; }
+.sideTop .wingRight { justify-content: flex-start; }
+
+.slot { display: grid; margin: 0; justify-items: center; gap: 4px; width: var(--small-w); }
+.slot figcaption { color: var(--bone-muted); font-size: 10px; text-align: center; text-shadow: 0 1px 2px #000; }
+.creature { width: var(--creature-w); }
+.small { width: var(--small-w); }
+.deck { width: calc(var(--small-w) * 0.92); }
+.support { display: grid; gap: 10px; }
+.terrainColumn { display: grid; gap: 10px; }
+
+.tableCard { cursor: default; box-shadow: 0 10px 28px rgb(0 0 0 / 55%); }
+/* Every face-up card on the table opens its details */
+.inspectable { cursor: zoom-in; font: inherit; }
+.inspectable:hover { border-color: var(--tone); transform: translateY(-2px); }
+.inspectable:focus-visible { outline: 2px solid var(--bone); outline-offset: 3px; }
+.onTable { margin: 6px 0 0; color: var(--bone-muted); font-size: 12px; }
+.onTable strong { color: var(--bone); }
+.history { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.history > p:last-child { margin: 6px 0 0; color: var(--ash); font-size: 12px; }
+.history ol { display: grid; gap: 4px; max-height: 190px; overflow-y: auto; margin: 6px 0 0; padding: 0; list-style: none; }
+.history li { display: grid; grid-template-columns: 62px 1fr; gap: 8px; color: var(--bone-muted); font-size: 11px; line-height: 1.5; }
+.history li span { color: var(--ash); font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+.history li.historyMore { display: block; color: var(--ash); font-style: italic; }
+.onTable strong.up { color: #9fe3ac; }
+.onTable strong.down { color: #ff9ea2; }
+.cardBack {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  border: 1px solid rgb(187 37 43 / 55%);
+  border-radius: 6px;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 55%);
+}
+.cardBack img { object-fit: cover; }
+.emptySlot {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  place-items: center;
+  border: 1px solid rgb(233 228 216 / 22%);
+  border-radius: 6px;
+  background: rgb(15 14 13 / 35%);
+  color: var(--bone-muted);
+  font-size: 10px;
+}
+.creatureEmpty { width: var(--creature-w); }
+.namedCard {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 6px;
+  background: var(--surface);
+  font-size: 10px;
+  text-align: center;
+}
+.revealed .tableCard, .spell .tableCard { animation: appear 420ms ease both; box-shadow: 0 0 26px rgb(191 212 214 / 45%); }
+
+.fighter { position: relative; display: grid; justify-items: center; gap: 6px; }
+.statStrip {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  padding: 3px 12px;
+  background: rgb(10 9 8 / 88%);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.up { color: #9fe3ac; }
+.down { color: #ff9ea2; }
+
+.badges {
+  position: absolute;
+  z-index: 3;
+  top: 34%;
+  left: calc(100% + 10px);
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.badges li {
+  border-radius: 3px;
+  padding: 3px 9px;
+  background: var(--surface-raised);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: pop 360ms ease both;
+}
+.badgeDown { background: rgb(120 18 24 / 92%) !important; color: #ffd6d8; }
+.badgeUp { background: rgb(36 92 54 / 92%) !important; color: #d9f7df; }
+
+.eliminated .tableCard { filter: grayscale(0.85) brightness(0.5); transition: filter 400ms ease; }
+.eliminatedTag {
+  position: absolute;
+  z-index: 3;
+  top: 32%;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  padding: 5px 12px;
+  background: rgb(10 9 8 / 92%);
+  font-size: 12px;
+}
+
+/* Two classes with the same motion: switching between them restarts the animation on every battle phase */
+.clashUp0 { animation: clashUp 900ms ease both; }
+.clashUp1 { animation: clashUpAgain 900ms ease both; }
+.clashDown0 { animation: clashDown 900ms ease both; }
+.clashDown1 { animation: clashDownAgain 900ms ease both; }
+
+.rift { position: relative; height: 0; }
+.rift span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: var(--bone);
+  font-size: 22px;
+  opacity: 0;
+  text-shadow: 0 0 18px var(--red-bright);
+  transform: translate(-50%, -50%);
+}
+.riftClash span { animation: flash 900ms ease both; }
+
+.player {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 7px 14px 7px 8px;
+  background: rgb(15 14 13 / 88%);
+}
+.player strong { display: block; font-size: 13px; }
+.player small { display: block; color: var(--bone-muted); font-size: 12px; }
+.player .badges { position: static; display: flex; }
+.playerTop { top: 12px; left: 12px; }
+.playerBottom { right: 12px; bottom: 12px; }
+.avatar { width: 38px; height: 38px; }
+
+.endPanel {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 22px 30px;
+  background: rgb(15 14 13 / 94%);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: appear 420ms ease both;
+}
+.endPanel h2 { margin: 0; font-size: clamp(26px, 3vw, 36px); }
+
+/* Bottom bar */
+
+.bottomBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding: 8px 18px 12px;
+}
+.caption { display: grid; gap: 2px; max-height: 5.2em; overflow: hidden; margin: 0; padding: 0; color: var(--ash); font-size: 12px; list-style: none; }
+.caption li:last-child { color: var(--bone); }
+.progress { display: grid; gap: 5px; color: var(--ash); font-size: 10px; }
+.progressTrack { display: block; width: 150px; height: 3px; overflow: hidden; border-radius: 2px; background: var(--line); }
+.progressTrack span { display: block; height: 100%; background: var(--bronze); transition: width 300ms ease; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.controls :global(.button) { min-height: 38px; padding: 0 14px; font-size: 10px; }
+
+/* Log */
+
+.drawer {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  width: min(400px, 92vw);
+  flex-direction: column;
+  border-left: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: -20px 0 50px rgb(0 0 0 / 55%);
+}
+.drawer header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 14px 18px; }
+.drawer h2 { margin: 0; font-size: 24px; }
+.drawer header button { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 50%; background: transparent; cursor: pointer; font-size: 18px; }
+.drawer ol { flex: 1; overflow-y: auto; margin: 0; padding: 8px 18px 24px; list-style: none; }
+.drawer ol > li { border-left: 2px solid transparent; padding: 8px 0 8px 10px; }
+.drawer ol > li ul { margin: 4px 0 0; padding-left: 16px; color: var(--bone-muted); font-size: 11px; line-height: 1.6; }
+.drawerCurrent { border-left-color: var(--bronze) !important; background: rgb(166 124 61 / 8%); }
+
+@keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes appear { from { opacity: 0; transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.94); } to { opacity: 1; } }
+.endPanel { --tx: -50%; --ty: -50%; }
+@keyframes clashUp { 0% { transform: none; } 35% { transform: translateY(-22px); } 55% { transform: translateY(-10px) rotate(-1deg); } 100% { transform: none; } }
+@keyframes clashUpAgain { 0% { transform: none; } 35% { transform: translateY(-22px); } 55% { transform: translateY(-10px) rotate(-1deg); } 100% { transform: none; } }
+@keyframes clashDown { 0% { transform: none; } 35% { transform: translateY(22px); } 55% { transform: translateY(10px) rotate(1deg); } 100% { transform: none; } }
+@keyframes clashDownAgain { 0% { transform: none; } 35% { transform: translateY(22px); } 55% { transform: translateY(10px) rotate(1deg); } 100% { transform: none; } }
+@keyframes flash { 0%, 20% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 40% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .clashUp0, .clashUp1, .clashDown0, .clashDown1, .riftClash span, .badges li, .endPanel, .revealed .tableCard, .spell .tableCard { animation: none; }
+}
+
+@media (max-width: 760px) {
+  .stage { --creature-w: min(30vw, 15dvh); --small-w: min(13vw, 7.5dvh); }
+  .topBar { grid-template-columns: 1fr auto; padding: 8px 12px; }
+  .crumbs a:last-child { display: none; }
+  .phaseTitle { grid-column: 1 / -1; grid-row: 2; font-size: 16px; }
+  .table { margin: 8px; padding: 58px 6px; }
+  .side { gap: 6px; }
+  .wing { flex-direction: column; gap: 8px; padding: 0; }
+  .support { gap: 6px; }
+  .slot figcaption { font-size: 8px; }
+  /* The player chips sit in the corners on a phone: the deck piles (no information) make room for them */
+  .deck { display: none; }
+  .badges { left: auto; right: -6px; top: 6px; }
+  .badges li { font-size: 9px; padding: 2px 6px; }
+  .player { padding: 5px 10px 5px 6px; }
+  .player strong { font-size: 11px; }
+  .player small { font-size: 10px; }
+  .avatar { width: 28px; height: 28px; }
+  .bottomBar { grid-template-columns: 1fr; gap: 8px; padding: 8px 10px 12px; }
+  .progressTrack { width: 100%; }
+  .controls :global(.button) { flex: 1; padding: 0 8px; font-size: 9px; }
+}

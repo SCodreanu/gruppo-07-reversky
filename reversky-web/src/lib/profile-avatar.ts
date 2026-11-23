@@ -40,3 +40,19 @@ export function saveProfileAvatar(userId: number, avatarIndex: number): number {
   }
   return selected;
 }
+
+/**
+ * Avatar of any player as seen in this browser: the one they chose here if any, otherwise a stable one from the id
+ * (the avatar is not stored by the API yet, so the opponent's choice is not known).
+ */
+export function playerAvatar(userId: number): number {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = Number(window.localStorage.getItem(storageKey(userId)));
+      if (window.localStorage.getItem(storageKey(userId)) !== null && isValidAvatarIndex(stored)) return stored;
+    } catch {
+      // Fall back to the stable avatar below.
+    }
+  }
+  return Math.abs(userId) % PROFILE_AVATARS.length;
+}
