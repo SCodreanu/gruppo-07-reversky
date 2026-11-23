@@ -77,9 +77,13 @@ export function ShopExperience() {
       return;
     }
     setLoadError("");
-    setPacks(packResult.data);
+    // Cheapest first (Mini, Standard, Premium); the Standard is selected first, as in the mockup
+    const sorted = [...packResult.data].sort((a, b) => a.cost - b.cost || a.id - b.id);
+    setPacks(sorted);
     setSelectedId((current) =>
-      packResult.data.some((pack) => pack.id === current) ? current : packResult.data[0]?.id ?? null,
+      sorted.some((pack) => pack.id === current)
+        ? current
+        : (sorted.find((pack) => pack.name.toLowerCase() === "standard") ?? sorted[0])?.id ?? null,
     );
     setCredits(inventoryResult.data.credits);
     setOwnedPacks(ownedCounts(inventoryResult.data));

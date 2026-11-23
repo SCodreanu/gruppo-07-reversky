@@ -28,8 +28,9 @@
 .packOptionCopy { min-width: 0; display: grid; gap: 2px; }
 .packName { font-family: var(--font-display); font-size: 20px; line-height: 1.1; }
 .packMeta { color: var(--ash); font-size: 9px; }
-.packPrice { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--bronze); font-size: 9px; }
-.inlineCoin { width: 12px; height: 12px; flex: 0 0 12px; object-fit: contain; vertical-align: middle; }
+.packPrice { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; color: var(--bronze); font-size: 10px; font-variant-numeric: lining-nums tabular-nums; line-height: 1; }
+.packPrice .inlineCoin { width: 1.3em; height: 1.3em; flex-basis: 1.3em; }
+.inlineCoin { display: block; width: 12px; height: 12px; flex: 0 0 12px; object-fit: contain; }
 .packArrow { margin-left: auto; color: var(--ash); font-size: 20px; }
 .reviewChip { position: absolute; right: 11px; bottom: 9px; color: var(--ash); font-size: 7px; letter-spacing: .04em; text-transform: uppercase; }
 .emptyState { border: 1px solid var(--line); border-radius: 6px; padding: 18px; color: var(--ash); font-size: 10px; }
@@ -48,7 +49,10 @@
 .detailStats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 15px 0; }
 .detailStats > div { display: grid; gap: 1px; border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; background: rgb(233 228 216 / 3%); }
 .detailStats span { color: var(--ash); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
-.detailStats strong { display: inline-flex; align-items: center; gap: 4px; color: var(--bone); font-family: var(--font-display); font-size: 18px; font-weight: 400; }
+/* Numbers in the UI font with lining digits: the coin centres on them (Georgia's old-style digits sit low) */
+.detailStats strong { display: inline-flex; align-items: center; gap: 6px; color: var(--bone); font-family: var(--font-ui); font-size: 18px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; line-height: 1.2; }
+.detailStats strong .inlineCoin { width: 18px; height: 18px; flex-basis: 18px; }
+.detailStats strong small { align-self: flex-end; margin-bottom: 2px; }
 .detailStats small { color: var(--bronze); font-family: var(--font-ui); font-size: 8px; }
 .contents { border-top: 1px solid var(--line); padding-top: 12px; }
 .contents ul { display: flex; flex-wrap: wrap; gap: 5px 7px; margin: 8px 0; padding: 0; list-style: none; }
@@ -81,7 +85,7 @@
 .quantityControl button:disabled { color: var(--ash-dim); cursor: not-allowed; opacity: .5; }
 .quantityControl strong { min-width: 18px; color: var(--bone); font-size: 11px; text-align: center; }
 .totalRow { border-top-color: var(--line-strong); color: var(--bone); }
-.totalRow strong { display: inline-flex; align-items: center; gap: 4px; color: var(--bronze); font-size: 11px; font-weight: 500; }
+.totalRow strong { display: inline-flex; align-items: center; gap: 5px; color: var(--bronze); font-size: 11px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; line-height: 1; }
 .balanceAfter { padding-top: 0; border: 0; color: var(--ash); font-size: 8px; }
 .balanceAfter span { color: var(--bone-muted); }
 .cancelButton { width: 100%; min-height: 39px; border: 0; margin-top: 7px; color: var(--ash); background: transparent; font-size: 9px; cursor: pointer; }
