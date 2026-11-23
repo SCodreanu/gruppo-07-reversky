@@ -86,7 +86,12 @@ class DevSeedIT {
 			List<DeckSummaryResponse> decks = deckService.findMine(user.getId());
 
 			// Assert
-			assertThat(inventoryService.getCredits(user.getId())).as(email).isEqualTo(signupBonus);
+			// alice e bob hanno 10.000 crediti per provare le tre bustine (benvenuto + una riga ADMIN_ADJUSTMENT)
+			boolean player = !email.startsWith("admin");
+			assertThat(inventoryService.getCredits(user.getId())).as(email).isEqualTo(player ? 10_000 : signupBonus);
+			assertThat(jdbcTemplate.queryForObject(
+				"SELECT COALESCE(SUM(amount), 0) FROM credit_transactions WHERE user_id = ? AND reason = 'ADMIN_ADJUSTMENT'",
+				Integer.class, user.getId())).as(email).isEqualTo(player ? 10_000 - signupBonus : 0);
 			assertThat(decks).as(email).hasSize(3).allSatisfy(deck -> {
 				assertThat(deck.cardCount()).as(email + " " + deck.name()).isEqualTo(30);
 				assertThat(deck.valid()).as(email + " " + deck.name()).isTrue();

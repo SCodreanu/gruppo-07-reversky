@@ -32,7 +32,7 @@ public record InventoryResponse(
 		@Schema(example = "1")
 		Integer packId,
 
-		@Schema(example = "Base Pack")
+		@Schema(example = "Standard")
 		String name,
 
 		@Schema(example = "packs/base.webp")

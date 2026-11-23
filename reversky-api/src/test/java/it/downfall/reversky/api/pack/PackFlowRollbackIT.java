@@ -92,7 +92,8 @@ class PackFlowRollbackIT {
 		inventorySpy = AopTestUtils.getUltimateTargetObject(inventoryService);
 		collectionSpy = AopTestUtils.getUltimateTargetObject(collectionService);
 		user = testUsers.create();
-		packId = jdbcTemplate.queryForObject("SELECT id FROM packs WHERE name = 'Base Pack'", Integer.class);
+		// La Mini (300 crediti): i crediti di benvenuto bastano, così l'acquisto arriva al guasto simulato
+		packId = jdbcTemplate.queryForObject("SELECT id FROM packs WHERE name = 'Mini'", Integer.class);
 	}
 
 	@Test

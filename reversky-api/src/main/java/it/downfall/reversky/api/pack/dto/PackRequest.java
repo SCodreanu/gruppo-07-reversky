@@ -25,7 +25,7 @@ import jakarta.validation.constraints.Size;
  */
 public record PackRequest(
 
-	@Schema(example = "Base Pack")
+	@Schema(example = "Standard")
 	@NotBlank(message = "Name is required")
 	@Size(max = 255, message = "Name must be at most 255 characters")
 	String name,

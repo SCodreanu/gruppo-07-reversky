@@ -1,5 +1,6 @@
 package it.downfall.reversky.api.migration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,12 +27,13 @@ import it.downfall.reversky.api.support.TestUsers;
 import it.downfall.reversky.api.user.entity.User;
 
 /**
- * Pacchetto base della migrazione {@code V12} (API-63, #133): in vendita su un database vuoto, si compra e si apre.
+ * Bustine del negozio dopo {@code V16} (proposta DSG "Economia di gioco 2.0"): Mini, Standard (il Base Pack di
+ * {@code V12}) e Premium in vendita su un database vuoto; un utente nuovo compra e apre una Mini.
  */
 @Import({TestcontainersConfiguration.class, TestUsers.class})
 @SpringBootTest
 @AutoConfigureMockMvc
-class BasePackMigrationIT {
+class ShopPacksMigrationIT {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -50,26 +52,31 @@ class BasePackMigrationIT {
 	private EmailSender emailSender;
 
 	@Test
-	@DisplayName("The base pack is on sale: 100 credits, 3 Common, 2 Uncommon, 2 Rare and three bonuses")
-	void basePack_isOnSale() throws Exception {
-		// Arrange
-		Integer id = basePackId();
-
-		// Act + Assert
-		mockMvc.perform(get("/api/v1/packs"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$[?(@.id == " + id + ")].cost").value(hasItem(100)))
-			.andExpect(jsonPath("$[?(@.id == " + id + ")].cardCount").value(hasItem(7)))
-			.andExpect(jsonPath("$[?(@.id == " + id + ")].slots[*].quantity").value(contains(3, 2, 2)))
-			.andExpect(jsonPath("$[?(@.id == " + id + ")].bonuses[*].probabilityUnits").value(contains(1000, 500, 250)));
+	@DisplayName("Mini is on sale: 300 credits, 1 Common, 1 Uncommon, 1 Rare, bonuses 7%, 2.5%, 0.5%")
+	void mini_isOnSale() throws Exception {
+		assertPack("Mini", 300, 3, new Integer[] {1, 1, 1}, new Integer[] {700, 250, 50});
 	}
 
 	@Test
-	@DisplayName("A new user buys and opens the base pack")
-	void basePack_buyAndOpen() throws Exception {
+	@DisplayName("Standard, the former Base Pack, is on sale: 600 credits, 3 Common, 2 Uncommon, 2 Rare, bonuses 10%, 5%, 2.5%")
+	void standard_isOnSale() throws Exception {
+		assertPack("Standard", 600, 7, new Integer[] {3, 2, 2}, new Integer[] {1000, 500, 250});
+		assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM packs WHERE name = 'Base Pack'", Integer.class))
+			.isZero();
+	}
+
+	@Test
+	@DisplayName("Premium is on sale: 1200 credits, 5 Common, 4 Uncommon, 6 Rare, bonuses over three flexible slots")
+	void premium_isOnSale() throws Exception {
+		assertPack("Premium", 1200, 15, new Integer[] {5, 4, 6}, new Integer[] {5254, 2710, 873});
+	}
+
+	@Test
+	@DisplayName("A new user buys and opens a Mini with the welcome credits")
+	void mini_buyAndOpen() throws Exception {
 		// Arrange
 		User user = testUsers.create();
-		Integer id = basePackId();
+		Integer id = packId("Mini");
 		String token = "Bearer " + jwtService.createAccessToken(user);
 
 		// Act + Assert
@@ -78,10 +85,20 @@ class BasePackMigrationIT {
 			.andExpect(status().isOk());
 		mockMvc.perform(post("/api/v1/inventory/packs/" + id + "/open").header(HttpHeaders.AUTHORIZATION, token))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.cards.length()").value(7));
+			.andExpect(jsonPath("$.cards.length()").value(3));
 	}
 
-	private Integer basePackId() {
-		return jdbcTemplate.queryForObject("SELECT id FROM packs WHERE name = 'Base Pack'", Integer.class);
+	private void assertPack(String name, int cost, int cardCount, Integer[] slots, Integer[] bonusUnits) throws Exception {
+		Integer id = packId(name);
+		mockMvc.perform(get("/api/v1/packs"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[?(@.id == " + id + ")].cost").value(hasItem(cost)))
+			.andExpect(jsonPath("$[?(@.id == " + id + ")].cardCount").value(hasItem(cardCount)))
+			.andExpect(jsonPath("$[?(@.id == " + id + ")].slots[*].quantity").value(contains(slots)))
+			.andExpect(jsonPath("$[?(@.id == " + id + ")].bonuses[*].probabilityUnits").value(contains(bonusUnits)));
+	}
+
+	private Integer packId(String name) {
+		return jdbcTemplate.queryForObject("SELECT id FROM packs WHERE name = ?", Integer.class, name);
 	}
 }

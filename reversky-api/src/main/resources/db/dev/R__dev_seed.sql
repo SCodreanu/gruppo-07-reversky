@@ -33,6 +33,27 @@ INSERT INTO credit_transactions (user_id, amount, reason)
 SELECT user_id, credits, 'SIGNUP'
 FROM created;
 
+-- Crediti per provare il negozio (Mini 300, Standard 600, Premium 1.200 di V16): alice e bob arrivano a 10.000 una
+-- volta sola, con una riga ADMIN_ADJUSTMENT come una correzione dal backoffice. Poi il saldo resta quello che spendono.
+WITH before AS (
+	SELECT i.user_id, i.credits
+	FROM inventories i
+	JOIN users u ON u.id = i.user_id
+	WHERE u.email IN ('alice@reversky.dev', 'bob@reversky.dev')
+		AND i.credits < 10000
+		AND NOT EXISTS (SELECT 1 FROM credit_transactions t WHERE t.user_id = u.id AND t.reason = 'ADMIN_ADJUSTMENT')
+), topped AS (
+	UPDATE inventories i
+	SET credits = 10000
+	FROM before b
+	WHERE i.user_id = b.user_id
+	RETURNING i.user_id
+)
+INSERT INTO credit_transactions (user_id, amount, reason)
+SELECT b.user_id, 10000 - b.credits, 'ADMIN_ADJUSTMENT'
+FROM before b
+JOIN topped t ON t.user_id = b.user_id;
+
 -- Collezione completa per tutti gli account nel database dev: ogni carta attiva fino al suo limite di copie,
 -- min(deck_limit, copy_limit). Le copie già presenti restano invariate.
 INSERT INTO collection_cards (user_id, card_id, quantity)
