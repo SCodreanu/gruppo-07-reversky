@@ -7,6 +7,35 @@ import { factionLine, rarityTone, subtypeLabel, typeLabel } from "./card-meta";
 import { CardFace, cardFrameClass } from "./card-tile";
 import styles from "./cards.module.css";
 
+/** "Furia del ferito: la prima volta…" -> the effect's name and its rule (the catalog writes them together). */
+export function splitEffect(description: string): { name: string | null; rule: string } {
+  const match = description.match(/^([^:]{2,60}):\s*([\s\S]+)$/);
+  if (!match) return { name: null, rule: description };
+  const rule = match[2].trim();
+  return { name: match[1].trim(), rule: rule.charAt(0).toLocaleUpperCase("it") + rule.slice(1) };
+}
+
+function EffectBlock({ card }: { card: CatalogCard }) {
+  if (!card.effectDescription) {
+    return (
+      <div className={styles.detailBlock}>
+        <p className="eyebrow">Effect</p>
+        <p>{card.type === "CREATURE"
+          ? "No special effect: this creature fights with its ATK and DEF only."
+          : "No effect text in the catalog for this card yet."}</p>
+      </div>
+    );
+  }
+  const effect = splitEffect(card.effectDescription);
+  return (
+    <div className={styles.detailBlock}>
+      <p className="eyebrow">Effect</p>
+      {effect.name && <h3 className={`display-type ${styles.effectName}`}>{effect.name}</h3>}
+      <p>{effect.rule}</p>
+    </div>
+  );
+}
+
 /** Card details from GET /cards/{id} (adds the tags), shown over the page. */
 export function CardDetailDialog({
   card,
@@ -66,12 +95,7 @@ export function CardDetailDialog({
                 {shown.copyLimit !== null && <div><span>Copies per deck</span><strong>{shown.copyLimit}</strong></div>}
               </div>
             )}
-            {shown.effectDescription && (
-              <div className={styles.detailBlock}>
-                <p className="eyebrow">Effect</p>
-                <p>{shown.effectDescription}</p>
-              </div>
-            )}
+            <EffectBlock card={shown} />
             {shown.flavorText && <blockquote className={styles.flavor}>{shown.flavorText}</blockquote>}
             {loaded?.card?.tags && loaded.card.tags.length > 0 && (
               <ul className={styles.tags} aria-label="Tags">

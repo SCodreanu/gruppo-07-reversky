@@ -210,6 +210,8 @@ button.card:hover { transform: translateY(-2px); border-color: var(--tone); }
 .detailStats span { display: block; color: var(--ash); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
 .detailStats strong { font-size: 22px; }
 .detailBlock p:last-child { margin: 6px 0 14px; color: var(--bone-muted); font-size: 12px; line-height: 1.7; }
+.effectName { margin: 6px 0 0; color: var(--bone); font-size: 19px; line-height: 1.2; }
+.effectName + p { margin-top: 4px !important; }
 .flavor { margin: 0 0 14px; border-left: 2px solid var(--tone); padding-left: 12px; color: var(--ash); font-size: 12px; font-style: italic; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .tags li { border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 9px; color: var(--bone-muted); font-size: 9px; letter-spacing: 0.06em; }
