@@ -15,7 +15,7 @@ public record AdminPackResponse(
 	@Schema(example = "1")
 	Integer id,
 
-	@Schema(example = "Base Pack")
+	@Schema(example = "Standard")
 	String name,
 
 	@Schema(example = "100")

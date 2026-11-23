@@ -63,6 +63,18 @@ Sono carte del catalogo come le altre, con una loro rarità: escono negli slot d
 
 Spell e Hidden non hanno fazione: in un pacchetto con `pack_tags` escono solo se hanno uno dei tag nei **tag propri** (i tag di fazione non valgono per loro). Un pacchetto evento con tag `DREAM` quindi non contiene Spell né Hidden, a meno che non siano etichettate anche loro.
 
+## Le bustine del negozio
+
+Da `V16`, come la proposta DSG "Economia di gioco 2.0" (prezzi e probabilità **[DA CONFERMARE]**). Lo slot flessibile della proposta è uno slot Rare che un bonus può sostituire.
+
+| Bustina | Crediti | Carte | Slot base | Bonus (unità su 10.000) |
+|---|---|---|---|---|
+| Mini | 300 | 3 | 1 Common, 1 Uncommon, 1 Rare | Mythic 700, Legendary 250, Mutant 50 |
+| Standard (era il Base Pack di `V12`) | 600 | 7 | 3 Common, 2 Uncommon, 2 Rare | Mythic 1000, Legendary 500, Mutant 250 |
+| Premium | 1.200 | 15 | 5 Common, 4 Uncommon, 6 Rare | Mythic 5254, Legendary 2710, Mutant 873 |
+
+La Premium della proposta ha 3 slot flessibili indipendenti (Mythic 22%, Legendary 10%, Mutant 3% ciascuno). Il modello attuale tira ogni rarità bonus una volta per pacchetto, quindi la Premium usa la probabilità di averne almeno una nei 3 slot (1 − 0,78³, 1 − 0,90³, 1 − 0,97³) e contiene al massimo una carta per rarità bonus. Gli slot flessibili veri sono un'evoluzione del modello, dopo il SAL.
+
 ## Acquisto
 
 `POST /api/v1/packs/{id}/purchase` con `{ "quantity": 1 }` (1–10)

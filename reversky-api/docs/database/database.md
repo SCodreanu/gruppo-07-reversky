@@ -57,6 +57,7 @@ Dati inseriti con le migrazioni:
 | tabella `effects` con i 92 effetti del registro dell'engine e chiave esterna `fk_catalog_cards_effect`: prima struttura nuova dopo la baseline, decisa il 21 novembre | `V13__create_effects.sql`, task API-36 (#106): vedi [Effetti](#effetti-sottotipi-e-tag) |
 | vincolo `chk_catalog_cards_secondary_faction_creature_only`: solo le creature hanno una seconda fazione, come chiede l'engine (deciso il 22 novembre) | `V14__add_secondary_faction_check.sql`, task API-71 (#146) |
 | tag delle quattro fazioni `WOUND`, `INVITATION`, `ARCHIVE`, `DREAM`, collegati per nome alla loro fazione | `V15__insert_faction_tags.sql`, task API-13 (#83) |
+| le tre bustine della proposta DSG "Economia di gioco 2.0" **[DA CONFERMARE]**: il Base Pack diventa *Standard* (600 crediti), più *Mini* (300 crediti, 1 Common, 1 Uncommon, 1 Rare, bonus 7%, 2,5%, 0,5%) e *Premium* (1.200 crediti, 5 Common, 4 Uncommon, 6 Rare, bonus 52,54%, 27,10%, 8,73%) | `V16__insert_mini_standard_premium_packs.sql`: vedi [pacchetti](../pacchetti/pacchetti.md#le-bustine-del-negozio) |
 | utenti `admin`, `alice`, `bob`, collezioni, mazzi e amicizia di prova, **solo in sviluppo** | `db/dev/R__dev_seed.sql`, task API-25 (#95): vedi sotto |
 
 ### Catalogo iniziale (`V11`)
@@ -78,7 +79,7 @@ Generato una volta dal CSV del bilanciamento (commit `2c6ec71` di `backend_engin
 | Username | Email | Ruolo | Dati |
 |---|---|---|---|
 | `admin` | `admin@reversky.dev` | `ADMIN` | solo l'inventario |
-| `alice` | `alice@reversky.dev` | `USER` | crediti di benvenuto, tutte le carte originali attive fino al limite di copie, mazzo valido *Alice Invitation* |
+| `alice` | `alice@reversky.dev` | `USER` | 10.000 crediti (benvenuto più una ricarica `ADMIN_ADJUSTMENT`, una volta sola) per provare le tre bustine, tutte le carte originali attive fino al limite di copie, mazzo valido *Alice Invitation* |
 | `bob` | `bob@reversky.dev` | `USER` | come alice, con il mazzo *Bob Wound* |
 
 - `alice` e `bob` sono amici (`ACCEPTED`), così possono sfidarsi in amichevole.

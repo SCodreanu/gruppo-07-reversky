@@ -74,7 +74,7 @@ class DevSeedIT {
 	}
 
 	@Test
-	@DisplayName("alice and bob start with the signup bonus and one valid 30-card deck each")
+	@DisplayName("alice and bob start with 10.000 credits (signup bonus + one top-up) and one valid 30-card deck each")
 	void seedPlayers_haveCreditsAndValidDeck() {
 		// Arrange
 		int signupBonus = ruleSetService.getActiveRuleSet().getSignupBonus();
@@ -85,8 +85,11 @@ class DevSeedIT {
 			// Act
 			List<DeckSummaryResponse> decks = deckService.findMine(user.getId());
 
-			// Assert
-			assertThat(inventoryService.getCredits(user.getId())).as(email).isEqualTo(signupBonus);
+			// Assert: 10.000 crediti per provare le tre bustine, e il saldo è la somma delle righe SIGNUP e ADMIN_ADJUSTMENT
+			assertThat(inventoryService.getCredits(user.getId())).as(email).isEqualTo(10_000);
+			assertThat(jdbcTemplate.queryForObject(
+				"SELECT COALESCE(SUM(amount), 0) FROM credit_transactions WHERE user_id = ? AND reason = 'ADMIN_ADJUSTMENT'",
+				Integer.class, user.getId())).as(email).isEqualTo(10_000 - signupBonus);
 			assertThat(decks).as(email).hasSize(1);
 			assertThat(decks.get(0).cardCount()).as(email).isEqualTo(30);
 			assertThat(decks.get(0).valid()).as(email).isTrue();

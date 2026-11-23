@@ -32,7 +32,7 @@ import it.downfall.reversky.api.support.TestUsers;
 
 /**
  * Flusso completo dei pacchetti via HTTP con il database vero (API-56, #126): registrazione, login, crediti di
- * benvenuto, acquisto e apertura del Base Pack di {@code V12}, collezione. I singoli endpoint e i loro errori sono già
+ * benvenuto, acquisto e apertura della Mini di {@code V16}, collezione. I singoli endpoint e i loro errori sono già
  * in {@code PackPurchaseControllerIT}, {@code PackOpeningControllerIT} e {@code InventoryServiceIT}; qui si controlla
  * che crediti e carte tornino a ogni passo, come li vedrà il frontend. Gli errori a metà operazione sono in
  * {@link PackFlowRollbackIT}.
@@ -45,7 +45,8 @@ import it.downfall.reversky.api.support.TestUsers;
 @AutoConfigureMockMvc
 class PackFlowIT {
 
-	private static final String BASE_PACK = "Base Pack";
+	// La bustina più economica di V16: i crediti di benvenuto la pagano
+	private static final String PACK = "Mini";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -61,7 +62,7 @@ class PackFlowIT {
 	private EmailSender emailSender;
 
 	@Test
-	@DisplayName("Register, log in, buy two Base Packs, open both: credits and cards add up at every step")
+	@DisplayName("Register, log in, buy a Mini, open it: credits and cards add up at every step")
 	void packFlow_fromRegistrationToCollection() throws Exception {
 		// 1. Registrazione e login, come un giocatore nuovo
 		String suffix = TestUsers.uniqueSuffix();
@@ -87,30 +88,30 @@ class PackFlowIT {
 		assertThat(ledger(userId, "SIGNUP")).isEqualTo(signupBonus);
 		assertLedgerMatchesBalance(userId, signupBonus);
 
-		// 3. Il Base Pack nel negozio, con costo e numero di carte
+		// 3. La Mini nel negozio, con costo e numero di carte
 		String shop = mockMvc.perform(as(token, get("/api/v1/packs")))
 			.andExpect(status().isOk())
 			.andReturn().getResponse().getContentAsString();
-		List<Integer> ids = JsonPath.read(shop, "$[?(@.name == '" + BASE_PACK + "')].id");
+		List<Integer> ids = JsonPath.read(shop, "$[?(@.name == '" + PACK + "')].id");
 		assertThat(ids).hasSize(1);
 		Integer packId = ids.get(0);
-		int cost = JsonPath.<List<Integer>>read(shop, "$[?(@.name == '" + BASE_PACK + "')].cost").get(0);
-		int cardCount = JsonPath.<List<Integer>>read(shop, "$[?(@.name == '" + BASE_PACK + "')].cardCount").get(0);
-		assertThat(signupBonus).as("the welcome credits pay for two Base Packs").isGreaterThanOrEqualTo(2 * cost);
+		int cost = JsonPath.<List<Integer>>read(shop, "$[?(@.name == '" + PACK + "')].cost").get(0);
+		int cardCount = JsonPath.<List<Integer>>read(shop, "$[?(@.name == '" + PACK + "')].cardCount").get(0);
+		assertThat(signupBonus).as("the welcome credits pay for a Mini").isGreaterThanOrEqualTo(cost);
 
-		// 4. Acquisto di due pacchetti: crediti scalati, riga PACK_PURCHASE, pacchetti nell'inventario
-		int afterPurchase = signupBonus - 2 * cost;
+		// 4. Acquisto di un pacchetto: crediti scalati, riga PACK_PURCHASE, pacchetto nell'inventario
+		int afterPurchase = signupBonus - cost;
 		mockMvc.perform(as(token, post("/api/v1/packs/" + packId + "/purchase")).contentType(MediaType.APPLICATION_JSON)
-				.content("{\"quantity\": 2}"))
+				.content("{\"quantity\": 1}"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.credits").value(afterPurchase))
-			.andExpect(jsonPath("$.packs[?(@.packId == " + packId + ")].quantity").value(2));
-		assertThat(ledger(userId, "PACK_PURCHASE")).isEqualTo(-2 * cost);
+			.andExpect(jsonPath("$.packs[?(@.packId == " + packId + ")].quantity").value(1));
+		assertThat(ledger(userId, "PACK_PURCHASE")).isEqualTo(-cost);
 		assertLedgerMatchesBalance(userId, afterPurchase);
 
-		// 5. Apertura dei due pacchetti: ogni carta della risposta finisce nella collezione
+		// 5. Apertura del pacchetto: ogni carta della risposta finisce nella collezione
 		Map<Integer, Integer> drawn = new HashMap<>();
-		for (int remaining : List.of(1, 0)) {
+		for (int remaining : List.of(0)) {
 			String opened = mockMvc.perform(as(token, post("/api/v1/inventory/packs/" + packId + "/open")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.packId").value(packId))
@@ -120,9 +121,9 @@ class PackFlowIT {
 			JsonPath.<List<Integer>>read(opened, "$.cards[*].card.id").forEach(id -> drawn.merge(id, 1, Integer::sum));
 		}
 		assertThat(collection(token)).isEqualTo(drawn);
-		assertThat(drawn.values().stream().mapToInt(Integer::intValue).sum()).isEqualTo(2 * cardCount);
+		assertThat(drawn.values().stream().mapToInt(Integer::intValue).sum()).isEqualTo(cardCount);
 		assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM pack_openings WHERE user_id = ? AND pack_id = ?",
-			Integer.class, userId, packId)).isEqualTo(2);
+			Integer.class, userId, packId)).isEqualTo(1);
 
 		// 6. Aprire non costa crediti; l'inventario è vuoto e un'altra apertura è rifiutata senza cambiare niente
 		mockMvc.perform(as(token, get("/api/v1/inventory")))
